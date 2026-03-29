@@ -1,0 +1,666 @@
+/* ============================================
+   LUNA WHALE ART LAB — Core Layout System v2
+   통합 반응형 CSS (mobile / tablet / desktop)
+   ============================================ */
+
+/* ─── Design Tokens ─── */
+:root {
+    /* Layout dimensions */
+    --sidebar-w: 240px;
+    --mobile-nav-h: 64px;
+    --header-h: 56px;
+    --drawer-w: 280px;
+
+    /* Breakpoints (for reference, used in @media) */
+    /* mobile: ~639px */
+    /* tablet: 640~1023px */
+    /* desktop: 1024px+ */
+
+    /* Colors - Light mode (default) */
+    --lc-bg: #f6f6f8;
+    --lc-bg-card: #ffffff;
+    --lc-bg-sidebar: #ffffff;
+    --lc-bg-nav: rgba(255, 255, 255, 0.92);
+    --lc-text: #1a1a2e;
+    --lc-text-secondary: #64748b;
+    --lc-text-muted: #94a3b8;
+    --lc-border: rgba(0, 0, 0, 0.08);
+    --lc-border-hover: rgba(0, 0, 0, 0.15);
+    --lc-accent: #6366f1;
+    --lc-accent-light: rgba(99, 102, 241, 0.1);
+    --lc-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --lc-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
+
+    /* Spacing */
+    --sp-xs: 4px;
+    --sp-sm: 8px;
+    --sp-md: 16px;
+    --sp-lg: 24px;
+    --sp-xl: 40px;
+
+    /* Radii */
+    --r-sm: 8px;
+    --r-md: 14px;
+    --r-lg: 20px;
+    --r-xl: 28px;
+    --r-full: 9999px;
+
+    /* Transition */
+    --t-fast: 0.15s ease;
+    --t-md: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --t-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Safe area for notch/dynamic island */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Dark mode tokens */
+html.dark {
+    --lc-bg: #0f1219;
+    --lc-bg-card: #1a1f2e;
+    --lc-bg-sidebar: #141821;
+    --lc-bg-nav: rgba(20, 24, 33, 0.95);
+    --lc-text: #f0ede8;
+    --lc-text-secondary: #9ba4b5;
+    --lc-text-muted: #5a677d;
+    --lc-border: rgba(255, 255, 255, 0.08);
+    --lc-border-hover: rgba(255, 255, 255, 0.15);
+    --lc-accent: #818cf8;
+    --lc-accent-light: rgba(129, 140, 248, 0.12);
+    --lc-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --lc-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+
+/* ============================================
+   LAYOUT SHELL
+   ============================================ */
+
+/* ─── App Shell ─── */
+.lc-app {
+    display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--lc-bg);
+    color: var(--lc-text);
+}
+
+.lc-main {
+    flex: 1;
+    min-width: 0; /* prevent flex overflow */
+    padding-bottom: calc(var(--mobile-nav-h) + var(--safe-bottom));
+    transition: margin-left var(--t-md);
+}
+
+
+/* ============================================
+   DESKTOP SIDEBAR (1024px+)
+   ============================================ */
+.lc-sidebar {
+    display: none; /* hidden on mobile/tablet */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-w);
+    height: 100vh;
+    height: 100dvh;
+    background: var(--lc-bg-sidebar);
+    border-right: 1px solid var(--lc-border);
+    z-index: 100;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.lc-sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--lc-border);
+    flex-shrink: 0;
+}
+
+.lc-sidebar-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-sm);
+    object-fit: contain;
+}
+
+.lc-sidebar-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--lc-text);
+}
+
+.lc-sidebar-nav {
+    flex: 1;
+    padding: 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.lc-sidebar-divider {
+    height: 1px;
+    background: var(--lc-border);
+    margin: 8px 8px;
+}
+
+.lc-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--r-sm);
+    color: var(--lc-text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all var(--t-fast);
+    cursor: pointer;
+    border: 1px solid transparent;
+    min-height: 42px;
+}
+
+.lc-nav-item:hover {
+    background: var(--lc-accent-light);
+    color: var(--lc-accent);
+}
+
+.lc-nav-item.active {
+    background: var(--lc-accent-light);
+    color: var(--lc-accent);
+    font-weight: 600;
+}
+
+.lc-nav-item .icon {
+    font-size: 20px;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.lc-nav-spacer {
+    flex: 1;
+}
+
+
+/* ============================================
+   TABLET DRAWER (640~1023px)
+   ============================================ */
+.lc-drawer-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 199;
+    opacity: 0;
+    transition: opacity var(--t-md);
+}
+
+.lc-drawer-backdrop.open {
+    opacity: 1;
+}
+
+.lc-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--drawer-w);
+    height: 100vh;
+    height: 100dvh;
+    background: var(--lc-bg-sidebar);
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform var(--t-md);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+}
+
+.lc-drawer.open {
+    transform: translateX(0);
+}
+
+
+/* ============================================
+   TABLET HEADER (640~1023px)
+   ============================================ */
+.lc-header {
+    display: none; /* shown only on tablet */
+    position: sticky;
+    top: 0;
+    height: var(--header-h);
+    background: var(--lc-bg-nav);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--lc-border);
+    z-index: 50;
+    padding: 0 16px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.lc-hamburger {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-sm);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 0;
+}
+
+.lc-hamburger span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--lc-text);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.lc-header-logo {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--lc-text);
+}
+
+.lc-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+/* ============================================
+   MOBILE BOTTOM NAV (<640px)
+   ============================================ */
+.lc-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--mobile-nav-h) + var(--safe-bottom));
+    padding-bottom: var(--safe-bottom);
+    background: var(--lc-bg-nav);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--lc-border);
+    z-index: 100;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.lc-bottom-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 0;
+    color: var(--lc-text-muted);
+    font-size: 10px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color var(--t-fast);
+    -webkit-tap-highlight-color: transparent;
+    min-width: 48px;
+    min-height: 48px;
+}
+
+.lc-bottom-item .icon {
+    font-size: 24px;
+}
+
+.lc-bottom-item.active {
+    color: var(--lc-accent);
+}
+
+.lc-bottom-item:active {
+    transform: scale(0.92);
+}
+
+/* FAB (center action button) */
+.lc-fab {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--lc-accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    transition: transform var(--t-fast), box-shadow var(--t-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.lc-fab:active {
+    transform: scale(0.9);
+}
+
+
+/* ============================================
+   QUICK ACCESS GRID (2x3 icon grid)
+   ============================================ */
+.lc-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 16px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.lc-quick-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 8px;
+    border-radius: var(--r-md);
+    background: var(--lc-bg-card);
+    border: 1px solid var(--lc-border);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--t-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.lc-quick-item:hover {
+    border-color: var(--lc-border-hover);
+    box-shadow: var(--lc-shadow-lg);
+    transform: translateY(-2px);
+}
+
+.lc-quick-item:active {
+    transform: scale(0.96);
+}
+
+.lc-quick-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--r-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.lc-quick-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--lc-text);
+    text-align: center;
+    line-height: 1.2;
+}
+
+
+/* ============================================
+   MASONRY GRID (responsive)
+   ============================================ */
+.lc-masonry {
+    columns: 2;
+    column-gap: 12px;
+    padding: 0 16px;
+}
+
+.lc-masonry-item {
+    break-inside: avoid;
+    margin-bottom: 12px;
+    display: block;
+}
+
+
+/* ============================================
+   SECTION HEADERS
+   ============================================ */
+.lc-section {
+    padding: 24px 16px 8px;
+}
+
+.lc-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--lc-text);
+}
+
+.lc-section-subtitle {
+    font-size: 13px;
+    color: var(--lc-text-muted);
+    margin-top: 2px;
+}
+
+/* Collapsible sections */
+.lc-section-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.lc-section-toggle .chevron {
+    transition: transform var(--t-fast);
+    color: var(--lc-text-muted);
+}
+
+.lc-section-toggle.collapsed .chevron {
+    transform: rotate(-90deg);
+}
+
+.lc-section-body {
+    overflow: hidden;
+    transition: max-height var(--t-md), opacity var(--t-md);
+}
+
+.lc-section-body.collapsed {
+    max-height: 0 !important;
+    opacity: 0;
+}
+
+
+/* ============================================
+   SLIM HUB HEADER (for Math/TECH/Korean/EN hubs)
+   No sidebar, just a compact top bar
+   ============================================ */
+.lc-hub-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: inherit;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    min-height: 52px;
+}
+
+.lc-hub-back {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--lc-border);
+    background: transparent;
+    color: var(--lc-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    transition: all var(--t-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.lc-hub-back:hover {
+    background: var(--lc-accent-light);
+    color: var(--lc-accent);
+}
+
+.lc-hub-title {
+    font-size: 16px;
+    font-weight: 700;
+    flex: 1;
+}
+
+.lc-hub-home {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-sm);
+    background: transparent;
+    border: none;
+    color: var(--lc-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    transition: all var(--t-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.lc-hub-home:hover {
+    color: var(--lc-accent);
+}
+
+
+/* ============================================
+   RESPONSIVE MEDIA QUERIES
+   ============================================ */
+
+/* ─── Tablet (640px ~ 1023px) ─── */
+@media (min-width: 640px) {
+    .lc-masonry {
+        columns: 3;
+    }
+
+    .lc-bottom-nav {
+        display: none;
+    }
+
+    .lc-header {
+        display: flex;
+    }
+
+    .lc-main {
+        padding-bottom: 0;
+    }
+
+    .lc-quick-grid {
+        max-width: 480px;
+        gap: 16px;
+    }
+
+    .lc-quick-item {
+        padding: 20px 12px;
+    }
+
+    .lc-quick-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 28px;
+    }
+
+    .lc-quick-label {
+        font-size: 13px;
+    }
+}
+
+/* ─── Desktop (1024px+) ─── */
+@media (min-width: 1024px) {
+    .lc-sidebar {
+        display: flex;
+    }
+
+    .lc-header {
+        display: none;
+    }
+
+    .lc-bottom-nav {
+        display: none;
+    }
+
+    .lc-main {
+        margin-left: var(--sidebar-w);
+        padding-bottom: 0;
+    }
+
+    .lc-masonry {
+        columns: 4;
+        column-gap: 16px;
+        padding: 0 24px;
+    }
+
+    .lc-quick-grid {
+        max-width: 540px;
+    }
+}
+
+/* ─── Large Desktop (1280px+) ─── */
+@media (min-width: 1280px) {
+    .lc-masonry {
+        columns: 5;
+    }
+}
+
+/* ─── Touch-friendly targets ─── */
+@media (pointer: coarse) {
+    .lc-nav-item {
+        min-height: 48px;
+    }
+
+    .lc-bottom-item {
+        min-height: 48px;
+    }
+}
+
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.lc-hide-mobile { display: none; }
+.lc-hide-desktop { display: block; }
+
+@media (min-width: 640px) {
+    .lc-hide-tablet-up { display: none !important; }
+}
+
+@media (min-width: 1024px) {
+    .lc-hide-mobile { display: block; }
+    .lc-hide-desktop { display: none; }
+}
+
+/* Smooth scrollbar */
+.lc-app {
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+}
+
+.lc-app::-webkit-scrollbar {
+    width: 6px;
+}
+
+.lc-app::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.lc-app::-webkit-scrollbar-thumb {
+    background: var(--lc-border);
+    border-radius: 3px;
+}

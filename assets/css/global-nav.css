@@ -1,0 +1,310 @@
+/* ═══════════════════════════════════════════════
+   Global Navigation Sidebar — Luna Whale
+   Dark navy pill, right-side, 2-column grid
+   ═══════════════════════════════════════════════ */
+
+/* Google Material Symbols (if not loaded) */
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
+
+/* ─── Root wrapper (fixed on <html>) ─── */
+#gnav-root {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 2147483647 !important;
+    pointer-events: none !important;
+    overflow: visible !important;
+}
+#gnav-root .gnav-pill,
+#gnav-root .gnav-sidebar {
+    pointer-events: auto;
+}
+#gnav-root .gnav-backdrop {
+    pointer-events: none;
+}
+#gnav-root .gnav-backdrop.open {
+    pointer-events: auto;
+}
+
+/* ─── Toggle Pill (항상 표시) ─── */
+.gnav-pill {
+    position: absolute;
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 64px;
+    background: linear-gradient(135deg, #3B3568, #2B2548);
+    border-radius: 14px 0 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: -4px 0 20px rgba(43,37,72,0.4), 0 0 8px rgba(139,126,200,0.25);
+    border: 1px solid rgba(139,126,200,0.3);
+    border-right: none;
+    color: rgba(255,255,255,0.8);
+    transition: color 0.25s ease, width 0.25s ease, box-shadow 0.25s ease, right 0.35s ease, opacity 0.25s ease;
+}
+.gnav-pill:hover {
+    color: white;
+    width: 46px;
+    box-shadow: -6px 0 24px rgba(43,37,72,0.5), 0 0 12px rgba(139,126,200,0.35);
+}
+.gnav-pill .material-symbols-rounded {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+}
+.gnav-pill.open {
+    right: -50px;
+    pointer-events: none;
+    opacity: 0;
+}
+.gnav-pill.open .material-symbols-rounded {
+    transform: rotate(180deg);
+}
+
+/* ─── Sidebar Panel (2-column grid) ─── */
+.gnav-sidebar {
+    position: absolute;
+    right: -160px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 140px;
+    background: #2B2548;
+    border-radius: 18px;
+    padding: 10px 6px;
+    z-index: 9;
+    box-shadow: -4px 0 30px rgba(43,37,72,0.35);
+    transition: right 0.35s cubic-bezier(0.22,1,0.36,1);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+}
+.gnav-sidebar::-webkit-scrollbar { display: none; }
+
+.gnav-sidebar.open {
+    right: 8px;
+}
+
+/* ─── Close Button (상단, 2열 span) ─── */
+.gnav-close {
+    grid-column: span 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 2px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: none;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+.gnav-close:hover {
+    background: rgba(255,255,255,0.2);
+    color: white;
+}
+.gnav-close .material-symbols-rounded {
+    font-size: 16px;
+}
+
+/* ─── Nav Items ─── */
+.gnav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 50px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: rgba(255,255,255,0.55);
+    position: relative;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+}
+.gnav-item:hover {
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.9);
+}
+.gnav-item.active {
+    color: white;
+    background: rgba(139,126,200,0.3);
+}
+.gnav-item.active::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 18px;
+    background: #8B7EC8;
+    border-radius: 2px;
+}
+
+/* 파스텔 아이콘 색상 (--ic CSS변수) */
+.gnav-item[style*="--ic"] .material-symbols-rounded {
+    color: var(--ic);
+}
+.gnav-item[style*="--ic"]:hover .material-symbols-rounded {
+    color: var(--ic);
+    filter: brightness(1.2);
+}
+
+.gnav-item .material-symbols-rounded {
+    font-size: 21px;
+    line-height: 1;
+}
+
+.gnav-item-label {
+    font-size: 9px;
+    font-weight: 700;
+    margin-top: 2px;
+    letter-spacing: -0.3px;
+    white-space: nowrap;
+    text-align: center;
+    font-family: 'Pretendard Variable', -apple-system, sans-serif;
+}
+
+/* ─── Custom Icon Text (Luna modules) ─── */
+.gnav-icon-text {
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1;
+    font-family: 'Pretendard Variable', -apple-system, sans-serif;
+}
+.gnav-icon-text.math { color: #f59e0b; }
+.gnav-icon-text.tech { color: #06b6d4; }
+.gnav-icon-text.en { color: #FF6B6B; }
+.gnav-icon-text.science { color: #39ff14; }
+.gnav-icon-text.korean {
+    color: #D4A574;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 16px;
+}
+
+/* ─── Section Divider (2열 span) ─── */
+.gnav-divider {
+    grid-column: span 2;
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 3px 8px;
+}
+
+/* ─── Hover Tooltip (disabled) ─── */
+
+/* ─── Backdrop (mobile) ─── */
+.gnav-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.3);
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.gnav-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ─── Mobile: 하단 시트 모드 ─── */
+@media (max-width: 767px) {
+    .gnav-pill {
+        right: 12px;
+        top: auto;
+        bottom: 24px;
+        transform: none;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        box-shadow: 0 4px 20px rgba(43,37,72,0.4);
+    }
+    .gnav-pill:hover { width: 48px; }
+
+    .gnav-sidebar {
+        right: 0;
+        left: 0;
+        top: auto;
+        bottom: -100%;
+        transform: none;
+        width: 100vw;
+        max-height: 70vh;
+        border-radius: 24px 24px 0 0;
+        padding: 20px 8px 40px;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+        transition: bottom 0.4s cubic-bezier(0.22,1,0.36,1);
+    }
+    .gnav-sidebar.open {
+        bottom: 0;
+        right: 0;
+    }
+    .gnav-divider {
+        display: none;
+    }
+    .gnav-item {
+        width: 100%;
+        height: 60px;
+    }
+    .gnav-item-label { font-size: 10px; }
+    .gnav-item[data-tooltip]:hover::before { display: none; }
+}
+
+/* ─── 기존 nav 모두 숨기기 (모든 페이지 타입) ─── */
+.hide-old-nav .app-sidebar,
+.hide-old-nav .bottom-nav,
+.hide-old-nav #header-math-btn,
+.hide-old-nav #header-tech-btn,
+.hide-old-nav #header-en-btn,
+.hide-old-nav #header-korean-btn,
+.hide-old-nav #header-playground-btn,
+/* Luna Math sidebar */
+.hide-old-nav #sidebar,
+.hide-old-nav .sidebar,
+/* Luna Tech sidebar */
+.hide-old-nav #techSidebar,
+.hide-old-nav .tech-sidebar,
+/* Luna nav trigger (luna-nav.js) */
+.hide-old-nav #luna-nav-trigger,
+.hide-old-nav .luna-nav-trigger,
+.hide-old-nav #luna-nav-popup,
+/* Hub nav bar */
+.hide-old-nav .hub-nav-bar,
+.hide-old-nav #hub-nav-bar,
+/* 공통 뒤로가기/홈 버튼 */
+.hide-old-nav .back-to-home,
+.hide-old-nav .home-btn,
+.hide-old-nav [data-nav-home],
+/* 동적 생성 fixed 버튼 (luna-math-btn.js, luna-tech-flip.js) */
+.hide-old-nav .luna-math-btn,
+.hide-old-nav .luna-tech-flip-btn,
+/* Art Cosmos 음성검색 위젯 */
+.hide-old-nav .acw-btn,
+.hide-old-nav .acw-panel {
+    display: none !important;
+}
+/* Luna Math: sidebar 숨겼을 때 main-content margin 보정 */
+.hide-old-nav .main-content,
+.hide-old-nav .math-content,
+.hide-old-nav .tech-content {
+    margin-left: 0 !important;
+}
