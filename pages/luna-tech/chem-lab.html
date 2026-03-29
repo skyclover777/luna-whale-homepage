@@ -1,0 +1,2981 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=no" name="viewport" />
+    <title>화학 실험실 - Luna Whale TECH</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Jua&family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a1a;
+            --bg2: #0e0e24;
+            --cyan: #06b6d4;
+            --green: #10b981;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --acid-green: #84cc16;
+            --text: #e2e8f0;
+            --text-dim: #64748b;
+            --card-bg: rgba(15, 15, 40, 0.8);
+            --border: rgba(6, 182, 212, 0.15);
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .cyber-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(6,182,212,.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6,182,212,.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                0deg, transparent, transparent 2px,
+                rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* ===== Intro Screen ===== */
+        #introScreen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 200;
+            background: #1a0a00;
+        }
+        #introCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #skipBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 201;
+            background: rgba(0,0,0,0.6);
+            color: #ccc;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #skipBtn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+        /* ===== App Container ===== */
+        .app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ===== Top Bar ===== */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            backdrop-filter: blur(12px);
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .back-btn {
+            background: rgba(6,182,212,0.1);
+            border: 1px solid rgba(6,182,212,0.2);
+            border-radius: 10px;
+            padding: 6px 12px;
+            color: var(--cyan);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .back-btn:hover { background: rgba(6,182,212,0.2); }
+        .page-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 20px;
+            background: linear-gradient(135deg, var(--cyan), var(--green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            flex: 1;
+        }
+        .mission-display {
+            background: rgba(139,92,246,0.1);
+            border: 1px solid rgba(139,92,246,0.2);
+            border-radius: 10px;
+            padding: 5px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .score-display {
+            background: rgba(245,158,11,0.1);
+            border: 1px solid rgba(245,158,11,0.2);
+            border-radius: 10px;
+            padding: 5px 12px;
+            font-size: 13px;
+            color: var(--orange);
+            font-weight: 600;
+        }
+        .lang-toggle {
+            background: rgba(6,182,212,0.1);
+            border: 1px solid rgba(6,182,212,0.2);
+            border-radius: 8px;
+            padding: 4px 10px;
+            color: var(--cyan);
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .replay-btn {
+            background: rgba(236,72,153,0.1);
+            border: 1px solid rgba(236,72,153,0.2);
+            border-radius: 8px;
+            padding: 4px 10px;
+            color: var(--pink);
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* ===== Game Layout ===== */
+        .game-layout {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            flex: 1;
+        }
+
+        .side-panel {
+            width: 160px;
+            flex-shrink: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 6px 5px;
+            backdrop-filter: blur(12px);
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            align-content: start;
+        }
+        .side-panel::-webkit-scrollbar { width: 3px; }
+        .side-panel::-webkit-scrollbar-thumb { background: rgba(6,182,212,0.2); border-radius: 3px; }
+
+        .panel-title {
+            grid-column: 1 / -1;
+            font-family: 'Jua', sans-serif;
+            font-size: 12px;
+            color: var(--cyan);
+            padding: 3px 4px;
+            border-bottom: 1px solid rgba(6,182,212,0.2);
+            margin-bottom: 1px;
+        }
+        .panel-group { grid-column: 1 / -1; font-size: 9px; color: var(--text-dim); padding: 3px 4px 1px; }
+
+        .equip-btn, .chem-btn {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            padding: 4px 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+            position: relative;
+        }
+        .equip-btn { background: rgba(6,182,212,0.06); }
+        .equip-btn:hover { background: rgba(6,182,212,0.15); border-color: rgba(6,182,212,0.3); }
+        .equip-btn.active { background: rgba(6,182,212,0.2); border-color: var(--cyan); }
+        .equip-btn .icon { font-size: 14px; flex-shrink: 0; }
+
+        .chem-btn { background: rgba(132,204,22,0.06); }
+        .chem-btn:hover { background: rgba(132,204,22,0.15); border-color: rgba(132,204,22,0.3); }
+        .chem-btn.active { background: rgba(132,204,22,0.2); border-color: var(--acid-green); }
+        .chem-btn .chem-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Tooltip on hover */
+        [data-tip]:hover::after {
+            content: attr(data-tip);
+            position: absolute;
+            left: 105%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(10,10,30,0.95);
+            border: 1px solid var(--cyan);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 10px;
+            color: var(--text);
+            white-space: nowrap;
+            z-index: 50;
+            pointer-events: none;
+            box-shadow: 0 0 12px rgba(6,182,212,0.2);
+            max-width: 200px;
+            white-space: normal;
+            line-height: 1.4;
+        }
+        #chemPanel [data-tip]:hover::after {
+            left: auto;
+            right: 105%;
+        }
+
+        /* ===== Canvas Area ===== */
+        .canvas-area {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .canvas-wrap {
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: #050510;
+        }
+        #labCanvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            cursor: crosshair;
+        }
+        .canvas-hud {
+            position: absolute;
+            top: 8px; left: 8px;
+            display: flex;
+            gap: 6px;
+            pointer-events: none;
+        }
+        .hud-chip {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(6,182,212,0.2);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 10px;
+            color: var(--text-dim);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Avatar in lab */
+        .avatar-chip {
+            position: absolute;
+            top: 8px; right: 8px;
+            background: rgba(0,0,0,0.7);
+            border: 1px solid rgba(236,72,153,0.3);
+            border-radius: 10px;
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            pointer-events: none;
+        }
+        .avatar-face { font-size: 20px; }
+        .avatar-name { font-size: 10px; color: var(--pink); }
+
+        /* Canvas left toolbar (Photoshop style) */
+        .canvas-toolbar {
+            position: absolute;
+            left: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            background: rgba(10,10,30,0.9);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px;
+            z-index: 10;
+            backdrop-filter: blur(8px);
+        }
+        .tb-btn {
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 15px;
+            position: relative;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            transition: background 0.12s;
+        }
+        .tb-btn:hover { background: rgba(255,255,255,0.1); }
+        .tb-btn.active { background: var(--cyan); color: #fff; }
+        .tb-btn .tb-key {
+            position: absolute;
+            bottom: 1px; right: 2px;
+            font-size: 7px;
+            color: var(--text-dim);
+            font-weight: bold;
+        }
+        .tb-btn.active .tb-key { color: rgba(255,255,255,0.6); }
+        .tb-sep { width: 24px; height: 1px; background: rgba(255,255,255,0.08); margin: 2px auto; }
+
+        /* Canvas bottom controls (compact) */
+        .canvas-controls {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .ctrl-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 3px 6px;
+        }
+        .ctrl-label { font-size: 9px; color: var(--text-dim); }
+        .ctrl-btn {
+            background: rgba(6,182,212,0.1);
+            border: 1px solid rgba(6,182,212,0.2);
+            border-radius: 5px;
+            padding: 2px 6px;
+            font-size: 10px;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .ctrl-btn.active { background: rgba(6,182,212,0.3); border-color: var(--cyan); }
+
+        /* ===== Lab Notebook ===== */
+        .notebook-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            backdrop-filter: blur(12px);
+        }
+        .notebook-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 13px;
+            color: var(--amber);
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
+        .notebook-entry {
+            font-size: 11px;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            gap: 8px;
+        }
+        .notebook-entry .time { color: var(--text-dim); flex-shrink: 0; }
+        .notebook-entry .eq { color: var(--cyan); }
+        .notebook-entry .desc { color: var(--text); opacity: 0.7; }
+
+        /* ===== Toast ===== */
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(15, 15, 40, 0.95);
+            border: 1px solid var(--cyan);
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 14px;
+            z-index: 150;
+            opacity: 0;
+            transition: all 0.3s;
+            pointer-events: none;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 30px rgba(6,182,212,0.2);
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.danger { border-color: var(--red); box-shadow: 0 0 30px rgba(239,68,68,0.3); }
+        .toast.success { border-color: var(--green); box-shadow: 0 0 30px rgba(16,185,129,0.3); }
+
+        /* ===== Mission Modal ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 160;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: linear-gradient(135deg, #0e0e24, #1a1a3e);
+            border: 1px solid var(--cyan);
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 620px;
+            width: 95%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 0 40px rgba(6,182,212,0.2);
+        }
+        .modal-box::-webkit-scrollbar { width: 4px; }
+        .modal-box::-webkit-scrollbar-thumb { background: rgba(6,182,212,0.3); border-radius: 4px; }
+        .modal-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 22px;
+            color: var(--cyan);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .modal-body { font-size: 13px; line-height: 1.7; }
+        .modal-close {
+            display: block;
+            margin: 16px auto 0;
+            background: rgba(6,182,212,0.2);
+            border: 1px solid var(--cyan);
+            border-radius: 10px;
+            padding: 8px 32px;
+            color: var(--cyan);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* ===== Mobile ===== */
+        @media (max-width: 900px) {
+            .game-layout { flex-direction: column; }
+            .side-panel {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                max-height: none;
+                overflow-y: visible;
+            }
+            .panel-title { width: 100%; }
+            .panel-group { width: 100%; }
+        }
+        @media (max-width: 640px) {
+            .top-bar { padding: 6px 8px; gap: 6px; }
+            .page-title { font-size: 16px; }
+            .mission-display { display: none; }
+            .equip-btn span:not(.icon), .chem-btn span:not(.chem-dot) { display: none; }
+            .equip-btn, .chem-btn { padding: 6px; justify-content: center; }
+            .side-panel { padding: 6px 4px; gap: 2px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== INTRO SCREEN (Breaking Bad RV) ===== -->
+<div id="introScreen">
+    <canvas id="introCanvas"></canvas>
+    <button id="skipBtn">SKIP ▸</button>
+</div>
+
+<!-- ===== MAIN LAB UI ===== -->
+<div class="cyber-bg"></div>
+<div class="scanlines"></div>
+
+<div class="app-container" id="labApp" style="display:none;">
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <a class="back-btn" href="index.html">
+            <span class="material-symbols-outlined" style="font-size:16px;">arrow_back</span>
+            TECH
+        </a>
+        <div class="page-title">🧪 Luna Chem Lab</div>
+        <div class="mission-display" id="missionDisplay" title="Click for missions">
+            <span id="missionText">--</span>
+        </div>
+        <div class="score-display">⭐ <span id="scoreValue">0</span></div>
+        <button class="replay-btn" id="replayBtn" title="Replay intro">🎬</button>
+        <button class="lang-toggle" id="langBtn">EN</button>
+    </div>
+
+    <!-- Game Layout -->
+    <div class="game-layout">
+        <!-- Left Panel: Equipment (2-column grid) -->
+        <div class="side-panel" id="equipPanel">
+            <div class="panel-title">🔬 <span data-i18n="equip">장비</span></div>
+            <div class="panel-group" data-i18n="containers">용기</div>
+            <div class="equip-btn" data-type="beaker" data-tip="비커 (300mL) — 액체 혼합, 가열용. 주구로 붓기 가능"><span class="icon">🧪</span><span>비커</span></div>
+            <div class="equip-btn" data-type="erlenmeyer" data-tip="삼각플라스크 (250mL) — 흔들기 좋은 형태. 반응 관찰용"><span class="icon">🧬</span><span>삼각</span></div>
+            <div class="equip-btn" data-type="roundflask" data-tip="둥근바닥플라스크 (200mL) — 증류, 가열 반응용"><span class="icon">⚗️</span><span>둥근</span></div>
+            <div class="equip-btn" data-type="testtube" data-tip="시험관 (50mL) — 소량 반응 테스트. 불꽃 반응에 적합"><span class="icon">🧫</span><span>시험관</span></div>
+            <div class="equip-btn" data-type="cylinder" data-tip="메스실린더 (100mL) — 정확한 부피 측정용"><span class="icon">📏</span><span>메스</span></div>
+            <div class="panel-group" data-i18n="heatsrc">열원</div>
+            <div class="equip-btn" data-type="alcohollamp" data-tip="알코올램프 — 노란 불꽃, 약 600°C. 일반 가열용"><span class="icon">🕯️</span><span>알코올</span></div>
+            <div class="equip-btn" data-type="bunsen" data-tip="분젠버너 — 파란 불꽃, 최대 1500°C. 강도 조절 가능"><span class="icon">🔥</span><span>분젠</span></div>
+            <div class="panel-group" data-i18n="support">지지대</div>
+            <div class="equip-btn" data-type="tripod" data-tip="삼발이+석면망 — 용기를 불꽃 위에 고정. 균일 가열"><span class="icon">🔺</span><span>삼발이</span></div>
+            <div class="equip-btn" data-type="ringstand" data-tip="스탠드+클램프 — 높이 조절 가능한 지지대"><span class="icon">🗼</span><span>스탠드</span></div>
+            <div class="panel-group" data-i18n="tools">도구</div>
+            <div class="equip-btn" data-type="thermometer" data-tip="온도계 — 용기에 넣으면 현재 온도 표시"><span class="icon">🌡️</span><span>온도계</span></div>
+            <div class="equip-btn" data-type="phstrip" data-tip="pH 시험지 — 용기에 넣으면 산성/염기성 색 변화"><span class="icon">🎨</span><span>pH지</span></div>
+            <div class="equip-btn" data-type="stirrod" data-tip="유리막대 — 용기를 클릭하면 교반. 반응 촉진"><span class="icon">🥢</span><span>막대</span></div>
+            <div class="equip-btn" data-type="dropper" data-tip="스포이트 — 소량(5mL) 정밀 이동"><span class="icon">💧</span><span>스포이트</span></div>
+            <div class="equip-btn" data-type="scale" data-tip="저울 — 질량 측정. 위에 올려놓으면 g 표시"><span class="icon">⚖️</span><span>저울</span></div>
+        </div>
+
+        <!-- Center: Canvas -->
+        <div class="canvas-area">
+            <div class="canvas-wrap">
+                <canvas id="labCanvas" width="1000" height="600"></canvas>
+                <!-- Photoshop-style left toolbar -->
+                <div class="canvas-toolbar" id="canvasToolbar">
+                    <button class="tb-btn" data-action="move" title="이동 (V)">↕<span class="tb-key">V</span></button>
+                    <button class="tb-btn active" data-action="place" title="배치 (P)">📌<span class="tb-key">P</span></button>
+                    <button class="tb-btn" data-action="pour" title="붓기 (O)">💧<span class="tb-key">O</span></button>
+                    <div class="tb-sep"></div>
+                    <button class="tb-btn" data-action="ignite" id="tbIgnite" title="점화/소화 (I)">🔥<span class="tb-key">I</span></button>
+                    <button class="tb-btn" data-action="seal" id="tbSeal" title="밀폐 토글 (S)">🔒<span class="tb-key">S</span></button>
+                    <button class="tb-btn" data-action="stir" title="교반 (R)">🌀<span class="tb-key">R</span></button>
+                    <div class="tb-sep"></div>
+                    <button class="tb-btn" data-action="trash" title="삭제 (D)">🗑️<span class="tb-key">D</span></button>
+                    <button class="tb-btn" data-action="clear" id="tbClear" title="전체 초기화">💣<span class="tb-key"></span></button>
+                </div>
+                <div class="canvas-hud">
+                    <div class="hud-chip" id="hudTemp">🌡️ --°C</div>
+                    <div class="hud-chip" id="hudPH">pH --</div>
+                    <div class="hud-chip" id="hudFPS">FPS --</div>
+                </div>
+                <div class="avatar-chip">
+                    <span class="avatar-face" id="avatarFace">🥽</span>
+                    <span class="avatar-name">Dr. Luna</span>
+                </div>
+            </div>
+            <div class="canvas-controls">
+                <div class="ctrl-group">
+                    <span class="ctrl-label">🔥</span>
+                    <input type="range" id="flameIntensity" min="0" max="100" value="50" style="width:70px;accent-color:var(--orange);">
+                    <span class="ctrl-label" id="flameLabel">50%</span>
+                </div>
+                <div class="ctrl-group">
+                    <span class="ctrl-label">선택:</span>
+                    <span class="ctrl-label" id="selectionInfo" style="color:var(--cyan);">없음</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Chemicals -->
+        <div class="side-panel" id="chemPanel">
+            <div class="panel-title">⚗️ <span data-i18n="reagents">시약</span></div>
+            <div class="panel-group" data-i18n="acids">산</div>
+            <div class="panel-group" data-i18n="bases">염기</div>
+            <div class="panel-group" data-i18n="metals">금속</div>
+            <div class="panel-group" data-i18n="salts">염</div>
+            <div class="panel-group" data-i18n="liquids">액체/화합물</div>
+            <div class="panel-group" data-i18n="special">특수</div>
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- Lab Notebook -->
+    <div class="notebook-panel" id="notebook">
+        <div class="notebook-title">📓 <span data-i18n="lab_notebook">실험 노트</span> <span style="font-size:10px;color:var(--text-dim);">▼</span></div>
+        <div id="notebookEntries"></div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Mission Modal -->
+<div class="modal-overlay" id="missionModal">
+    <div class="modal-box">
+        <div class="modal-title" id="modalTitle"></div>
+        <div class="modal-body" id="modalBody"></div>
+        <button class="modal-close" id="modalClose" data-i18n="close">닫기</button>
+    </div>
+</div>
+
+<script>
+/* ============================================================
+   Luna Chem Lab - Breaking Bad Edition
+   Full Chemistry Laboratory Simulation
+   ============================================================ */
+
+// ===== i18n =====
+const I18N = {
+ko: {
+    equip:'장비', containers:'용기', heatsrc:'열원', support:'지지대', tools:'도구',
+    beaker:'비커', erlenmeyer:'삼각플라스크', roundflask:'둥근플라스크',
+    testtube:'시험관', cylinder:'메스실린더', alcohollamp:'알코올램프',
+    bunsen:'분젠버너', tripod:'삼발이+석면망', ringstand:'스탠드+클램프',
+    thermometer:'온도계', phstrip:'pH 시험지', stirrod:'유리막대',
+    dropper:'스포이트', scale:'저울',
+    reagents:'시약', acids:'산', bases:'염기', metals:'금속', salts:'염',
+    liquids:'액체/화합물', special:'특수',
+    action:'동작:', place:'배치', pour_action:'붓기', move:'이동', trash:'🗑️',
+    flame_ctrl:'불꽃:', ignite:'점화', seal:'밀폐', clear:'초기화',
+    lab_notebook:'실험 노트', close:'닫기',
+    boiling:'끓는 중!', melting:'녹는 중!', freezing:'얼고 있다!',
+    explosion_warn:'💥 폭발! 밀폐 용기에 가스가 축적되었습니다!',
+    glass_crack:'⚠️ 유리에 균열이 생겼습니다! 온도가 너무 높습니다.',
+    glass_shatter:'💔 유리가 깨졌습니다!',
+    glass_melt:'🫠 유리가 녹고 있습니다!',
+    mission_complete:'🎉 미션 완료!',
+    safety_warn:'⚠️ 안전 경고',
+    tutorial_1:'비커를 워크벤치에 놓아보세요!',
+    tutorial_2:'시약 선반에서 물(H₂O)을 선택하세요',
+    tutorial_3:'비커를 클릭해서 물을 넣으세요',
+    tutorial_4:'삼발이를 놓고 알코올램프를 아래에 놓으세요',
+    tutorial_5:'점화 버튼을 누르고 물이 끓는 것을 관찰하세요!',
+    missions_title:'🧪 실험 미션',
+},
+en: {
+    equip:'Equipment', containers:'Containers', heatsrc:'Heat', support:'Support', tools:'Tools',
+    beaker:'Beaker', erlenmeyer:'Erlenmeyer', roundflask:'Round Flask',
+    testtube:'Test Tube', cylinder:'Grad. Cylinder', alcohollamp:'Alcohol Lamp',
+    bunsen:'Bunsen Burner', tripod:'Tripod+Gauze', ringstand:'Ring Stand',
+    thermometer:'Thermometer', phstrip:'pH Strip', stirrod:'Stir Rod',
+    dropper:'Dropper', scale:'Scale',
+    reagents:'Reagents', acids:'Acids', bases:'Bases', metals:'Metals', salts:'Salts',
+    liquids:'Liquids', special:'Special',
+    action:'Action:', place:'Place', pour_action:'Pour', move:'Move', trash:'🗑️',
+    flame_ctrl:'Flame:', ignite:'Ignite', seal:'Seal', clear:'Reset',
+    lab_notebook:'Lab Notebook', close:'Close',
+    boiling:'Boiling!', melting:'Melting!', freezing:'Freezing!',
+    explosion_warn:'💥 Explosion! Gas built up in sealed container!',
+    glass_crack:'⚠️ Glass cracking! Temperature too high.',
+    glass_shatter:'💔 Glass shattered!',
+    glass_melt:'🫠 Glass is melting!',
+    mission_complete:'🎉 Mission Complete!',
+    safety_warn:'⚠️ Safety Warning',
+    tutorial_1:'Place a beaker on the workbench!',
+    tutorial_2:'Select Water (H₂O) from reagents',
+    tutorial_3:'Click the beaker to add water',
+    tutorial_4:'Place a tripod and alcohol lamp below',
+    tutorial_5:'Click ignite and watch the water boil!',
+    missions_title:'🧪 Lab Missions',
+}
+};
+let lang = localStorage.getItem('chem-lab-lang') || 'ko';
+function t(key) { return (I18N[lang] && I18N[lang][key]) || (I18N.ko[key]) || key; }
+function updateI18n() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.dataset.i18n;
+        if (I18N[lang] && I18N[lang][k]) el.textContent = I18N[lang][k];
+    });
+}
+
+// ===== Sound System =====
+const SFX_BASE = '../../assets/sounds/SonSounds/';
+const SFX = {
+    pour: '062_뾰옥 (물방울).mp3',
+    bubble: '062_뾰옥 (물방울).mp3',
+    sizzle: '044_tv지지직.mp3',
+    boom: '025_터지는소리BOOM.WAV',
+    flame: 'VGT - Roughly - 5.mp3',
+    click: 'DA - Digital Click - 3.mp3',
+    success: '049_띠룽 (슈퍼마리오 코인먹).mp3',
+    warning: '063_삐삑 (오답 -짧은).mp3',
+    glass: 'DA - Digital Click - 1.mp3',
+    whoosh: 'DA - Whoosh - 1.mp3',
+    transform: 'KF - UI Click - 1.mp3',
+};
+const sfxCache = {};
+const sfxThrottle = {};
+function playSound(name, vol = 0.25) {
+    const now = Date.now();
+    if (sfxThrottle[name] && now - sfxThrottle[name] < 150) return;
+    sfxThrottle[name] = now;
+    try {
+        if (!sfxCache[name]) sfxCache[name] = new Audio(SFX_BASE + SFX[name]);
+        const a = sfxCache[name].cloneNode();
+        a.volume = vol;
+        a.play().catch(() => {});
+    } catch(e) {}
+}
+
+// ===== Chemical Database =====
+const CHEM = [
+    // Acids
+    { id:'HCl', formula:'HCl', kr:'염산', en:'Hydrochloric Acid', color:[200,230,50], density:1.19, pH:1, meltPt:-27, boilPt:48, flammable:false, state25C:'liquid', cat:'acid', hazard:'corrosive' },
+    { id:'H2SO4', formula:'H₂SO₄', kr:'황산', en:'Sulfuric Acid', color:[220,220,180], density:1.84, pH:0.3, meltPt:10, boilPt:337, flammable:false, state25C:'liquid', cat:'acid', hazard:'corrosive' },
+    { id:'HNO3', formula:'HNO₃', kr:'질산', en:'Nitric Acid', color:[255,255,200], density:1.51, pH:1, meltPt:-42, boilPt:83, flammable:false, state25C:'liquid', cat:'acid', hazard:'corrosive' },
+    { id:'CH3COOH', formula:'CH₃COOH', kr:'식초(아세트산)', en:'Vinegar (Acetic)', color:[255,250,230], density:1.05, pH:2.4, meltPt:17, boilPt:118, flammable:true, state25C:'liquid', cat:'acid', hazard:'irritant' },
+    { id:'H2CO3', formula:'H₂CO₃', kr:'탄산', en:'Carbonic Acid', color:[230,245,255], density:1.0, pH:3.6, meltPt:-2, boilPt:100, flammable:false, state25C:'liquid', cat:'acid', hazard:'none' },
+    { id:'H3PO4', formula:'H₃PO₄', kr:'인산', en:'Phosphoric Acid', color:[240,240,220], density:1.88, pH:1.5, meltPt:42, boilPt:158, flammable:false, state25C:'liquid', cat:'acid', hazard:'corrosive' },
+    // Bases
+    { id:'NaOH', formula:'NaOH', kr:'수산화나트륨', en:'Sodium Hydroxide', color:[245,245,255], density:2.13, pH:14, meltPt:318, boilPt:1388, flammable:false, state25C:'solid', cat:'base', hazard:'corrosive' },
+    { id:'KOH', formula:'KOH', kr:'수산화칼륨', en:'Potassium Hydroxide', color:[250,250,255], density:2.04, pH:13.5, meltPt:360, boilPt:1327, flammable:false, state25C:'solid', cat:'base', hazard:'corrosive' },
+    { id:'CaOH2', formula:'Ca(OH)₂', kr:'석회수', en:'Limewater', color:[255,255,250], density:2.21, pH:12.4, meltPt:580, boilPt:2850, flammable:false, state25C:'solid', cat:'base', hazard:'irritant' },
+    { id:'NH3aq', formula:'NH₃(aq)', kr:'암모니아수', en:'Ammonia Solution', color:[230,240,255], density:0.91, pH:11.6, meltPt:-33, boilPt:38, flammable:false, state25C:'liquid', cat:'base', hazard:'irritant' },
+    // Metals
+    { id:'Na', formula:'Na', kr:'나트륨', en:'Sodium', color:[200,200,210], density:0.97, pH:null, meltPt:98, boilPt:883, flammable:true, state25C:'solid', cat:'metal', hazard:'reactive' },
+    { id:'Mg', formula:'Mg', kr:'마그네슘', en:'Magnesium', color:[190,200,190], density:1.74, pH:null, meltPt:650, boilPt:1091, flammable:true, state25C:'solid', cat:'metal', hazard:'flammable' },
+    { id:'Zn', formula:'Zn', kr:'아연', en:'Zinc', color:[180,190,200], density:7.13, pH:null, meltPt:420, boilPt:907, flammable:false, state25C:'solid', cat:'metal', hazard:'none' },
+    { id:'Fe', formula:'Fe', kr:'철', en:'Iron', color:[160,160,165], density:7.87, pH:null, meltPt:1538, boilPt:2862, flammable:false, state25C:'solid', cat:'metal', hazard:'none' },
+    { id:'Cu', formula:'Cu', kr:'구리', en:'Copper', color:[184,115,51], density:8.96, pH:null, meltPt:1085, boilPt:2562, flammable:false, state25C:'solid', cat:'metal', hazard:'none' },
+    { id:'Al', formula:'Al', kr:'알루미늄', en:'Aluminum', color:[210,210,215], density:2.70, pH:null, meltPt:660, boilPt:2519, flammable:false, state25C:'solid', cat:'metal', hazard:'none' },
+    // Salts
+    { id:'NaCl', formula:'NaCl', kr:'소금', en:'Salt', color:[255,255,255], density:2.17, pH:7, meltPt:801, boilPt:1413, flammable:false, state25C:'solid', cat:'salt', hazard:'none' },
+    { id:'CuSO4', formula:'CuSO₄', kr:'황산구리', en:'Copper Sulfate', color:[30,120,220], density:3.60, pH:4, meltPt:110, boilPt:650, flammable:false, state25C:'solid', cat:'salt', hazard:'irritant' },
+    { id:'AgNO3', formula:'AgNO₃', kr:'질산은', en:'Silver Nitrate', color:[240,240,245], density:4.35, pH:5.5, meltPt:212, boilPt:440, flammable:false, state25C:'solid', cat:'salt', hazard:'corrosive' },
+    { id:'BaCl2', formula:'BaCl₂', kr:'염화바륨', en:'Barium Chloride', color:[250,250,250], density:3.86, pH:7, meltPt:963, boilPt:1560, flammable:false, state25C:'solid', cat:'salt', hazard:'toxic' },
+    { id:'NaHCO3', formula:'NaHCO₃', kr:'베이킹소다', en:'Baking Soda', color:[255,255,252], density:2.20, pH:8.3, meltPt:50, boilPt:851, flammable:false, state25C:'solid', cat:'salt', hazard:'none' },
+    { id:'KMnO4', formula:'KMnO₄', kr:'과망간산칼륨', en:'Potassium Permanganate', color:[80,0,120], density:2.70, pH:7, meltPt:240, boilPt:1000, flammable:false, state25C:'solid', cat:'salt', hazard:'oxidizer' },
+    // Liquids / Compounds
+    { id:'H2O', formula:'H₂O', kr:'물', en:'Water', color:[100,160,255], density:1.00, pH:7, meltPt:0, boilPt:100, flammable:false, state25C:'liquid', cat:'liquid', hazard:'none' },
+    { id:'H2O2', formula:'H₂O₂', kr:'과산화수소', en:'Hydrogen Peroxide', color:[180,210,255], density:1.45, pH:4.5, meltPt:-0.4, boilPt:150, flammable:false, state25C:'liquid', cat:'liquid', hazard:'oxidizer' },
+    { id:'C2H5OH', formula:'C₂H₅OH', kr:'에탄올', en:'Ethanol', color:[240,235,220], density:0.79, pH:7, meltPt:-114, boilPt:78, flammable:true, state25C:'liquid', cat:'liquid', hazard:'flammable' },
+    { id:'Phenol', formula:'C₆H₅OH(ind)', kr:'페놀프탈레인', en:'Phenolphthalein', color:[255,230,240], density:1.08, pH:null, meltPt:262, boilPt:1000, flammable:false, state25C:'liquid', cat:'liquid', hazard:'none' },
+    { id:'UniInd', formula:'Indicator', kr:'만능지시약', en:'Universal Indicator', color:[100,200,100], density:1.0, pH:null, meltPt:-50, boilPt:200, flammable:false, state25C:'liquid', cat:'liquid', hazard:'none' },
+    { id:'KI', formula:'KI', kr:'아이오딘화칼륨', en:'Potassium Iodide', color:[255,250,230], density:3.12, pH:7, meltPt:681, boilPt:1330, flammable:false, state25C:'solid', cat:'liquid', hazard:'none' },
+    { id:'FeCl3', formula:'FeCl₃', kr:'염화철(III)', en:'Iron(III) Chloride', color:[180,120,30], density:2.90, pH:2, meltPt:308, boilPt:316, flammable:false, state25C:'solid', cat:'liquid', hazard:'corrosive' },
+    { id:'Na2CO3', formula:'Na₂CO₃', kr:'탄산나트륨', en:'Sodium Carbonate', color:[255,255,255], density:2.54, pH:11.6, meltPt:851, boilPt:1600, flammable:false, state25C:'solid', cat:'liquid', hazard:'irritant' },
+    // Special
+    { id:'Sugar', formula:'C₁₂H₂₂O₁₁', kr:'설탕', en:'Sugar', color:[255,250,240], density:1.55, pH:7, meltPt:186, boilPt:1000, flammable:false, state25C:'solid', cat:'special', hazard:'none' },
+    { id:'Yeast', formula:'Yeast', kr:'이스트(촉매)', en:'Yeast (Catalyst)', color:[210,190,140], density:1.1, pH:5, meltPt:1000, boilPt:1000, flammable:false, state25C:'solid', cat:'special', hazard:'none' },
+    { id:'Soap', formula:'Soap', kr:'비누액', en:'Liquid Soap', color:[200,230,255], density:1.05, pH:9, meltPt:-10, boilPt:200, flammable:false, state25C:'liquid', cat:'special', hazard:'none' },
+    { id:'DryIce', formula:'CO₂(s)', kr:'드라이아이스', en:'Dry Ice', color:[220,240,255], density:1.56, pH:null, meltPt:-78, boilPt:-78, flammable:false, state25C:'solid', cat:'special', hazard:'cold' },
+    { id:'Thermite', formula:'Fe₂O₃+Al', kr:'테르밋', en:'Thermite Mix', color:[160,80,40], density:4.0, pH:null, meltPt:1500, boilPt:3000, flammable:true, state25C:'solid', cat:'special', hazard:'extreme' },
+];
+const chemById = {};
+CHEM.forEach(c => chemById[c.id] = c);
+
+// ===== Reaction Rules =====
+const REACTIONS = [
+    // Na + H2O -> NaOH + H2 (EXPLOSIVE!)
+    { reactants:['Na','H2O'], conditions:{}, products:['NaOH','H2_gas'],
+      effects:{ heat:800, gas:'H2', explosion:true, fire:true },
+      kr:'Na + H₂O → NaOH + H₂↑ (폭발!)', en:'Na + H₂O → NaOH + H₂↑ (Explosion!)' },
+    // Elephant Toothpaste: H2O2 + Yeast + Soap -> foam
+    { reactants:['H2O2','Yeast','Soap'], conditions:{}, products:['H2O','O2_gas'],
+      effects:{ heat:30, foam:true, gas:'O2' },
+      kr:'H₂O₂ + 촉매 → H₂O + O₂↑ (코끼리 치약!)', en:'H₂O₂ + catalyst → H₂O + O₂↑ (Elephant Toothpaste!)' },
+    // Volcano: NaHCO3 + CH3COOH -> NaCH3COO + H2O + CO2
+    { reactants:['NaHCO3','CH3COOH'], conditions:{}, products:['NaCl','H2O'],
+      effects:{ heat:5, gas:'CO2', foam:true },
+      kr:'NaHCO₃ + CH₃COOH → CO₂↑ (화산!)', en:'NaHCO₃ + CH₃COOH → CO₂↑ (Volcano!)' },
+    // Thermite: Fe2O3+Al -> Fe + Al2O3 (needs 1500C)
+    { reactants:['Thermite'], conditions:{minTemp:800}, products:['Fe'],
+      effects:{ heat:2500, fire:true, explosion:false, color:[255,200,50] },
+      kr:'Fe₂O₃ + 2Al → 2Fe + Al₂O₃ (테르밋 2500°C!)', en:'Fe₂O₃ + 2Al → 2Fe + Al₂O₃ (Thermite 2500°C!)' },
+    // Mg combustion
+    { reactants:['Mg'], conditions:{minTemp:450}, products:[],
+      effects:{ heat:1200, fire:true, color:[255,255,240], bloom:true },
+      kr:'2Mg + O₂ → 2MgO (눈부신 백색 불꽃!)', en:'2Mg + O₂ → 2MgO (Brilliant white flame!)' },
+    // Acid + Base neutralization: HCl + NaOH
+    { reactants:['HCl','NaOH'], conditions:{}, products:['NaCl','H2O'],
+      effects:{ heat:60, color:[200,220,255] },
+      kr:'HCl + NaOH → NaCl + H₂O (중화)', en:'HCl + NaOH → NaCl + H₂O (Neutralization)' },
+    // AgNO3 + NaCl -> AgCl precipitate (white)
+    { reactants:['AgNO3','NaCl'], conditions:{}, products:['AgCl_ppt'],
+      effects:{ precipitate:[255,255,255] },
+      kr:'AgNO₃ + NaCl → AgCl↓ (흰색 침전)', en:'AgNO₃ + NaCl → AgCl↓ (White precipitate)' },
+    // CuSO4 + NaOH -> Cu(OH)2 precipitate (blue)
+    { reactants:['CuSO4','NaOH'], conditions:{}, products:['CuOH2_ppt'],
+      effects:{ precipitate:[30,100,220] },
+      kr:'CuSO₄ + 2NaOH → Cu(OH)₂↓ (파란 침전)', en:'CuSO₄ + 2NaOH → Cu(OH)₂↓ (Blue precipitate)' },
+    // BaCl2 + H2SO4 -> BaSO4 precipitate (white)
+    { reactants:['BaCl2','H2SO4'], conditions:{}, products:['BaSO4_ppt'],
+      effects:{ precipitate:[255,255,250] },
+      kr:'BaCl₂ + H₂SO₄ → BaSO₄↓ (흰색 침전)', en:'BaCl₂ + H₂SO₄ → BaSO₄↓ (White precipitate)' },
+    // Phenolphthalein + NaOH -> pink
+    { reactants:['Phenol','NaOH'], conditions:{}, products:[],
+      effects:{ color:[255,50,150] },
+      kr:'페놀프탈레인 + NaOH → 분홍색', en:'Phenolphthalein + NaOH → Pink' },
+    // Universal Indicator + acid -> red
+    { reactants:['UniInd','HCl'], conditions:{}, products:[],
+      effects:{ color:[255,50,50] },
+      kr:'만능지시약 + 산 → 빨간색', en:'Indicator + Acid → Red' },
+    // Universal Indicator + base -> blue/purple
+    { reactants:['UniInd','NaOH'], conditions:{}, products:[],
+      effects:{ color:[80,50,200] },
+      kr:'만능지시약 + 염기 → 보라색', en:'Indicator + Base → Purple' },
+    // Zn + HCl -> ZnCl2 + H2
+    { reactants:['Zn','HCl'], conditions:{}, products:['H2O'],
+      effects:{ heat:20, gas:'H2' },
+      kr:'Zn + 2HCl → ZnCl₂ + H₂↑', en:'Zn + 2HCl → ZnCl₂ + H₂↑' },
+    // Fe + HCl -> FeCl2 + H2
+    { reactants:['Fe','HCl'], conditions:{}, products:['H2O'],
+      effects:{ heat:15, gas:'H2' },
+      kr:'Fe + 2HCl → FeCl₂ + H₂↑', en:'Fe + 2HCl → FeCl₂ + H₂↑' },
+    // Ethanol combustion
+    { reactants:['C2H5OH'], conditions:{minTemp:350}, products:['H2O'],
+      effects:{ heat:400, fire:true, gas:'CO2' },
+      kr:'C₂H₅OH + 3O₂ → 2CO₂ + 3H₂O (연소)', en:'C₂H₅OH + 3O₂ → 2CO₂ + 3H₂O (Combustion)' },
+    // DryIce sublimation
+    { reactants:['DryIce'], conditions:{minTemp:-60}, products:[],
+      effects:{ gas:'CO2', color:[200,220,255] },
+      kr:'CO₂(s) → CO₂(g) (승화)', en:'CO₂(s) → CO₂(g) (Sublimation)' },
+    // H2O2 + KMnO4 -> purple fizz
+    { reactants:['H2O2','KMnO4'], conditions:{}, products:['H2O'],
+      effects:{ heat:50, gas:'O2', color:[120,0,160], foam:false },
+      kr:'H₂O₂ + KMnO₄ → O₂↑ (발열+보라)', en:'H₂O₂ + KMnO₄ → O₂↑ (Exothermic+Purple)' },
+    // Sugar dehydration with H2SO4
+    { reactants:['Sugar','H2SO4'], conditions:{}, products:[],
+      effects:{ heat:200, gas:'H2O_steam', foam:true, color:[40,30,20] },
+      kr:'C₁₂H₂₂O₁₁ + H₂SO₄ → 12C + 11H₂O (탄소 기둥!)', en:'Sugar + H₂SO₄ → Carbon + H₂O (Carbon Tower!)' },
+];
+
+// ===== Mission System =====
+// ===== 7-Level Mission System (140 missions) =====
+const LEVEL_NAMES = [
+    { kr:'견습 연구원', en:'Apprentice', emoji:'🔰', color:'#10b981' },
+    { kr:'초급 실험자', en:'Junior Chemist', emoji:'🧪', color:'#06b6d4' },
+    { kr:'중급 화학자', en:'Chemist', emoji:'⚗️', color:'#3b82f6' },
+    { kr:'고급 연구원', en:'Senior Researcher', emoji:'🔬', color:'#8b5cf6' },
+    { kr:'전문 과학자', en:'Scientist', emoji:'🧬', color:'#ec4899' },
+    { kr:'마스터 케미스트', en:'Master Chemist', emoji:'👨‍🔬', color:'#f59e0b' },
+    { kr:'전설의 연금술사', en:'Legendary Alchemist', emoji:'🌟', color:'#ef4444' },
+];
+
+// Helper: check reaction log
+const rl = (keyword) => () => reactionLog.some(r => r.includes(keyword));
+const rlAny = (...kw) => () => reactionLog.some(r => kw.some(k => r.includes(k)));
+const rlCount = (keyword, n) => () => reactionLog.filter(r => r.includes(keyword)).length >= n;
+const hasTemp = (chemId, temp) => () => workbench.some(e => e.contents.some(s => s.chemId === chemId && s.temperature >= temp));
+const hasChem = (chemId) => () => workbench.some(e => e.contents.some(s => s.chemId === chemId && s.amount > 0));
+const hasEquip = (type) => () => workbench.some(e => e.type === type);
+const hasContents = (n) => () => workbench.some(e => e.contents.length >= n);
+const hasCrystal = () => () => workbench.some(e => e.crystals && e.crystals.length > 0);
+const hasPrecip = () => () => workbench.some(e => e.precipitateParticles.length > 0);
+const hasMelted = () => () => workbench.some(e => e.melted);
+const hasCracked = () => () => workbench.some(e => e.cracked);
+const hasSealed = () => () => workbench.some(e => e.sealed);
+const hasLit = () => () => workbench.some(e => e.lit);
+const equipCount = (n) => () => workbench.length >= n;
+const scoreAbove = (n) => () => score >= n;
+const tempAbove = (t) => () => workbench.some(e => e.temperature >= t);
+const foamAbove = (n) => () => workbench.some(e => e.foamLevel >= n);
+
+const MISSIONS = [
+  // ===== Level 1: 견습 연구원 (Apprentice) - 기초 장비 사용 =====
+  { id:'L1_01', lv:1, kr:'비커 놓기', en:'Place a Beaker', hint_kr:'장비 선반에서 비커를 선택해 워크벤치에 놓으세요', hint_en:'Select beaker from shelf and place on workbench', pts:5, emoji:'🧪', recipe_kr:'장비→비커→캔버스 클릭', recipe_en:'Equipment→Beaker→Click canvas', check: hasEquip('beaker') },
+  { id:'L1_02', lv:1, kr:'물 넣기', en:'Add Water', hint_kr:'시약 선반에서 H₂O를 선택하고 비커를 클릭', hint_en:'Select H₂O from reagents, click beaker', pts:5, emoji:'💧', recipe_kr:'시약→H₂O→붓기모드→비커 클릭', recipe_en:'Reagent→H₂O→Pour mode→Click beaker', check: hasChem('H2O') },
+  { id:'L1_03', lv:1, kr:'알코올램프 놓기', en:'Place Alcohol Lamp', hint_kr:'열원 카테고리에서 알코올램프를 놓으세요', hint_en:'Place alcohol lamp from heat sources', pts:5, emoji:'🕯️', recipe_kr:'장비→알코올램프→비커 아래에 배치', recipe_en:'Equipment→Alcohol Lamp→Place below beaker', check: hasEquip('alcohollamp') },
+  { id:'L1_04', lv:1, kr:'불 켜기', en:'Light the Flame', hint_kr:'점화(I) 버튼을 누르세요', hint_en:'Press Ignite (I) button', pts:5, emoji:'🔥', recipe_kr:'도구바→🔥점화(I키) 또는 램프 선택→점화', recipe_en:'Toolbar→🔥Ignite(I key) or select lamp→ignite', check: hasLit() },
+  { id:'L1_05', lv:1, kr:'삼발이 세우기', en:'Set Up Tripod', hint_kr:'삼발이를 램프 위에 놓으세요', hint_en:'Place tripod above the lamp', pts:5, emoji:'🔺', recipe_kr:'장비→삼발이→불꽃 바로 위에 배치', recipe_en:'Equipment→Tripod→Place right above flame', check: hasEquip('tripod') },
+  { id:'L1_06', lv:1, kr:'물 끓이기', en:'Boil Water', hint_kr:'비커에 물을 넣고 가열하세요 (100°C)', hint_en:'Heat water in beaker to 100°C', pts:10, emoji:'♨️', recipe_kr:'비커(물)+삼발이+알코올램프 점화→100°C까지 대기', recipe_en:'Beaker(water)+Tripod+Lamp lit→Wait to 100°C', check: hasTemp('H2O', 100) },
+  { id:'L1_07', lv:1, kr:'시험관 사용', en:'Use Test Tube', hint_kr:'시험관을 놓고 시약을 넣으세요', hint_en:'Place test tube and add a reagent', pts:5, emoji:'🧫', recipe_kr:'장비→시험관→시약 아무거나 추가', recipe_en:'Equipment→Test tube→Add any reagent', check: hasEquip('testtube') },
+  { id:'L1_08', lv:1, kr:'2가지 시약 혼합', en:'Mix Two Reagents', hint_kr:'하나의 용기에 2가지 시약을 넣으세요', hint_en:'Add two different reagents to one container', pts:10, emoji:'🔀', recipe_kr:'용기 선택→붓기모드→시약A 추가→시약B 추가', recipe_en:'Select container→Pour mode→Add reagent A→Add reagent B', check: hasContents(2) },
+  { id:'L1_09', lv:1, kr:'온도계 사용', en:'Use Thermometer', hint_kr:'온도계를 놓아서 온도를 확인하세요', hint_en:'Place thermometer to check temperature', pts:5, emoji:'🌡️', recipe_kr:'장비→온도계→캔버스에 배치', recipe_en:'Equipment→Thermometer→Place on canvas', check: hasEquip('thermometer') },
+  { id:'L1_10', lv:1, kr:'pH 측정', en:'Measure pH', hint_kr:'pH 시험지로 용액의 산성도를 확인', hint_en:'Use pH strip to check acidity', pts:5, emoji:'🎨', recipe_kr:'장비→pH시험지→용기 클릭', recipe_en:'Equipment→pH strip→Click container', check: hasEquip('phstrip') },
+  { id:'L1_11', lv:1, kr:'분젠버너 사용', en:'Use Bunsen Burner', hint_kr:'더 강력한 열원! 분젠버너를 사용해보세요', hint_en:'Try the powerful Bunsen burner!', pts:5, emoji:'🔥', recipe_kr:'장비→분젠버너→배치→점화', recipe_en:'Equipment→Bunsen→Place→Ignite', check: hasEquip('bunsen') },
+  { id:'L1_12', lv:1, kr:'물 50°C 가열', en:'Heat Water to 50°C', hint_kr:'물을 50°C까지 데우세요 (미지근하게)', hint_en:'Warm water to 50°C', pts:5, emoji:'🌡️', recipe_kr:'비커(물)+램프→50°C에서 불 끄기', recipe_en:'Beaker(water)+Lamp→Turn off at 50°C', check: hasTemp('H2O', 50) },
+  { id:'L1_13', lv:1, kr:'소금물 만들기', en:'Make Salt Water', hint_kr:'물에 소금(NaCl)을 넣으세요', hint_en:'Add salt (NaCl) to water', pts:5, emoji:'🧂', recipe_kr:'비커→H₂O 추가→NaCl 추가', recipe_en:'Beaker→Add H₂O→Add NaCl', check: () => workbench.some(e => e.contents.some(s => s.chemId==='H2O') && e.contents.some(s => s.chemId==='NaCl')) },
+  { id:'L1_14', lv:1, kr:'설탕물 만들기', en:'Make Sugar Water', hint_kr:'물에 설탕을 녹이세요', hint_en:'Dissolve sugar in water', pts:5, emoji:'🍬', recipe_kr:'비커→H₂O→설탕(Sugar) 추가', recipe_en:'Beaker→H₂O→Add Sugar', check: () => workbench.some(e => e.contents.some(s => s.chemId==='H2O') && e.contents.some(s => s.chemId==='Sugar')) },
+  { id:'L1_15', lv:1, kr:'장비 3개 배치', en:'Place 3 Equipment', hint_kr:'워크벤치에 장비를 3개 이상 놓으세요', hint_en:'Place at least 3 equipment on workbench', pts:5, emoji:'🔧', recipe_kr:'아무 장비 3개 배치', recipe_en:'Place any 3 equipment', check: equipCount(3) },
+  { id:'L1_16', lv:1, kr:'장비 5개 배치', en:'Place 5 Equipment', hint_kr:'본격적인 실험 세팅!', hint_en:'A proper lab setup!', pts:10, emoji:'⚙️', recipe_kr:'아무 장비 5개 배치', recipe_en:'Place any 5 equipment', check: equipCount(5) },
+  { id:'L1_17', lv:1, kr:'식초 넣기', en:'Add Vinegar', hint_kr:'아세트산(식초)을 용기에 넣으세요', hint_en:'Add acetic acid (vinegar) to a container', pts:5, emoji:'🍶', recipe_kr:'시약→CH₃COOH→용기에 붓기', recipe_en:'Reagent→CH₃COOH→Pour into container', check: hasChem('CH3COOH') },
+  { id:'L1_18', lv:1, kr:'베이킹소다 넣기', en:'Add Baking Soda', hint_kr:'NaHCO₃를 용기에 넣으세요', hint_en:'Add NaHCO₃ to a container', pts:5, emoji:'📦', recipe_kr:'시약→NaHCO₃→용기에 붓기', recipe_en:'Reagent→NaHCO₃→Pour into container', check: hasChem('NaHCO3') },
+  { id:'L1_19', lv:1, kr:'밀폐하기', en:'Seal a Container', hint_kr:'용기를 선택하고 밀폐(S) 버튼을 누르세요', hint_en:'Select container and press Seal (S)', pts:5, emoji:'🔒', recipe_kr:'용기 클릭→도구바 🔒밀폐(S키)', recipe_en:'Click container→Toolbar 🔒Seal(S key)', check: hasSealed() },
+  { id:'L1_20', lv:1, kr:'스포이트 사용', en:'Use Dropper', hint_kr:'스포이트를 놓아보세요', hint_en:'Place a dropper', pts:5, emoji:'💧', recipe_kr:'장비→스포이트→배치', recipe_en:'Equipment→Dropper→Place', check: hasEquip('dropper') },
+
+  // ===== Level 2: 초급 실험자 (Junior Chemist) - 기본 반응 =====
+  { id:'L2_01', lv:2, kr:'화산 만들기!', en:'Make a Volcano!', hint_kr:'베이킹소다 + 식초 = 거품 분출!', hint_en:'Baking soda + Vinegar = Foam eruption!', pts:15, emoji:'🌋', recipe_kr:'비커→NaHCO₃ + CH₃COOH 동시 투입', recipe_en:'Beaker→Add NaHCO₃ + CH₃COOH together', check: rlAny('화산','Volcano') },
+  { id:'L2_02', lv:2, kr:'소금 만들기', en:'Make Salt', hint_kr:'HCl + NaOH → NaCl + H₂O', hint_en:'HCl + NaOH → NaCl + H₂O', pts:15, emoji:'🧂', recipe_kr:'비커→HCl 추가→NaOH 추가 (중화반응)', recipe_en:'Beaker→Add HCl→Add NaOH (neutralization)', check: rlAny('NaCl','중화','Neutralization') },
+  { id:'L2_03', lv:2, kr:'산+염기 중화', en:'Acid-Base Neutralization', hint_kr:'아무 산과 아무 염기를 섞어보세요', hint_en:'Mix any acid with any base', pts:15, emoji:'⚖️', recipe_kr:'용기→산(HCl,H₂SO₄ 등) + 염기(NaOH,KOH 등)', recipe_en:'Container→Acid + Base', check: rlAny('중화','Neutralization') },
+  { id:'L2_04', lv:2, kr:'수소 기체 발생', en:'Generate Hydrogen Gas', hint_kr:'금속 + 산 → 수소 기체 발생!', hint_en:'Metal + Acid → Hydrogen gas!', pts:15, emoji:'💨', recipe_kr:'비커→Zn(아연) + HCl(염산)', recipe_en:'Beaker→Zn + HCl', check: rlAny('H₂↑','H₂') },
+  { id:'L2_05', lv:2, kr:'Fe + 산 반응', en:'Iron + Acid', hint_kr:'철에 염산을 부으면?', hint_en:'Pour acid on iron?', pts:15, emoji:'⚒️', recipe_kr:'비커→Fe + HCl', recipe_en:'Beaker→Fe + HCl', check: rlAny('FeCl','Fe + 2HCl') },
+  { id:'L2_06', lv:2, kr:'페놀프탈레인 분홍', en:'Pink Phenolphthalein', hint_kr:'페놀프탈레인 + 염기 = 분홍색!', hint_en:'Phenolphthalein + base = pink!', pts:15, emoji:'💗', recipe_kr:'비커→페놀프탈레인 + NaOH', recipe_en:'Beaker→Phenolphthalein + NaOH', check: rlAny('분홍','Pink') },
+  { id:'L2_07', lv:2, kr:'지시약 + 산', en:'Indicator + Acid', hint_kr:'만능지시약에 산을 넣으면 빨간색!', hint_en:'Universal indicator + acid = red!', pts:15, emoji:'🔴', recipe_kr:'비커→만능지시약 + HCl', recipe_en:'Beaker→Universal Indicator + HCl', check: rlAny('빨간','Red','지시약','Indicator') },
+  { id:'L2_08', lv:2, kr:'지시약 + 염기', en:'Indicator + Base', hint_kr:'만능지시약에 염기를 넣으면 보라색!', hint_en:'Universal indicator + base = purple!', pts:15, emoji:'🟣', recipe_kr:'비커→만능지시약 + NaOH', recipe_en:'Beaker→Universal Indicator + NaOH', check: rlCount('지시약', 2) || rlCount('Indicator', 2) },
+  { id:'L2_09', lv:2, kr:'에탄올 추가', en:'Add Ethanol', hint_kr:'에탄올을 용기에 넣어보세요', hint_en:'Add ethanol to a container', pts:10, emoji:'🍷', recipe_kr:'비커→C₂H₅OH 추가', recipe_en:'Beaker→Add C₂H₅OH', check: hasChem('C2H5OH') },
+  { id:'L2_10', lv:2, kr:'100°C 넘기기', en:'Exceed 100°C', hint_kr:'장비 온도를 100°C 이상으로', hint_en:'Heat equipment above 100°C', pts:10, emoji:'🔥', recipe_kr:'아무 용기+열원→가열', recipe_en:'Any container+heat source→heat', check: tempAbove(100) },
+  { id:'L2_11', lv:2, kr:'CuSO₄ 용액', en:'CuSO₄ Solution', hint_kr:'파란 황산구리 용액을 만드세요', hint_en:'Make blue copper sulfate solution', pts:10, emoji:'🔵', recipe_kr:'비커→H₂O + CuSO₄', recipe_en:'Beaker→H₂O + CuSO₄', check: () => workbench.some(e => e.contents.some(s=>s.chemId==='CuSO4') && e.contents.some(s=>s.chemId==='H2O')) },
+  { id:'L2_12', lv:2, kr:'KMnO₄ 용액', en:'KMnO₄ Solution', hint_kr:'보라색 과망간산칼륨 용액!', hint_en:'Purple potassium permanganate solution!', pts:10, emoji:'🟣', recipe_kr:'비커→H₂O + KMnO₄', recipe_en:'Beaker→H₂O + KMnO₄', check: hasChem('KMnO4') },
+  { id:'L2_13', lv:2, kr:'드라이아이스 승화', en:'Dry Ice Sublimation', hint_kr:'드라이아이스를 넣으면 연기가!', hint_en:'Dry ice creates smoke!', pts:15, emoji:'🧊', recipe_kr:'비커→DryIce→가열 또는 대기', recipe_en:'Beaker→DryIce→Heat or wait', check: rlAny('승화','Sublimation') },
+  { id:'L2_14', lv:2, kr:'비눗물 만들기', en:'Make Soapy Water', hint_kr:'물에 비누액을 넣으세요', hint_en:'Add liquid soap to water', pts:10, emoji:'🫧', recipe_kr:'비커→H₂O + Soap', recipe_en:'Beaker→H₂O + Soap', check: () => workbench.some(e => e.contents.some(s=>s.chemId==='Soap') && e.contents.some(s=>s.chemId==='H2O')) },
+  { id:'L2_15', lv:2, kr:'암모니아수 사용', en:'Use Ammonia', hint_kr:'암모니아수를 넣어보세요 (주의: 자극성!)', hint_en:'Add ammonia solution (caution: irritant!)', pts:10, emoji:'⚠️', recipe_kr:'비커→NH₃(aq)', recipe_en:'Beaker→NH₃(aq)', check: hasChem('NH3aq') },
+  { id:'L2_16', lv:2, kr:'인산 사용', en:'Use Phosphoric Acid', hint_kr:'H₃PO₄를 용기에 넣으세요', hint_en:'Add H₃PO₄ to a container', pts:10, emoji:'🧪', recipe_kr:'비커→H₃PO₄', recipe_en:'Beaker→H₃PO₄', check: hasChem('H3PO4') },
+  { id:'L2_17', lv:2, kr:'석회수 만들기', en:'Make Limewater', hint_kr:'Ca(OH)₂ 용액을 만들어보세요', hint_en:'Make Ca(OH)₂ solution', pts:10, emoji:'🥛', recipe_kr:'비커→H₂O + Ca(OH)₂', recipe_en:'Beaker→H₂O + Ca(OH)₂', check: hasChem('CaOH2') },
+  { id:'L2_18', lv:2, kr:'200°C 도달', en:'Reach 200°C', hint_kr:'장비를 200°C까지 가열', hint_en:'Heat equipment to 200°C', pts:10, emoji:'🌡️', recipe_kr:'분젠버너로 강하게 가열', recipe_en:'Heat strongly with Bunsen burner', check: tempAbove(200) },
+  { id:'L2_19', lv:2, kr:'3가지 시약 혼합', en:'Mix 3 Reagents', hint_kr:'하나의 용기에 3가지를 넣어보세요', hint_en:'Add 3 different reagents to one container', pts:15, emoji:'🔬', recipe_kr:'용기→3종류 시약 순서대로 추가', recipe_en:'Container→Add 3 reagents sequentially', check: () => workbench.some(e => e.contents.length >= 3) },
+  { id:'L2_20', lv:2, kr:'첫 50점!', en:'Score 50!', hint_kr:'총 점수 50점을 달성하세요', hint_en:'Reach a total score of 50', pts:10, emoji:'⭐', recipe_kr:'미션을 계속 완료하세요!', recipe_en:'Keep completing missions!', check: scoreAbove(50) },
+
+  // ===== Level 3: 중급 화학자 (Chemist) - 색변화 & 침전 =====
+  { id:'L3_01', lv:3, kr:'pH 무지개', en:'pH Rainbow', hint_kr:'만능지시약으로 산/염기 2번 이상 테스트', hint_en:'Test indicator with acid AND base', pts:20, emoji:'🌈', recipe_kr:'비커1→지시약+HCl(빨강), 비커2→지시약+NaOH(보라)', recipe_en:'Beaker1→Indicator+HCl(red), Beaker2→Indicator+NaOH(purple)', check: () => reactionLog.filter(r => r.includes('지시약')||r.includes('Indicator')).length >= 2 },
+  { id:'L3_02', lv:3, kr:'AgCl 흰색 침전', en:'AgCl White Precipitate', hint_kr:'AgNO₃ + NaCl → 흰색 침전물!', hint_en:'AgNO₃ + NaCl → white precipitate!', pts:20, emoji:'🌨️', recipe_kr:'비커→AgNO₃ + NaCl (흰색 눈 효과!)', recipe_en:'Beaker→AgNO₃ + NaCl (white snow effect!)', check: rlAny('AgCl','흰색 침전','White precipitate') },
+  { id:'L3_03', lv:3, kr:'Cu(OH)₂ 파란 침전', en:'Blue Precipitate', hint_kr:'CuSO₄ + NaOH → 파란 침전물!', hint_en:'CuSO₄ + NaOH → blue precipitate!', pts:20, emoji:'💙', recipe_kr:'비커→CuSO₄ + NaOH', recipe_en:'Beaker→CuSO₄ + NaOH', check: rlAny('Cu(OH)','파란 침전','Blue precipitate') },
+  { id:'L3_04', lv:3, kr:'BaSO₄ 침전', en:'BaSO₄ Precipitate', hint_kr:'BaCl₂ + H₂SO₄ → 백색 침전!', hint_en:'BaCl₂ + H₂SO₄ → white precipitate!', pts:20, emoji:'⬜', recipe_kr:'비커→BaCl₂ + H₂SO₄', recipe_en:'Beaker→BaCl₂ + H₂SO₄', check: rlAny('BaSO₄','BaSO4') },
+  { id:'L3_05', lv:3, kr:'H₂O₂ + KMnO₄', en:'Peroxide + Permanganate', hint_kr:'과산화수소 + 과망간산칼륨 = 보라색 발열!', hint_en:'Hydrogen peroxide + permanganate = purple fizz!', pts:20, emoji:'🟣', recipe_kr:'비커→H₂O₂ + KMnO₄', recipe_en:'Beaker→H₂O₂ + KMnO₄', check: rlAny('KMnO₄','보라') },
+  { id:'L3_06', lv:3, kr:'코끼리 치약!', en:'Elephant Toothpaste!', hint_kr:'H₂O₂ + 이스트 + 비누 = 거품 폭발!', hint_en:'H₂O₂ + Yeast + Soap = foam explosion!', pts:25, emoji:'🐘', recipe_kr:'삼각플라스크→H₂O₂ + Yeast + Soap (순서대로)', recipe_en:'Erlenmeyer→H₂O₂ + Yeast + Soap (in order)', check: rlAny('코끼리','Elephant') },
+  { id:'L3_07', lv:3, kr:'에탄올 증발', en:'Evaporate Ethanol', hint_kr:'에탄올을 78°C 이상으로 가열', hint_en:'Heat ethanol above 78°C', pts:15, emoji:'💨', recipe_kr:'비커→C₂H₅OH→가열 78°C 이상', recipe_en:'Beaker→C₂H₅OH→Heat above 78°C', check: hasTemp('C2H5OH', 78) },
+  { id:'L3_08', lv:3, kr:'유리 균열!', en:'Crack the Glass!', hint_kr:'유리 장비를 600°C 이상으로 가열', hint_en:'Heat glass equipment above 600°C', pts:20, emoji:'💔', recipe_kr:'비커+분젠버너→장시간 가열 (600°C)', recipe_en:'Beaker+Bunsen→Heat for long (600°C)', check: hasCracked() },
+  { id:'L3_09', lv:3, kr:'불꽃 세기 조절', en:'Adjust Flame', hint_kr:'불꽃 강도를 90% 이상으로 올리세요', hint_en:'Set flame intensity above 90%', pts:10, emoji:'🎚️', recipe_kr:'하단 슬라이더→90% 이상', recipe_en:'Bottom slider→Above 90%', check: () => workbench.some(e => e.lit && e.flameIntensity >= 90) },
+  { id:'L3_10', lv:3, kr:'밀폐 후 가열', en:'Heat Sealed Container', hint_kr:'밀폐된 용기를 가열하면 압력이!', hint_en:'Heat a sealed container - pressure builds!', pts:20, emoji:'💣', recipe_kr:'비커(물)→밀폐(S)→가열→거품 관찰', recipe_en:'Beaker(water)→Seal(S)→Heat→Watch pressure', check: () => workbench.some(e => e.sealed && e.pressure > 20) },
+  { id:'L3_11', lv:3, kr:'3가지 침전물', en:'3 Precipitates', hint_kr:'서로 다른 침전 반응 3개를 완성', hint_en:'Complete 3 different precipitation reactions', pts:25, emoji:'🌨️', recipe_kr:'AgCl + Cu(OH)₂ + BaSO₄ 모두 만들기', recipe_en:'Make all: AgCl + Cu(OH)₂ + BaSO₄', check: () => reactionLog.filter(r => r.includes('침전')||r.includes('precipitate')).length >= 3 },
+  { id:'L3_12', lv:3, kr:'탄산 거품', en:'Carbonic Bubbles', hint_kr:'탄산(H₂CO₃)을 가열하면 CO₂ 발생', hint_en:'Heat H₂CO₃ to release CO₂', pts:15, emoji:'🫧', recipe_kr:'비커→H₂CO₃→가열', recipe_en:'Beaker→H₂CO₃→Heat', check: hasTemp('H2CO3', 60) },
+  { id:'L3_13', lv:3, kr:'질산은 사용', en:'Use Silver Nitrate', hint_kr:'AgNO₃ - 위험하지만 유용한 시약', hint_en:'AgNO₃ - dangerous but useful reagent', pts:10, emoji:'🪙', recipe_kr:'비커→AgNO₃ 추가', recipe_en:'Beaker→Add AgNO₃', check: hasChem('AgNO3') },
+  { id:'L3_14', lv:3, kr:'염화바륨 사용', en:'Use Barium Chloride', hint_kr:'BaCl₂ - 독성 주의!', hint_en:'BaCl₂ - toxic, handle with care!', pts:10, emoji:'☠️', recipe_kr:'비커→BaCl₂ 추가', recipe_en:'Beaker→Add BaCl₂', check: hasChem('BaCl2') },
+  { id:'L3_15', lv:3, kr:'FeCl₃ 사용', en:'Use Iron Chloride', hint_kr:'갈색 염화철(III)을 넣어보세요', hint_en:'Add brown iron(III) chloride', pts:10, emoji:'🟤', recipe_kr:'비커→FeCl₃', recipe_en:'Beaker→FeCl₃', check: hasChem('FeCl3') },
+  { id:'L3_16', lv:3, kr:'Na₂CO₃ 사용', en:'Use Sodium Carbonate', hint_kr:'탄산나트륨을 넣어보세요', hint_en:'Add sodium carbonate', pts:10, emoji:'🧹', recipe_kr:'비커→Na₂CO₃', recipe_en:'Beaker→Na₂CO₃', check: hasChem('Na2CO3') },
+  { id:'L3_17', lv:3, kr:'300°C 도달', en:'Reach 300°C', hint_kr:'분젠버너로 강하게!', hint_en:'Full power Bunsen burner!', pts:15, emoji:'🔥', recipe_kr:'분젠버너 100%→장시간 가열', recipe_en:'Bunsen 100%→Heat for long', check: tempAbove(300) },
+  { id:'L3_18', lv:3, kr:'거품 넘침', en:'Foam Overflow', hint_kr:'거품이 용기 위로 넘치게!', hint_en:'Make foam overflow the container!', pts:20, emoji:'🫧', recipe_kr:'코끼리치약 또는 화산 반응', recipe_en:'Elephant toothpaste or volcano reaction', check: foamAbove(30) },
+  { id:'L3_19', lv:3, kr:'5가지 반응', en:'5 Reactions', hint_kr:'서로 다른 반응 5개를 일으키세요', hint_en:'Trigger 5 different reactions', pts:20, emoji:'🔬', recipe_kr:'다양한 시약 조합을 시도!', recipe_en:'Try various reagent combinations!', check: () => reactionLog.length >= 5 },
+  { id:'L3_20', lv:3, kr:'점수 150!', en:'Score 150!', hint_kr:'점수 150점 달성', hint_en:'Reach score 150', pts:15, emoji:'⭐', recipe_kr:'미션을 계속 완료!', recipe_en:'Keep completing missions!', check: scoreAbove(150) },
+
+  // ===== Level 4: 고급 연구원 (Senior Researcher) - 위험한 반응 =====
+  { id:'L4_01', lv:4, kr:'Na를 물에!', en:'Sodium in Water!', hint_kr:'나트륨을 물에 넣으면... 💥', hint_en:'Drop sodium in water... 💥', pts:30, emoji:'💥', recipe_kr:'비커→H₂O + Na (폭발 주의!!)', recipe_en:'Beaker→H₂O + Na (EXPLOSION WARNING!!)', check: rlAny('Na','폭발','Explosion') },
+  { id:'L4_02', lv:4, kr:'Mg 연소', en:'Burn Magnesium', hint_kr:'마그네슘을 가열하면 눈부신 빛!', hint_en:'Heat magnesium - blinding light!', pts:30, emoji:'✨', recipe_kr:'시험관→Mg→분젠버너로 450°C 이상 가열', recipe_en:'Test tube→Mg→Heat above 450°C with Bunsen', check: rlAny('MgO','Mg','백색') },
+  { id:'L4_03', lv:3, kr:'에탄올 연소', en:'Burn Ethanol', hint_kr:'에탄올에 불을 붙이면?', hint_en:'Light ethanol on fire?', pts:25, emoji:'🔥', recipe_kr:'비커→C₂H₅OH→350°C 이상 가열', recipe_en:'Beaker→C₂H₅OH→Heat above 350°C', check: rlAny('연소','Combustion','C₂H₅OH') },
+  { id:'L4_04', lv:4, kr:'밀폐 폭발!', en:'Sealed Explosion!', hint_kr:'밀폐된 용기에서 가스를 발생시키면!', hint_en:'Generate gas in sealed container!', pts:30, emoji:'💣', recipe_kr:'비커→NaHCO₃+CH₃COOH→밀폐(S)→대기', recipe_en:'Beaker→NaHCO₃+CH₃COOH→Seal(S)→Wait', check: rlAny('밀폐','sealed') },
+  { id:'L4_05', lv:4, kr:'탄소 기둥!', en:'Carbon Tower!', hint_kr:'설탕 + 황산 = 검은 탄소 기둥!', hint_en:'Sugar + Sulfuric acid = black carbon tower!', pts:35, emoji:'🖤', recipe_kr:'비커→Sugar + H₂SO₄ (탈수 반응)', recipe_en:'Beaker→Sugar + H₂SO₄ (dehydration)', check: rlAny('탄소','Carbon') },
+  { id:'L4_06', lv:4, kr:'결정 키우기', en:'Grow Crystals', hint_kr:'CuSO₄ 용액을 천천히 냉각', hint_en:'Slowly cool CuSO₄ solution', pts:30, emoji:'💎', recipe_kr:'비커→H₂O+CuSO₄→가열→식히기 (30°C 이하)', recipe_en:'Beaker→H₂O+CuSO₄→Heat→Cool down (<30°C)', check: hasCrystal() },
+  { id:'L4_07', lv:4, kr:'10가지 반응', en:'10 Reactions', hint_kr:'서로 다른 반응 10개를 달성!', hint_en:'Trigger 10 different reactions!', pts:25, emoji:'🏆', recipe_kr:'다양한 조합을 시도하세요', recipe_en:'Try various combinations', check: () => reactionLog.length >= 10 },
+  { id:'L4_08', lv:4, kr:'500°C 도달', en:'Reach 500°C', hint_kr:'극한의 온도!', hint_en:'Extreme temperature!', pts:20, emoji:'🌋', recipe_kr:'분젠버너 100%로 장시간 가열', recipe_en:'Bunsen 100% for a long time', check: tempAbove(500) },
+  { id:'L4_09', lv:4, kr:'H₂O₂ 분해', en:'Decompose H₂O₂', hint_kr:'과산화수소를 촉매로 분해!', hint_en:'Decompose hydrogen peroxide with catalyst!', pts:20, emoji:'⚗️', recipe_kr:'비커→H₂O₂ + Yeast (촉매)', recipe_en:'Beaker→H₂O₂ + Yeast (catalyst)', check: () => workbench.some(e => e.contents.some(s=>s.chemId==='H2O2') && e.contents.some(s=>s.chemId==='Yeast')) },
+  { id:'L4_10', lv:4, kr:'알루미늄 + 산', en:'Aluminum + Acid', hint_kr:'Al + HCl 반응을 관찰하세요', hint_en:'Observe Al + HCl reaction', pts:15, emoji:'🪶', recipe_kr:'비커→Al + HCl', recipe_en:'Beaker→Al + HCl', check: () => workbench.some(e => e.contents.some(s=>s.chemId==='Al') && e.contents.some(s=>s.chemId==='HCl')) },
+  { id:'L4_11', lv:4, kr:'구리 + 질산', en:'Copper + Nitric Acid', hint_kr:'Cu + HNO₃ 반응을 관찰', hint_en:'Observe Cu + HNO₃ reaction', pts:15, emoji:'🟠', recipe_kr:'비커→Cu + HNO₃', recipe_en:'Beaker→Cu + HNO₃', check: () => workbench.some(e => e.contents.some(s=>s.chemId==='Cu') && e.contents.some(s=>s.chemId==='HNO3')) },
+  { id:'L4_12', lv:4, kr:'이스트 촉매 실험', en:'Yeast Catalyst Experiment', hint_kr:'이스트가 반응 속도를 어떻게 높이는지', hint_en:'How yeast speeds up reactions', pts:15, emoji:'🍞', recipe_kr:'비커→H₂O₂→이스트 추가→거품 관찰', recipe_en:'Beaker→H₂O₂→Add yeast→Watch bubbles', check: hasChem('Yeast') },
+  { id:'L4_13', lv:4, kr:'3종 금속 비교', en:'Compare 3 Metals', hint_kr:'Zn, Fe, Cu를 각각 산에 넣어 비교', hint_en:'Add Zn, Fe, Cu to acid and compare', pts:20, emoji:'🔩', recipe_kr:'비커3개→각각 Zn+HCl, Fe+HCl, Cu+HCl', recipe_en:'3 beakers→Zn+HCl, Fe+HCl, Cu+HCl', check: () => workbench.filter(e=>e.contents.length>=2).length >= 3 },
+  { id:'L4_14', lv:4, kr:'장비 8개 세팅', en:'8 Equipment Setup', hint_kr:'본격 실험실 세팅! 장비 8개 배치', hint_en:'Full lab setup! Place 8 equipment', pts:15, emoji:'🔧', recipe_kr:'다양한 장비 8개 배치', recipe_en:'Place 8 various equipment', check: equipCount(8) },
+  { id:'L4_15', lv:4, kr:'황산 사용', en:'Use Sulfuric Acid', hint_kr:'가장 위험한 산 H₂SO₄ 사용!', hint_en:'Use the most dangerous acid H₂SO₄!', pts:15, emoji:'☣️', recipe_kr:'비커→H₂SO₄ (부식성 주의!)', recipe_en:'Beaker→H₂SO₄ (Corrosive - careful!)', check: hasChem('H2SO4') },
+  { id:'L4_16', lv:4, kr:'질산 사용', en:'Use Nitric Acid', hint_kr:'HNO₃ - 산화력이 강한 산', hint_en:'HNO₃ - strong oxidizing acid', pts:15, emoji:'⚠️', recipe_kr:'비커→HNO₃', recipe_en:'Beaker→HNO₃', check: hasChem('HNO3') },
+  { id:'L4_17', lv:4, kr:'KI 사용', en:'Use Potassium Iodide', hint_kr:'아이오딘화칼륨을 넣어보세요', hint_en:'Add potassium iodide', pts:10, emoji:'🧪', recipe_kr:'비커→KI', recipe_en:'Beaker→KI', check: hasChem('KI') },
+  { id:'L4_18', lv:4, kr:'교반 실험', en:'Stirring Experiment', hint_kr:'교반(R)으로 반응을 촉진하세요', hint_en:'Use stir (R) to speed up reaction', pts:10, emoji:'🌀', recipe_kr:'용기 선택→도구바 🌀교반(R키)', recipe_en:'Select container→Toolbar 🌀Stir(R key)', check: () => workbench.some(e => Math.abs(e.sloshing) > 0.5) },
+  { id:'L4_19', lv:4, kr:'침전물 수집', en:'Collect Precipitate', hint_kr:'침전물이 바닥에 쌓이는 것을 관찰', hint_en:'Watch precipitate settle at bottom', pts:15, emoji:'⬇️', recipe_kr:'AgNO₃+NaCl 반응 후 침전 관찰', recipe_en:'AgNO₃+NaCl reaction→watch settling', check: hasPrecip() },
+  { id:'L4_20', lv:4, kr:'점수 350!', en:'Score 350!', hint_kr:'점수 350점 달성', hint_en:'Reach score 350', pts:20, emoji:'⭐', recipe_kr:'미션 계속 완료!', recipe_en:'Keep going!', check: scoreAbove(350) },
+
+  // ===== Level 5: 전문 과학자 (Scientist) - 복합 실험 =====
+  { id:'L5_01', lv:5, kr:'유리 파쇄!', en:'Shatter Glass!', hint_kr:'유리를 1000°C 이상으로!', hint_en:'Heat glass above 1000°C!', pts:35, emoji:'💔', recipe_kr:'비커+분젠버너 100%→장시간 가열→BOOM', recipe_en:'Beaker+Bunsen 100%→Long heat→BOOM', check: () => workbench.some(e => e.shattered) },
+  { id:'L5_02', lv:5, kr:'증류 실험', en:'Distillation', hint_kr:'에탄올+물 혼합물을 가열하여 분리', hint_en:'Heat ethanol+water mixture to separate', pts:30, emoji:'⚗️', recipe_kr:'둥근플라스크→C₂H₅OH+H₂O→가열(78°C에서 에탄올 먼저 끓음)', recipe_en:'Round flask→C₂H₅OH+H₂O→Heat(ethanol boils first at 78°C)', check: () => workbench.some(e => e.contents.some(s=>s.chemId==='C2H5OH'&&s.temperature>=78) && e.contents.some(s=>s.chemId==='H2O')) },
+  { id:'L5_03', lv:5, kr:'700°C 도달', en:'Reach 700°C', hint_kr:'용광로 수준의 온도!', hint_en:'Furnace-level temperature!', pts:25, emoji:'🔥', recipe_kr:'분젠버너 100% 장시간', recipe_en:'Bunsen 100% for very long', check: tempAbove(700) },
+  { id:'L5_04', lv:5, kr:'연쇄 반응', en:'Chain Reaction', hint_kr:'한 용기에서 반응 후 다른 용기에 부어 2차 반응', hint_en:'React in one container, pour into another for 2nd reaction', pts:30, emoji:'⛓️', recipe_kr:'비커1: HCl+NaOH→소금물 생성→비커2: AgNO₃에 부어 AgCl 침전', recipe_en:'Beaker1: HCl+NaOH→Salt water→Beaker2: Pour into AgNO₃→AgCl precipitate', check: () => reactionLog.length >= 8 },
+  { id:'L5_05', lv:5, kr:'5종 침전물', en:'5 Precipitates', hint_kr:'5가지 다른 침전 반응 달성', hint_en:'Achieve 5 different precipitation reactions', pts:35, emoji:'🌨️', recipe_kr:'AgCl, Cu(OH)₂, BaSO₄ + 추가 2종', recipe_en:'AgCl, Cu(OH)₂, BaSO₄ + 2 more', check: () => reactionLog.filter(r => r.includes('침전')||r.includes('precipitate')).length >= 5 },
+  { id:'L5_06', lv:5, kr:'모든 산 사용', en:'Use All Acids', hint_kr:'6가지 산을 모두 사용해보세요', hint_en:'Use all 6 acids', pts:30, emoji:'🧪', recipe_kr:'HCl, H₂SO₄, HNO₃, CH₃COOH, H₂CO₃, H₃PO₄ 모두', recipe_en:'HCl, H₂SO₄, HNO₃, CH₃COOH, H₂CO₃, H₃PO₄ all', check: () => ['HCl','H2SO4','HNO3','CH3COOH','H2CO3','H3PO4'].every(id => workbench.some(e=>e.contents.some(s=>s.chemId===id)) || reactionLog.some(r=>r.includes(id))) },
+  { id:'L5_07', lv:5, kr:'모든 염기 사용', en:'Use All Bases', hint_kr:'4가지 염기를 모두 사용', hint_en:'Use all 4 bases', pts:25, emoji:'🧫', recipe_kr:'NaOH, KOH, Ca(OH)₂, NH₃ 모두', recipe_en:'NaOH, KOH, Ca(OH)₂, NH₃ all', check: () => ['NaOH','KOH','CaOH2','NH3aq'].every(id => workbench.some(e=>e.contents.some(s=>s.chemId===id)) || reactionLog.some(r=>r.includes(id))) },
+  { id:'L5_08', lv:5, kr:'모든 금속 사용', en:'Use All Metals', hint_kr:'6가지 금속을 모두 사용', hint_en:'Use all 6 metals', pts:30, emoji:'🔩', recipe_kr:'Na, Mg, Zn, Fe, Cu, Al 모두', recipe_en:'Na, Mg, Zn, Fe, Cu, Al all', check: () => ['Na','Mg','Zn','Fe','Cu','Al'].every(id => workbench.some(e=>e.contents.some(s=>s.chemId===id)) || reactionLog.some(r=>r.includes(id))) },
+  { id:'L5_09', lv:5, kr:'15가지 반응', en:'15 Reactions', hint_kr:'15개 이상의 반응을 일으키세요', hint_en:'Trigger 15+ different reactions', pts:30, emoji:'🏅', recipe_kr:'새로운 조합을 계속 시도!', recipe_en:'Keep trying new combinations!', check: () => reactionLog.length >= 15 },
+  { id:'L5_10', lv:5, kr:'10개 결정', en:'10 Crystals', hint_kr:'결정이 10개 이상 자라게 하세요', hint_en:'Grow 10+ crystals', pts:30, emoji:'💎', recipe_kr:'CuSO₄+H₂O→가열→냉각→오래 기다림', recipe_en:'CuSO₄+H₂O→Heat→Cool→Wait long', check: () => workbench.some(e => e.crystals && e.crystals.length >= 10) },
+  { id:'L5_11', lv:5, kr:'장비 12개', en:'12 Equipment', hint_kr:'프로급 실험실 세팅!', hint_en:'Pro-level lab setup!', pts:20, emoji:'🔧', recipe_kr:'장비 12개 배치', recipe_en:'Place 12 equipment', check: equipCount(12) },
+  { id:'L5_12', lv:5, kr:'폭발 2회', en:'2 Explosions', hint_kr:'폭발을 2번 일으키세요', hint_en:'Cause 2 explosions', pts:30, emoji:'💥', recipe_kr:'Na+물, 밀폐폭발 등', recipe_en:'Na+water, sealed explosion, etc.', check: () => reactionLog.filter(r=>r.includes('폭발')||r.includes('Explosion')||r.includes('sealed')).length >= 2 },
+  { id:'L5_13', lv:5, kr:'거품 3회', en:'3 Foam Events', hint_kr:'거품 반응 3회 달성', hint_en:'Trigger 3 foam reactions', pts:25, emoji:'🫧', recipe_kr:'화산, 코끼리치약, 탄소기둥 등', recipe_en:'Volcano, elephant toothpaste, carbon tower, etc.', check: () => reactionLog.filter(r=>r.includes('거품')||r.includes('foam')||r.includes('화산')||r.includes('Volcano')||r.includes('코끼리')||r.includes('Elephant')).length >= 3 },
+  { id:'L5_14', lv:5, kr:'4가지 색 변화', en:'4 Color Changes', hint_kr:'4가지 다른 색 변화 반응', hint_en:'4 different color change reactions', pts:25, emoji:'🎨', recipe_kr:'지시약+산(빨강), 지시약+염기(보라), 페놀프탈레인(분홍), KMnO₄(보라)', recipe_en:'Indicator+acid(red), +base(purple), phenolphthalein(pink), KMnO₄(purple)', check: () => reactionLog.filter(r=>r.includes('색')||r.includes('분홍')||r.includes('빨간')||r.includes('보라')||r.includes('Pink')||r.includes('Red')||r.includes('Purple')).length >= 4 },
+  { id:'L5_15', lv:5, kr:'H₂O₂ 마스터', en:'H₂O₂ Master', hint_kr:'과산화수소로 3가지 다른 반응을 일으키세요', hint_en:'Trigger 3 different reactions with H₂O₂', pts:25, emoji:'⚗️', recipe_kr:'H₂O₂+이스트, H₂O₂+KMnO₄, H₂O₂+이스트+비누', recipe_en:'H₂O₂+yeast, H₂O₂+KMnO₄, H₂O₂+yeast+soap', check: () => reactionLog.filter(r=>r.includes('H₂O₂')).length >= 3 },
+  { id:'L5_16', lv:5, kr:'온도 관찰자', en:'Temperature Observer', hint_kr:'같은 용기에서 온도 변화 500°C 이상 경험', hint_en:'Experience 500°C+ change in one container', pts:20, emoji:'🌡️', recipe_kr:'용기를 25°C→500°C 이상 가열', recipe_en:'Heat container from 25°C to 500°C+', check: tempAbove(500) },
+  { id:'L5_17', lv:5, kr:'연기꾼', en:'Smoke Master', hint_kr:'연기/증기 파티클이 20개 이상', hint_en:'Have 20+ smoke/steam particles', pts:20, emoji:'💨', recipe_kr:'여러 용기에서 동시에 끓이기', recipe_en:'Boil in multiple containers simultaneously', check: () => particles.filter(p=>p.type==='smoke').length >= 10 },
+  { id:'L5_18', lv:5, kr:'파티클 폭풍', en:'Particle Storm', hint_kr:'파티클 100개 이상!', hint_en:'100+ particles active!', pts:25, emoji:'🌪️', recipe_kr:'폭발+거품+끓임 동시에!', recipe_en:'Explosion+foam+boiling simultaneously!', check: () => particles.length >= 50 },
+  { id:'L5_19', lv:5, kr:'모든 용기 사용', en:'Use All Containers', hint_kr:'5가지 용기를 모두 배치', hint_en:'Place all 5 container types', pts:20, emoji:'🏺', recipe_kr:'비커+삼각+둥근+시험관+메스실린더', recipe_en:'Beaker+Erlenmeyer+Round+TestTube+Cylinder', check: () => ['beaker','erlenmeyer','roundflask','testtube','cylinder'].every(t=>workbench.some(e=>e.type===t)) },
+  { id:'L5_20', lv:5, kr:'점수 700!', en:'Score 700!', hint_kr:'점수 700점 달성', hint_en:'Reach score 700', pts:25, emoji:'⭐', recipe_kr:'꾸준히 실험!', recipe_en:'Keep experimenting!', check: scoreAbove(700) },
+
+  // ===== Level 6: 마스터 케미스트 (Master Chemist) - 극한 실험 =====
+  { id:'L6_01', lv:6, kr:'테르밋 반응!', en:'Thermite Reaction!', hint_kr:'Fe₂O₃+Al을 800°C 이상으로! 2500°C 섬광!', hint_en:'Heat Fe₂O₃+Al above 800°C! 2500°C flash!', pts:50, emoji:'🔥', recipe_kr:'비커→테르밋(Fe₂O₃+Al)→분젠버너 100%→800°C까지 가열', recipe_en:'Beaker→Thermite(Fe₂O₃+Al)→Bunsen 100%→Heat to 800°C', check: rlAny('테르밋','Thermite') },
+  { id:'L6_02', lv:6, kr:'유리 녹이기!', en:'Melt Glass!', hint_kr:'장비를 1500°C 이상으로 녹여버리세요!', hint_en:'Melt equipment at 1500°C+!', pts:50, emoji:'🫠', recipe_kr:'테르밋 반응 후 2500°C→유리가 녹음', recipe_en:'After thermite at 2500°C→Glass melts', check: hasMelted() },
+  { id:'L6_03', lv:6, kr:'1000°C 돌파', en:'Break 1000°C', hint_kr:'극한의 온도 1000°C!', hint_en:'Extreme temperature 1000°C!', pts:35, emoji:'🌋', recipe_kr:'테르밋 또는 장시간 분젠버너', recipe_en:'Thermite or very long Bunsen', check: tempAbove(1000) },
+  { id:'L6_04', lv:6, kr:'20가지 반응', en:'20 Reactions', hint_kr:'모든 반응을 탐험하세요!', hint_en:'Explore all reactions!', pts:35, emoji:'🏆', recipe_kr:'가능한 모든 시약 조합 시도', recipe_en:'Try every possible reagent combination', check: () => reactionLog.length >= 20 },
+  { id:'L6_05', lv:6, kr:'파괴왕', en:'Destroyer', hint_kr:'장비 3개를 파괴하세요', hint_en:'Destroy 3 pieces of equipment', pts:35, emoji:'💀', recipe_kr:'유리 균열/파쇄/녹임 3번', recipe_en:'Crack/shatter/melt glass 3 times', check: () => workbench.filter(e=>e.cracked||e.shattered||e.melted).length >= 3 },
+  { id:'L6_06', lv:6, kr:'폭발 전문가', en:'Explosion Expert', hint_kr:'폭발을 3번 이상 일으키세요', hint_en:'Cause 3+ explosions', pts:40, emoji:'💥', recipe_kr:'Na+물, 밀폐폭발, 유리파쇄 등', recipe_en:'Na+water, sealed, glass shatter, etc.', check: () => reactionLog.filter(r=>r.includes('폭발')||r.includes('Explosion')||r.includes('sealed')).length >= 3 },
+  { id:'L6_07', lv:6, kr:'모든 염 사용', en:'Use All Salts', hint_kr:'6가지 염을 모두 사용', hint_en:'Use all 6 salts', pts:30, emoji:'🧂', recipe_kr:'NaCl, CuSO₄, AgNO₃, BaCl₂, NaHCO₃, KMnO₄', recipe_en:'NaCl, CuSO₄, AgNO₃, BaCl₂, NaHCO₃, KMnO₄', check: () => ['NaCl','CuSO4','AgNO3','BaCl2','NaHCO3','KMnO4'].every(id => workbench.some(e=>e.contents.some(s=>s.chemId===id)) || reactionLog.some(r=>r.includes(id))) },
+  { id:'L6_08', lv:6, kr:'모든 특수 시약', en:'All Special Reagents', hint_kr:'5가지 특수 시약을 모두 사용', hint_en:'Use all 5 special reagents', pts:30, emoji:'✨', recipe_kr:'Sugar, Yeast, Soap, DryIce, Thermite', recipe_en:'Sugar, Yeast, Soap, DryIce, Thermite', check: () => ['Sugar','Yeast','Soap','DryIce','Thermite'].every(id => workbench.some(e=>e.contents.some(s=>s.chemId===id)) || reactionLog.some(r=>r.includes(id))) },
+  { id:'L6_09', lv:6, kr:'결정 15개', en:'15 Crystals', hint_kr:'결정을 15개 이상 키우세요', hint_en:'Grow 15+ crystals', pts:35, emoji:'💎', recipe_kr:'CuSO₄ 농축→장시간 냉각', recipe_en:'Concentrated CuSO₄→Long cooling', check: () => workbench.some(e=>e.crystals&&e.crystals.length>=15) },
+  { id:'L6_10', lv:6, kr:'가스 전문가', en:'Gas Expert', hint_kr:'가스 발생 반응 5회 이상', hint_en:'5+ gas generation reactions', pts:30, emoji:'💨', recipe_kr:'화산, 금속+산, 에탄올연소 등', recipe_en:'Volcano, metal+acid, ethanol combustion, etc.', check: () => reactionLog.filter(r=>r.includes('↑')||r.includes('gas')||r.includes('CO₂')||r.includes('H₂')||r.includes('O₂')).length >= 5 },
+  { id:'L6_11', lv:6, kr:'중화 전문가', en:'Neutralization Expert', hint_kr:'산+염기 중화 반응 3회 이상', hint_en:'3+ acid-base neutralization reactions', pts:25, emoji:'⚖️', recipe_kr:'HCl+NaOH, 다른 산+다른 염기 등', recipe_en:'HCl+NaOH, other acid+other base, etc.', check: () => reactionLog.filter(r=>r.includes('중화')||r.includes('Neutralization')).length >= 3 },
+  { id:'L6_12', lv:6, kr:'발열 반응 5회', en:'5 Exothermic Reactions', hint_kr:'온도가 올라가는 반응 5회', hint_en:'5 reactions that increase temperature', pts:25, emoji:'🌡️', recipe_kr:'중화, Na+물, 테르밋 등', recipe_en:'Neutralization, Na+water, thermite, etc.', check: () => reactionLog.length >= 12 },
+  { id:'L6_13', lv:6, kr:'색 마법사', en:'Color Wizard', hint_kr:'6가지 이상 색 변화를 관찰', hint_en:'Observe 6+ color changes', pts:30, emoji:'🎨', recipe_kr:'모든 색변화 반응 시도', recipe_en:'Try all color-change reactions', check: () => reactionLog.filter(r=>r.includes('색')||r.includes('분홍')||r.includes('빨간')||r.includes('보라')||r.includes('Pink')||r.includes('Red')||r.includes('Purple')||r.includes('color')).length >= 6 },
+  { id:'L6_14', lv:6, kr:'안전사고 5회', en:'5 Safety Incidents', hint_kr:'균열, 파쇄, 녹음, 폭발 등 5회', hint_en:'5 incidents: cracks, shatters, melts, explosions', pts:30, emoji:'⚠️', recipe_kr:'극한 실험을 계속하세요', recipe_en:'Keep pushing limits', check: () => reactionLog.filter(r=>r.includes('균열')||r.includes('파쇄')||r.includes('녹')||r.includes('폭발')||r.includes('crack')||r.includes('shatter')||r.includes('melt')||r.includes('Explosion')).length + workbench.filter(e=>e.cracked||e.shattered||e.melted).length >= 5 },
+  { id:'L6_15', lv:6, kr:'모든 도구 사용', en:'Use All Tools', hint_kr:'온도계, pH지, 유리막대, 스포이트, 저울 모두', hint_en:'Thermometer, pH, stir rod, dropper, scale', pts:25, emoji:'🛠️', recipe_kr:'도구 5종 모두 배치', recipe_en:'Place all 5 tool types', check: () => ['thermometer','phstrip','stirrod','dropper','scale'].every(t=>workbench.some(e=>e.type===t)) },
+  { id:'L6_16', lv:6, kr:'비커 3개 동시', en:'3 Beakers Simultaneous', hint_kr:'비커 3개에서 동시에 반응!', hint_en:'Reactions in 3 beakers at once!', pts:25, emoji:'🧪', recipe_kr:'비커 3개에 각각 다른 시약 넣기', recipe_en:'Different reagents in 3 beakers', check: () => workbench.filter(e=>e.type==='beaker'&&e.contents.length>=2).length >= 3 },
+  { id:'L6_17', lv:6, kr:'이중 가열', en:'Double Heating', hint_kr:'열원 2개를 동시에 사용', hint_en:'Use 2 heat sources simultaneously', pts:20, emoji:'🔥', recipe_kr:'알코올램프+분젠버너 동시 점화', recipe_en:'Light alcohol lamp + Bunsen simultaneously', check: () => workbench.filter(e=>e.lit).length >= 2 },
+  { id:'L6_18', lv:6, kr:'시약 20종 사용', en:'Use 20 Reagents', hint_kr:'20가지 다른 시약을 사용해보세요', hint_en:'Use 20 different reagents', pts:35, emoji:'📊', recipe_kr:'가능한 많은 시약 시도!', recipe_en:'Try as many reagents as possible!', check: () => { const used = new Set(); workbench.forEach(e=>e.contents.forEach(s=>used.add(s.chemId))); reactionLog.forEach(r=>CHEM.forEach(c=>{if(r.includes(c.formula)||r.includes(c.id))used.add(c.id)})); return used.size >= 20; } },
+  { id:'L6_19', lv:6, kr:'반응 노트 10개', en:'10 Notebook Entries', hint_kr:'실험 노트에 기록 10개 이상', hint_en:'10+ entries in lab notebook', pts:20, emoji:'📓', recipe_kr:'다양한 반응을 관찰', recipe_en:'Observe various reactions', check: () => document.querySelectorAll('.notebook-entry').length >= 10 },
+  { id:'L6_20', lv:6, kr:'점수 1200!', en:'Score 1200!', hint_kr:'마스터의 경지!', hint_en:'Master level!', pts:30, emoji:'⭐', recipe_kr:'거의 다 왔습니다!', recipe_en:'Almost there!', check: scoreAbove(1200) },
+
+  // ===== Level 7: 전설의 연금술사 (Legendary Alchemist) - 마스터리 =====
+  { id:'L7_01', lv:7, kr:'2000°C 돌파!', en:'Break 2000°C!', hint_kr:'테르밋의 극한 온도!', hint_en:'Extreme thermite temperature!', pts:50, emoji:'☀️', recipe_kr:'테르밋 반응 (2500°C!)', recipe_en:'Thermite reaction (2500°C!)', check: tempAbove(2000) },
+  { id:'L7_02', lv:7, kr:'모든 반응 달성', en:'All Reactions', hint_kr:'17개 반응을 전부 일으키세요!', hint_en:'Trigger all 17 reactions!', pts:50, emoji:'🏆', recipe_kr:'반응 리스트 참조', recipe_en:'See reaction list', check: () => reactionLog.length >= 17 },
+  { id:'L7_03', lv:7, kr:'모든 시약 사용', en:'Use Every Reagent', hint_kr:'40가지 시약을 전부 사용!', hint_en:'Use all 40 reagents!', pts:50, emoji:'🎖️', recipe_kr:'시약 선반의 모든 것을 한번씩!', recipe_en:'Everything in the reagent shelf!', check: () => { const used = new Set(); workbench.forEach(e=>e.contents.forEach(s=>used.add(s.chemId))); reactionLog.forEach(r=>CHEM.forEach(c=>{if(r.includes(c.formula)||r.includes(c.id))used.add(c.id)})); return used.size >= 30; } },
+  { id:'L7_04', lv:7, kr:'연금술의 꿈', en:'Alchemist\'s Dream', hint_kr:'결정 + 침전 + 색변화를 한 용기에서!', hint_en:'Crystal + precipitate + color change in one container!', pts:50, emoji:'🌟', recipe_kr:'CuSO₄+NaOH(침전+색변화)→냉각(결정)', recipe_en:'CuSO₄+NaOH(precipitate+color)→Cool(crystal)', check: () => workbench.some(e => e.crystals?.length > 0 && e.precipitateParticles?.length > 0) },
+  { id:'L7_05', lv:7, kr:'대폭발', en:'Grand Explosion', hint_kr:'폭발 5회 달성!', hint_en:'5 explosions total!', pts:45, emoji:'💥', recipe_kr:'Na+물, 밀폐, 유리파쇄, 테르밋 등 반복', recipe_en:'Na+water, sealed, glass, thermite, etc. repeated', check: () => reactionLog.filter(r=>r.includes('폭발')||r.includes('Explosion')||r.includes('sealed')||r.includes('파쇄')||r.includes('shatter')).length >= 5 },
+  { id:'L7_06', lv:7, kr:'완벽한 실험실', en:'Perfect Lab', hint_kr:'장비 15개 이상 배치!', hint_en:'15+ equipment placed!', pts:35, emoji:'🏗️', recipe_kr:'모든 종류 장비 다수 배치', recipe_en:'Place many of every equipment type', check: equipCount(15) },
+  { id:'L7_07', lv:7, kr:'불꽃의 달인', en:'Flame Master', hint_kr:'열원 3개를 동시에 켜세요', hint_en:'Light 3 heat sources simultaneously', pts:35, emoji:'🔥', recipe_kr:'알코올램프 2개 + 분젠버너 1개', recipe_en:'2 alcohol lamps + 1 Bunsen burner', check: () => workbench.filter(e=>e.lit).length >= 3 },
+  { id:'L7_08', lv:7, kr:'침전물 수집가', en:'Precipitate Collector', hint_kr:'침전 반응 8회 이상', hint_en:'8+ precipitation reactions', pts:40, emoji:'🌨️', recipe_kr:'가능한 모든 침전 조합', recipe_en:'Every possible precipitation combination', check: () => reactionLog.filter(r=>r.includes('침전')||r.includes('precipitate')).length >= 8 },
+  { id:'L7_09', lv:7, kr:'결정 장인', en:'Crystal Artisan', hint_kr:'결정 수가 최대치(15)에 도달!', hint_en:'Max crystals (15) in one container!', pts:40, emoji:'💎', recipe_kr:'CuSO₄ 고농도→장시간 냉각', recipe_en:'High CuSO₄ concentration→Long cooling', check: () => workbench.some(e=>e.crystals&&e.crystals.length>=15) },
+  { id:'L7_10', lv:7, kr:'색의 마에스트로', en:'Color Maestro', hint_kr:'8가지 이상 색 변화 관찰', hint_en:'8+ color changes observed', pts:40, emoji:'🎨', recipe_kr:'모든 색변화 반응 + 반복', recipe_en:'All color reactions + repeats', check: () => reactionLog.filter(r=>r.includes('색')||r.includes('분홍')||r.includes('빨간')||r.includes('보라')||r.includes('Pink')||r.includes('Red')||r.includes('Purple')).length >= 8 },
+  { id:'L7_11', lv:7, kr:'가스 마스터', en:'Gas Master', hint_kr:'가스 발생 반응 10회', hint_en:'10 gas generation reactions', pts:40, emoji:'💨', recipe_kr:'모든 가스 발생 반응 반복', recipe_en:'Repeat all gas generation reactions', check: () => reactionLog.filter(r=>r.includes('↑')||r.includes('gas')).length >= 10 },
+  { id:'L7_12', lv:7, kr:'거품의 왕', en:'Foam King', hint_kr:'거품 반응 5회 이상', hint_en:'5+ foam reactions', pts:35, emoji:'🫧', recipe_kr:'화산+코끼리치약+탄소기둥 반복', recipe_en:'Volcano+Elephant+Carbon repeated', check: () => reactionLog.filter(r=>r.includes('거품')||r.includes('foam')||r.includes('화산')||r.includes('코끼리')).length >= 5 },
+  { id:'L7_13', lv:7, kr:'온도 전문가', en:'Temperature Expert', hint_kr:'25°C, 100°C, 500°C, 1000°C, 2000°C 모두 달성', hint_en:'Reach 25, 100, 500, 1000, 2000°C', pts:40, emoji:'🌡️', recipe_kr:'단계별 온도 달성', recipe_en:'Achieve each temperature threshold', check: tempAbove(2000) },
+  { id:'L7_14', lv:7, kr:'파괴와 창조', en:'Destroy & Create', hint_kr:'유리를 녹이고 결정도 키우세요', hint_en:'Melt glass AND grow crystals', pts:45, emoji:'☯️', recipe_kr:'한 세션에서 유리녹임+결정성장 둘다', recipe_en:'Both glass melting + crystal growing in one session', check: () => workbench.some(e=>e.melted) && workbench.some(e=>e.crystals?.length>0) },
+  { id:'L7_15', lv:7, kr:'30가지 반응', en:'30 Reactions', hint_kr:'반응 로그 30개 달성!', hint_en:'30 entries in reaction log!', pts:45, emoji:'📜', recipe_kr:'모든 조합 반복 실험', recipe_en:'Repeat all combinations', check: () => reactionLog.length >= 30 },
+  { id:'L7_16', lv:7, kr:'만점 도전', en:'Perfect Score', hint_kr:'모든 하위 레벨 미션 완료', hint_en:'Complete all lower level missions', pts:50, emoji:'🏅', recipe_kr:'레벨 1-6 미션 전부 완료', recipe_en:'Complete all Level 1-6 missions', check: () => MISSIONS.filter(m=>m.lv<=6).every(m=>completedMissions.has(m.id)) },
+  { id:'L7_17', lv:7, kr:'시약 마스터', en:'Reagent Master', hint_kr:'35가지 이상 시약 사용', hint_en:'Use 35+ different reagents', pts:50, emoji:'🧪', recipe_kr:'거의 모든 시약!', recipe_en:'Almost every reagent!', check: () => { const used = new Set(); workbench.forEach(e=>e.contents.forEach(s=>used.add(s.chemId))); reactionLog.forEach(r=>CHEM.forEach(c=>{if(r.includes(c.formula)||r.includes(c.id))used.add(c.id)})); return used.size >= 35; } },
+  { id:'L7_18', lv:7, kr:'장비 마스터', en:'Equipment Master', hint_kr:'모든 장비 타입을 사용', hint_en:'Use every equipment type', pts:40, emoji:'🔧', recipe_kr:'14가지 장비 전부 배치', recipe_en:'Place all 14 equipment types', check: () => Object.keys(EQUIP_DEFS).every(t=>workbench.some(e=>e.type===t)) },
+  { id:'L7_19', lv:7, kr:'점수 2000!', en:'Score 2000!', hint_kr:'전설의 경지!', hint_en:'Legendary status!', pts:50, emoji:'👑', recipe_kr:'거의 모든 미션 완료!', recipe_en:'Almost all missions complete!', check: scoreAbove(2000) },
+  { id:'L7_20', lv:7, kr:'전설의 연금술사', en:'Legendary Alchemist', hint_kr:'모든 미션 완료! 당신은 전설입니다!', hint_en:'All missions complete! You are legendary!', pts:100, emoji:'🌟', recipe_kr:'모든 139개 미션을 완료하세요!', recipe_en:'Complete all 139 missions!', check: () => MISSIONS.filter(m=>m.id!=='L7_20').every(m=>completedMissions.has(m.id)) },
+];
+let completedMissions = new Set(JSON.parse(localStorage.getItem('chem-lab-missions') || '[]'));
+let score = parseInt(localStorage.getItem('chem-lab-score') || '0');
+let currentLevel = 1;
+let reactionLog = [];
+
+function getCurrentLevel() {
+    // Unlock next level when 12+ missions of current level are done
+    for (let lv = 7; lv >= 1; lv--) {
+        const lvMissions = MISSIONS.filter(m => m.lv === lv);
+        const done = lvMissions.filter(m => completedMissions.has(m.id)).length;
+        if (done > 0 && lv === 7) return 7;
+        if (lv < 7) {
+            const needed = Math.min(12, lvMissions.length);
+            if (done >= needed) return Math.min(lv + 1, 7);
+        }
+    }
+    return 1;
+}
+
+// ===== Workbench State =====
+let workbench = []; // equipment instances on the bench
+let particles = []; // visual effect particles
+let nextId = 1;
+let selectedTool = null; // current equipment type to place
+let selectedChem = null; // current chemical to add
+let actionMode = 'place'; // place, pour, move, trash
+let frameCount = 0;
+let lastTime = 0;
+let accumulator = 0;
+const PHYSICS_DT = 1000 / 60;
+let shakeX = 0, shakeY = 0, shakeDecay = 0;
+let globalBloom = 0; // bloom overlay intensity
+
+// Canvas
+const canvas = document.getElementById('labCanvas');
+const ctx = canvas.getContext('2d');
+const CW = canvas.width, CH = canvas.height;
+
+// ===== Equipment Type Definitions =====
+const EQUIP_DEFS = {
+    beaker:      { w:90, h:110, capacity:300, isContainer:true, glass:true },
+    erlenmeyer:  { w:100, h:120, capacity:250, isContainer:true, glass:true },
+    roundflask:  { w:100, h:130, capacity:200, isContainer:true, glass:true },
+    testtube:    { w:30, h:120, capacity:50, isContainer:true, glass:true },
+    cylinder:    { w:35, h:140, capacity:100, isContainer:true, glass:true },
+    alcohollamp: { w:60, h:70, capacity:0, isContainer:false, isHeat:true, glass:false },
+    bunsen:      { w:50, h:80, capacity:0, isContainer:false, isHeat:true, glass:false },
+    tripod:      { w:100, h:50, capacity:0, isContainer:false, isSupport:true, glass:false },
+    ringstand:   { w:40, h:160, capacity:0, isContainer:false, isSupport:true, glass:false },
+    thermometer: { w:15, h:100, capacity:0, isContainer:false, isTool:true, glass:true },
+    phstrip:     { w:12, h:60, capacity:0, isContainer:false, isTool:true, glass:false },
+    stirrod:     { w:10, h:100, capacity:0, isContainer:false, isTool:true, glass:true },
+    dropper:     { w:15, h:80, capacity:5, isContainer:false, isTool:true, glass:true },
+    scale:       { w:100, h:40, capacity:0, isContainer:false, isTool:true, glass:false },
+};
+
+function createEquip(type, x, y) {
+    const def = EQUIP_DEFS[type];
+    return {
+        id: nextId++, type, x, y, w: def.w, h: def.h,
+        contents: [], // { chemId, amount, phase, temperature }
+        temperature: 25, sealed: false, cracked: false, melted: false, shattered: false,
+        lit: false, flameIntensity: 50,
+        onSupport: null, // id of support it's on
+        capacity: def.capacity,
+        pressure: 0, // for sealed containers
+        crystals: [], // for crystallization
+        sloshing: 0, // liquid surface animation
+        pourAnim: null, // active pour animation
+        foamLevel: 0, // foam height above liquid
+        precipitateParticles: [], // settling particles
+    };
+}
+
+// ===== Populate Chemical Shelf =====
+function buildChemPanel() {
+    const panel = document.getElementById('chemPanel');
+    panel.innerHTML = '';
+    const title = document.createElement('div');
+    title.className = 'panel-title';
+    title.innerHTML = '⚗️ <span data-i18n="reagents">' + t('reagents') + '</span>';
+    panel.appendChild(title);
+
+    const catOrder = ['acid','base','metal','salt','liquid','special'];
+    const catNames = { acid:'acids', base:'bases', metal:'metals', salt:'salts', liquid:'liquids', special:'special' };
+
+    catOrder.forEach(cat => {
+        const grp = document.createElement('div');
+        grp.className = 'panel-group';
+        grp.textContent = t(catNames[cat]);
+        panel.appendChild(grp);
+
+        CHEM.filter(c => c.cat === cat).forEach(c => {
+            const btn = document.createElement('div');
+            btn.className = 'chem-btn';
+            btn.dataset.chem = c.id;
+            const dot = document.createElement('span');
+            dot.className = 'chem-dot';
+            dot.style.background = `rgb(${c.color.join(',')})`;
+            btn.appendChild(dot);
+            const lbl = document.createElement('span');
+            lbl.textContent = lang === 'en' ? c.en : c.formula;
+            lbl.style.fontSize = '10px';
+            btn.appendChild(lbl);
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.chem-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedChem = c.id;
+                playSound('click');
+            });
+            panel.appendChild(btn);
+        });
+    });
+}
+
+// ===== Drawing Functions =====
+
+function drawWorkbench() {
+    // Dark lab bench surface
+    ctx.fillStyle = '#0c0c18';
+    ctx.fillRect(0, 0, CW, CH);
+
+    // Bench grid (faint)
+    ctx.strokeStyle = 'rgba(6,182,212,0.03)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x < CW; x += 50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, CH); ctx.stroke(); }
+    for (let y = 0; y < CH; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(CW, y); ctx.stroke(); }
+
+    // Bench surface highlight
+    const grad = ctx.createLinearGradient(0, CH - 80, 0, CH);
+    grad.addColorStop(0, 'rgba(30,30,60,0.3)');
+    grad.addColorStop(1, 'rgba(10,10,30,0.8)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, CH - 80, CW, 80);
+    ctx.strokeStyle = 'rgba(6,182,212,0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, CH - 80); ctx.lineTo(CW, CH - 80); ctx.stroke();
+}
+
+function drawBeaker(e) {
+    const { x, y, w, h } = e;
+    const topW = w, botW = w * 0.75;
+    const glassAlpha = e.cracked ? 0.25 : (e.melted ? 0.15 : 0.35);
+    ctx.save();
+
+    // Glass body
+    ctx.beginPath();
+    ctx.moveTo(x - topW/2, y - h/2); // top-left
+    ctx.lineTo(x - botW/2, y + h/2); // bottom-left
+    ctx.lineTo(x + botW/2, y + h/2); // bottom-right
+    ctx.lineTo(x + topW/2, y - h/2); // top-right
+    ctx.closePath();
+
+    // Fill with faint glass
+    ctx.fillStyle = `rgba(150,200,255,${glassAlpha * 0.15})`;
+    ctx.fill();
+
+    // Draw liquid contents
+    if (e.contents.length > 0) {
+        const totalVol = e.contents.reduce((s, c) => s + c.amount, 0);
+        const fillFrac = Math.min(1, totalVol / e.capacity);
+        const liqH = h * fillFrac * 0.85;
+        const liqY = y + h/2 - liqH;
+        const liqTopW = botW + (topW - botW) * (1 - fillFrac * 0.85);
+        const liqBotW = botW;
+
+        // Mix color
+        const mixColor = getMixedColor(e.contents);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x - topW/2, y - h/2);
+        ctx.lineTo(x - botW/2, y + h/2);
+        ctx.lineTo(x + botW/2, y + h/2);
+        ctx.lineTo(x + topW/2, y - h/2);
+        ctx.closePath();
+        ctx.clip();
+
+        // Liquid body
+        ctx.fillStyle = `rgba(${mixColor[0]},${mixColor[1]},${mixColor[2]},0.7)`;
+        const slosh = Math.sin(frameCount * 0.05 + e.sloshing) * 3 * (Math.abs(e.sloshing) > 0.1 ? 1 : 0);
+        ctx.beginPath();
+        ctx.moveTo(x - liqTopW/2, liqY + slosh);
+        // Meniscus
+        ctx.quadraticCurveTo(x, liqY - 4 + slosh, x + liqTopW/2, liqY + slosh);
+        ctx.lineTo(x + botW/2, y + h/2);
+        ctx.lineTo(x - botW/2, y + h/2);
+        ctx.closePath();
+        ctx.fill();
+
+        // Boiling bubbles
+        if (e.contents.some(s => s.temperature >= chemById[s.chemId]?.boilPt)) {
+            for (let i = 0; i < 5; i++) {
+                const bx = x + (Math.random() - 0.5) * botW * 0.6;
+                const by = liqY + Math.random() * liqH;
+                const br = 2 + Math.random() * 4;
+                ctx.beginPath();
+                ctx.arc(bx, by, br, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${0.2 + Math.random() * 0.3})`;
+                ctx.fill();
+            }
+        }
+
+        // Precipitate particles
+        e.precipitateParticles.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},0.8)`;
+            ctx.fill();
+        });
+
+        // Crystals
+        e.crystals.forEach(cr => {
+            drawCrystal(cr.x, cr.y, cr.size, cr.color);
+        });
+
+        ctx.restore();
+
+        // Foam
+        if (e.foamLevel > 0) {
+            const foamY = liqY - e.foamLevel;
+            for (let i = 0; i < e.foamLevel / 3; i++) {
+                const fx = x + (Math.random() - 0.5) * topW * 0.8;
+                const fy = foamY + Math.random() * e.foamLevel;
+                const fr = 4 + Math.random() * 8;
+                ctx.beginPath();
+                ctx.arc(fx, fy, fr, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${0.15 + Math.random() * 0.2})`;
+                ctx.fill();
+            }
+        }
+
+        // Steam
+        if (e.contents.some(s => s.temperature >= (chemById[s.chemId]?.boilPt || 100) * 0.9)) {
+            for (let i = 0; i < 3; i++) {
+                spawnParticle('smoke', x + (Math.random() - 0.5) * 30, liqY - 5,
+                    (Math.random() - 0.5) * 0.5, -1 - Math.random(), 60,
+                    [200, 220, 255], 8 + Math.random() * 6);
+            }
+        }
+    }
+
+    // Glass outline
+    ctx.beginPath();
+    ctx.moveTo(x - topW/2, y - h/2);
+    ctx.lineTo(x - botW/2, y + h/2);
+    ctx.lineTo(x + botW/2, y + h/2);
+    ctx.lineTo(x + topW/2, y - h/2);
+    ctx.strokeStyle = e.cracked ? 'rgba(255,100,100,0.5)' : (e.melted ? 'rgba(255,150,50,0.5)' : `rgba(150,200,255,${glassAlpha})`);
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Highlight line
+    ctx.beginPath();
+    ctx.moveTo(x - topW/2 + 4, y - h/2 + 5);
+    ctx.lineTo(x - botW/2 + 4, y + h/2 - 5);
+    ctx.strokeStyle = `rgba(255,255,255,${glassAlpha * 0.5})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Graduation marks
+    for (let i = 1; i <= 4; i++) {
+        const gy = y + h/2 - (i / 5) * h * 0.85;
+        const gw = 8;
+        const gxOff = botW/2 + (topW/2 - botW/2) * (1 - i / 5 * 0.85);
+        ctx.beginPath();
+        ctx.moveTo(x + gxOff - gw, gy);
+        ctx.lineTo(x + gxOff, gy);
+        ctx.strokeStyle = `rgba(150,200,255,${glassAlpha * 0.6})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+    }
+
+    // Spout
+    ctx.beginPath();
+    ctx.moveTo(x + topW/2, y - h/2);
+    ctx.lineTo(x + topW/2 + 8, y - h/2 - 6);
+    ctx.strokeStyle = `rgba(150,200,255,${glassAlpha})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Crack lines
+    if (e.cracked) {
+        ctx.strokeStyle = 'rgba(255,200,200,0.6)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            const cx = x + (Math.random() - 0.5) * w * 0.6;
+            const cy = y + (Math.random() - 0.5) * h * 0.6;
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + (Math.random() - 0.5) * 20, cy + (Math.random() - 0.5) * 20);
+            ctx.stroke();
+        }
+    }
+
+    // Heat glow
+    if (e.temperature > 200) {
+        const glow = Math.min(1, (e.temperature - 200) / 1000);
+        ctx.fillStyle = `rgba(255,${Math.floor(150 - glow * 100)},0,${glow * 0.15})`;
+        ctx.fillRect(x - w/2 - 5, y - h/2 - 5, w + 10, h + 10);
+    }
+
+    // Melting effect
+    if (e.melted) {
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+            const dx = x - botW/2 + (botW / 4) * i;
+            const dy = y + h/2 + Math.sin(frameCount * 0.03 + i) * 8 + 5;
+            ctx.moveTo(dx, y + h/2);
+            ctx.quadraticCurveTo(dx + 5, dy, dx + 10, y + h/2);
+        }
+        ctx.fillStyle = 'rgba(255,150,50,0.4)';
+        ctx.fill();
+    }
+
+    // Sealed indicator
+    if (e.sealed) {
+        ctx.fillStyle = 'rgba(100,100,120,0.8)';
+        ctx.fillRect(x - topW/2 - 2, y - h/2 - 6, topW + 4, 6);
+        ctx.fillStyle = 'rgba(200,200,200,0.5)';
+        ctx.font = '8px JetBrains Mono';
+        ctx.textAlign = 'center';
+        ctx.fillText('SEALED', x, y - h/2 - 1);
+    }
+
+    ctx.restore();
+}
+
+function drawErlenmeyer(e) {
+    const { x, y, w, h } = e;
+    const neckW = w * 0.25, neckH = h * 0.35;
+    const bodyH = h - neckH;
+    const glassAlpha = e.cracked ? 0.25 : 0.35;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x - neckW/2, y - h/2);
+    ctx.lineTo(x - neckW/2, y - h/2 + neckH);
+    ctx.lineTo(x - w/2, y + h/2);
+    ctx.lineTo(x + w/2, y + h/2);
+    ctx.lineTo(x + neckW/2, y - h/2 + neckH);
+    ctx.lineTo(x + neckW/2, y - h/2);
+
+    ctx.fillStyle = `rgba(150,200,255,${glassAlpha * 0.12})`;
+    ctx.fill();
+
+    // Liquid
+    if (e.contents.length > 0) {
+        const totalVol = e.contents.reduce((s, c) => s + c.amount, 0);
+        const fillFrac = Math.min(1, totalVol / e.capacity);
+        const mixColor = getMixedColor(e.contents);
+        const liqH = bodyH * fillFrac;
+        const liqY = y + h/2 - liqH;
+        const liqW = w * (liqH / bodyH);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x - neckW/2, y - h/2);
+        ctx.lineTo(x - neckW/2, y - h/2 + neckH);
+        ctx.lineTo(x - w/2, y + h/2);
+        ctx.lineTo(x + w/2, y + h/2);
+        ctx.lineTo(x + neckW/2, y - h/2 + neckH);
+        ctx.lineTo(x + neckW/2, y - h/2);
+        ctx.clip();
+
+        ctx.fillStyle = `rgba(${mixColor[0]},${mixColor[1]},${mixColor[2]},0.7)`;
+        ctx.fillRect(x - w/2, liqY, w, liqH);
+        ctx.restore();
+    }
+
+    // Outline
+    ctx.beginPath();
+    ctx.moveTo(x - neckW/2, y - h/2);
+    ctx.lineTo(x - neckW/2, y - h/2 + neckH);
+    ctx.lineTo(x - w/2, y + h/2);
+    ctx.lineTo(x + w/2, y + h/2);
+    ctx.lineTo(x + neckW/2, y - h/2 + neckH);
+    ctx.lineTo(x + neckW/2, y - h/2);
+    ctx.strokeStyle = `rgba(150,200,255,${glassAlpha})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawTestTube(e) {
+    const { x, y, w, h } = e;
+    const r = w / 2;
+    ctx.save();
+
+    // Liquid
+    if (e.contents.length > 0) {
+        const totalVol = e.contents.reduce((s, c) => s + c.amount, 0);
+        const fillFrac = Math.min(1, totalVol / e.capacity);
+        const mixColor = getMixedColor(e.contents);
+        const liqH = (h - r) * fillFrac;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x - r, y - h/2);
+        ctx.lineTo(x - r, y + h/2 - r);
+        ctx.arc(x, y + h/2 - r, r, Math.PI, 0);
+        ctx.lineTo(x + r, y - h/2);
+        ctx.clip();
+
+        ctx.fillStyle = `rgba(${mixColor[0]},${mixColor[1]},${mixColor[2]},0.7)`;
+        ctx.fillRect(x - r, y + h/2 - liqH - r, w, liqH + r);
+        ctx.restore();
+    }
+
+    // Glass
+    ctx.beginPath();
+    ctx.moveTo(x - r, y - h/2);
+    ctx.lineTo(x - r, y + h/2 - r);
+    ctx.arc(x, y + h/2 - r, r, Math.PI, 0);
+    ctx.lineTo(x + r, y - h/2);
+    ctx.strokeStyle = 'rgba(150,200,255,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawAlcoholLamp(e) {
+    const { x, y, w, h } = e;
+    ctx.save();
+
+    // Bottle body
+    const grad = ctx.createLinearGradient(x - w/2, y, x + w/2, y);
+    grad.addColorStop(0, '#3a2a1a');
+    grad.addColorStop(0.5, '#5a4530');
+    grad.addColorStop(1, '#3a2a1a');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.ellipse(x, y + 10, w/2, h/2.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,200,100,0.3)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Wick
+    ctx.fillStyle = '#222';
+    ctx.fillRect(x - 3, y - h/2 + 5, 6, 20);
+    ctx.fillStyle = '#888';
+    ctx.fillRect(x - 5, y - h/2 + 20, 10, 5);
+
+    // Flame
+    if (e.lit) {
+        drawFlame(x, y - h/2 - 5, e.flameIntensity / 100, 'alcohol');
+    }
+    ctx.restore();
+}
+
+function drawBunsen(e) {
+    const { x, y, w, h } = e;
+    ctx.save();
+
+    // Base
+    ctx.fillStyle = '#444';
+    ctx.fillRect(x - w * 0.7, y + h/2 - 10, w * 1.4, 10);
+
+    // Tube
+    const tubeGrad = ctx.createLinearGradient(x - w/2, y, x + w/2, y);
+    tubeGrad.addColorStop(0, '#555');
+    tubeGrad.addColorStop(0.5, '#777');
+    tubeGrad.addColorStop(1, '#555');
+    ctx.fillStyle = tubeGrad;
+    ctx.fillRect(x - w/3, y - h/2 + 15, w * 2/3, h - 25);
+
+    // Air hole
+    ctx.fillStyle = '#333';
+    ctx.fillRect(x - w/4, y + h/4, w/2, 8);
+
+    // Flame
+    if (e.lit) {
+        drawFlame(x, y - h/2, e.flameIntensity / 100, 'bunsen');
+    }
+    ctx.restore();
+}
+
+function drawTripod(e) {
+    const { x, y, w, h } = e;
+    ctx.save();
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 3;
+    // Three legs
+    ctx.beginPath();
+    ctx.moveTo(x - w/2, y + h); ctx.lineTo(x - w/4, y); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + w/2, y + h); ctx.lineTo(x + w/4, y); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y + h + 5); ctx.lineTo(x, y + 2); ctx.stroke();
+
+    // Wire gauze
+    ctx.fillStyle = 'rgba(150,150,150,0.4)';
+    ctx.fillRect(x - w/2 + 5, y - 2, w - 10, 4);
+    // Mesh lines
+    ctx.strokeStyle = 'rgba(200,200,200,0.3)';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i < 8; i++) {
+        const gx = x - w/2 + 8 + i * (w - 16) / 7;
+        ctx.beginPath(); ctx.moveTo(gx, y - 2); ctx.lineTo(gx, y + 2); ctx.stroke();
+    }
+    ctx.restore();
+}
+
+function drawThermometer(e) {
+    const { x, y, w, h } = e;
+    ctx.save();
+    // Stem
+    ctx.fillStyle = 'rgba(200,220,255,0.3)';
+    ctx.fillRect(x - 3, y - h/2, 6, h - 10);
+    // Bulb
+    ctx.beginPath();
+    ctx.arc(x, y + h/2 - 8, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#c0392b';
+    ctx.fill();
+    // Mercury level
+    const temp = e.temperature || 25;
+    const mercH = Math.min(h - 20, Math.max(5, (temp / 1200) * (h - 20)));
+    ctx.fillStyle = '#c0392b';
+    ctx.fillRect(x - 2, y + h/2 - 14 - mercH, 4, mercH);
+    // Reading
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.font = '10px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText(Math.round(temp) + '°C', x, y - h/2 - 5);
+    ctx.restore();
+}
+
+function drawFlame(x, y, intensity, type) {
+    const h = 20 + intensity * 40;
+    const w = 8 + intensity * 12;
+    const t = frameCount * 0.1;
+
+    if (type === 'bunsen') {
+        // Blue inner cone
+        for (let i = 0; i < 3; i++) {
+            const layer = i / 2;
+            const lh = h * (1 - layer * 0.3);
+            const lw = w * (1 - layer * 0.2);
+            const wobble = Math.sin(t + i) * 2;
+            ctx.beginPath();
+            ctx.moveTo(x - lw/2 + wobble, y);
+            ctx.quadraticCurveTo(x + wobble * 0.5, y - lh, x + lw/2 + wobble, y);
+            const r = 30 + layer * 80;
+            const g = 100 + layer * 100;
+            const b = 200 + layer * 55;
+            ctx.fillStyle = `rgba(${r},${g},${b},${0.5 - layer * 0.15})`;
+            ctx.fill();
+        }
+        // White tip
+        ctx.beginPath();
+        ctx.arc(x, y - h * 0.7, 3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fill();
+    } else {
+        // Alcohol lamp: yellow-orange
+        for (let i = 0; i < 5; i++) {
+            const layer = i / 4;
+            const lh = h * (1 - layer * 0.3);
+            const lw = w * (1 - layer * 0.15);
+            const wobble = Math.sin(t * 1.3 + i * 0.7) * 3;
+            ctx.beginPath();
+            ctx.moveTo(x - lw/2 + wobble, y);
+            ctx.quadraticCurveTo(x + wobble, y - lh, x + lw/2 + wobble, y);
+            const r = 255;
+            const g = Math.floor(200 - layer * 120);
+            const b = Math.floor(50 - layer * 50);
+            ctx.fillStyle = `rgba(${r},${g},${b},${0.4 - layer * 0.06})`;
+            ctx.fill();
+        }
+    }
+
+    // Glow
+    const glowGrad = ctx.createRadialGradient(x, y - h * 0.3, 0, x, y - h * 0.3, h * 0.8);
+    glowGrad.addColorStop(0, `rgba(255,200,50,${0.08 * intensity})`);
+    glowGrad.addColorStop(1, 'rgba(255,200,50,0)');
+    ctx.fillStyle = glowGrad;
+    ctx.fillRect(x - h, y - h * 1.5, h * 2, h * 2);
+
+    // Spark particles
+    if (Math.random() < intensity * 0.3) {
+        spawnParticle('spark', x + (Math.random() - 0.5) * 10, y - h * 0.5,
+            (Math.random() - 0.5) * 2, -2 - Math.random() * 2, 20,
+            type === 'bunsen' ? [100, 150, 255] : [255, 200, 50], 2);
+    }
+}
+
+function drawCrystal(cx, cy, size, color) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
+        const px = Math.cos(angle) * size;
+        const py = Math.sin(angle) * size;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},0.6)`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${color[0]+50},${color[1]+50},${color[2]+50},0.8)`;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+    // Sparkle
+    if (Math.random() < 0.05) {
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.fillRect(-1, -1, 2, 2);
+    }
+    ctx.restore();
+}
+
+function getMixedColor(contents) {
+    if (contents.length === 0) return [100, 160, 255];
+    let r = 0, g = 0, b = 0, total = 0;
+    contents.forEach(s => {
+        const c = chemById[s.chemId];
+        if (c) {
+            r += c.color[0] * s.amount;
+            g += c.color[1] * s.amount;
+            b += c.color[2] * s.amount;
+            total += s.amount;
+        }
+    });
+    if (total === 0) return [100, 160, 255];
+    return [Math.round(r / total), Math.round(g / total), Math.round(b / total)];
+}
+
+function drawEquipment(e) {
+    switch (e.type) {
+        case 'beaker': drawBeaker(e); break;
+        case 'erlenmeyer': drawErlenmeyer(e); break;
+        case 'roundflask': drawErlenmeyer(e); break; // similar shape
+        case 'testtube': drawTestTube(e); break;
+        case 'cylinder': drawTestTube(e); break; // similar
+        case 'alcohollamp': drawAlcoholLamp(e); break;
+        case 'bunsen': drawBunsen(e); break;
+        case 'tripod': drawTripod(e); break;
+        case 'ringstand': drawTripod(e); break; // simplified
+        case 'thermometer': drawThermometer(e); break;
+        case 'phstrip': drawPhStrip(e); break;
+        case 'stirrod': drawStirRod(e); break;
+        case 'dropper': drawDropper(e); break;
+        case 'scale': drawScale(e); break;
+        default: // fallback: simple rect
+            ctx.strokeStyle = 'rgba(150,200,255,0.3)';
+            ctx.strokeRect(e.x - e.w/2, e.y - e.h/2, e.w, e.h);
+    }
+}
+
+function drawPhStrip(e) {
+    ctx.save();
+    const { x, y, h } = e;
+    ctx.fillStyle = '#f5f0d0';
+    ctx.fillRect(x - 4, y - h/2, 8, h);
+    // If measuring, show pH color
+    if (e.measuredPH != null) {
+        const phColor = pHtoColor(e.measuredPH);
+        ctx.fillStyle = `rgb(${phColor.join(',')})`;
+        ctx.fillRect(x - 4, y - h/2 + h * 0.3, 8, h * 0.5);
+        ctx.fillStyle = '#fff';
+        ctx.font = '9px JetBrains Mono';
+        ctx.textAlign = 'center';
+        ctx.fillText('pH ' + e.measuredPH.toFixed(1), x, y - h/2 - 5);
+    }
+    ctx.restore();
+}
+
+function drawStirRod(e) {
+    ctx.save();
+    const { x, y, h } = e;
+    ctx.strokeStyle = 'rgba(200,220,255,0.4)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x, y - h/2);
+    ctx.lineTo(x, y + h/2);
+    ctx.stroke();
+    // Glass highlight
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x - 1, y - h/2);
+    ctx.lineTo(x - 1, y + h/2);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawDropper(e) {
+    ctx.save();
+    const { x, y, h } = e;
+    // Rubber bulb
+    ctx.beginPath();
+    ctx.ellipse(x, y - h/2 + 10, 8, 12, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#c0392b';
+    ctx.fill();
+    // Glass tube
+    ctx.strokeStyle = 'rgba(200,220,255,0.4)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, y - h/2 + 22);
+    ctx.lineTo(x, y + h/2);
+    ctx.stroke();
+    // Tip
+    ctx.beginPath();
+    ctx.moveTo(x - 3, y + h/2 - 15);
+    ctx.lineTo(x, y + h/2);
+    ctx.lineTo(x + 3, y + h/2 - 15);
+    ctx.strokeStyle = 'rgba(200,220,255,0.5)';
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawScale(e) {
+    ctx.save();
+    const { x, y, w, h } = e;
+    // Platform
+    ctx.fillStyle = '#333';
+    ctx.fillRect(x - w/2, y - 5, w, 10);
+    // Display
+    ctx.fillStyle = '#111';
+    ctx.fillRect(x - 25, y - h, 50, 20);
+    ctx.fillStyle = '#0f0';
+    ctx.font = '11px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillText((e.measuredMass || 0).toFixed(1) + 'g', x, y - h + 14);
+    ctx.restore();
+}
+
+function pHtoColor(pH) {
+    if (pH < 1) return [255, 0, 0];
+    if (pH < 3) return [255, 100, 0];
+    if (pH < 5) return [255, 200, 0];
+    if (pH < 6) return [200, 255, 0];
+    if (pH < 8) return [0, 200, 50];
+    if (pH < 10) return [0, 100, 200];
+    if (pH < 12) return [50, 0, 200];
+    return [100, 0, 150];
+}
+
+// ===== Particle System =====
+const MAX_PARTICLES = 500;
+function spawnParticle(type, x, y, vx, vy, life, color, size) {
+    if (particles.length >= MAX_PARTICLES) return;
+    particles.push({ type, x, y, vx, vy, life, maxLife: life, color, size, age: 0 });
+}
+
+function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.age++;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        switch (p.type) {
+            case 'smoke':
+                p.vy *= 0.98;
+                p.vx += (Math.random() - 0.5) * 0.1;
+                p.size += 0.2;
+                break;
+            case 'bubble':
+                p.vy = -0.5 - Math.random() * 0.5;
+                p.vx = Math.sin(p.age * 0.1) * 0.3;
+                break;
+            case 'spark':
+                p.vy += 0.05; // gravity
+                p.life -= 0.5;
+                break;
+            case 'debris':
+                p.vy += 0.15; // heavy gravity
+                p.vx *= 0.99;
+                break;
+            case 'foam':
+                p.vy *= 0.95;
+                p.size += 0.1;
+                break;
+            case 'drop':
+                p.vy += 0.1;
+                break;
+            case 'crystal':
+                p.vy += 0.02; // slow settle
+                p.vx *= 0.98;
+                break;
+        }
+
+        p.life--;
+        if (p.life <= 0 || p.age > p.maxLife) {
+            particles.splice(i, 1);
+        }
+    }
+}
+
+function drawParticles() {
+    particles.forEach(p => {
+        const alpha = Math.max(0, p.life / p.maxLife);
+        ctx.save();
+        switch (p.type) {
+            case 'smoke':
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${alpha * 0.15})`;
+                ctx.fill();
+                break;
+            case 'bubble':
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.4})`;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(p.x - p.size * 0.3, p.y - p.size * 0.3, p.size * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${alpha * 0.5})`;
+                ctx.fill();
+                break;
+            case 'spark':
+                ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${alpha})`;
+                ctx.fillRect(p.x - 1, p.y - 1, p.size, p.size);
+                // Trail
+                ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${alpha * 0.3})`;
+                ctx.fillRect(p.x - p.vx * 2 - 1, p.y - p.vy * 2 - 1, p.size * 0.7, p.size * 0.7);
+                break;
+            case 'debris':
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.age * 0.1);
+                ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${alpha})`;
+                ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size * 0.6);
+                break;
+            case 'foam':
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${alpha * 0.2})`;
+                ctx.fill();
+                break;
+            case 'drop':
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${alpha * 0.6})`;
+                ctx.fill();
+                break;
+            case 'crystal':
+                ctx.translate(p.x, p.y);
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI * 2 / 6) * i;
+                    const px = Math.cos(angle) * p.size;
+                    const py = Math.sin(angle) * p.size;
+                    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${alpha * 0.5})`;
+                ctx.fill();
+                break;
+        }
+        ctx.restore();
+    });
+}
+
+// ===== Explosion Effect =====
+let explosionState = null;
+function triggerExplosion(x, y, power) {
+    explosionState = { x, y, power, frame: 0, maxFrame: 90 };
+    shakeDecay = power * 15;
+    playSound('boom', 0.4);
+
+    // Debris particles
+    for (let i = 0; i < 30; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2 + Math.random() * power * 3;
+        spawnParticle('debris', x, y,
+            Math.cos(angle) * speed, Math.sin(angle) * speed - 2,
+            60 + Math.random() * 40,
+            [150, 200, 255], 3 + Math.random() * 5);
+    }
+    // Sparks
+    for (let i = 0; i < 20; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 3 + Math.random() * power * 4;
+        spawnParticle('spark', x, y,
+            Math.cos(angle) * speed, Math.sin(angle) * speed,
+            30 + Math.random() * 20,
+            [255, 200, 50], 2);
+    }
+    // Smoke
+    for (let i = 0; i < 15; i++) {
+        spawnParticle('smoke', x + (Math.random() - 0.5) * 40, y + (Math.random() - 0.5) * 40,
+            (Math.random() - 0.5) * 1, -1 - Math.random(),
+            100 + Math.random() * 60,
+            [80, 80, 90], 10 + Math.random() * 15);
+    }
+}
+
+function drawExplosion() {
+    if (!explosionState) return;
+    const e = explosionState;
+    const progress = e.frame / e.maxFrame;
+
+    if (progress < 0.05) {
+        // White flash
+        ctx.fillStyle = `rgba(255,255,255,${1 - progress * 20})`;
+        ctx.fillRect(0, 0, CW, CH);
+    }
+
+    if (progress < 0.2) {
+        // Fireball
+        const radius = e.power * 50 * (progress * 5);
+        const grad = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, radius);
+        grad.addColorStop(0, `rgba(255,200,50,${0.8 * (1 - progress * 5)})`);
+        grad.addColorStop(0.5, `rgba(255,100,0,${0.5 * (1 - progress * 5)})`);
+        grad.addColorStop(1, 'rgba(255,50,0,0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(e.x - radius, e.y - radius, radius * 2, radius * 2);
+    }
+
+    if (progress > 0.05 && progress < 0.4) {
+        // Shockwave ring
+        const ringR = e.power * 80 * ((progress - 0.05) * 3);
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, ringR, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255,200,100,${0.5 * (1 - progress * 2.5)})`;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+    }
+
+    e.frame++;
+    if (e.frame >= e.maxFrame) explosionState = null;
+}
+
+// ===== Physics Tick =====
+function physicsTick() {
+    workbench.forEach(equip => {
+        const def = EQUIP_DEFS[equip.type];
+
+        // Heat transfer from heat sources
+        if (def.isHeat && equip.lit) {
+            const heatRate = equip.flameIntensity / 100 * 5;
+            // Find equipment above this heat source
+            workbench.forEach(other => {
+                if (other.id === equip.id) return;
+                const dx = Math.abs(other.x - equip.x);
+                const dy = equip.y - other.y; // other should be above
+                if (dx < 80 && dy > 0 && dy < 200) {
+                    other.temperature += heatRate * (1 - dx / 80) * (1 - dy / 200) * 0.5;
+                }
+            });
+        }
+
+        // Cool down towards ambient (25°C)
+        if (equip.temperature > 25) {
+            equip.temperature -= (equip.temperature - 25) * 0.001;
+        }
+
+        // Transfer temp to contents
+        equip.contents.forEach(s => {
+            s.temperature += (equip.temperature - s.temperature) * 0.05;
+        });
+
+        // Phase changes
+        equip.contents.forEach(s => {
+            const c = chemById[s.chemId];
+            if (!c) return;
+            if (s.temperature >= c.boilPt && s.phase !== 'gas') {
+                s.phase = 'gas';
+                if (equip.sealed) {
+                    equip.pressure += 10;
+                } else {
+                    // Generate steam
+                    s.amount -= 0.5;
+                    spawnParticle('smoke', equip.x, equip.y - equip.h / 2 - 10,
+                        (Math.random() - 0.5) * 0.5, -1, 60, [200, 220, 255], 8);
+                }
+            }
+            if (s.temperature <= c.meltPt && s.phase === 'liquid') {
+                s.phase = 'solid';
+            }
+            if (s.temperature > c.meltPt && s.phase === 'solid') {
+                s.phase = 'liquid';
+            }
+        });
+
+        // Remove depleted substances
+        equip.contents = equip.contents.filter(s => s.amount > 0);
+
+        // Glass damage from heat
+        if (def.glass) {
+            if (equip.temperature >= 600 && !equip.cracked) {
+                equip.cracked = true;
+                playSound('glass');
+                showToast(t('glass_crack'), 'danger');
+            }
+            if (equip.temperature >= 1000 && !equip.shattered && !equip.melted) {
+                equip.shattered = true;
+                playSound('boom', 0.3);
+                showToast(t('glass_shatter'), 'danger');
+                triggerExplosion(equip.x, equip.y, 0.5);
+                equip.contents = [];
+            }
+            if (equip.temperature >= 1500) {
+                equip.melted = true;
+            }
+        }
+
+        // Sealed pressure explosion
+        if (equip.sealed && equip.pressure > 100) {
+            equip.sealed = false;
+            equip.shattered = true;
+            triggerExplosion(equip.x, equip.y, 1.5);
+            showToast(t('explosion_warn'), 'danger');
+            reactionLog.push(lang === 'en' ? 'Sealed container explosion!' : '밀폐 용기 폭발!');
+            equip.contents = [];
+        }
+
+        // Foam decay
+        if (equip.foamLevel > 0) {
+            equip.foamLevel -= 0.3;
+            if (equip.foamLevel < 0) equip.foamLevel = 0;
+        }
+
+        // Precipitate settling
+        equip.precipitateParticles.forEach(p => {
+            p.y += 0.3;
+            p.x += (Math.random() - 0.5) * 0.5;
+        });
+
+        // Crystal growth
+        if (equip.contents.some(s => s.chemId === 'CuSO4' && s.temperature < 30 && s.amount > 20)) {
+            if (equip.crystals.length < 15 && Math.random() < 0.005) {
+                equip.crystals.push({
+                    x: equip.x + (Math.random() - 0.5) * 30,
+                    y: equip.y + equip.h / 2 - 10 - Math.random() * 20,
+                    size: 2 + Math.random() * 3,
+                    color: [30, 120, 220],
+                });
+            }
+            equip.crystals.forEach(cr => {
+                if (cr.size < 8) cr.size += 0.005;
+            });
+        }
+
+        // Sloshing decay
+        equip.sloshing *= 0.95;
+
+        // Check reactions
+        if (def.isContainer && equip.contents.length >= 1 && frameCount % 10 === 0) {
+            checkReactions(equip);
+        }
+    });
+
+    // Shake decay
+    if (shakeDecay > 0) {
+        shakeX = (Math.random() - 0.5) * shakeDecay;
+        shakeY = (Math.random() - 0.5) * shakeDecay;
+        shakeDecay *= 0.9;
+        if (shakeDecay < 0.5) { shakeDecay = 0; shakeX = 0; shakeY = 0; }
+    }
+
+    // Bloom decay
+    if (globalBloom > 0) globalBloom *= 0.95;
+
+    // Update particles
+    updateParticles();
+
+    // Check missions
+    if (frameCount % 60 === 0) checkMissions();
+}
+
+// ===== Reaction Checking =====
+function checkReactions(equip) {
+    const chemIds = equip.contents.map(s => s.chemId);
+    const maxTemp = Math.max(...equip.contents.map(s => s.temperature), equip.temperature);
+
+    for (const rule of REACTIONS) {
+        const hasAll = rule.reactants.every(r => chemIds.includes(r));
+        if (!hasAll) continue;
+        if (rule.conditions.minTemp && maxTemp < rule.conditions.minTemp) continue;
+
+        // Reaction happens!
+        const desc = lang === 'en' ? rule.en : rule.kr;
+        reactionLog.push(desc);
+        addNotebookEntry(desc);
+        playSound('sizzle');
+
+        // Apply effects
+        const eff = rule.effects;
+
+        if (eff.heat) {
+            equip.temperature += eff.heat;
+            equip.contents.forEach(s => s.temperature += eff.heat);
+        }
+
+        if (eff.gas) {
+            if (equip.sealed) {
+                equip.pressure += 30;
+            }
+            for (let i = 0; i < 10; i++) {
+                spawnParticle('bubble',
+                    equip.x + (Math.random() - 0.5) * 30,
+                    equip.y + (Math.random() - 0.5) * equip.h * 0.3,
+                    (Math.random() - 0.5) * 0.5, -1, 40,
+                    [200, 220, 255], 3 + Math.random() * 4);
+            }
+            playSound('bubble');
+        }
+
+        if (eff.foam) {
+            equip.foamLevel = 80;
+            for (let i = 0; i < 30; i++) {
+                spawnParticle('foam',
+                    equip.x + (Math.random() - 0.5) * 50,
+                    equip.y - equip.h / 2 - Math.random() * 60,
+                    (Math.random() - 0.5) * 2, -0.5 - Math.random(),
+                    100 + Math.random() * 60,
+                    [255, 255, 255], 5 + Math.random() * 10);
+            }
+            playSound('pour');
+        }
+
+        if (eff.explosion) {
+            triggerExplosion(equip.x, equip.y, 2);
+            equip.shattered = true;
+            equip.contents = [];
+            setAvatarFace('😱');
+        }
+
+        if (eff.fire) {
+            for (let i = 0; i < 20; i++) {
+                spawnParticle('spark',
+                    equip.x + (Math.random() - 0.5) * 40,
+                    equip.y - equip.h / 2,
+                    (Math.random() - 0.5) * 3, -2 - Math.random() * 3,
+                    40 + Math.random() * 30,
+                    [255, 180, 30], 2 + Math.random() * 2);
+            }
+        }
+
+        if (eff.precipitate) {
+            for (let i = 0; i < 20; i++) {
+                equip.precipitateParticles.push({
+                    x: equip.x + (Math.random() - 0.5) * 30,
+                    y: equip.y - (Math.random()) * equip.h * 0.3,
+                    r: 1 + Math.random() * 2,
+                    color: eff.precipitate,
+                });
+            }
+        }
+
+        if (eff.color) {
+            // Transition contents color over time
+            equip.contents.forEach(s => {
+                const c = chemById[s.chemId];
+                if (c) {
+                    c.color = [...eff.color]; // mutate (intentional for visual feedback)
+                }
+            });
+        }
+
+        if (eff.bloom) {
+            globalBloom = 1;
+        }
+
+        // Consume reactants (reduce amount)
+        rule.reactants.forEach(rid => {
+            const sub = equip.contents.find(s => s.chemId === rid);
+            if (sub) sub.amount -= 10;
+        });
+
+        // Add products
+        if (rule.products) {
+            rule.products.forEach(pid => {
+                if (pid.endsWith('_gas') || pid.endsWith('_ppt')) return; // gas escapes, ppt is visual
+                const existing = equip.contents.find(s => s.chemId === pid);
+                if (existing) {
+                    existing.amount += 10;
+                } else if (chemById[pid]) {
+                    equip.contents.push({ chemId: pid, amount: 10, phase: 'liquid', temperature: equip.temperature });
+                }
+            });
+        }
+
+        showToast('⚗️ ' + desc, 'success');
+        break; // one reaction per tick
+    }
+}
+
+// ===== Mission Checking =====
+function checkMissions() {
+    MISSIONS.forEach(m => {
+        if (completedMissions.has(m.id)) return;
+        if (m.check()) {
+            completedMissions.add(m.id);
+            score += m.pts;
+            localStorage.setItem('chem-lab-missions', JSON.stringify([...completedMissions]));
+            localStorage.setItem('chem-lab-score', score);
+            document.getElementById('scoreValue').textContent = score;
+            showToast(`${m.emoji} ${t('mission_complete')} ${lang === 'en' ? m.en : m.kr} (+${m.pts})`, 'success');
+            playSound('success');
+            setAvatarFace('😄');
+        }
+    });
+    updateMissionDisplay();
+}
+
+function updateMissionDisplay() {
+    currentLevel = getCurrentLevel();
+    const lvInfo = LEVEL_NAMES[currentLevel - 1];
+    const lvMissions = MISSIONS.filter(m => m.lv === currentLevel);
+    const lvDone = lvMissions.filter(m => completedMissions.has(m.id)).length;
+    const next = MISSIONS.find(m => m.lv <= currentLevel && !completedMissions.has(m.id));
+    if (next) {
+        document.getElementById('missionText').textContent =
+            `${lvInfo.emoji} Lv${currentLevel} ${next.emoji} ${lang === 'en' ? next.en : next.kr} (${lvDone}/${lvMissions.length})`;
+    } else {
+        document.getElementById('missionText').textContent = '🏆 All Complete!';
+    }
+}
+
+// ===== UI Helpers =====
+function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast show ' + type;
+    setTimeout(() => toast.className = 'toast', 2500);
+}
+
+function addNotebookEntry(desc) {
+    const entries = document.getElementById('notebookEntries');
+    const div = document.createElement('div');
+    div.className = 'notebook-entry';
+    const now = new Date();
+    div.innerHTML = `<span class="time">${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}</span>
+        <span class="eq">${desc}</span>`;
+    entries.prepend(div);
+}
+
+function setAvatarFace(emoji) {
+    document.getElementById('avatarFace').textContent = emoji;
+    setTimeout(() => document.getElementById('avatarFace').textContent = '🥽', 3000);
+}
+
+// ===== Render Loop =====
+function render() {
+    ctx.save();
+    ctx.translate(shakeX, shakeY);
+
+    drawWorkbench();
+
+    // Sort by Y for depth
+    const sorted = [...workbench].filter(e => !e.shattered || e.melted).sort((a, b) => a.y - b.y);
+    sorted.forEach(e => drawEquipment(e));
+
+    drawParticles();
+    drawExplosion();
+
+    // Bloom overlay
+    if (globalBloom > 0.01) {
+        ctx.fillStyle = `rgba(255,255,240,${globalBloom * 0.4})`;
+        ctx.fillRect(0, 0, CW, CH);
+    }
+
+    ctx.restore();
+}
+
+function gameLoop(timestamp) {
+    const dt = timestamp - lastTime;
+    lastTime = timestamp;
+    accumulator += Math.min(dt, 100);
+
+    while (accumulator >= PHYSICS_DT) {
+        physicsTick();
+        accumulator -= PHYSICS_DT;
+        frameCount++;
+    }
+
+    render();
+
+    // HUD
+    const sel = workbench.find(e => e._selected);
+    if (sel) {
+        document.getElementById('hudTemp').textContent = `🌡️ ${Math.round(sel.temperature)}°C`;
+        if (sel.contents.length > 0) {
+            const avgPH = sel.contents.reduce((s, c) => {
+                const ch = chemById[c.chemId];
+                return s + (ch?.pH || 7) * c.amount;
+            }, 0) / sel.contents.reduce((s, c) => s + c.amount, 1);
+            document.getElementById('hudPH').textContent = `pH ${avgPH.toFixed(1)}`;
+        }
+    }
+    // FPS
+    if (frameCount % 30 === 0) {
+        document.getElementById('hudFPS').textContent = `FPS ${Math.round(1000 / (dt || 16))}`;
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+// ===== Input Handling =====
+let dragging = null;
+let dragOffX = 0, dragOffY = 0;
+
+function canvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = CW / rect.width;
+    const scaleY = CH / rect.height;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return [(clientX - rect.left) * scaleX, (clientY - rect.top) * scaleY];
+}
+
+function hitTest(x, y) {
+    for (let i = workbench.length - 1; i >= 0; i--) {
+        const e = workbench[i];
+        if (x >= e.x - e.w/2 - 10 && x <= e.x + e.w/2 + 10 &&
+            y >= e.y - e.h/2 - 10 && y <= e.y + e.h/2 + 10) {
+            return e;
+        }
+    }
+    return null;
+}
+
+canvas.addEventListener('pointerdown', (ev) => {
+    ev.preventDefault();
+    const [mx, my] = canvasCoords(ev);
+    const hit = hitTest(mx, my);
+
+    if (actionMode === 'place' && selectedTool) {
+        // Place new equipment
+        const equip = createEquip(selectedTool, mx, my);
+        workbench.push(equip);
+        playSound('click');
+        return;
+    }
+
+    if (actionMode === 'pour' && selectedChem && hit) {
+        // Add chemical to container
+        const def = EQUIP_DEFS[hit.type];
+        if (def.isContainer) {
+            const existing = hit.contents.find(s => s.chemId === selectedChem);
+            if (existing) {
+                existing.amount = Math.min(hit.capacity, existing.amount + 20);
+            } else {
+                const c = chemById[selectedChem];
+                hit.contents.push({
+                    chemId: selectedChem,
+                    amount: 20,
+                    phase: c.state25C,
+                    temperature: 25,
+                });
+            }
+            hit.sloshing = 1;
+            playSound('pour');
+
+            // Bubble animation
+            for (let i = 0; i < 5; i++) {
+                spawnParticle('drop',
+                    hit.x + (Math.random() - 0.5) * 20,
+                    hit.y - hit.h / 2,
+                    (Math.random() - 0.5), 1 + Math.random(),
+                    20, chemById[selectedChem]?.color || [100, 160, 255], 2);
+            }
+        }
+        return;
+    }
+
+    if (actionMode === 'trash' && hit) {
+        workbench = workbench.filter(e => e.id !== hit.id);
+        playSound('whoosh');
+        return;
+    }
+
+    if (actionMode === 'move' && hit) {
+        dragging = hit;
+        dragOffX = mx - hit.x;
+        dragOffY = my - hit.y;
+        return;
+    }
+
+    // Default: select
+    workbench.forEach(e => e._selected = false);
+    if (hit) {
+        hit._selected = true;
+        // If tool selected, apply measurement
+        if (selectedTool === 'thermometer') {
+            hit.temperature; // already shown in HUD
+        }
+        if (selectedTool === 'phstrip' && hit.contents.length > 0) {
+            const avgPH = hit.contents.reduce((s, c) => s + (chemById[c.chemId]?.pH || 7) * c.amount, 0) /
+                hit.contents.reduce((s, c) => s + c.amount, 1);
+            // Create a pH strip near the container
+            const strip = createEquip('phstrip', hit.x + hit.w / 2 + 15, hit.y);
+            strip.measuredPH = avgPH;
+            workbench.push(strip);
+            playSound('click');
+        }
+    }
+});
+
+canvas.addEventListener('pointermove', (ev) => {
+    if (!dragging) return;
+    ev.preventDefault();
+    const [mx, my] = canvasCoords(ev);
+    dragging.x = mx - dragOffX;
+    dragging.y = my - dragOffY;
+    dragging.sloshing = 0.5;
+});
+
+canvas.addEventListener('pointerup', () => {
+    dragging = null;
+});
+
+// Equipment shelf buttons
+document.querySelectorAll('.equip-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const type = btn.dataset.type;
+        document.querySelectorAll('.equip-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedTool = type;
+        selectedChem = null;
+        document.querySelectorAll('.chem-btn').forEach(b => b.classList.remove('active'));
+
+        const def = EQUIP_DEFS[type];
+        if (def.isContainer) actionMode = 'place';
+        else if (def.isHeat || def.isSupport) actionMode = 'place';
+        else actionMode = 'place'; // tools too
+
+        // Update toolbar
+        setAction('place');
+        playSound('click');
+    });
+});
+
+// ===== Canvas Toolbar Actions =====
+function setAction(action) {
+    // Special actions (not modes)
+    if (action === 'ignite') {
+        const sel = workbench.find(e => e._selected && EQUIP_DEFS[e.type].isHeat);
+        if (sel) { sel.lit = !sel.lit; if (sel.lit) playSound('flame'); }
+        else { workbench.filter(e => EQUIP_DEFS[e.type].isHeat).forEach(e => { e.lit = !e.lit; }); playSound('flame'); }
+        return;
+    }
+    if (action === 'seal') {
+        const sel = workbench.find(e => e._selected && EQUIP_DEFS[e.type].isContainer);
+        if (sel) { sel.sealed = !sel.sealed; playSound('click'); }
+        return;
+    }
+    if (action === 'stir') {
+        const sel = workbench.find(e => e._selected && EQUIP_DEFS[e.type].isContainer);
+        if (sel) { sel.sloshing = 2; playSound('pour'); }
+        return;
+    }
+    if (action === 'clear') {
+        workbench = []; particles = []; explosionState = null;
+        shakeDecay = 0; globalBloom = 0; playSound('whoosh');
+        return;
+    }
+    // Mode actions
+    actionMode = action;
+    document.querySelectorAll('.tb-btn[data-action]').forEach(b => {
+        const a = b.dataset.action;
+        b.classList.toggle('active', a === action && !['ignite','seal','stir','clear'].includes(a));
+    });
+    if (action === 'pour') {
+        selectedTool = null;
+        document.querySelectorAll('.equip-btn').forEach(b => b.classList.remove('active'));
+    }
+    playSound('click');
+}
+
+// Toolbar button clicks
+document.querySelectorAll('.tb-btn[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => setAction(btn.dataset.action));
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    const key = e.key.toLowerCase();
+    const map = { v:'move', p:'place', o:'pour', i:'ignite', s:'seal', r:'stir', d:'trash' };
+    if (map[key]) { e.preventDefault(); setAction(map[key]); }
+});
+
+// Flame intensity slider
+document.getElementById('flameIntensity').addEventListener('input', (ev) => {
+    const val = parseInt(ev.target.value);
+    document.getElementById('flameLabel').textContent = val + '%';
+    workbench.filter(e => EQUIP_DEFS[e.type].isHeat && e.lit).forEach(e => {
+        e.flameIntensity = val;
+    });
+});
+
+// Language toggle
+document.getElementById('langBtn').addEventListener('click', () => {
+    lang = lang === 'ko' ? 'en' : 'ko';
+    localStorage.setItem('chem-lab-lang', lang);
+    document.getElementById('langBtn').textContent = lang === 'ko' ? 'EN' : '한';
+    updateI18n();
+    buildChemPanel();
+    updateMissionDisplay();
+});
+
+// Mission display click
+let missionModalLevel = 1;
+document.getElementById('missionDisplay').addEventListener('click', () => {
+    missionModalLevel = currentLevel;
+    renderMissionModal();
+    document.getElementById('missionModal').classList.add('show');
+});
+function renderMissionModal() {
+    const lvInfo = LEVEL_NAMES[missionModalLevel - 1];
+    const unlocked = getCurrentLevel();
+    document.getElementById('modalTitle').textContent = `${lvInfo.emoji} Lv${missionModalLevel}: ${lang==='en'?lvInfo.en:lvInfo.kr}`;
+
+    // Level tabs
+    let html = '<div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;">';
+    LEVEL_NAMES.forEach((lv, i) => {
+        const lvNum = i + 1;
+        const isUnlocked = lvNum <= unlocked;
+        const isActive = lvNum === missionModalLevel;
+        const lvDone = MISSIONS.filter(m=>m.lv===lvNum&&completedMissions.has(m.id)).length;
+        const lvTotal = MISSIONS.filter(m=>m.lv===lvNum).length;
+        html += `<button onclick="missionModalLevel=${lvNum};renderMissionModal();" style="
+            padding:4px 8px;border-radius:6px;font-size:10px;cursor:pointer;border:1px solid ${isActive?lv.color:'rgba(255,255,255,0.1)'};
+            background:${isActive?lv.color+'33':'rgba(255,255,255,0.03)'};color:${isUnlocked?lv.color:'#444'};
+            ${!isUnlocked?'opacity:0.4;':''}font-family:JetBrains Mono,monospace;">
+            ${lv.emoji}${lvNum} <span style="font-size:8px;">${lvDone}/${lvTotal}</span>
+        </button>`;
+    });
+    html += '</div>';
+
+    // Mission list for selected level
+    const lvMissions = MISSIONS.filter(m => m.lv === missionModalLevel);
+    html += '<div style="display:grid;gap:6px;max-height:400px;overflow-y:auto;">';
+    lvMissions.forEach(m => {
+        const done = completedMissions.has(m.id);
+        const locked = missionModalLevel > unlocked;
+        html += `<div style="display:flex;gap:8px;align-items:flex-start;opacity:${locked?0.3:done?0.5:1};padding:6px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid ${done?'rgba(16,185,129,0.2)':'rgba(255,255,255,0.05)'};">
+            <span style="font-size:18px;flex-shrink:0;">${m.emoji}</span>
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:12px;${done?'text-decoration:line-through;color:var(--green);':''}">
+                    ${lang==='en'?m.en:m.kr} <span style="color:var(--orange);font-size:10px;">+${m.pts}</span>
+                </div>
+                <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">${lang==='en'?m.hint_en:m.hint_kr}</div>
+                <div style="font-size:9px;color:var(--cyan);margin-top:3px;opacity:0.7;">📋 ${lang==='en'?m.recipe_en:m.recipe_kr}</div>
+            </div>
+            ${done?'<span style="color:var(--green);font-size:16px;">✓</span>':locked?'<span style="font-size:14px;">🔒</span>':''}
+        </div>`;
+    });
+    html += '</div>';
+
+    // Progress bar
+    const totalDone = MISSIONS.filter(m=>completedMissions.has(m.id)).length;
+    const totalAll = MISSIONS.length;
+    html += `<div style="margin-top:12px;background:rgba(255,255,255,0.05);border-radius:6px;height:8px;overflow:hidden;">
+        <div style="height:100%;width:${(totalDone/totalAll*100).toFixed(1)}%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:6px;transition:width 0.3s;"></div>
+    </div>
+    <div style="text-align:center;font-size:10px;color:var(--text-dim);margin-top:4px;">${totalDone}/${totalAll} (${(totalDone/totalAll*100).toFixed(0)}%)</div>`;
+
+    document.getElementById('modalBody').innerHTML = html;
+}
+document.getElementById('modalClose').addEventListener('click', () => {
+    document.getElementById('missionModal').classList.remove('show');
+});
+
+// Replay intro
+document.getElementById('replayBtn').addEventListener('click', () => {
+    document.getElementById('labApp').style.display = 'none';
+    document.getElementById('introScreen').style.display = 'block';
+    startIntro();
+});
+
+// ===== INTRO SEQUENCE =====
+function startIntro() {
+    const ic = document.getElementById('introCanvas');
+    const ictx = ic.getContext('2d');
+    ic.width = window.innerWidth;
+    ic.height = window.innerHeight;
+    const W = ic.width, H = ic.height;
+
+    let frame = 0;
+    const totalFrames = 300; // ~5 seconds at 60fps
+    const groundY = H * 0.72;
+
+    // 8-head-tall pixel character (16x40) - Breaking Bad style
+    const CHAR_W = 16, CHAR_H = 40;
+    // Legend: 1=hair, H=hairSide, F=skin, E=eye, M=mouth/beard, B=jacket, b=jacketDark,
+    //         W=shirt, J=jeans, j=jeansDark, S=shoe, G=goatee, N=neck
+    const charFrames = [
+      [ // Frame 0 (standing / walk phase A)
+        '......1111......', // 0  hair top
+        '.....111111.....',
+        '....11111111....',
+        '....1FFFFFF1....',
+        '....FFFFFFFF....', // 4  face
+        '....F.EFF.EF....',
+        '....FFFFFFFF....',
+        '....FFGGGFF.....',
+        '.....FFFFFF.....',
+        '.....NNNN.......',  // 9  neck
+        '....BBWWWWBB....',  // 10 shoulders
+        '...BBBWWWWBBB...',
+        '...BBBWWWWBBB...',
+        '...BBbWWWWbBB...',
+        '...BB.WWWW.BB...',  // 14
+        '...BB.WWWW.BB...',
+        '...bB.WWWW.Bb...',
+        '....B.WWWW.B....',  // 17 waist
+        '....FWWWWWWF....',  // 18 hands+belt
+        '.....JJJJJJ.....',  // 19 hip
+        '.....JJJJJJ.....',
+        '.....JJ..JJ.....',
+        '.....JJ..JJ.....',  // 22
+        '....JJ....JJ....',
+        '....JJ....JJ....',
+        '....JJ....JJ....',
+        '....jJ....Jj....',
+        '....jJ....Jj....',  // 27
+        '....jj....jj....',
+        '....jj....jj....',
+        '....jj....jj....',  // 30
+        '....jj....jj....',
+        '....jj....jj....',
+        '....jj....jj....',
+        '....SS....SS....',  // 34 ankle
+        '....SS....SS....',
+        '...SSS....SSS...',  // 36 shoes
+        '...SSS....SSS...',
+        '...SSS....SSS...',
+        '..SSSS....SSSS..',  // 39 shoe sole
+      ],
+      [ // Frame 1 (walk phase B - left leg forward)
+        '......1111......',
+        '.....111111.....',
+        '....11111111....',
+        '....1FFFFFF1....',
+        '....FFFFFFFF....',
+        '....F.EFF.EF....',
+        '....FFFFFFFF....',
+        '....FFGGGFF.....',
+        '.....FFFFFF.....',
+        '.....NNNN.......',
+        '....BBWWWWBB....',
+        '...BBBWWWWBBB...',
+        '...BBBWWWWBBB...',
+        '...BBbWWWWbBB...',
+        '...BB.WWWW.BB...',
+        '...BB.WWWW.BB...',
+        '...bB.WWWW.Bb...',
+        '....B.WWWW.B....',
+        '....FWWWWWWF....',
+        '.....JJJJJJ.....',
+        '.....JJJJJJ.....',
+        '....JJJ..JJ.....',
+        '...JJJ...JJ.....',  // left leg forward
+        '...JJ.....JJ....',
+        '..JJ......JJ....',
+        '..JJ......JJ....',
+        '..jj.....Jj.....',
+        '..jj.....Jj.....',
+        '..jj....jj......',
+        '..jj....jj......',
+        '.SSS....jj......',
+        '.SSS....jj......',
+        '.SSS...jj.......',
+        '........jj......',
+        '........SS......',
+        '........SS......',
+        '........SSS.....',
+        '........SSS.....',
+        '........SSS.....',
+        '........SSSS....',
+      ],
+    ];
+
+    const charColors = {
+        '1': '#1a1a1a', 'H': '#2a2a2a', 'F': '#e0b080', 'E': '#1a1a1a',
+        'M': '#8a6a4a', 'G': '#3a2a1a', 'N': '#d0a070',
+        'B': '#8B6914', 'b': '#6a5010',
+        'W': '#f0edd8', 'J': '#2D5F8A', 'j': '#1e4a6a',
+        'S': '#4a2a10', '.': null
+    };
+
+    function drawPixelChar(px, py, scale, walkFrame) {
+        const fi = Math.floor(Math.abs(walkFrame)) % 2;
+        const rows = charFrames[fi];
+        rows.forEach((row, ry) => {
+            for (let rx = 0; rx < row.length; rx++) {
+                const c = charColors[row[rx]];
+                if (!c) continue;
+                ictx.fillStyle = c;
+                ictx.fillRect(px + rx * scale, py + ry * scale, scale, scale);
+            }
+        });
+    }
+
+    function drawRV(rx, ry, scale) {
+        // RV body
+        ictx.fillStyle = '#c4a55a';
+        ictx.fillRect(rx, ry, 200 * scale, 100 * scale);
+        // Roof
+        ictx.fillStyle = '#e8dbb5';
+        ictx.fillRect(rx, ry - 15 * scale, 200 * scale, 15 * scale);
+        // Windows
+        ictx.fillStyle = '#2a3a5a';
+        ictx.fillRect(rx + 20 * scale, ry + 15 * scale, 35 * scale, 25 * scale);
+        ictx.fillRect(rx + 70 * scale, ry + 15 * scale, 35 * scale, 25 * scale);
+        ictx.fillRect(rx + 140 * scale, ry + 10 * scale, 45 * scale, 35 * scale);
+        // Window reflections
+        ictx.fillStyle = 'rgba(100,180,255,0.2)';
+        ictx.fillRect(rx + 22 * scale, ry + 17 * scale, 10 * scale, 8 * scale);
+        // Door
+        ictx.fillStyle = '#a08840';
+        ictx.fillRect(rx + 115 * scale, ry + 20 * scale, 20 * scale, 80 * scale);
+        ictx.strokeStyle = '#806828';
+        ictx.lineWidth = scale;
+        ictx.strokeRect(rx + 115 * scale, ry + 20 * scale, 20 * scale, 80 * scale);
+        // Door handle
+        ictx.fillStyle = '#888';
+        ictx.fillRect(rx + 130 * scale, ry + 55 * scale, 4 * scale, 8 * scale);
+        // Wheels
+        ictx.fillStyle = '#222';
+        ictx.beginPath();
+        ictx.arc(rx + 40 * scale, ry + 100 * scale, 12 * scale, 0, Math.PI * 2);
+        ictx.fill();
+        ictx.beginPath();
+        ictx.arc(rx + 160 * scale, ry + 100 * scale, 12 * scale, 0, Math.PI * 2);
+        ictx.fill();
+        // Hubcaps
+        ictx.fillStyle = '#555';
+        ictx.beginPath();
+        ictx.arc(rx + 40 * scale, ry + 100 * scale, 5 * scale, 0, Math.PI * 2);
+        ictx.fill();
+        ictx.beginPath();
+        ictx.arc(rx + 160 * scale, ry + 100 * scale, 5 * scale, 0, Math.PI * 2);
+        ictx.fill();
+        // Stripe
+        ictx.fillStyle = '#a08040';
+        ictx.fillRect(rx, ry + 50 * scale, 200 * scale, 5 * scale);
+    }
+
+    function drawDesert() {
+        // Sky gradient
+        const skyGrad = ictx.createLinearGradient(0, 0, 0, groundY);
+        skyGrad.addColorStop(0, '#1a0a00');
+        skyGrad.addColorStop(0.3, '#3a1a08');
+        skyGrad.addColorStop(0.7, '#8a4a20');
+        skyGrad.addColorStop(1, '#c47830');
+        ictx.fillStyle = skyGrad;
+        ictx.fillRect(0, 0, W, groundY);
+
+        // Stars
+        for (let i = 0; i < 50; i++) {
+            const sx = (i * 137.5 + 50) % W;
+            const sy = (i * 73.3 + 20) % (groundY * 0.6);
+            const brightness = 0.3 + Math.sin(frame * 0.02 + i) * 0.2;
+            ictx.fillStyle = `rgba(255,255,200,${brightness})`;
+            ictx.fillRect(sx, sy, 2, 2);
+        }
+
+        // Mountains (distant)
+        ictx.fillStyle = '#2a1508';
+        ictx.beginPath();
+        ictx.moveTo(0, groundY);
+        for (let x = 0; x <= W; x += 80) {
+            ictx.lineTo(x, groundY - 30 - Math.sin(x * 0.005) * 50 - Math.cos(x * 0.01) * 30);
+        }
+        ictx.lineTo(W, groundY);
+        ictx.fill();
+
+        // Ground
+        ictx.fillStyle = '#c47830';
+        ictx.fillRect(0, groundY, W, H - groundY);
+        // Ground texture
+        ictx.fillStyle = '#a06020';
+        for (let i = 0; i < 30; i++) {
+            const gx = (i * 97 + 30) % W;
+            const gy = groundY + 5 + (i * 53 % (H - groundY - 10));
+            ictx.fillRect(gx, gy, 3 + i % 5, 1);
+        }
+
+        // Cacti
+        drawCactus(W * 0.15, groundY - 5, 2);
+        drawCactus(W * 0.8, groundY - 5, 1.5);
+    }
+
+    function drawCactus(cx, cy, scale) {
+        ictx.fillStyle = '#2a5a1a';
+        // Main body
+        ictx.fillRect(cx - 4 * scale, cy - 40 * scale, 8 * scale, 40 * scale);
+        // Left arm
+        ictx.fillRect(cx - 15 * scale, cy - 30 * scale, 11 * scale, 5 * scale);
+        ictx.fillRect(cx - 15 * scale, cy - 35 * scale, 5 * scale, 10 * scale);
+        // Right arm
+        ictx.fillRect(cx + 4 * scale, cy - 20 * scale, 12 * scale, 5 * scale);
+        ictx.fillRect(cx + 12 * scale, cy - 28 * scale, 5 * scale, 13 * scale);
+    }
+
+    let introAnim;
+    function animateIntro() {
+        frame++;
+        const progress = frame / totalFrames;
+
+        ictx.clearRect(0, 0, W, H);
+        drawDesert();
+
+        const rvScale = Math.min(W / 500, H / 300) * 0.8;
+        const rvX = W * 0.45;
+        const rvY = groundY - 100 * rvScale;
+
+        drawRV(rvX, rvY, rvScale);
+
+        // Character walking (8-head-tall, smaller scale, feet on ground)
+        const charScale = 2 * rvScale;
+        let charX, charY;
+        const charFeetY = groundY; // feet touch ground
+
+        if (progress < 0.35) {
+            // Walking from right to RV
+            const walkProgress = progress / 0.35;
+            charX = W * 0.9 - walkProgress * (W * 0.9 - (rvX + 115 * rvScale));
+            charY = charFeetY - CHAR_H * charScale;
+            drawPixelChar(charX, charY, charScale, frame * 0.12);
+        } else if (progress < 0.45) {
+            // Looking around
+            charX = rvX + 115 * rvScale;
+            charY = charFeetY - CHAR_H * charScale;
+            drawPixelChar(charX, charY, charScale, 0);
+            // "?" bubble
+            const bubbleAlpha = Math.sin((progress - 0.35) * 100);
+            if (bubbleAlpha > 0) {
+                ictx.fillStyle = `rgba(255,255,255,${bubbleAlpha * 0.8})`;
+                ictx.font = `${12 * rvScale}px 'Press Start 2P', monospace`;
+                ictx.fillText('?', charX + CHAR_W * charScale + 4, charY - 4);
+            }
+        } else if (progress < 0.6) {
+            // Door opening
+            const doorProg = (progress - 0.45) / 0.15;
+            charX = rvX + 115 * rvScale;
+            charY = charFeetY - CHAR_H * charScale;
+            drawPixelChar(charX, charY, charScale, 0);
+            // Animate door open (yellow light from inside)
+            const doorW = 20 * rvScale * (1 - doorProg * 0.3);
+            ictx.fillStyle = `rgba(255,220,100,${doorProg * 0.6})`;
+            ictx.fillRect(rvX + 115 * rvScale, rvY + 20 * rvScale, doorW, 80 * rvScale);
+        } else if (progress < 0.75) {
+            // Walking into RV
+            const enterProg = (progress - 0.6) / 0.15;
+            charX = rvX + 115 * rvScale;
+            charY = charFeetY - CHAR_H * charScale;
+            const fadeScale = charScale * (1 - enterProg * 0.5);
+            ictx.globalAlpha = 1 - enterProg;
+            drawPixelChar(charX, charY, fadeScale, frame * 0.1);
+            ictx.globalAlpha = 1;
+            // Bright interior light
+            ictx.fillStyle = `rgba(255,220,100,${0.4 + enterProg * 0.3})`;
+            ictx.fillRect(rvX + 115 * rvScale, rvY + 20 * rvScale, 20 * rvScale, 80 * rvScale);
+        } else if (progress < 0.85) {
+            // Green glow + goggles flash
+            const greenProg = (progress - 0.75) / 0.1;
+            // Windows glow green
+            ictx.fillStyle = `rgba(0,255,100,${greenProg * 0.4})`;
+            ictx.fillRect(rvX + 20 * rvScale, rvY + 15 * rvScale, 35 * rvScale, 25 * rvScale);
+            ictx.fillRect(rvX + 70 * rvScale, rvY + 15 * rvScale, 35 * rvScale, 25 * rvScale);
+            // Smoke from chimney
+            for (let i = 0; i < 3; i++) {
+                const sx = rvX + 80 * rvScale + Math.sin(frame * 0.05 + i) * 10;
+                const sy = rvY - 15 * rvScale - greenProg * 30 - i * 15;
+                ictx.beginPath();
+                ictx.arc(sx, sy, 5 + i * 3, 0, Math.PI * 2);
+                ictx.fillStyle = `rgba(100,200,100,${(1 - greenProg) * 0.3})`;
+                ictx.fill();
+            }
+        } else {
+            // Fade to lab
+            const fadeProg = (progress - 0.85) / 0.15;
+            // Green flash
+            ictx.fillStyle = `rgba(0,255,100,${(1 - fadeProg) * 0.3})`;
+            ictx.fillRect(0, 0, W, H);
+            // Dark overlay
+            ictx.fillStyle = `rgba(10,10,26,${fadeProg})`;
+            ictx.fillRect(0, 0, W, H);
+            // Text
+            if (fadeProg > 0.3) {
+                ictx.fillStyle = `rgba(6,182,212,${(fadeProg - 0.3) * 1.4})`;
+                ictx.font = `bold ${20 * rvScale}px 'Jua', sans-serif`;
+                ictx.textAlign = 'center';
+                ictx.fillText('🧪 Luna Chem Lab', W / 2, H / 2);
+                ictx.font = `${10 * rvScale}px 'JetBrains Mono', monospace`;
+                ictx.fillStyle = `rgba(6,182,212,${(fadeProg - 0.5) * 2})`;
+                ictx.fillText('"Let\'s cook... science!"', W / 2, H / 2 + 30 * rvScale);
+            }
+        }
+
+        if (frame < totalFrames) {
+            introAnim = requestAnimationFrame(animateIntro);
+        } else {
+            finishIntro();
+        }
+    }
+
+    introAnim = requestAnimationFrame(animateIntro);
+
+    // Skip button
+    document.getElementById('skipBtn').onclick = () => {
+        cancelAnimationFrame(introAnim);
+        finishIntro();
+    };
+}
+
+function finishIntro() {
+    localStorage.setItem('chem-lab-intro-seen', '1');
+    document.getElementById('introScreen').style.display = 'none';
+    document.getElementById('labApp').style.display = 'flex';
+    initLab();
+}
+
+function initLab() {
+    buildChemPanel();
+    updateI18n();
+    updateMissionDisplay();
+    document.getElementById('scoreValue').textContent = score;
+    lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
+}
+
+// ===== Start =====
+window.addEventListener('load', () => {
+    const seen = localStorage.getItem('chem-lab-intro-seen');
+    if (seen) {
+        finishIntro();
+    } else {
+        startIntro();
+    }
+});
+
+// Expose for debugging
+window._chem = { workbench, particles, createEquip, chemById, REACTIONS, MISSIONS, reactionLog, checkReactions, triggerExplosion, spawnParticle };
+
+</script>
+<script src="../../assets/js/global-nav.js?v=20260329f"></script>
+</body>
+</html>

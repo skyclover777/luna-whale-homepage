@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>그림 3D 프린터 - Luna Whale</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Lexend:wght@300;400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lexend',sans-serif;background:linear-gradient(135deg,#eef2ff 0%,#e0e7ff 30%,#ede9fe 70%,#f5f3ff 100%);min-height:100vh;color:#2c2420;overflow-x:hidden}
+body::before,body::after{content:'';position:fixed;border-radius:50%;filter:blur(80px);opacity:.2;pointer-events:none;z-index:0}
+body::before{width:400px;height:400px;background:radial-gradient(circle,#818cf8,transparent);top:-100px;left:-100px}
+body::after{width:350px;height:350px;background:radial-gradient(circle,#c084fc,transparent);bottom:-80px;right:-80px}
+
+.top-bar{position:sticky;top:0;z-index:50;background:rgba(238,242,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,0,0,.04);padding:14px 24px;display:flex;align-items:center;gap:14px}
+.back-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.back-btn:hover{background:rgba(0,0,0,.04)}
+.top-title{font-family:'Jua',sans-serif;font-size:22px;font-weight:400;color:#2c2420;flex:1;letter-spacing:-.5px}
+.top-badge{font-size:11px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:4px 10px;border-radius:20px;font-weight:600}
+
+.container{max-width:900px;margin:0 auto;padding:20px 16px 40px;position:relative;z-index:1}
+
+.hero{text-align:center;margin-bottom:28px}
+.hero h2{font-family:'Jua',sans-serif;font-size:28px;background:linear-gradient(135deg,#6366f1,#8b5cf6,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.hero p{font-size:13px;color:#8b7b6b}
+
+/* Cards */
+.card{background:#fff;border-radius:20px;border:1px solid rgba(0,0,0,.06);padding:24px;margin-bottom:20px;box-shadow:0 4px 24px rgba(0,0,0,.04);display:none}
+.card.visible{display:block}
+.card-title{font-family:'Jua',sans-serif;font-size:16px;color:#4338ca;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title .material-symbols-outlined{font-size:20px}
+
+/* Upload zone */
+.upload-zone{border:2.5px dashed #a5b4fc;border-radius:20px;padding:40px 20px;text-align:center;cursor:pointer;transition:.3s;background:rgba(255,255,255,.6);backdrop-filter:blur(8px);margin-bottom:24px;position:relative;overflow:hidden}
+.upload-zone:hover,.upload-zone.drag-over{border-color:#6366f1;background:rgba(99,102,241,.05);transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,.12)}
+.upload-zone .icon{font-size:48px;color:#818cf8;margin-bottom:12px;display:block}
+.upload-zone .label{font-family:'Jua',sans-serif;font-size:18px;color:#5b6c7b;margin-bottom:6px}
+.upload-zone .sub{font-size:12px;color:#a09890}
+.upload-zone .camera-row{display:flex;justify-content:center;gap:12px;margin-top:14px}
+.upload-zone .camera-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:12px;border:1px solid rgba(99,102,241,.2);background:rgba(99,102,241,.06);font-family:'Jua',sans-serif;font-size:14px;color:#6366f1;cursor:pointer;transition:.2s}
+.upload-zone .camera-btn:hover{background:rgba(99,102,241,.12)}
+.upload-zone input{display:none}
+
+/* Preview image */
+.uploaded-preview{display:none;margin-bottom:20px;text-align:center}
+.uploaded-preview img{max-width:100%;max-height:300px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.uploaded-preview .change-btn{display:inline-block;margin-top:10px;font-size:13px;color:#6366f1;cursor:pointer;font-family:'Jua',sans-serif;border:none;background:none}
+
+/* API card */
+.api-card{background:#fff;border-radius:20px;border:1px solid rgba(99,102,241,.15);padding:24px;margin-bottom:24px;box-shadow:0 4px 24px rgba(99,102,241,.06);display:none}
+.api-card.visible{display:block}
+.service-tabs{display:flex;gap:8px;margin-bottom:20px}
+.service-tab{flex:1;padding:14px 12px;border-radius:14px;border:2px solid #e0e7ff;background:rgba(255,255,255,.8);cursor:pointer;text-align:center;transition:.2s}
+.service-tab:hover{border-color:#a5b4fc}
+.service-tab.active{border-color:#6366f1;background:rgba(99,102,241,.06);box-shadow:0 4px 16px rgba(99,102,241,.12)}
+.service-tab .st-icon{font-size:28px;margin-bottom:4px}
+.service-tab .st-name{font-family:'Jua',sans-serif;font-size:15px;color:#2c2420}
+.service-tab .st-desc{font-size:11px;color:#94a3b8;margin-top:2px}
+.service-tab .st-free{font-size:10px;color:#059669;font-weight:700;margin-top:4px;background:#ecfdf5;display:inline-block;padding:2px 8px;border-radius:8px}
+
+.api-input-row{display:flex;gap:10px;margin-bottom:12px}
+.api-input{flex:1;padding:12px 16px;border-radius:12px;border:1.5px solid #dbeafe;font-size:14px;font-family:'Lexend',sans-serif;outline:none;transition:.2s;background:#f8fafc}
+.api-input:focus{border-color:#6366f1;background:#fff;box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.api-save-btn{padding:12px 20px;border-radius:12px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:'Jua',sans-serif;font-size:15px;cursor:pointer;transition:.2s;white-space:nowrap}
+.api-save-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,.3)}
+.api-help{font-size:12px;color:#94a3b8;line-height:1.6}
+.api-help a{color:#6366f1;text-decoration:none}
+.api-help a:hover{text-decoration:underline}
+.api-status{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;margin-bottom:12px;font-size:13px;font-weight:600}
+.api-status.connected{background:#ecfdf5;color:#059669}
+.api-status.none{background:#fef2f2;color:#dc2626}
+.api-status .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.api-status.connected .dot{background:#10b981}
+.api-status.none .dot{background:#ef4444}
+
+/* Generate button */
+.generate-section{display:none;text-align:center;margin-bottom:24px}
+.generate-section.visible{display:block}
+.btn-generate{padding:16px 40px;border-radius:16px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:'Jua',sans-serif;font-size:18px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(99,102,241,.35)}
+.btn-generate:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(99,102,241,.45)}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Progress */
+.progress-section{display:none;margin-bottom:24px}
+.progress-section.visible{display:block}
+.progress-bar-outer{background:#e0e7ff;border-radius:12px;height:24px;overflow:hidden;position:relative;margin-bottom:8px}
+.progress-bar-inner{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6,#a855f7);border-radius:12px;transition:width .5s;width:0%;position:relative}
+.progress-bar-inner::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shimmer 2s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.progress-text{text-align:center;font-size:13px;color:#6b7c8b;font-weight:600}
+.progress-status{text-align:center;font-size:12px;color:#94a3b8;margin-top:4px}
+
+/* 3D Preview */
+#three-container{width:100%;aspect-ratio:4/3;border-radius:16px;overflow:hidden;background:#1a1a2e;position:relative;touch-action:none;cursor:grab}
+#three-container:active{cursor:grabbing}
+#three-container canvas{width:100%!important;height:100%!important;display:block}
+.three-controls{position:absolute;bottom:12px;right:12px;display:flex;gap:6px;z-index:5}
+.three-ctrl-btn{width:36px;height:36px;border-radius:10px;border:none;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;font-size:18px}
+.three-ctrl-btn:hover{background:rgba(255,255,255,.25)}
+.three-ctrl-btn.active{background:rgba(99,102,241,.5)}
+.three-info{position:absolute;top:12px;left:12px;font-size:11px;color:rgba(255,255,255,.5);z-index:5}
+
+/* Export */
+.export-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.btn-primary{padding:14px 28px;border-radius:14px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:'Jua',sans-serif;font-size:16px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(99,102,241,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(99,102,241,.4)}
+.btn-secondary{padding:12px 22px;border-radius:14px;border:1.5px solid #e0e7ff;background:rgba(255,255,255,.8);color:#6366f1;font-family:'Jua',sans-serif;font-size:14px;cursor:pointer;transition:.2s}
+.btn-secondary:hover{background:rgba(99,102,241,.06)}
+
+/* Tips */
+.tips{background:rgba(255,255,255,.5);border-radius:16px;padding:20px;margin-top:24px;border:1px solid rgba(0,0,0,.04)}
+.tips h3{font-family:'Jua',sans-serif;font-size:15px;color:#6366f1;margin-bottom:10px}
+.tips ul{list-style:none;padding:0}
+.tips li{font-size:12px;color:#6b7c8b;padding:4px 0;padding-left:16px;position:relative}
+.tips li::before{content:'>';position:absolute;left:0;color:#a5b4fc;font-weight:bold}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e1b4b;color:#fff;padding:14px 28px;border-radius:16px;font-family:'Jua',sans-serif;font-size:14px;z-index:999;transition:.4s;opacity:0;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Security notice */
+.security-note{font-size:11px;color:#94a3b8;background:rgba(99,102,241,.04);border-radius:10px;padding:10px 14px;margin-top:12px;display:flex;align-items:flex-start;gap:6px}
+.security-note .material-symbols-outlined{font-size:14px;color:#6366f1;flex-shrink:0;margin-top:1px}
+
+@media(max-width:767px){
+    .top-bar{padding:12px 16px}
+    .container{padding:16px 12px 32px}
+    .hero h2{font-size:24px}
+    .service-tabs{flex-direction:column}
+    .api-input-row{flex-direction:column}
+    .export-row{flex-direction:column}
+    .export-row .btn-primary,.export-row .btn-secondary{width:100%;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+    <button class="back-btn" onclick="history.back()"><span class="material-symbols-outlined" style="font-size:20px">arrow_back</span></button>
+    <div class="top-title">그림 3D 프린터</div>
+    <span class="top-badge">AI 3D</span>
+</div>
+
+<div class="container">
+    <div class="hero">
+        <h2>내 그림이 3D로!</h2>
+        <p>종이에 그린 그림을 AI가 진짜 3D 모델로 만들어줘요</p>
+    </div>
+
+    <!-- ① Upload -->
+    <div class="upload-zone" id="uploadZone">
+        <span class="icon material-symbols-outlined">add_a_photo</span>
+        <div class="label">그림 사진을 올려주세요</div>
+        <div class="sub">사진을 드래그하거나 클릭해서 선택</div>
+        <div class="camera-row">
+            <label class="camera-btn"><span class="material-symbols-outlined" style="font-size:18px">photo_camera</span> 카메라 촬영<input type="file" accept="image/*" capture="environment" id="cameraInput"/></label>
+            <label class="camera-btn"><span class="material-symbols-outlined" style="font-size:18px">folder_open</span> 파일 선택<input type="file" accept="image/*" id="fileInput"/></label>
+        </div>
+    </div>
+
+    <!-- Uploaded preview -->
+    <div class="uploaded-preview" id="uploadedPreview">
+        <img id="previewImg" src="" alt="업로드된 그림"/>
+        <br/>
+        <button class="change-btn" id="changeImgBtn"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">refresh</span> 다른 그림 선택</button>
+    </div>
+
+    <!-- ② API Key & Service Selection -->
+    <div class="api-card" id="apiCard">
+        <div class="card-title"><span class="material-symbols-outlined">smart_toy</span> AI 서비스 선택</div>
+
+        <div class="service-tabs">
+            <div class="service-tab active" data-service="tripo">
+                <div class="st-icon">🔮</div>
+                <div class="st-name">Tripo AI</div>
+                <div class="st-desc">빠르고 고품질 3D 생성</div>
+                <div class="st-free">무료 300회/월</div>
+            </div>
+            <div class="service-tab" data-service="meshy">
+                <div class="st-icon">🧊</div>
+                <div class="st-name">Meshy AI</div>
+                <div class="st-desc">업계 1위 3D 모델 생성기</div>
+                <div class="st-free">무료 100회/월</div>
+            </div>
+        </div>
+
+        <div id="apiStatusRow" class="api-status none"><span class="dot"></span> API 키가 없어요</div>
+        <div class="api-input-row">
+            <input class="api-input" id="apiKeyInput" type="password" placeholder="API 키를 입력하세요"/>
+            <button class="api-save-btn" id="apiSaveBtn">저장</button>
+        </div>
+        <div class="api-help" id="apiHelpText">
+            <span id="tripoHelp"><a href="https://platform.tripo3d.ai/" target="_blank">Tripo 플랫폼</a>에서 무료 가입 후 API 키를 발급받으세요 (tsk_로 시작)</span>
+            <span id="meshyHelp" style="display:none"><a href="https://www.meshy.ai/api" target="_blank">Meshy API 페이지</a>에서 API 키를 발급받으세요</span>
+        </div>
+        <div class="security-note">
+            <span class="material-symbols-outlined">lock</span>
+            <span>API 키는 이 브라우저에만 저장되며 외부로 전송되지 않아요. 해당 AI 서비스와 직접 통신합니다.</span>
+        </div>
+    </div>
+
+    <!-- ③ Generate Button -->
+    <div class="generate-section" id="generateSection">
+        <button class="btn-generate" id="generateBtn">
+            <span class="material-symbols-outlined" style="font-size:24px">view_in_ar</span>
+            3D 모델 생성하기
+        </button>
+    </div>
+
+    <!-- ④ Progress -->
+    <div class="progress-section" id="progressSection">
+        <div class="progress-bar-outer">
+            <div class="progress-bar-inner" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">AI가 3D 모델을 만들고 있어요...</div>
+        <div class="progress-status" id="progressStatus">잠시만 기다려주세요 (보통 1~3분 소요)</div>
+    </div>
+
+    <!-- ⑤ 3D Preview + Export -->
+    <div class="card" id="resultCard">
+        <div class="card-title"><span class="material-symbols-outlined">view_in_ar</span> 3D 미리보기</div>
+        <div style="font-size:12px;color:#94a3b8;margin-bottom:12px">마우스/터치로 회전, 스크롤로 확대/축소</div>
+        <div id="three-container">
+            <div class="three-info">드래그: 회전 | 스크롤: 줌</div>
+            <div class="three-controls">
+                <button class="three-ctrl-btn" id="toggleWire" title="와이어프레임"><span class="material-symbols-outlined" style="font-size:18px">grid_on</span></button>
+                <button class="three-ctrl-btn" id="toggleGrid" title="바닥 그리드"><span class="material-symbols-outlined" style="font-size:18px">grid_4x4</span></button>
+                <button class="three-ctrl-btn" id="resetCam" title="카메라 리셋"><span class="material-symbols-outlined" style="font-size:18px">restart_alt</span></button>
+            </div>
+        </div>
+        <div class="export-row">
+            <button class="btn-primary" id="downloadGLB"><span class="material-symbols-outlined" style="font-size:20px">download</span> GLB 다운로드</button>
+            <button class="btn-primary" id="downloadSTL" style="background:linear-gradient(135deg,#059669,#10b981)"><span class="material-symbols-outlined" style="font-size:20px">print</span> STL 다운로드 (3D프린트)</button>
+            <button class="btn-secondary" id="screenshotBtn"><span class="material-symbols-outlined" style="font-size:16px">photo_camera</span> 스크린샷</button>
+            <button class="btn-secondary" id="resetBtn"><span class="material-symbols-outlined" style="font-size:16px">refresh</span> 새 그림</button>
+        </div>
+    </div>
+
+    <div class="tips">
+        <h3>사용 팁</h3>
+        <ul>
+            <li>배경이 깔끔한 사진이 가장 잘 변환돼요</li>
+            <li>그림을 정면에서 찍고, 그림자가 없는 곳에서 촬영하세요</li>
+            <li>캐릭터, 동물, 사물 등 형태가 뚜렷한 그림이 좋아요</li>
+            <li>GLB는 3D 뷰어/게임용, STL은 3D 프린터용이에요</li>
+            <li>3D 프린터가 없어도 온라인 3D 프린팅 서비스를 이용할 수 있어요</li>
+        </ul>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import * as THREE from 'https://esm.sh/three@0.160.0';
+import { OrbitControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+import { STLExporter } from 'https://esm.sh/three@0.160.0/examples/jsm/exporters/STLExporter.js';
+
+// ─── State ───
+let uploadedBase64 = null;
+let uploadedFile = null;
+let currentService = 'tripo';
+let scene, camera, renderer, controls, gridHelper;
+let loadedModel = null;
+let glbBlobUrl = null;
+
+const $ = s => document.querySelector(s);
+
+// ─── API Configs ───
+const API = {
+    tripo: {
+        name: 'Tripo',
+        keyPrefix: 'tripo_api_key',
+        createUrl: 'https://api.tripo3d.ai/v2/openapi/task',
+        pollUrl: id => `https://api.tripo3d.ai/v2/openapi/task/${id}`,
+        uploadUrl: 'https://api.tripo3d.ai/v2/openapi/upload',
+    },
+    meshy: {
+        name: 'Meshy',
+        keyPrefix: 'meshy_api_key',
+        createUrl: 'https://api.meshy.ai/openapi/v1/image-to-3d',
+        pollUrl: id => `https://api.meshy.ai/openapi/v1/image-to-3d/${id}`,
+    }
+};
+
+// ─── Upload ───
+const uploadZone = $('#uploadZone');
+const fileInput = $('#fileInput');
+const cameraInput = $('#cameraInput');
+
+uploadZone.addEventListener('click', e => { if (!e.target.closest('label')) fileInput.click(); });
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+cameraInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+function handleFile(file) {
+    if (!file.type.startsWith('image/')) return;
+    uploadedFile = file;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height;
+            const max = 1024;
+            if (w > max || h > max) {
+                const r = Math.min(max / w, max / h);
+                w = Math.round(w * r); h = Math.round(h * r);
+            }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            uploadedBase64 = canvas.toDataURL('image/jpeg', 0.9);
+            $('#previewImg').src = uploadedBase64;
+            showAfterUpload();
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function showAfterUpload() {
+    uploadZone.style.display = 'none';
+    $('#uploadedPreview').style.display = 'block';
+    $('#apiCard').classList.add('visible');
+    updateApiStatus();
+    checkReady();
+    showToast('이미지가 로드되었어요!');
+}
+
+$('#changeImgBtn').addEventListener('click', () => {
+    uploadedBase64 = null;
+    uploadedFile = null;
+    uploadZone.style.display = '';
+    $('#uploadedPreview').style.display = 'none';
+    fileInput.value = '';
+    cameraInput.value = '';
+    checkReady();
+});
+
+// ─── Service Tabs ───
+document.querySelectorAll('.service-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.service-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentService = tab.dataset.service;
+        $('#tripoHelp').style.display = currentService === 'tripo' ? '' : 'none';
+        $('#meshyHelp').style.display = currentService === 'meshy' ? '' : 'none';
+        updateApiStatus();
+        checkReady();
+    });
+});
+
+// ─── API Key ───
+function getApiKey() {
+    return localStorage.getItem(API[currentService].keyPrefix) || '';
+}
+
+function updateApiStatus() {
+    const key = getApiKey();
+    const row = $('#apiStatusRow');
+    const input = $('#apiKeyInput');
+    if (key) {
+        row.className = 'api-status connected';
+        row.innerHTML = `<span class="dot"></span> ${API[currentService].name} API 연결됨 (${key.slice(0, 6)}...)`;
+        input.value = '';
+        input.placeholder = '새 키로 변경하려면 입력';
+    } else {
+        row.className = 'api-status none';
+        row.innerHTML = '<span class="dot"></span> API 키가 없어요';
+        input.value = '';
+        input.placeholder = 'API 키를 입력하세요';
+    }
+}
+
+$('#apiSaveBtn').addEventListener('click', () => {
+    const key = $('#apiKeyInput').value.trim();
+    if (!key) return showToast('API 키를 입력해주세요');
+    localStorage.setItem(API[currentService].keyPrefix, key);
+    updateApiStatus();
+    checkReady();
+    showToast(`${API[currentService].name} API 키가 저장되었어요!`);
+});
+
+function checkReady() {
+    const ready = uploadedBase64 && getApiKey();
+    const section = $('#generateSection');
+    if (ready) section.classList.add('visible');
+    else section.classList.remove('visible');
+}
+
+// ─── Generate ───
+$('#generateBtn').addEventListener('click', startGeneration);
+
+async function startGeneration() {
+    const apiKey = getApiKey();
+    if (!apiKey || !uploadedBase64) return;
+
+    const btn = $('#generateBtn');
+    btn.disabled = true;
+    $('#progressSection').classList.add('visible');
+    $('#generateSection').classList.remove('visible');
+    setProgress(5, 'AI 서버에 이미지 전송 중...');
+
+    try {
+        let taskId;
+        if (currentService === 'tripo') {
+            taskId = await createTripoTask(apiKey);
+        } else {
+            taskId = await createMeshyTask(apiKey);
+        }
+
+        setProgress(15, '3D 모델 생성 시작...');
+        const result = await pollTask(apiKey, taskId);
+        setProgress(95, '3D 모델 다운로드 중...');
+
+        let modelUrl;
+        if (currentService === 'tripo') {
+            modelUrl = result.output?.model;
+        } else {
+            modelUrl = result.model_urls?.glb;
+        }
+
+        if (!modelUrl) throw new Error('모델 URL을 찾을 수 없습니다');
+
+        await loadGLBModel(modelUrl);
+        setProgress(100, '완료!');
+
+        setTimeout(() => {
+            $('#progressSection').classList.remove('visible');
+            $('#resultCard').classList.add('visible');
+            showToast('3D 모델이 완성되었어요!');
+        }, 500);
+
+    } catch (err) {
+        console.error(err);
+        showToast('오류: ' + (err.message || '알 수 없는 오류'));
+        $('#progressSection').classList.remove('visible');
+        $('#generateSection').classList.add('visible');
+    }
+    btn.disabled = false;
+}
+
+// ─── Tripo API ───
+async function createTripoTask(apiKey) {
+    // Step 1: Upload image
+    const blob = await (await fetch(uploadedBase64)).blob();
+    const formData = new FormData();
+    formData.append('file', blob, 'drawing.jpg');
+
+    const uploadRes = await fetch(API.tripo.uploadUrl, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}` },
+        body: formData
+    });
+    if (!uploadRes.ok) {
+        const err = await uploadRes.json().catch(() => ({}));
+        throw new Error(err.message || `Tripo 업로드 실패 (${uploadRes.status})`);
+    }
+    const uploadData = await uploadRes.json();
+    const imageToken = uploadData.data?.image_token;
+    if (!imageToken) throw new Error('이미지 토큰을 받지 못했습니다');
+
+    // Step 2: Create task
+    const taskRes = await fetch(API.tripo.createUrl, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            type: 'image_to_model',
+            file: { type: 'jpg', file_token: imageToken }
+        })
+    });
+    if (!taskRes.ok) {
+        const err = await taskRes.json().catch(() => ({}));
+        throw new Error(err.message || `Tripo 태스크 생성 실패 (${taskRes.status})`);
+    }
+    const taskData = await taskRes.json();
+    return taskData.data?.task_id;
+}
+
+// ─── Meshy API ───
+async function createMeshyTask(apiKey) {
+    const base64Data = uploadedBase64.split(',')[1];
+    const dataUri = `data:image/jpeg;base64,${base64Data}`;
+
+    const res = await fetch(API.meshy.createUrl, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            image_url: dataUri,
+            enable_pbr: true
+        })
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Meshy 태스크 생성 실패 (${res.status})`);
+    }
+    const data = await res.json();
+    return data.result || data.id;
+}
+
+// ─── Poll Task ───
+async function pollTask(apiKey, taskId) {
+    const pollUrl = API[currentService].pollUrl(taskId);
+    const maxAttempts = 120; // 10 min max
+    for (let i = 0; i < maxAttempts; i++) {
+        await sleep(3000);
+        const res = await fetch(pollUrl, {
+            headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        if (!res.ok) continue;
+        const data = await res.json();
+
+        let status, progress;
+        if (currentService === 'tripo') {
+            status = data.data?.status;
+            progress = data.data?.progress || 0;
+        } else {
+            status = data.status;
+            progress = data.progress || 0;
+        }
+
+        const pct = Math.min(90, 15 + progress * 0.75);
+        setProgress(pct, `3D 모델 생성 중... ${progress}%`);
+
+        const upperStatus = (status || '').toUpperCase();
+        if (upperStatus === 'SUCCEEDED' || upperStatus === 'SUCCESS') {
+            return currentService === 'tripo' ? data.data : data;
+        }
+        if (upperStatus === 'FAILED' || upperStatus === 'CANCELED' || upperStatus === 'CANCELLED') {
+            throw new Error(`AI 처리 실패: ${status}`);
+        }
+    }
+    throw new Error('시간 초과 — 나중에 다시 시도해주세요');
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function setProgress(pct, text, sub) {
+    $('#progressBar').style.width = pct + '%';
+    if (text) $('#progressText').textContent = text;
+    if (sub) $('#progressStatus').textContent = sub;
+}
+
+// ─── Three.js ───
+function initThree() {
+    if (renderer) return;
+    const container = $('#three-container');
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1a1a2e);
+
+    camera = new THREE.PerspectiveCamera(45, w / h, 0.01, 100);
+    camera.position.set(0, 1.5, 3);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(w, h);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    container.appendChild(renderer.domElement);
+
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.minDistance = 0.5;
+    controls.maxDistance = 10;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    dirLight.position.set(3, 5, 4);
+    scene.add(dirLight);
+    const backLight = new THREE.DirectionalLight(0x8888ff, 0.4);
+    backLight.position.set(-3, 3, -4);
+    scene.add(backLight);
+
+    gridHelper = new THREE.GridHelper(4, 20, 0x444466, 0x333355);
+    scene.add(gridHelper);
+
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+        const w2 = container.clientWidth, h2 = container.clientHeight;
+        camera.aspect = w2 / h2;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w2, h2);
+    });
+}
+
+async function loadGLBModel(url) {
+    initThree();
+    // remove old model
+    if (loadedModel) { scene.remove(loadedModel); }
+
+    // fetch GLB as blob for download
+    const res = await fetch(url);
+    const blob = await res.blob();
+    if (glbBlobUrl) URL.revokeObjectURL(glbBlobUrl);
+    glbBlobUrl = URL.createObjectURL(blob);
+
+    const loader = new GLTFLoader();
+    return new Promise((resolve, reject) => {
+        loader.load(glbBlobUrl, gltf => {
+            loadedModel = gltf.scene;
+            // auto-center and scale
+            const box = new THREE.Box3().setFromObject(loadedModel);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 2 / maxDim;
+            loadedModel.scale.setScalar(scale);
+            loadedModel.position.sub(center.multiplyScalar(scale));
+            loadedModel.position.y -= (box.min.y * scale);
+
+            scene.add(loadedModel);
+            // fit camera
+            camera.position.set(0, 1.5, 3);
+            controls.target.set(0, size.y * scale * 0.4, 0);
+            controls.update();
+            resolve();
+        }, undefined, reject);
+    });
+}
+
+// ─── 3D Controls ───
+$('#toggleWire').addEventListener('click', function() {
+    if (!loadedModel) return;
+    this.classList.toggle('active');
+    const wire = this.classList.contains('active');
+    loadedModel.traverse(child => {
+        if (child.isMesh) child.material.wireframe = wire;
+    });
+});
+
+$('#toggleGrid').addEventListener('click', function() {
+    if (!gridHelper) return;
+    gridHelper.visible = !gridHelper.visible;
+    this.classList.toggle('active');
+});
+
+$('#resetCam').addEventListener('click', () => {
+    camera.position.set(0, 1.5, 3);
+    controls.target.set(0, 0.5, 0);
+    controls.update();
+});
+
+// ─── Downloads ───
+$('#downloadGLB').addEventListener('click', () => {
+    if (!glbBlobUrl) return;
+    const a = document.createElement('a');
+    a.href = glbBlobUrl;
+    a.download = 'drawing-3d-model.glb';
+    a.click();
+    showToast('GLB 파일이 다운로드되었어요!');
+});
+
+$('#downloadSTL').addEventListener('click', () => {
+    if (!loadedModel) return;
+    const exporter = new STLExporter();
+    const stlData = exporter.parse(loadedModel, { binary: true });
+    const blob = new Blob([stlData], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'drawing-3d-print.stl';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('STL 파일이 다운로드되었어요! 3D 프린터로 출력하세요!');
+});
+
+$('#screenshotBtn').addEventListener('click', () => {
+    if (!renderer) return;
+    renderer.render(scene, camera);
+    const a = document.createElement('a');
+    a.href = renderer.domElement.toDataURL('image/png');
+    a.download = 'drawing-3d-preview.png';
+    a.click();
+    showToast('스크린샷이 저장되었어요!');
+});
+
+$('#resetBtn').addEventListener('click', () => {
+    uploadedBase64 = null;
+    uploadedFile = null;
+    if (loadedModel) { scene.remove(loadedModel); loadedModel = null; }
+    if (glbBlobUrl) { URL.revokeObjectURL(glbBlobUrl); glbBlobUrl = null; }
+    uploadZone.style.display = '';
+    $('#uploadedPreview').style.display = 'none';
+    $('#apiCard').classList.remove('visible');
+    $('#generateSection').classList.remove('visible');
+    $('#progressSection').classList.remove('visible');
+    $('#resultCard').classList.remove('visible');
+    fileInput.value = '';
+    cameraInput.value = '';
+    showToast('초기화되었어요!');
+});
+
+// ─── Toast ───
+function showToast(msg) {
+    const t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+<script src="../../assets/js/luna-nav.js"></script>
+</body>
+</html>

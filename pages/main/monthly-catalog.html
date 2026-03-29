@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luna - Monthly Discovery</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../../assets/data/i18n.js?v=0312-2330"></script>
+    <script src="../../assets/data/monthly-packages.js?v=0312-2330"></script>
+    <script src="../../assets/js/app.js?v=0312-2330"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background: #0a0c14;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .glass-nav {
+            background: rgba(10, 12, 20, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Slanted Book Aesthetic */
+        .book-card-container {
+            perspective: 1200px;
+        }
+
+        .book-card {
+            transform: rotateY(-20deg) rotateX(5deg);
+            transform-style: preserve-3d;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: -15px 15px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .book-card-container:hover .book-card {
+            transform: rotateY(0deg) rotateX(0deg) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .book-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px 0 0 4px;
+            z-index: 10;
+        }
+
+        .book-spine {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 20px;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, transparent 100%);
+            z-index: 5;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        /* ── Gold Shimmer for Current Month ── */
+        @keyframes goldShimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        @keyframes goldGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 183, 0, 0.15), -15px 15px 30px rgba(0,0,0,0.5); }
+            50% { box-shadow: 0 0 30px rgba(255, 183, 0, 0.3), -15px 15px 30px rgba(0,0,0,0.5); }
+        }
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.8) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+        }
+        .gold-shimmer-text {
+            background: linear-gradient(90deg, #d4a017, #ffd700, #fff4c2, #ffd700, #d4a017);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: goldShimmer 3s linear infinite;
+        }
+        .gold-border-glow {
+            border: 1.5px solid rgba(255, 215, 0, 0.4);
+            animation: goldGlow 3s ease-in-out infinite;
+        }
+        .gold-badge-shimmer {
+            background: linear-gradient(90deg, #b8860b, #ffd700, #b8860b);
+            background-size: 200% auto;
+            animation: goldShimmer 2s linear infinite;
+        }
+        .sparkle-icon {
+            animation: sparkle 2s ease-in-out infinite;
+        }
+        .sparkle-icon:nth-child(2) { animation-delay: 0.7s; }
+        .sparkle-icon:nth-child(3) { animation-delay: 1.4s; }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="dark overflow-x-hidden">
+    <!-- Navbar -->
+    <nav class="glass-nav fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <button onclick="history.back()"
+                class="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-all">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <h1 class="text-lg font-black tracking-tight" data-i18n="monthly_discovery_title">Monthly Discovery</h1>
+        </div>
+        <div id="lang-dropdown"></div>
+    </nav>
+
+    <main class="w-full max-w-7xl mx-auto px-6 pt-32 pb-20">
+        <!-- Header -->
+        <header class="mb-16 text-center animate-fade-in">
+            <span class="text-primary font-black uppercase tracking-[0.3em] text-[10px] mb-4 block"
+                data-i18n="special_collection_tag">Special Collection</span>
+            <h2 class="text-4xl md:text-5xl font-black mb-6 leading-tight" data-i18n="monthly_catalog_subtitle">Explore
+                our Monthly Curations</h2>
+            <p class="text-slate-400 max-w-2xl mx-auto text-sm md:text-base leading-relaxed"
+                data-i18n="monthly_catalog_desc">
+                Each month, we release a hand-picked collection of 15 premium classes tailored for artistic growth.
+            </p>
+        </header>
+
+        <!-- Catalog Grid -->
+        <div id="monthly-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 lg:gap-16">
+            <!-- Dynamically populated -->
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lwRenderLangPicker) lwRenderLangPicker('lang-dropdown');
+            renderCatalog();
+        });
+
+        function renderCatalog() {
+            const grid = document.getElementById('monthly-grid');
+            if (!grid || typeof MONTHLY_PACKAGES === 'undefined') return;
+
+            const userRole = LunaApp.user?.role || 'user';
+            const isAdmin = userRole === 'admin' || userRole === 'teacher';
+
+            // Sort newest first
+            const packages = [...MONTHLY_PACKAGES].sort((a, b) => b.id.localeCompare(a.id));
+
+            grid.innerHTML = packages.map((pkg, index) => {
+                const isLocked = !isAdmin && pkg.status === 'active';
+                const totalIndividual = pkg.lessonsCount * 7;
+                const discount = pkg.isCurrent ? Math.round((1 - 79 / totalIndividual) * 100) : 0;
+
+                return `
+                    <div class="book-card-container animate-fade-in" style="animation-delay: ${index * 100}ms">
+                        <div class="book-card relative aspect-[3/4] rounded-r-xl overflow-hidden bg-slate-800 cursor-pointer group ${pkg.isCurrent ? 'gold-border-glow' : ''}"
+                             onclick="navigateToDetail('${pkg.id}')">
+                            <div class="book-spine"></div>
+                            <img src="../../${pkg.representativeImage}" class="w-full h-full object-cover ${pkg.isCurrent ? 'opacity-90' : 'opacity-80'} group-hover:opacity-100 transition-opacity" alt="${pkg.id}">
+
+                            ${pkg.isCurrent ? `
+                            <!-- Sparkle Icons behind the book -->
+                            <span class="sparkle-icon absolute top-3 right-3 text-yellow-400/70 material-symbols-outlined text-lg" style="z-index:15">auto_awesome</span>
+                            <span class="sparkle-icon absolute top-12 right-8 text-yellow-300/50 material-symbols-outlined text-xs" style="z-index:15">star</span>
+                            <span class="sparkle-icon absolute bottom-[45%] right-3 text-amber-400/40 material-symbols-outlined text-sm" style="z-index:15">auto_awesome</span>
+                            ` : ''}
+
+                            <!-- Overlay -->
+                            <div class="absolute inset-0 bg-gradient-to-t ${pkg.isCurrent ? 'from-black/95 via-black/50' : 'from-black/90 via-black/40'} to-transparent p-6 flex flex-col justify-end">
+                                ${pkg.isCurrent ? `
+                                <div class="absolute top-4 right-4 px-3 py-1.5 rounded-full gold-badge-shimmer text-white text-[9px] font-black uppercase tracking-wider shadow-lg" style="z-index:20">
+                                    ✦ This Month
+                                </div>` : ''}
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-2 h-2 rounded-full ${pkg.isCurrent ? 'bg-yellow-400' : pkg.status === 'active' ? 'bg-green-500' : 'bg-slate-500'}"></span>
+                                    <span class="text-[9px] font-bold uppercase tracking-widest ${pkg.isCurrent ? 'text-yellow-400/80' : 'text-white/60'}">${pkg.isCurrent ? 'now open' : pkg.status === 'active' ? 'active' : 'archive'}</span>
+                                </div>
+                                <h3 class="text-2xl font-black leading-tight mb-1 ${pkg.isCurrent ? 'gold-shimmer-text' : 'text-white'}">${pkg.label}</h3>
+                                <p class="text-xs text-slate-400 mb-3 font-medium" data-i18n="${pkg.titleKey}"></p>
+
+                                <div class="flex items-end justify-between">
+                                    <div class="flex flex-col gap-0.5">
+                                        ${pkg.isCurrent ? `
+                                            <span class="text-2xl font-black gold-shimmer-text leading-none">${pkg.price}<span class="text-xs font-bold" style="-webkit-text-fill-color:rgba(255,255,255,0.5)"> /월</span></span>
+                                            <span class="text-[10px] text-white/40 line-through leading-none">$${totalIndividual}</span>
+                                        ` : `
+                                            <span class="text-sm font-black text-white leading-none">$${totalIndividual}</span>
+                                            <span class="text-[10px] text-white/50 leading-none">${pkg.lessonPrice} × ${pkg.lessonsCount}수업</span>
+                                        `}
+                                    </div>
+                                    <div class="flex flex-col items-end gap-0.5">
+                                        <span class="${pkg.isCurrent ? 'text-lg' : 'text-sm'} font-black text-white leading-none">${pkg.lessonsCount}</span>
+                                        <span class="text-[10px] text-white/50 leading-none">수업</span>
+                                    </div>
+                                </div>
+                                ${pkg.isCurrent ? `
+                                <div class="mt-3 px-3 py-2.5 rounded-xl border border-yellow-500/30 flex items-center justify-center gap-2" style="background:linear-gradient(135deg, rgba(180,130,0,0.2), rgba(255,215,0,0.1))">
+                                    <span class="text-lg font-black gold-shimmer-text">${discount}%</span>
+                                    <span class="text-[11px] font-bold text-yellow-200/80">할인 — ${pkg.lessonsCount}개 수업 모두 포함</span>
+                                </div>` : ''}
+                            </div>
+
+                            <!-- Lock Indicator -->
+                            ${isLocked ? `
+                                <div class="absolute top-4 left-4 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/10">
+                                    <span class="material-symbols-outlined text-sm text-yellow-500">lock</span>
+                                </div>
+                            ` : ''}
+
+                            <!-- Hover Button -->
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">
+                                <div class="w-16 h-16 rounded-full ${pkg.isCurrent ? 'bg-gradient-to-br from-yellow-500 to-amber-600' : 'bg-primary'} flex items-center justify-center shadow-2xl ${pkg.isCurrent ? 'shadow-yellow-500/40' : 'shadow-primary/50'}">
+                                    <span class="material-symbols-outlined text-white text-3xl">${pkg.isCurrent ? 'local_fire_department' : 'auto_stories'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (window.lwApplyLang) lwApplyLang(grid);
+        }
+
+        function navigateToDetail(monthId) {
+            // Store selected month if needed or just use URL parm
+            LunaApp.navigate('monthlyDetail', { month: monthId });
+        }
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

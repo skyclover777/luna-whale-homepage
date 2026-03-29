@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Run! - 루나웨일 영어</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <style>
+        @font-face {
+            font-family: 'CookieRun-Bold';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Bold.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            overflow: hidden;
+            background: #2B4570;
+        }
+
+        canvas { display: block; }
+
+        /* ─── Start Screen ─── */
+        #start-screen {
+            position: fixed; inset: 0;
+            background: linear-gradient(160deg, rgba(43,69,112,0.95) 0%, rgba(30,80,130,0.92) 50%, rgba(200,155,60,0.85) 100%);
+            backdrop-filter: blur(20px);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 200;
+        }
+
+        .start-card {
+            background: rgba(255,255,255,0.96);
+            border-radius: 28px;
+            padding: 48px 44px 40px;
+            max-width: 420px;
+            width: 88%;
+            text-align: center;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.1);
+        }
+
+        .start-emoji { font-size: 56px; margin-bottom: 8px; }
+
+        .start-title {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 40px;
+            color: #1E5082;
+            line-height: 1.1;
+            margin-bottom: 6px;
+        }
+
+        .start-sub {
+            font-size: 14px; color: #888;
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+        }
+
+        .input-group { margin-bottom: 20px; text-align: left; }
+
+        .input-label {
+            display: block;
+            font-size: 13px; font-weight: 700;
+            color: #666; margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .start-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            font-size: 17px;
+            font-family: 'Pretendard Variable', sans-serif;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+            background: #fafafa;
+        }
+        .start-input:focus {
+            border-color: #1E5082;
+            box-shadow: 0 0 0 3px rgba(30,80,130,0.12);
+            background: #fff;
+        }
+
+        /* Level selector */
+        .level-selector {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .level-btn {
+            flex: 1; min-width: 50px;
+            padding: 10px 6px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 13px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .level-btn.active {
+            border-color: #1E5082;
+            background: #1E5082;
+            color: white;
+        }
+        .level-btn:hover:not(.active) {
+            border-color: #aaa;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1E5082, #2B7BC9);
+            color: white;
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 21px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 6px 24px rgba(30,80,130,0.35);
+            letter-spacing: 1px;
+        }
+        .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(30,80,130,0.45); }
+        .start-btn:active { transform: translateY(1px); box-shadow: 0 2px 10px rgba(30,80,130,0.3); }
+
+        .start-hint {
+            margin-top: 16px;
+            font-size: 12px; color: #aaa;
+        }
+        .start-stats {
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #f0f7ff;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        .start-stats strong { color: #1E5082; }
+
+        /* ─── Game Over Screen ─── */
+        #game-over-screen {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(12px);
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 200;
+        }
+
+        .go-card {
+            background: rgba(255,255,255,0.96);
+            border-radius: 28px;
+            padding: 40px 36px 32px;
+            max-width: 400px;
+            width: 88%;
+            text-align: center;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+        }
+
+        .go-title {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 32px;
+            color: #1E5082;
+            margin-bottom: 4px;
+        }
+
+        .go-score {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 48px;
+            color: #C89B3C;
+            margin: 8px 0 12px;
+        }
+
+        .go-label {
+            font-size: 12px; color: #999;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+
+        .go-mastered {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .lb-list {
+            text-align: left;
+            margin-bottom: 24px;
+        }
+
+        .lb-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+        }
+        .lb-row:nth-child(odd) { background: #f5f5f5; }
+        .lb-row .rank { color: #1E5082; font-family: 'CookieRun-Bold'; width: 24px; }
+        .lb-row .name { flex: 1; margin-left: 8px; }
+        .lb-row .pts { color: #C89B3C; font-family: 'CookieRun-Bold'; }
+        .lb-row:first-child { background: linear-gradient(90deg, #FFF8E7, #FFF3D0); }
+        .lb-row:first-child .rank { color: #C89B3C; }
+
+        .go-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #1E5082, #2B7BC9);
+            color: white;
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 19px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 6px 24px rgba(30,80,130,0.35);
+        }
+        .go-btn:hover { transform: translateY(-2px); }
+        .go-btn:active { transform: translateY(1px); }
+
+        .go-btn-secondary {
+            width: 100%;
+            padding: 13px;
+            background: rgba(80,80,80,0.8);
+            color: white;
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 14px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: transform 0.2s;
+        }
+        .go-btn-secondary:hover { transform: translateY(-1px); }
+
+        /* ─── HUD ─── */
+        #ui-layer {
+            position: fixed; inset: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .hud-glass {
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            padding: 10px 16px;
+            color: white;
+            font-family: 'CookieRun-Bold', sans-serif;
+        }
+
+        #hud-nickname {
+            position: absolute;
+            top: 16px; left: 16px;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+        #hud-nickname .label { font-size: 11px; opacity: 0.6; letter-spacing: 1px; }
+
+        #hud-score {
+            position: absolute;
+            top: 16px; right: 16px;
+            font-size: 15px;
+            text-align: right;
+        }
+        #hud-score .label { font-size: 11px; opacity: 0.6; letter-spacing: 1px; }
+        #hud-score .val { font-size: 22px; color: #FFD700; }
+
+        #hud-mastery {
+            position: absolute;
+            top: 70px; right: 16px;
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+        #hud-mastery .val { color: #4CAF50; font-size: 16px; }
+
+        #hud-definition {
+            position: absolute;
+            top: 28%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .def-panel {
+            background: rgba(255,255,255,0.93);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+            padding: 14px 28px 16px;
+            max-width: 480px;
+            min-width: 280px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            border: 2px solid rgba(200,155,60,0.25);
+            text-align: center;
+        }
+
+        .def-label {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 12px;
+            color: #1E5082;
+            letter-spacing: 3px;
+            margin-bottom: 6px;
+        }
+        .def-level {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 6px;
+            color: white;
+        }
+
+        #display-definition {
+            font-size: 20px;
+            font-weight: 800;
+            color: #2D2D2D;
+            line-height: 1.5;
+            word-break: keep-all;
+        }
+
+        /* ─── Home & Settings ─── */
+        .hud-home-btn {
+            position: absolute;
+            bottom: 20px; left: 20px;
+            pointer-events: auto;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 22px;
+            width: 44px; height: 44px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .hud-home-btn:hover { background: rgba(0,0,0,0.7); }
+
+        .hud-settings-btn {
+            position: absolute;
+            bottom: 20px; left: 74px;
+            pointer-events: auto;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 20px;
+            width: 44px; height: 44px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .hud-settings-btn:hover { background: rgba(0,0,0,0.7); }
+
+        /* Reset mastery button */
+        .hud-reset-btn {
+            position: absolute;
+            bottom: 20px; left: 128px;
+            pointer-events: auto;
+            background: rgba(180,50,50,0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 11px;
+            font-family: 'Pretendard Variable', sans-serif;
+            font-weight: 600;
+            padding: 0 12px;
+            height: 44px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .hud-reset-btn:hover { background: rgba(180,50,50,0.85); }
+
+        .settings-panel {
+            display: none;
+            position: absolute;
+            bottom: 74px; left: 20px;
+            pointer-events: auto;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 16px 20px;
+            min-width: 200px;
+            color: white;
+            font-size: 13px;
+            font-family: 'Pretendard Variable', sans-serif;
+        }
+        .settings-panel.open { display: block; }
+        .settings-panel .setting-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .settings-panel .setting-row:last-child { margin-bottom: 0; }
+        .settings-panel label { font-weight: 600; font-size: 12px; opacity: 0.8; }
+        .settings-panel input[type="range"] {
+            width: 100px; accent-color: #FFD700;
+        }
+        .settings-panel .vol-val {
+            font-size: 11px; min-width: 30px; text-align: right; opacity: 0.6;
+        }
+
+        /* ─── Correct answer popup ─── */
+        .correct-popup {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 80px;
+            animation: popCorrect 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: none;
+            z-index: 150;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+        }
+        @keyframes popCorrect {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-15deg); opacity: 0; }
+            40% { transform: translate(-50%, -80%) scale(1.3) rotate(5deg); opacity: 1; }
+            100% { transform: translate(-50%, -120%) scale(1) rotate(0deg); opacity: 0; }
+        }
+
+        /* ─── Mastered popup ─── */
+        .mastered-popup {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, 40px);
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 18px;
+            color: #4CAF50;
+            background: rgba(255,255,255,0.95);
+            padding: 8px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            animation: masteredPop 1.2s ease-out forwards;
+            pointer-events: none;
+            z-index: 149;
+        }
+        @keyframes masteredPop {
+            0% { transform: translate(-50%, 40px) scale(0); opacity: 0; }
+            30% { transform: translate(-50%, 20px) scale(1.1); opacity: 1; }
+            70% { transform: translate(-50%, 10px) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -10px) scale(0.9); opacity: 0; }
+        }
+
+        /* ─── Streak badge ─── */
+        .streak-badge {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, 20px);
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 28px;
+            color: #FFD700;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            animation: streakPop 0.6s ease-out forwards;
+            pointer-events: none;
+            z-index: 149;
+        }
+        @keyframes streakPop {
+            0% { transform: translate(-50%, 20px) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, 0px) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -20px) scale(1); opacity: 0; }
+        }
+
+        /* ─── Mobile Controls ─── */
+        #mobile-controls {
+            position: absolute;
+            bottom: 40px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; gap: 20px;
+            pointer-events: auto;
+        }
+
+        .ctrl-btn {
+            width: 68px; height: 68px;
+            background: rgba(255,255,255,0.18);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.35);
+            border-radius: 50%;
+            color: white;
+            font-size: 26px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.12s;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .ctrl-btn:active {
+            background: rgba(255,255,255,0.35);
+            transform: scale(0.88);
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 600px) {
+            .start-card { padding: 32px 28px 28px; }
+            .start-title { font-size: 32px; }
+            .def-panel { max-width: 260px; padding: 10px 16px 12px; }
+            #display-definition { font-size: 16px; }
+            .go-card { padding: 28px 24px 24px; }
+            .go-score { font-size: 36px; }
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body>
+    <!-- ─── Start Screen ─── -->
+    <div id="start-screen">
+        <div class="start-card">
+            <div class="start-emoji">🎓</div>
+            <div class="start-title">English Run!</div>
+            <div class="start-sub">뜻을 읽고 올바른 영단어를 골라라</div>
+            <div class="input-group">
+                <label class="input-label">닉네임</label>
+                <input type="text" id="nickname" class="start-input" placeholder="이름을 입력하세요" maxlength="12">
+            </div>
+            <div class="input-group">
+                <label class="input-label">난이도</label>
+                <div class="level-selector" id="levelSelector">
+                    <button class="level-btn active" data-level="all" onclick="setLevel('all',this)">전체</button>
+                    <button class="level-btn" data-level="초등" onclick="setLevel('초등',this)">초등</button>
+                    <button class="level-btn" data-level="중등" onclick="setLevel('중등',this)">중등</button>
+                    <button class="level-btn" data-level="고등" onclick="setLevel('고등',this)">고등</button>
+                    <button class="level-btn" data-level="대학" onclick="setLevel('대학',this)">대학</button>
+                </div>
+            </div>
+            <button onclick="startGame()" class="start-btn">Let's Go!</button>
+            <div class="start-hint">← → 또는 A D 키로 이동</div>
+            <div class="start-stats" id="startStats"></div>
+        </div>
+    </div>
+
+    <!-- ─── Game Over Screen ─── -->
+    <div id="game-over-screen">
+        <div class="go-card">
+            <div class="go-title">Good Job!</div>
+            <div class="go-label">SCORE</div>
+            <div id="final-score" class="go-score">0</div>
+            <div id="mastered-info" class="go-mastered" style="display:none"></div>
+            <div class="go-label" style="margin-bottom:8px">HALL OF FAME</div>
+            <div id="leaderboard-list" class="lb-list"></div>
+            <button onclick="restartGame()" class="go-btn">Try Again!</button>
+            <button onclick="window.location.href='../luna-en/index.html'" class="go-btn-secondary">🏠 홈으로</button>
+        </div>
+    </div>
+
+    <!-- ─── HUD Layer ─── -->
+    <div id="ui-layer" style="display:none;">
+        <div id="hud-nickname" class="hud-glass">
+            <div class="label">PLAYER</div>
+            <span id="display-nickname">Luna</span>
+        </div>
+
+        <div id="hud-definition">
+            <div class="def-panel">
+                <div class="def-label">MEANING <span class="def-level" id="display-level"></span></div>
+                <div id="display-definition">준비 중...</div>
+            </div>
+        </div>
+
+        <div id="hud-score" class="hud-glass">
+            <div class="label">SCORE</div>
+            <div class="val" id="score-display">0</div>
+        </div>
+
+        <div id="hud-mastery" class="hud-glass">
+            <div class="label">MASTERED</div>
+            <div class="val" id="mastery-display">0</div>
+        </div>
+
+        <div id="mobile-controls">
+            <button class="ctrl-btn" id="btn-left">◀</button>
+            <button class="ctrl-btn" id="btn-right">▶</button>
+        </div>
+
+        <!-- 홈 & 설정 & 리셋 -->
+        <button class="hud-home-btn" onclick="window.location.href='../luna-en/index.html'" title="홈으로">🏠</button>
+        <button class="hud-settings-btn" onclick="toggleSettings()" title="설정">⚙️</button>
+        <button class="hud-reset-btn" onclick="resetMastery()" title="마스터리 초기화">🔄 리셋</button>
+        <div class="settings-panel" id="settingsPanel">
+            <div class="setting-row">
+                <label>🎵 배경음악</label>
+                <input type="range" id="bgmVolume" min="0" max="100" value="30" oninput="setBgmVolume(this.value)">
+                <span class="vol-val" id="bgmVolVal">30%</span>
+            </div>
+            <div class="setting-row">
+                <label>🔊 효과음</label>
+                <input type="range" id="sfxVolume" min="0" max="100" value="60" oninput="setSfxVolume(this.value)">
+                <span class="vol-val" id="sfxVolVal">60%</span>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script src="../../assets/js/english-run-data.js"></script>
+    <script>
+        /* ═══════════════════════════════════════
+           Game Engine — English Run!
+           Based on 고사성어 런 (Redesigned for English)
+           ═══════════════════════════════════════ */
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // ── Constants ──
+        const LANES = 3;
+        const HORIZON_Y = 0.45;
+        const ROAD_WIDTH_TOP = 30;
+        let ROAD_WIDTH_BOTTOM = Math.max(1200, window.innerWidth * 0.92);
+        const PENGUIN_Z = 0.85;
+        const MAX_HIT_FRAMES = 60;
+        const PARTICLE_COUNT = 35;
+        const MASTERY_THRESHOLD = 3; // 3회 연속 정답 시 마스터
+
+        // ── Colors (Oxford Blue & Gold) ──
+        const C = {
+            SKY_TOP: '#4A7EC2',
+            SKY_MID: '#7BABD8',
+            SKY_BOT: '#C5D8E8',
+            MTN_FAR: '#8BA4B8',
+            MTN_MID: '#5C8A70',
+            MTN_NEAR: '#3E6B52',
+            GROUND_TOP: '#5D8C5A',
+            GROUND_BOT: '#3D6B3A',
+            PATH: '#8B7355',
+            PATH_DARK: '#6B5940',
+            PATH_EDGE: '#4A3E2A',
+            GATE_WOOD: '#2B4570',
+            GATE_WOOD_LT: '#3A5A8A',
+            GATE_PAPER: '#FFF8E7',
+            GATE_ROOF: '#1A2D4A',
+            GOLD: '#C89B3C',
+            RED: '#B33A3A',
+            BLUE: '#1E5082',
+            PG_BODY: '#2954a3',
+            PG_BELLY: '#ffffff',
+            PG_BEAK: '#fca311',
+            PG_HAT: '#1a1a1a',
+            PG_SCARF: '#1E5082',
+        };
+
+        // ── Level colors ──
+        const LEVEL_COLORS = {
+            '초등': '#4CAF50',
+            '중등': '#2196F3',
+            '고등': '#FF9800',
+            '대학': '#9C27B0'
+        };
+
+        // ── Game State ──
+        let gameRunning = false;
+        let score = 0;
+        let streak = 0;
+        let currentLane = 1;
+        let targetLane = 1;
+        let speed = 0.0005;
+        let gates = [];
+        let currentQuestion = null;
+        let frame = 0;
+        let hitActive = false;
+        let hitAnimationFrames = 0;
+        let landscapeOffset = 0;
+        let particles = [];
+        let selectedLevel = 'all';
+        let sessionMasteredWords = []; // 이번 게임에서 마스터한 단어
+
+        // ═══════════════════════════════════
+        //  MASTERY SYSTEM
+        // ═══════════════════════════════════
+        const MASTERY_KEY = 'lw_english_mastery';
+
+        function getMasteryData() {
+            try {
+                return JSON.parse(localStorage.getItem(MASTERY_KEY) || '{}');
+            } catch { return {}; }
+        }
+
+        function saveMasteryData(data) {
+            localStorage.setItem(MASTERY_KEY, JSON.stringify(data));
+        }
+
+        // 정답 시 호출 — 연속 정답 카운트 증가
+        function recordCorrect(word) {
+            const data = getMasteryData();
+            if (!data[word]) data[word] = { streak: 0, mastered: false };
+            data[word].streak++;
+            if (data[word].streak >= MASTERY_THRESHOLD && !data[word].mastered) {
+                data[word].mastered = true;
+                data[word].masteredAt = new Date().toISOString();
+                sessionMasteredWords.push(word);
+                showMasteredPopup(word);
+            }
+            saveMasteryData(data);
+            updateMasteryDisplay();
+        }
+
+        // 오답 시 호출 — 연속 정답 리셋
+        function recordWrong(word) {
+            const data = getMasteryData();
+            if (!data[word]) data[word] = { streak: 0, mastered: false };
+            data[word].streak = 0;
+            // mastered는 유지 (이미 아는 단어는 계속 제외)
+            saveMasteryData(data);
+        }
+
+        // ── 약한 단어 리포트 (단어장 연동) ──
+        function reportWeakWord(word, mean, level, reason) {
+            const data = JSON.parse(localStorage.getItem('lw_vocab_weak') || '{}');
+            if (!data[word]) data[word] = { word, mean, type:'word', level, missCount:0, luckyCount:0, lastSeen:'', reviewStreak:0, source:'english-run' };
+            if (reason === 'miss') data[word].missCount++;
+            else data[word].luckyCount++;
+            data[word].lastSeen = new Date().toISOString().slice(0,10);
+            localStorage.setItem('lw_vocab_weak', JSON.stringify(data));
+        }
+
+        // 마스터된 단어인지 확인
+        function isMastered(word) {
+            const data = getMasteryData();
+            return data[word] && data[word].mastered;
+        }
+
+        // 마스터된 단어 수
+        function getMasteredCount() {
+            const data = getMasteryData();
+            return Object.values(data).filter(d => d.mastered).length;
+        }
+
+        // 학습 가능한 단어 필터링
+        function getActiveWords() {
+            let words = englishDataset;
+            if (selectedLevel !== 'all') {
+                words = words.filter(w => w.level === selectedLevel);
+            }
+            return words.filter(w => !isMastered(w.word));
+        }
+
+        function updateMasteryDisplay() {
+            const el = document.getElementById('mastery-display');
+            if (el) el.textContent = getMasteredCount();
+        }
+
+        function showMasteredPopup(word) {
+            const el = document.createElement('div');
+            el.className = 'mastered-popup';
+            el.innerHTML = `✅ "${word}" 마스터!`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1200);
+        }
+
+        function resetMastery() {
+            if (confirm('모든 마스터리 기록을 초기화할까요?')) {
+                localStorage.removeItem(MASTERY_KEY);
+                updateMasteryDisplay();
+                updateStartStats();
+            }
+        }
+
+        function updateStartStats() {
+            const total = englishDataset.length;
+            const mastered = getMasteredCount();
+            const active = getActiveWords().length;
+            const el = document.getElementById('startStats');
+            if (el) {
+                el.innerHTML = `전체 <strong>${total}</strong>단어 | 마스터 <strong>${mastered}</strong>개 | 남은 단어 <strong>${active}</strong>개`;
+            }
+        }
+
+        // ── Level selector ──
+        function setLevel(level, btn) {
+            selectedLevel = level;
+            document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateStartStats();
+        }
+
+        // ── Audio ──
+        let audioCtx;
+        let bgmGain, sfxGain, bgmPlaying = false;
+        let sfxVol = 0.6, bgmVol = 0.3;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                bgmGain = audioCtx.createGain();
+                bgmGain.gain.value = bgmVol;
+                bgmGain.connect(audioCtx.destination);
+                sfxGain = audioCtx.createGain();
+                sfxGain.gain.value = sfxVol;
+                sfxGain.connect(audioCtx.destination);
+            }
+        }
+
+        // ── BGM ──
+        let bgmAudio = null;
+        function startBgm() {
+            if (bgmPlaying) return;
+            bgmPlaying = true;
+            if (!bgmAudio) {
+                bgmAudio = new Audio('../../assets/sounds/bgm/gentle-drift.mp3');
+                bgmAudio.loop = true;
+                bgmAudio.volume = bgmVol;
+            }
+            bgmAudio.play().catch(()=>{});
+        }
+
+        function stopBgm() {
+            bgmPlaying = false;
+            if (bgmAudio) { bgmAudio.pause(); bgmAudio.currentTime = 0; }
+        }
+
+        // ── Settings ──
+        function toggleSettings() {
+            document.getElementById('settingsPanel').classList.toggle('open');
+        }
+        function setBgmVolume(v) {
+            bgmVol = v / 100;
+            if (bgmGain) bgmGain.gain.value = bgmVol;
+            if (bgmAudio) bgmAudio.volume = bgmVol;
+            document.getElementById('bgmVolVal').textContent = v + '%';
+        }
+        function setSfxVolume(v) {
+            sfxVol = v / 100;
+            if (sfxGain) sfxGain.gain.value = sfxVol;
+            document.getElementById('sfxVolVal').textContent = v + '%';
+        }
+
+        function playDing() {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const t = audioCtx.currentTime;
+            const o1 = audioCtx.createOscillator();
+            const g1 = audioCtx.createGain();
+            o1.type = 'sine'; o1.frequency.setValueAtTime(880, t);
+            g1.gain.setValueAtTime(0.25, t);
+            g1.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+            o1.connect(g1); g1.connect(sfxGain);
+            o1.start(t); o1.stop(t + 0.25);
+
+            const o2 = audioCtx.createOscillator();
+            const g2 = audioCtx.createGain();
+            o2.type = 'sine'; o2.frequency.setValueAtTime(1174.66, t + 0.12);
+            g2.gain.setValueAtTime(0.2, t + 0.12);
+            g2.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+            o2.connect(g2); g2.connect(sfxGain);
+            o2.start(t + 0.12); o2.stop(t + 0.45);
+        }
+
+        function playBuzz() {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const t = audioCtx.currentTime;
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = 'sawtooth';
+            o.frequency.setValueAtTime(160, t);
+            o.frequency.linearRampToValueAtTime(80, t + 0.25);
+            g.gain.setValueAtTime(0.15, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+            o.connect(g); g.connect(sfxGain);
+            o.start(t); o.stop(t + 0.25);
+        }
+
+        // ── Particles (Falling Leaves) ──
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height * 0.5,
+                    sz: 3 + Math.random() * 5,
+                    vx: -0.2 + Math.random() * 0.4,
+                    vy: 0.3 + Math.random() * 0.5,
+                    rot: Math.random() * Math.PI * 2,
+                    rs: 0.01 + Math.random() * 0.025,
+                    op: 0.3 + Math.random() * 0.5,
+                    col: ['#E8A838','#D4763C','#C44E32','#8B6914','#6B8E23'][Math.floor(Math.random()*5)]
+                });
+            }
+        }
+
+        function tickParticles() {
+            const hY = canvas.height * HORIZON_Y;
+            particles.forEach(p => {
+                p.x += p.vx + Math.sin(frame * 0.006 + p.rot) * 0.4;
+                p.y += p.vy;
+                p.rot += p.rs;
+                if (p.y > hY + 20 || p.x < -20 || p.x > canvas.width + 20) {
+                    p.x = Math.random() * canvas.width;
+                    p.y = -10;
+                }
+            });
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rot);
+                ctx.globalAlpha = p.op;
+                ctx.fillStyle = p.col;
+                // Leaf shape
+                ctx.beginPath();
+                ctx.moveTo(0, -p.sz);
+                ctx.quadraticCurveTo(p.sz * 0.8, -p.sz * 0.3, 0, p.sz * 0.6);
+                ctx.quadraticCurveTo(-p.sz * 0.8, -p.sz * 0.3, 0, -p.sz);
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        // ── Popup Effects ──
+        function showCorrect() {
+            const emojis = ['👍','🎉','✨','💯','🔥','📚','⭐'];
+            const el = document.createElement('div');
+            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            el.className = 'correct-popup';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+
+            if (streak > 1 && streak % 3 === 0) {
+                const badge = document.createElement('div');
+                badge.className = 'streak-badge';
+                badge.innerText = `${streak} COMBO!`;
+                document.body.appendChild(badge);
+                setTimeout(() => badge.remove(), 600);
+            }
+        }
+
+        // ── Resize ──
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            ROAD_WIDTH_BOTTOM = Math.max(1200, window.innerWidth * 0.92);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // ── Init ──
+        const savedId = localStorage.getItem('lw_english_user_id');
+        if (savedId) {
+            document.getElementById('nickname').value = savedId;
+            document.getElementById('display-nickname').innerText = savedId;
+        }
+        initParticles();
+        drawBackground();
+        drawParticles();
+        updateStartStats();
+
+        // ── Game Control ──
+        function startGame() {
+            initAudio();
+            const id = document.getElementById('nickname').value.trim();
+            if (!id) { id = 'Guest'; document.getElementById('nickname').value = id; }
+
+            const activeWords = getActiveWords();
+            if (activeWords.length < 3) {
+                alert('남은 단어가 3개 미만입니다! 마스터리를 리셋하거나 다른 레벨을 선택하세요.');
+                return;
+            }
+
+            localStorage.setItem('lw_english_user_id', id);
+            document.getElementById('display-nickname').innerText = id;
+
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('ui-layer').style.display = 'block';
+            score = 0; streak = 0; speed = 0.0005;
+            targetLane = 1; currentLane = 1;
+            gates = []; hitActive = false; hitAnimationFrames = 0;
+            sessionMasteredWords = [];
+            document.getElementById('score-display').innerText = '0';
+            updateMasteryDisplay();
+            gameRunning = true;
+            startBgm();
+            nextQuestion();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function restartGame() {
+            document.getElementById('game-over-screen').style.display = 'none';
+            startGame();
+        }
+
+        function nextQuestion() {
+            const activeWords = getActiveWords();
+            if (activeWords.length < 3) {
+                // 모든 단어 마스터! 게임 종료
+                gameOver();
+                return;
+            }
+
+            const idx = Math.floor(Math.random() * activeWords.length);
+            currentQuestion = activeWords[idx];
+
+            // Display Korean meaning
+            document.getElementById('display-definition').innerText = currentQuestion.mean;
+
+            // Display level badge
+            const levelEl = document.getElementById('display-level');
+            levelEl.textContent = currentQuestion.level;
+            levelEl.style.background = LEVEL_COLORS[currentQuestion.level] || '#999';
+
+            // Pick 2 wrong answers (also from active words to avoid confusion)
+            let pool = activeWords.filter(w => w.word !== currentQuestion.word);
+            if (pool.length < 2) pool = englishDataset.filter(w => w.word !== currentQuestion.word);
+            let wrongs = [];
+            while (wrongs.length < 2) {
+                const w = pool[Math.floor(Math.random() * pool.length)].word;
+                if (!wrongs.includes(w)) wrongs.push(w);
+            }
+
+            const answers = [currentQuestion.word, ...wrongs].sort(() => Math.random() - 0.5);
+            gates.push({
+                z: -0.2,
+                options: answers,
+                correctIdx: answers.indexOf(currentQuestion.word),
+                passed: false,
+                word: currentQuestion.word
+            });
+        }
+
+        // ── Projection ──
+        function project(xLane, z) {
+            const vY = canvas.height * HORIZON_Y;
+            const sY = vY + z * (canvas.height - vY);
+            const rw = ROAD_WIDTH_TOP + z * (ROAD_WIDTH_BOTTOM - ROAD_WIDTH_TOP);
+            const lw = rw / LANES;
+            const sX = (canvas.width / 2) + (xLane - 1) * lw;
+            const s = Math.pow(z, 2) * 5 + 0.5;
+            return { x: sX, y: sY, s, lw };
+        }
+
+        // ── Game Loop ──
+        function gameLoop() {
+            if (!gameRunning) return;
+            frame++;
+            if (!hitActive) landscapeOffset += speed * 80;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+            tickParticles();
+            drawParticles();
+            drawRoad();
+
+            if (hitActive) {
+                hitAnimationFrames++;
+                if (hitAnimationFrames >= MAX_HIT_FRAMES) { gameOver(); return; }
+            }
+
+            // Draw gates back-to-front
+            for (let i = gates.length - 1; i >= 0; i--) {
+                const g = gates[i];
+                if (!hitActive) g.z += speed;
+                drawGate(g);
+
+                if (!g.passed && g.z >= PENGUIN_Z - 0.012 && g.z <= PENGUIN_Z + 0.012) {
+                    if (Math.round(targetLane) === g.correctIdx) {
+                        g.passed = true;
+                        gates.splice(i, 1); // 정답 게이트 즉시 제거
+                        score += 100;
+                        streak++;
+                        if (streak >= 3) score += streak * 10;
+                        document.getElementById('score-display').innerText = score.toLocaleString();
+                        speed = Math.min(0.006, speed + 0.00005);
+                        playDing();
+                        showCorrect();
+                        recordCorrect(g.word);
+                        nextQuestion();
+                    } else if (!hitActive) {
+                        hitActive = true;
+                        hitAnimationFrames = 0;
+                        streak = 0;
+                        recordWrong(g.word);
+                        reportWeakWord(g.word, currentQuestion.mean, currentQuestion.level, 'miss');
+                        playBuzz();
+                    }
+                }
+                if (g.z > 1.3) gates.splice(i, 1);
+            }
+
+            if (!hitActive) currentLane += (targetLane - currentLane) * 0.12;
+            const p = project(currentLane, PENGUIN_Z);
+            drawPenguin(p.x, p.y, p.s, hitActive, hitAnimationFrames);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ═══════════════════════════════
+        //  DRAWING FUNCTIONS
+        // ═══════════════════════════════
+
+        function drawBackground() {
+            const w = canvas.width, h = canvas.height;
+            const hY = h * HORIZON_Y;
+
+            const sky = ctx.createLinearGradient(0, 0, 0, hY);
+            sky.addColorStop(0, C.SKY_TOP);
+            sky.addColorStop(0.5, C.SKY_MID);
+            sky.addColorStop(1, C.SKY_BOT);
+            ctx.fillStyle = sky;
+            ctx.fillRect(0, 0, w, hY);
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, 0, w, hY);
+            ctx.clip();
+            drawClouds(hY);
+            ctx.restore();
+
+            drawMtnLayer(w, hY, 160, 7, landscapeOffset * 0.2, C.MTN_FAR, 0.35);
+            drawMtnLayer(w, hY, 120, 5, landscapeOffset * 0.4, C.MTN_MID, 0.5);
+            drawMtnLayer(w, hY, 80, 4, landscapeOffset * 0.6, C.MTN_NEAR, 0.7);
+
+            const gnd = ctx.createLinearGradient(0, hY, 0, h);
+            gnd.addColorStop(0, C.GROUND_TOP);
+            gnd.addColorStop(1, C.GROUND_BOT);
+            ctx.fillStyle = gnd;
+            ctx.fillRect(0, hY, w, h - hY);
+        }
+
+        function drawClouds(hY) {
+            ctx.fillStyle = 'rgba(255,255,255,0.35)';
+            const cloudData = [
+                { x: 0.15, y: 0.2, r: 45 },
+                { x: 0.45, y: 0.15, r: 55 },
+                { x: 0.7, y: 0.25, r: 40 },
+                { x: 0.9, y: 0.12, r: 50 },
+            ];
+            cloudData.forEach(cd => {
+                const cx = ((cd.x * canvas.width) - landscapeOffset * 0.15 % canvas.width + canvas.width) % canvas.width;
+                const cy = cd.y * hY;
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, cd.r * 1.8, cd.r * 0.7, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx - cd.r * 0.6, cy + 5, cd.r * 1.2, cd.r * 0.55, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx + cd.r * 0.7, cy + 3, cd.r * 1.1, cd.r * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawMtnLayer(w, baseY, height, count, offset, color, alpha) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(-50, baseY);
+            const seg = w / count;
+            for (let i = -1; i <= count + 2; i++) {
+                const x = i * seg - (offset % seg);
+                const peakH = height + Math.sin(i * 2.1 + 0.5) * height * 0.35;
+                const py = baseY - peakH;
+                const cpx = x - seg * 0.35;
+                ctx.quadraticCurveTo(cpx, py + peakH * 0.4, x, py);
+            }
+            ctx.lineTo(w + 100, baseY);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawRoad() {
+            const w = canvas.width, h = canvas.height;
+            const vY = h * HORIZON_Y;
+            const halfT = ROAD_WIDTH_TOP / 2;
+            const halfB = ROAD_WIDTH_BOTTOM / 2;
+            const cx = w / 2;
+
+            const pg = ctx.createLinearGradient(0, vY, 0, h);
+            pg.addColorStop(0, C.PATH);
+            pg.addColorStop(1, C.PATH_DARK);
+            ctx.fillStyle = pg;
+            ctx.beginPath();
+            ctx.moveTo(cx - halfT, vY);
+            ctx.lineTo(cx + halfT, vY);
+            ctx.lineTo(cx + halfB, h);
+            ctx.lineTo(cx - halfB, h);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = C.PATH_EDGE;
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(cx - halfT, vY); ctx.lineTo(cx - halfB, h);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx + halfT, vY); ctx.lineTo(cx + halfB, h);
+            ctx.stroke();
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([28, 28]);
+            ctx.lineDashOffset = -frame * 4;
+            for (let i = 1; i < LANES; i++) {
+                const tx = cx + (i - 1.5) * (ROAD_WIDTH_TOP / LANES);
+                const bx = cx + (i - 1.5) * (ROAD_WIDTH_BOTTOM / LANES);
+                ctx.beginPath();
+                ctx.moveTo(tx, vY); ctx.lineTo(bx, h);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+        }
+
+        function drawGate(g) {
+            if (g.z < 0.01) return;
+
+            ctx.save();
+            g.options.forEach((text, i) => {
+                const pos = project(i, g.z);
+                const gw = pos.lw * 0.75;
+                // 글자 길이에 맞는 족자 높이
+                const textLen = text.length;
+                const baseH = Math.max(70, Math.min(200, textLen * 18 + 40));
+                const hMin = baseH * 0.6, hMax = baseH * 1.6;
+                const gh = hMin + (g.z / PENGUIN_Z) * (hMax - hMin);
+                // 가운데(1) 위로, 좌우(0,2) 아래로 오프셋
+                const laneOffset = (i === 1) ? -gh * 0.18 : gh * 0.08;
+                const top = pos.y - gh + laneOffset;
+
+                let alpha = Math.min(1, g.z * 4);
+                if (g.z > PENGUIN_Z) alpha = Math.max(0, 1 - (g.z - PENGUIN_Z) * 5);
+                ctx.globalAlpha = alpha;
+
+                let blur = Math.max(0, (0.4 - g.z) * 8);
+                if (g.z > PENGUIN_Z) blur = (g.z - PENGUIN_Z) * 18;
+                ctx.filter = blur > 0.5 ? `blur(${blur}px)` : 'none';
+
+                ctx.save();
+                ctx.translate(pos.x, top);
+
+                const pw = gw * 0.1;
+
+                // ── Book-style gate ──
+                // Roof (dark blue banner)
+                ctx.fillStyle = C.GATE_ROOF;
+                ctx.beginPath();
+                ctx.moveTo(-gw / 2 - 10, 0);
+                ctx.lineTo(gw / 2 + 10, 0);
+                ctx.lineTo(gw / 2 + 5, -16);
+                ctx.lineTo(-gw / 2 - 5, -16);
+                ctx.closePath();
+                ctx.fill();
+                // Gold trim
+                ctx.fillStyle = C.GOLD;
+                ctx.fillRect(-gw / 2 - 4, -15, gw + 8, 3);
+
+                // Pillars (Oxford blue)
+                ctx.fillStyle = C.GATE_WOOD;
+                ctx.fillRect(-gw / 2, 0, pw, gh);
+                ctx.fillRect(gw / 2 - pw, 0, pw, gh);
+                ctx.fillStyle = C.GATE_WOOD_LT;
+                ctx.fillRect(-gw / 2 + 2, 2, pw - 4, gh - 4);
+                ctx.fillRect(gw / 2 - pw + 2, 2, pw - 4, gh - 4);
+
+                // Paper panel (cream)
+                const panelX = -gw / 2 + pw;
+                const panelW = gw - pw * 2;
+                ctx.fillStyle = C.GATE_PAPER;
+                ctx.fillRect(panelX, 6, panelW, gh - 12);
+
+                // Gold border
+                ctx.strokeStyle = C.GOLD;
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(panelX + 6, 12, panelW - 12, gh - 24);
+
+                // ── Text (horizontal, English word) ──
+                ctx.fillStyle = '#2D2D2D';
+                const maxFontSize = Math.min(panelW * 0.28, 36);
+                const fontSize = Math.min(maxFontSize, (panelW - 24) / (text.length * 0.5));
+                ctx.font = `900 ${fontSize}px 'CookieRun-Bold', sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, 0, gh / 2);
+
+                // Correct answer subtle glow
+                if (i === g.correctIdx && g.z > PENGUIN_Z - 0.15 && g.z < PENGUIN_Z - 0.05) {
+                    ctx.strokeStyle = 'rgba(200,155,60,0.3)';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(panelX - 1, 4, panelW + 2, gh - 8);
+                }
+
+                ctx.restore();
+            });
+            ctx.restore();
+        }
+
+        function drawPenguin(x, y, s, isHit, hf) {
+            const sc = s * 0.45;
+            ctx.save();
+
+            let dx = x, dy = y - 8 * sc, rot = 0;
+            if (isHit) {
+                const p = hf / MAX_HIT_FRAMES;
+                dx += Math.sin(hf * 0.8) * 28 * (1 - p);
+                dy -= Math.abs(Math.sin(hf * 0.5)) * 35 * (1 - p);
+                rot = p * (Math.PI / 2);
+            }
+
+            ctx.translate(dx, dy);
+            ctx.rotate(rot);
+            ctx.scale(sc, sc);
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+            ctx.beginPath();
+            ctx.ellipse(0, 10, 24, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Feet
+            ctx.fillStyle = C.PG_BEAK;
+            const footBob = Math.sin(frame * 0.2) * 3;
+            ctx.beginPath(); ctx.ellipse(-9, 6 + footBob, 8, 4, -0.15, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(9, 6 - footBob, 8, 4, 0.15, 0, Math.PI * 2); ctx.fill();
+
+            // Tail
+            ctx.fillStyle = '#ddd';
+            ctx.beginPath();
+            ctx.moveTo(-4, -2); ctx.lineTo(4, -2); ctx.lineTo(0, 4);
+            ctx.closePath();
+            ctx.fill();
+
+            // Body
+            ctx.fillStyle = C.PG_BODY;
+            ctx.beginPath(); ctx.ellipse(0, -14, 21, 23, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#234893';
+            ctx.beginPath(); ctx.ellipse(0, -16, 8, 18, 0, 0, Math.PI * 2); ctx.fill();
+
+            // Wings
+            ctx.fillStyle = C.PG_BODY;
+            const wingBob = Math.sin(frame * 0.15) * 4;
+            ctx.beginPath(); ctx.ellipse(-23, -16 + wingBob, 7, 15, -0.25, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(23, -16 - wingBob, 7, 15, 0.25, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#1E3F7A';
+            ctx.beginPath(); ctx.ellipse(-25, -6 + wingBob, 5, 6, -0.2, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(25, -6 - wingBob, 5, 6, 0.2, 0, Math.PI * 2); ctx.fill();
+
+            // Scarf (Oxford blue)
+            ctx.fillStyle = C.PG_SCARF;
+            ctx.beginPath();
+            ctx.moveTo(-16, -30); ctx.quadraticCurveTo(0, -26, 16, -30);
+            ctx.lineTo(14, -24); ctx.quadraticCurveTo(0, -20, -14, -24);
+            ctx.closePath();
+            ctx.fill();
+            // Scarf tails
+            const tailWave = Math.sin(frame * 0.1) * 5;
+            const tailWave2 = Math.sin(frame * 0.1 + 0.8) * 4;
+            ctx.fillStyle = '#2B7BC9';
+            ctx.beginPath();
+            ctx.moveTo(-8, -26);
+            ctx.quadraticCurveTo(-12 + tailWave, -16, -10 + tailWave, -6);
+            ctx.lineTo(-6 + tailWave, -7);
+            ctx.quadraticCurveTo(-8, -18, -4, -26);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = C.PG_SCARF;
+            ctx.beginPath();
+            ctx.moveTo(2, -26);
+            ctx.quadraticCurveTo(6 + tailWave2, -18, 4 + tailWave2, -10);
+            ctx.lineTo(8 + tailWave2, -11);
+            ctx.quadraticCurveTo(10, -20, 6, -26);
+            ctx.closePath();
+            ctx.fill();
+
+            // Head
+            ctx.fillStyle = C.PG_BODY;
+            ctx.beginPath(); ctx.arc(0, -40, 15, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#234893';
+            ctx.beginPath(); ctx.arc(0, -39, 10, 0, Math.PI * 2); ctx.fill();
+
+            // ── Mortarboard (학사모) ──
+            // Board (flat square)
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath();
+            ctx.moveTo(-20, -55);
+            ctx.lineTo(20, -55);
+            ctx.lineTo(16, -58);
+            ctx.lineTo(-16, -58);
+            ctx.closePath();
+            ctx.fill();
+            // Diamond shape top
+            ctx.beginPath();
+            ctx.moveTo(0, -62);
+            ctx.lineTo(22, -56);
+            ctx.lineTo(0, -53);
+            ctx.lineTo(-22, -56);
+            ctx.closePath();
+            ctx.fill();
+
+            // Cap dome
+            ctx.fillStyle = '#2D2D2D';
+            ctx.beginPath();
+            ctx.moveTo(-12, -55);
+            ctx.quadraticCurveTo(0, -60, 12, -55);
+            ctx.lineTo(10, -50);
+            ctx.quadraticCurveTo(0, -48, -10, -50);
+            ctx.closePath();
+            ctx.fill();
+
+            // Tassel
+            ctx.strokeStyle = C.GOLD;
+            ctx.lineWidth = 2;
+            const tasselWave = Math.sin(frame * 0.08) * 4;
+            ctx.beginPath();
+            ctx.moveTo(0, -57);
+            ctx.quadraticCurveTo(10 + tasselWave, -50, 14 + tasselWave, -42);
+            ctx.quadraticCurveTo(16 + tasselWave * 0.5, -38, 12 + tasselWave, -34);
+            ctx.stroke();
+            // Tassel end
+            ctx.fillStyle = C.GOLD;
+            ctx.beginPath(); ctx.arc(12 + tasselWave, -34, 3, 0, Math.PI * 2); ctx.fill();
+            // Tassel threads
+            ctx.strokeStyle = C.GOLD;
+            ctx.lineWidth = 1;
+            for (let t = -3; t <= 3; t++) {
+                ctx.beginPath();
+                ctx.moveTo(12 + tasselWave + t * 0.8, -34);
+                ctx.lineTo(12 + tasselWave + t * 1.5, -28 + Math.sin(frame * 0.06 + t) * 2);
+                ctx.stroke();
+            }
+
+            // Button on top
+            ctx.fillStyle = C.GOLD;
+            ctx.beginPath(); ctx.arc(0, -57, 2.5, 0, Math.PI * 2); ctx.fill();
+
+            ctx.restore();
+        }
+
+        // ── Game Over ──
+        function gameOver() {
+            gameRunning = false;
+            stopBgm();
+            document.getElementById('ui-layer').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'flex';
+            document.getElementById('final-score').innerText = score.toLocaleString();
+
+            // Show mastered words info
+            const masteredEl = document.getElementById('mastered-info');
+            if (sessionMasteredWords.length > 0) {
+                masteredEl.style.display = 'block';
+                masteredEl.innerHTML = `🎓 이번 게임에서 마스터한 단어: <strong>${sessionMasteredWords.join(', ')}</strong>`;
+            } else {
+                masteredEl.style.display = 'none';
+            }
+
+            saveScore(score);
+        }
+
+        function saveScore(s) {
+            const name = document.getElementById('nickname').value || 'GUEST';
+            let ranks = JSON.parse(localStorage.getItem('lw_english_ranks') || '[]');
+            ranks.push({ name, score: s, date: new Date().toISOString() });
+            ranks.sort((a, b) => b.score - a.score);
+            ranks = ranks.slice(0, 8);
+            localStorage.setItem('lw_english_ranks', JSON.stringify(ranks));
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const el = document.getElementById('leaderboard-list');
+            const ranks = JSON.parse(localStorage.getItem('lw_english_ranks') || '[]');
+            if (!ranks.length) {
+                el.innerHTML = '<div style="text-align:center;color:#bbb;padding:12px;font-size:13px;">아직 기록이 없어요</div>';
+                return;
+            }
+            el.innerHTML = ranks.map((r, i) => `
+                <div class="lb-row">
+                    <span class="rank">${i + 1}</span>
+                    <span class="name">${r.name}</span>
+                    <span class="pts">${r.score.toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
+
+        // ── Input ──
+        window.addEventListener('keydown', e => {
+            if (!gameRunning || hitActive) return;
+            if (e.key === 'ArrowLeft' || e.key === 'a') { if (targetLane > 0) targetLane--; }
+            if (e.key === 'ArrowRight' || e.key === 'd') { if (targetLane < 2) targetLane++; }
+        });
+
+        window.addEventListener('touchstart', e => {
+            if (!gameRunning || hitActive) return;
+            if (e.target.closest('.ctrl-btn')) return;
+            const x = e.touches[0].clientX;
+            if (x < canvas.width / 2) { if (targetLane > 0) targetLane--; }
+            else { if (targetLane < 2) targetLane++; }
+        });
+
+        document.getElementById('btn-left').addEventListener('click', e => {
+            e.stopPropagation();
+            if (!gameRunning || hitActive) return;
+            if (targetLane > 0) targetLane--;
+        });
+        document.getElementById('btn-right').addEventListener('click', e => {
+            e.stopPropagation();
+            if (!gameRunning || hitActive) return;
+            if (targetLane < 2) targetLane++;
+        });
+
+        // Enter to start
+        document.getElementById('nickname').addEventListener('keydown', e => {
+            if (e.key === 'Enter') startGame();
+        });
+
+        renderLeaderboard();
+    </script>
+</body>
+
+</html>

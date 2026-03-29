@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>격자 분할기 - Luna Whale</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lexend:wght@300;400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lexend',sans-serif;background:#f8f6f3;min-height:100vh;color:#2c2420}
+
+.top-bar{position:sticky;top:0;z-index:50;background:rgba(248,246,243,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,0,0,.04);padding:14px 24px;display:flex;align-items:center;gap:14px}
+.back-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.back-btn:hover{background:rgba(0,0,0,.04)}
+.top-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#2c2420;flex:1;letter-spacing:-.5px}
+
+.container{max-width:1100px;margin:0 auto;padding:24px}
+.subtitle{text-align:center;font-family:'Cormorant Garamond',serif;font-size:14px;color:#a09890;margin-bottom:28px;letter-spacing:-.2px}
+
+/* Controls */
+.controls{display:flex;justify-content:center;gap:24px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+.control-group{display:flex;align-items:center;gap:8px}
+.control-group label{font-size:12px;color:#6b5c4e;font-weight:400}
+.control-group input[type=range]{width:100px;accent-color:#8b7355}
+.control-group .val{font-size:13px;color:#2c2420;min-width:20px;text-align:center;font-weight:600}
+
+/* Line style controls */
+.line-controls{display:flex;justify-content:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+.line-btn{padding:6px 14px;border-radius:8px;border:1px solid rgba(0,0,0,.1);background:#fff;font-family:'Lexend',sans-serif;font-size:11px;color:#6b5c4e;cursor:pointer;transition:.2s}
+.line-btn:hover{background:rgba(0,0,0,.03)}
+.line-btn.active{background:#2c2420;color:#fff;border-color:#2c2420}
+.color-pick{width:28px;height:28px;border:2px solid rgba(0,0,0,.1);border-radius:6px;cursor:pointer;padding:0;background:none}
+
+/* Panel */
+.panel{background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,.06);overflow:hidden}
+.panel-header{padding:14px 20px;border-bottom:1px solid rgba(0,0,0,.04);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:13px;font-weight:600;color:#2c2420}
+.panel-badge{font-size:10px;color:#a09890;background:rgba(0,0,0,.04);padding:3px 10px;border-radius:20px}
+.panel-body{display:flex;align-items:center;justify-content:center;padding:20px;position:relative;min-height:400px}
+
+/* Drop zone */
+.drop-zone{width:100%;height:100%;min-height:380px;border:2px dashed rgba(0,0,0,.12);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:.3s;position:relative}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#8b7355;background:rgba(139,115,85,.04)}
+.drop-zone .material-symbols-outlined{font-size:48px;color:#c4b8a8}
+.drop-zone p{font-size:13px;color:#a09890}
+.drop-zone small{font-size:11px;color:#c4b8a8}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.drop-zone.has-image{border:none;cursor:default}
+.drop-zone.has-image .placeholder{display:none}
+.drop-zone.has-image input{display:none}
+
+/* Canvas wrapper */
+.canvas-wrap{position:relative;display:inline-block;max-width:100%;max-height:600px}
+.canvas-wrap canvas{max-width:100%;max-height:600px;border-radius:8px;display:block}
+
+/* Grid cells preview */
+.cells-section{margin-top:24px}
+.cells-header{padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.cells-grid{display:grid;gap:8px;padding:0 20px 20px}
+.cell-card{background:#fff;border-radius:8px;overflow:hidden;border:1px solid rgba(0,0,0,.06);cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative}
+.cell-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}
+.cell-card img{width:100%;display:block;aspect-ratio:1;object-fit:cover}
+.cell-card .cell-label{position:absolute;top:6px;left:6px;background:rgba(44,36,32,.75);color:#fff;font-size:9px;padding:2px 7px;border-radius:4px;font-weight:600}
+.cell-card .cell-dl{position:absolute;bottom:6px;right:6px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;opacity:0;transition:.2s}
+.cell-card:hover .cell-dl{opacity:1}
+.cell-card .cell-dl .material-symbols-outlined{font-size:16px;color:#2c2420}
+
+/* Buttons */
+.btn-row{display:flex;justify-content:center;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:10px 24px;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:#fff;font-family:'Lexend',sans-serif;font-size:13px;font-weight:400;color:#2c2420;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
+.btn:hover{background:rgba(0,0,0,.03)}
+.btn:disabled{opacity:.35;cursor:default}
+.btn-primary{background:#2c2420;color:#fff;border-color:#2c2420}
+.btn-primary:hover{background:#3d3530}
+.btn .material-symbols-outlined{font-size:18px}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:#2c2420;color:#fff;padding:10px 24px;border-radius:10px;font-size:12px;opacity:0;transition:.3s;pointer-events:none;z-index:100}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">
+    <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+  </button>
+  <div class="top-title">Grid Divider</div>
+</div>
+
+<div class="container">
+  <div class="subtitle">모작 연습을 위한 격자 분할 — 셀별 개별 다운로드 가능</div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>가로 칸</label>
+      <input type="range" id="cols" min="2" max="8" value="3"/>
+      <span class="val" id="cols-val">3</span>
+    </div>
+    <div class="control-group">
+      <label>세로 칸</label>
+      <input type="range" id="rows" min="2" max="8" value="3"/>
+      <span class="val" id="rows-val">3</span>
+    </div>
+    <div class="control-group">
+      <label>선 굵기</label>
+      <input type="range" id="line-w" min="1" max="6" value="2"/>
+      <span class="val" id="linew-val">2</span>
+    </div>
+  </div>
+
+  <div class="line-controls">
+    <button class="line-btn active" data-style="solid" onclick="setLineStyle(this,'solid')">실선</button>
+    <button class="line-btn" data-style="dashed" onclick="setLineStyle(this,'dashed')">점선</button>
+    <div class="control-group">
+      <label>선 색상</label>
+      <input type="color" class="color-pick" id="line-color" value="#e74c3c"/>
+    </div>
+    <div class="control-group">
+      <label>선 투명도</label>
+      <input type="range" id="line-opacity" min="20" max="100" value="70"/>
+      <span class="val" id="opacity-val">70%</span>
+    </div>
+  </div>
+
+  <!-- Main image panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">원본 이미지 + 격자</span>
+      <span class="panel-badge" id="img-size"></span>
+    </div>
+    <div class="panel-body">
+      <div class="drop-zone" id="drop-zone">
+        <div class="placeholder">
+          <span class="material-symbols-outlined">grid_on</span>
+          <p>이미지를 드래그하거나 클릭하세요</p>
+          <small>PNG, JPG, WEBP</small>
+        </div>
+        <input type="file" accept="image/*" id="file-input"/>
+        <div class="canvas-wrap" id="canvas-wrap" style="display:none">
+          <canvas id="main-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid cells -->
+  <div class="cells-section panel" id="cells-section" style="display:none">
+    <div class="cells-header">
+      <span class="panel-title">분할된 셀</span>
+      <span class="panel-badge" id="cell-count"></span>
+    </div>
+    <div class="cells-grid" id="cells-grid"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" id="btn-reset" disabled onclick="resetAll()">
+      <span class="material-symbols-outlined">restart_alt</span> 초기화
+    </button>
+    <button class="btn" id="btn-dl-grid" disabled onclick="downloadGrid()">
+      <span class="material-symbols-outlined">download</span> 격자 이미지 저장
+    </button>
+    <button class="btn btn-primary" id="btn-dl-all" disabled onclick="downloadAllCells()">
+      <span class="material-symbols-outlined">grid_view</span> 전체 셀 저장
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const mainCanvas = document.getElementById('main-canvas');
+const canvasWrap = document.getElementById('canvas-wrap');
+const colsSlider = document.getElementById('cols');
+const rowsSlider = document.getElementById('rows');
+const lineWSlider = document.getElementById('line-w');
+const lineColorInput = document.getElementById('line-color');
+const lineOpacitySlider = document.getElementById('line-opacity');
+const cellsSection = document.getElementById('cells-section');
+const cellsGrid = document.getElementById('cells-grid');
+
+let currentImage = null;
+let lineStyle = 'solid';
+
+// Slider labels
+colsSlider.oninput = () => { document.getElementById('cols-val').textContent = colsSlider.value; if(currentImage) render(); };
+rowsSlider.oninput = () => { document.getElementById('rows-val').textContent = rowsSlider.value; if(currentImage) render(); };
+lineWSlider.oninput = () => { document.getElementById('linew-val').textContent = lineWSlider.value; if(currentImage) render(); };
+lineColorInput.oninput = () => { if(currentImage) render(); };
+lineOpacitySlider.oninput = () => { document.getElementById('opacity-val').textContent = lineOpacitySlider.value + '%'; if(currentImage) render(); };
+
+function setLineStyle(btn, style) {
+  document.querySelectorAll('.line-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  lineStyle = style;
+  if(currentImage) render();
+}
+
+// Drag & Drop
+['dragenter','dragover'].forEach(e => {
+  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag-over'); });
+});
+['dragleave','drop'].forEach(e => {
+  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('drag-over'); });
+});
+dropZone.addEventListener('drop', ev => {
+  const file = ev.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) loadImage(file);
+});
+fileInput.addEventListener('change', ev => {
+  if(ev.target.files[0]) loadImage(ev.target.files[0]);
+});
+
+function loadImage(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      currentImage = img;
+      currentImage._name = file.name;
+      dropZone.classList.add('has-image');
+      canvasWrap.style.display = 'inline-block';
+      document.getElementById('img-size').textContent = img.width + ' × ' + img.height;
+      document.getElementById('btn-reset').disabled = false;
+      document.getElementById('btn-dl-grid').disabled = false;
+      document.getElementById('btn-dl-all').disabled = false;
+      render();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function render() {
+  const img = currentImage;
+  const cols = parseInt(colsSlider.value);
+  const rows = parseInt(rowsSlider.value);
+  const lw = parseInt(lineWSlider.value);
+  const color = lineColorInput.value;
+  const opacity = parseInt(lineOpacitySlider.value) / 100;
+
+  const w = img.width, h = img.height;
+  mainCanvas.width = w;
+  mainCanvas.height = h;
+  const ctx = mainCanvas.getContext('2d');
+
+  // Draw image
+  ctx.drawImage(img, 0, 0);
+
+  // Draw grid
+  ctx.strokeStyle = hexToRgba(color, opacity);
+  ctx.lineWidth = lw;
+  if(lineStyle === 'dashed') {
+    ctx.setLineDash([lw * 4, lw * 3]);
+  } else {
+    ctx.setLineDash([]);
+  }
+
+  // Vertical lines
+  for(let c = 1; c < cols; c++) {
+    const x = Math.round(w / cols * c);
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, h);
+    ctx.stroke();
+  }
+
+  // Horizontal lines
+  for(let r = 1; r < rows; r++) {
+    const y = Math.round(h / rows * r);
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
+  }
+
+  // Cell labels
+  ctx.setLineDash([]);
+  const cellW = w / cols;
+  const cellH = h / rows;
+  const fontSize = Math.max(12, Math.min(24, Math.round(Math.min(cellW, cellH) * 0.12)));
+  ctx.font = `bold ${fontSize}px Lexend, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  for(let r = 0; r < rows; r++) {
+    for(let c = 0; c < cols; c++) {
+      const cx = cellW * c + cellW / 2;
+      const cy = cellH * r + cellH / 2;
+      const label = String.fromCharCode(65 + r) + (c + 1);
+      // Background pill
+      const tw = ctx.measureText(label).width + 12;
+      const th = fontSize + 8;
+      ctx.fillStyle = hexToRgba('#000000', 0.45);
+      roundRect(ctx, cx - tw/2, cy - th/2, tw, th, 4);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(label, cx, cy + 1);
+    }
+  }
+
+  // Generate cells
+  renderCells(img, cols, rows);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function renderCells(img, cols, rows) {
+  cellsSection.style.display = 'block';
+  cellsGrid.innerHTML = '';
+  cellsGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  document.getElementById('cell-count').textContent = `${cols} × ${rows} = ${cols * rows}셀`;
+
+  const cellW = img.width / cols;
+  const cellH = img.height / rows;
+
+  for(let r = 0; r < rows; r++) {
+    for(let c = 0; c < cols; c++) {
+      const label = String.fromCharCode(65 + r) + (c + 1);
+      const cellCanvas = document.createElement('canvas');
+      cellCanvas.width = Math.round(cellW);
+      cellCanvas.height = Math.round(cellH);
+      const ctx = cellCanvas.getContext('2d');
+      ctx.drawImage(img,
+        Math.round(c * cellW), Math.round(r * cellH),
+        Math.round(cellW), Math.round(cellH),
+        0, 0, Math.round(cellW), Math.round(cellH)
+      );
+
+      const dataUrl = cellCanvas.toDataURL('image/jpeg', 0.92);
+      const card = document.createElement('div');
+      card.className = 'cell-card';
+      card.innerHTML = `
+        <img src="${dataUrl}" alt="${label}"/>
+        <span class="cell-label">${label}</span>
+        <div class="cell-dl" title="${label} 다운로드">
+          <span class="material-symbols-outlined">download</span>
+        </div>
+      `;
+      card.onclick = () => downloadCell(cellCanvas, label);
+      cellsGrid.appendChild(card);
+    }
+  }
+}
+
+function downloadCell(canvas, label) {
+  canvas.toBlob(blob => {
+    const link = document.createElement('a');
+    const base = (currentImage._name || 'image').replace(/\.[^.]+$/, '');
+    link.download = `${base}_${label}.jpg`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    showToast(`${label} 셀 다운로드`);
+  }, 'image/jpeg', 0.92);
+}
+
+function downloadGrid() {
+  mainCanvas.toBlob(blob => {
+    const link = document.createElement('a');
+    const base = (currentImage._name || 'image').replace(/\.[^.]+$/, '');
+    const cols = colsSlider.value, rows = rowsSlider.value;
+    link.download = `${base}_grid_${cols}x${rows}.jpg`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    showToast('격자 이미지 저장됨');
+  }, 'image/jpeg', 0.92);
+}
+
+async function downloadAllCells() {
+  const cols = parseInt(colsSlider.value);
+  const rows = parseInt(rowsSlider.value);
+  const cellW = currentImage.width / cols;
+  const cellH = currentImage.height / rows;
+
+  // Dynamic import JSZip
+  if(!window.JSZip) {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    document.head.appendChild(s);
+    await new Promise(r => s.onload = r);
+  }
+
+  const zip = new JSZip();
+  const base = (currentImage._name || 'image').replace(/\.[^.]+$/, '');
+
+  for(let r = 0; r < rows; r++) {
+    for(let c = 0; c < cols; c++) {
+      const label = String.fromCharCode(65 + r) + (c + 1);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(cellW);
+      canvas.height = Math.round(cellH);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(currentImage,
+        Math.round(c * cellW), Math.round(r * cellH),
+        Math.round(cellW), Math.round(cellH),
+        0, 0, Math.round(cellW), Math.round(cellH)
+      );
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+      zip.file(`${base}_${label}.jpg`, blob);
+    }
+  }
+
+  const content = await zip.generateAsync({type: 'blob'});
+  const link = document.createElement('a');
+  link.download = `${base}_cells_${cols}x${rows}.zip`;
+  link.href = URL.createObjectURL(content);
+  link.click();
+  showToast(`${cols * rows}개 셀 ZIP 다운로드`);
+}
+
+function resetAll() {
+  currentImage = null;
+  dropZone.classList.remove('has-image');
+  canvasWrap.style.display = 'none';
+  cellsSection.style.display = 'none';
+  cellsGrid.innerHTML = '';
+  document.getElementById('img-size').textContent = '';
+  document.getElementById('btn-reset').disabled = true;
+  document.getElementById('btn-dl-grid').disabled = true;
+  document.getElementById('btn-dl-all').disabled = true;
+  fileInput.value = '';
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1500);
+}
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고사성어 런! - 루나웨일 국어</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <style>
+        @font-face {
+            font-family: 'CookieRun-Bold';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Bold.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            overflow: hidden;
+            background: #5B7B6F;
+        }
+
+        canvas { display: block; }
+
+        /* ─── Start Screen ─── */
+        #start-screen {
+            position: fixed; inset: 0;
+            background: linear-gradient(160deg, rgba(43,69,112,0.92) 0%, rgba(91,123,111,0.92) 50%, rgba(179,58,58,0.85) 100%);
+            backdrop-filter: blur(20px);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 200;
+        }
+
+        .start-card {
+            background: rgba(255,255,255,0.96);
+            border-radius: 28px;
+            padding: 48px 44px 40px;
+            max-width: 400px;
+            width: 88%;
+            text-align: center;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.1);
+        }
+
+        .start-emoji { font-size: 56px; margin-bottom: 8px; }
+
+        .start-title {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 42px;
+            color: #B33A3A;
+            line-height: 1.1;
+            margin-bottom: 6px;
+        }
+
+        .start-sub {
+            font-size: 14px; color: #888;
+            margin-bottom: 28px;
+            letter-spacing: 1px;
+        }
+
+        .input-group { margin-bottom: 20px; text-align: left; }
+
+        .input-label {
+            display: block;
+            font-size: 13px; font-weight: 700;
+            color: #666; margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .start-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            font-size: 17px;
+            font-family: 'Pretendard Variable', sans-serif;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+            background: #fafafa;
+        }
+        .start-input:focus {
+            border-color: #B33A3A;
+            box-shadow: 0 0 0 3px rgba(179,58,58,0.12);
+            background: #fff;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #B33A3A, #D4524F);
+            color: white;
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 21px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 6px 24px rgba(179,58,58,0.35);
+            letter-spacing: 1px;
+        }
+        .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(179,58,58,0.45); }
+        .start-btn:active { transform: translateY(1px); box-shadow: 0 2px 10px rgba(179,58,58,0.3); }
+
+        .start-hint {
+            margin-top: 16px;
+            font-size: 12px; color: #aaa;
+        }
+
+        /* ─── Difficulty Selector ─── */
+        .diff-group {
+            display: flex; gap: 10px;
+            margin-bottom: 20px;
+        }
+        .diff-btn {
+            flex: 1;
+            padding: 12px 6px;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.25s;
+            text-align: center;
+        }
+        .diff-btn:hover { border-color: #ccc; background: #f0f0f0; }
+        .diff-btn.active { border-color: #B33A3A; background: rgba(179,58,58,0.06); box-shadow: 0 0 0 3px rgba(179,58,58,0.12); }
+        .diff-emoji { font-size: 28px; margin-bottom: 4px; }
+        .diff-label {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 15px; color: #444;
+        }
+        .diff-sub { font-size: 11px; color: #999; margin-top: 2px; }
+        .diff-btn.active .diff-label { color: #B33A3A; }
+
+        /* ─── Game Over Screen ─── */
+        #game-over-screen {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(12px);
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 200;
+        }
+
+        .go-card {
+            background: rgba(255,255,255,0.96);
+            border-radius: 28px;
+            padding: 40px 36px 32px;
+            max-width: 380px;
+            width: 88%;
+            text-align: center;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+        }
+
+        .go-title {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 32px;
+            color: #B33A3A;
+            margin-bottom: 4px;
+        }
+
+        .go-score {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 48px;
+            color: #C89B3C;
+            margin: 8px 0 20px;
+        }
+
+        .go-label {
+            font-size: 12px; color: #999;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+
+        .lb-list {
+            text-align: left;
+            margin-bottom: 24px;
+        }
+
+        .lb-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+        }
+        .lb-row:nth-child(odd) { background: #f5f5f5; }
+        .lb-row .rank { color: #B33A3A; font-family: 'CookieRun-Bold'; width: 24px; }
+        .lb-row .name { flex: 1; margin-left: 8px; }
+        .lb-row .pts { color: #C89B3C; font-family: 'CookieRun-Bold'; }
+        .lb-row:first-child { background: linear-gradient(90deg, #FFF8E7, #FFF3D0); }
+        .lb-row:first-child .rank { color: #C89B3C; }
+
+        .go-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #2B6CB0, #3B82C4);
+            color: white;
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 19px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 6px 24px rgba(43,108,176,0.35);
+        }
+        .go-btn:hover { transform: translateY(-2px); }
+        .go-btn:active { transform: translateY(1px); }
+
+        /* ─── HUD ─── */
+        #ui-layer {
+            position: fixed; inset: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .hud-glass {
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            padding: 10px 16px;
+            color: white;
+            font-family: 'CookieRun-Bold', sans-serif;
+        }
+
+        #hud-nickname {
+            position: absolute;
+            top: 16px; left: 16px;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+        #hud-nickname .label { font-size: 11px; opacity: 0.6; letter-spacing: 1px; }
+
+        #hud-score {
+            position: absolute;
+            top: 16px; right: 16px;
+            font-size: 15px;
+            text-align: right;
+        }
+        #hud-score .label { font-size: 11px; opacity: 0.6; letter-spacing: 1px; }
+        #hud-score .val { font-size: 22px; color: #FFD700; }
+
+        #btn-speedup {
+            position: absolute;
+            top: 80px; right: 16px;
+            background: rgba(255,160,0,0.18);
+            border: 1.5px solid rgba(255,180,0,0.5);
+            color: #FFD700;
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            transition: background 0.15s, transform 0.1s;
+            white-space: nowrap;
+            display: none;
+        }
+        #btn-speedup:hover { background: rgba(255,160,0,0.35); }
+        #btn-speedup:active { transform: scale(0.93); }
+        #btn-speedup.bump {
+            animation: speedBump 0.25s ease;
+        }
+        @keyframes speedBump {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.25); }
+            100% { transform: scale(1); }
+        }
+
+        #hud-lives {
+            position: absolute;
+            top: 16px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 26px;
+            letter-spacing: 4px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            transition: all 0.3s;
+        }
+        #hud-lives.shake {
+            animation: heartShake 0.4s ease;
+        }
+        @keyframes heartShake {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            25% { transform: translateX(-50%) scale(1.3) rotate(-5deg); }
+            50% { transform: translateX(-50%) scale(0.9) rotate(5deg); }
+            75% { transform: translateX(-50%) scale(1.1); }
+        }
+
+        #hud-definition {
+            position: absolute;
+            top: 32%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .def-panel {
+            background: rgba(15, 20, 40, 0.88);
+            backdrop-filter: blur(16px);
+            border-radius: 18px;
+            padding: 24px 44px 26px;
+            max-width: 620px;
+            min-width: 340px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+            border: 2px solid rgba(200,155,60,0.35);
+            text-align: center;
+        }
+
+        .def-label {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 14px;
+            color: #FFD700;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 8px rgba(255,215,0,0.4);
+        }
+
+        #display-definition {
+            font-size: 30px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.5;
+            word-break: keep-all;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+
+        /* ─── Home & Settings ─── */
+        .hud-home-btn {
+            position: absolute;
+            bottom: 20px; left: 20px;
+            pointer-events: auto;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 22px;
+            width: 44px; height: 44px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .hud-home-btn:hover { background: rgba(0,0,0,0.7); }
+
+        .hud-settings-btn {
+            position: absolute;
+            bottom: 20px; left: 74px;
+            pointer-events: auto;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 20px;
+            width: 44px; height: 44px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .hud-settings-btn:hover { background: rgba(0,0,0,0.7); }
+
+        .settings-panel {
+            display: none;
+            position: absolute;
+            bottom: 74px; left: 20px;
+            pointer-events: auto;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 16px 20px;
+            min-width: 200px;
+            color: white;
+            font-size: 13px;
+            font-family: 'Pretendard Variable', sans-serif;
+        }
+        .settings-panel.open { display: block; }
+        .settings-panel .setting-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .settings-panel .setting-row:last-child { margin-bottom: 0; }
+        .settings-panel label { font-weight: 600; font-size: 12px; opacity: 0.8; }
+        .settings-panel input[type="range"] {
+            width: 100px; accent-color: #FFD700;
+        }
+        .settings-panel .vol-val {
+            font-size: 11px; min-width: 30px; text-align: right; opacity: 0.6;
+        }
+
+        /* ─── Correct answer popup ─── */
+        .correct-popup {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 80px;
+            animation: popCorrect 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: none;
+            z-index: 150;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+        }
+        @keyframes popCorrect {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-15deg); opacity: 0; }
+            40% { transform: translate(-50%, -80%) scale(1.3) rotate(5deg); opacity: 1; }
+            100% { transform: translate(-50%, -120%) scale(1) rotate(0deg); opacity: 0; }
+        }
+
+        /* ─── Streak badge ─── */
+        .streak-badge {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, 20px);
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 36px;
+            color: #FFD700;
+            text-shadow: 0 0 20px rgba(255,215,0,0.8), 0 0 40px rgba(255,165,0,0.5), 0 2px 8px rgba(0,0,0,0.6);
+            animation: streakPop 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 149;
+            filter: drop-shadow(0 0 12px rgba(255,215,0,0.6));
+        }
+        @keyframes streakPop {
+            0% { transform: translate(-50%, 20px) scale(0) rotate(-10deg); opacity: 0; }
+            40% { transform: translate(-50%, -10px) scale(1.4) rotate(5deg); opacity: 1; }
+            70% { transform: translate(-50%, -5px) scale(1.1) rotate(-2deg); opacity: 0.9; }
+            100% { transform: translate(-50%, -30px) scale(0.9) rotate(0deg); opacity: 0; }
+        }
+
+        /* ─── Mobile Controls ─── */
+        #mobile-controls {
+            position: absolute;
+            bottom: 40px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; gap: 20px;
+            pointer-events: auto;
+        }
+
+        .ctrl-btn {
+            width: 80px; height: 80px;
+            background: rgba(255,255,255,0.22);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255,255,255,0.4);
+            border-radius: 50%;
+            color: white;
+            font-size: 30px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.12s;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .ctrl-btn:active {
+            background: rgba(255,255,255,0.35);
+            transform: scale(0.88);
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 600px) {
+            .start-card { padding: 32px 28px 28px; }
+            .start-title { font-size: 34px; }
+            .def-panel { max-width: 260px; padding: 10px 16px 12px; }
+            #display-definition { font-size: 16px; }
+            .go-card { padding: 28px 24px 24px; }
+            .go-score { font-size: 36px; }
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body>
+    <!-- ─── Start Screen ─── -->
+    <div id="start-screen">
+        <div class="start-card">
+            <div class="start-emoji">🐧</div>
+            <div class="start-title">고사성어 런!</div>
+            <div class="start-sub">뜻을 읽고 올바른 사자성어를 골라라</div>
+            <div class="diff-group">
+                <div class="diff-btn active" onclick="selectDiff(1,this)">
+                    <div class="diff-emoji">🌱</div>
+                    <div class="diff-label">초등</div>
+                    <div class="diff-sub">80개</div>
+                </div>
+                <div class="diff-btn" onclick="selectDiff(2,this)">
+                    <div class="diff-emoji">📘</div>
+                    <div class="diff-label">중등</div>
+                    <div class="diff-sub">96개</div>
+                </div>
+                <div class="diff-btn" onclick="selectDiff(3,this)">
+                    <div class="diff-emoji">🔥</div>
+                    <div class="diff-label">고등</div>
+                    <div class="diff-sub">전체</div>
+                </div>
+            </div>
+            <div class="input-group">
+                <label class="input-label">닉네임</label>
+                <input type="text" id="nickname" class="start-input" placeholder="이름을 입력하세요" maxlength="12">
+            </div>
+            <button onclick="startGame()" class="start-btn">달려보자!</button>
+            <div class="start-hint">← → 또는 A D 키로 이동</div>
+        </div>
+    </div>
+
+    <!-- ─── Game Over Screen ─── -->
+    <div id="game-over-screen">
+        <div class="go-card">
+            <div class="go-title">수고했어!</div>
+            <div class="go-label">SCORE</div>
+            <div id="final-score" class="go-score">0</div>
+            <div class="go-label" style="margin-bottom:8px">HALL OF FAME</div>
+            <div id="leaderboard-list" class="lb-list"></div>
+            <button onclick="restartGame()" class="go-btn">다시 도전!</button>
+            <button onclick="window.location.href='../../index.html'" class="go-btn" style="background:rgba(80,80,80,0.8);margin-top:8px;font-size:14px;">🏠 홈으로</button>
+        </div>
+    </div>
+
+    <!-- ─── HUD Layer ─── -->
+    <div id="ui-layer" style="display:none;">
+        <div id="hud-nickname" class="hud-glass">
+            <div class="label">PLAYER</div>
+            <span id="display-nickname">Luna</span>
+        </div>
+
+        <div id="hud-definition">
+            <div class="def-panel">
+                <div class="def-label">뜻 풀이</div>
+                <div id="display-definition">준비 중...</div>
+            </div>
+        </div>
+
+        <div id="hud-lives">❤️❤️❤️</div>
+
+        <div id="hud-score" class="hud-glass">
+            <div class="label">SCORE</div>
+            <div class="val" id="score-display">0</div>
+        </div>
+
+        <button id="btn-speedup" onclick="boostSpeed()">⚡ SPEED +30%</button>
+
+        <div id="mobile-controls">
+            <button class="ctrl-btn" id="btn-left">◀</button>
+            <button class="ctrl-btn" id="btn-right">▶</button>
+        </div>
+
+        <!-- 홈 & 설정 -->
+        <button class="hud-home-btn" onclick="window.location.href='../../index.html'" title="홈으로">🏠</button>
+        <button class="hud-settings-btn" onclick="toggleSettings()" title="설정">⚙️</button>
+        <div class="settings-panel" id="settingsPanel">
+            <div class="setting-row">
+                <label>🎵 배경음악</label>
+                <input type="range" id="bgmVolume" min="0" max="100" value="30" oninput="setBgmVolume(this.value)">
+                <span class="vol-val" id="bgmVolVal">30%</span>
+            </div>
+            <div class="setting-row">
+                <label>🔊 효과음</label>
+                <input type="range" id="sfxVolume" min="0" max="100" value="60" oninput="setSfxVolume(this.value)">
+                <span class="vol-val" id="sfxVolVal">60%</span>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script src="../../assets/js/korean-run-data.js"></script>
+    <script>
+        /* ═══════════════════════════════════════
+           Game Engine — 고사성어 런 (Redesigned)
+           ═══════════════════════════════════════ */
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // ── Constants ──
+        const LANES = 3;
+        const HORIZON_Y = 0.5;
+        const ROAD_WIDTH_TOP = 24;
+        const ROAD_WIDTH_BOTTOM = 1100;
+        const PENGUIN_Z = 0.85;
+        const MAX_HIT_FRAMES = 60;
+        const PARTICLE_COUNT = 35;
+
+        // ── Colors (Korean Traditional Modern) ──
+        const C = {
+            SKY_TOP: '#7FB5D5',
+            SKY_MID: '#B8D4E3',
+            SKY_BOT: '#E8D5B7',
+            MTN_FAR: '#9EAEB8',
+            MTN_MID: '#7B9B8F',
+            MTN_NEAR: '#5D7B6F',
+            GROUND_TOP: '#C8BDA3',
+            GROUND_BOT: '#A89780',
+            PATH: '#B8A38A',
+            PATH_DARK: '#9E8C74',
+            PATH_EDGE: '#7B6B55',
+            GATE_WOOD: '#5C3322',
+            GATE_WOOD_LT: '#7B4A35',
+            GATE_PAPER: '#F5E6C8',
+            GATE_ROOF: '#3A3A3A',
+            GOLD: '#C89B3C',
+            RED: '#B33A3A',
+            PG_BODY: '#2954a3',
+            PG_BELLY: '#ffffff',
+            PG_BEAK: '#fca311',
+            PG_HAT: '#1a1a1a',
+            PG_SCARF: '#B33A3A',
+        };
+
+        // ── Difficulty ──
+        let selectedDiff = 1;
+        const DIFF_SPEED = { 1: 0.00078, 2: 0.000975, 3: 0.0013 };
+        let filteredIdioms = [];
+
+        function selectDiff(lv, el) {
+            selectedDiff = lv;
+            document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function getFilteredIdioms() {
+            if (selectedDiff === 3) return idiomDataset; // 고등: 전체
+            if (selectedDiff === 2) return idiomDataset.filter(d => d.lv <= 2); // 중등: 초+중
+            return idiomDataset.filter(d => d.lv === 1); // 초등: 초만
+        }
+
+        // ── Game State ──
+        let gameRunning = false;
+        let score = 0;
+        let streak = 0;
+        let currentLane = 1;
+        let targetLane = 1;
+        let speed = 0.0006;
+        let gates = [];
+        let currentQuestion = null;
+        let frame = 0;
+        let lastFrameTime = 0;
+        let dt = 1; // delta multiplier (1 = 60fps baseline)
+        let lives = 3;
+        let hitActive = false;
+        let hitAnimationFrames = 0;
+        let landscapeOffset = 0;
+        let particles = [];
+
+        // ── Audio ──
+        let audioCtx;
+        let bgmGain, sfxGain, bgmPlaying = false;
+        let sfxVol = 0.6, bgmVol = 0.3;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                // Master gain nodes
+                bgmGain = audioCtx.createGain();
+                bgmGain.gain.value = bgmVol;
+                bgmGain.connect(audioCtx.destination);
+                sfxGain = audioCtx.createGain();
+                sfxGain.gain.value = sfxVol;
+                sfxGain.connect(audioCtx.destination);
+            }
+        }
+
+        // ── BGM: 실제 MP3 루프 ──
+        let bgmAudio = null;
+        function startBgm() {
+            if (bgmPlaying) return;
+            bgmPlaying = true;
+            if (!bgmAudio) {
+                bgmAudio = new Audio('../../assets/sounds/bgm/gentle-drift.mp3');
+                bgmAudio.loop = true;
+                bgmAudio.volume = bgmVol;
+            }
+            bgmAudio.play().catch(()=>{});
+        }
+
+        function stopBgm() {
+            bgmPlaying = false;
+            if (bgmAudio) { bgmAudio.pause(); bgmAudio.currentTime = 0; }
+        }
+
+        // ── Settings ──
+        function toggleSettings() {
+            document.getElementById('settingsPanel').classList.toggle('open');
+        }
+        function setBgmVolume(v) {
+            bgmVol = v / 100;
+            if (bgmGain) bgmGain.gain.value = bgmVol;
+            if (bgmAudio) bgmAudio.volume = bgmVol;
+            document.getElementById('bgmVolVal').textContent = v + '%';
+        }
+        function setSfxVolume(v) {
+            sfxVol = v / 100;
+            if (sfxGain) sfxGain.gain.value = sfxVol;
+            document.getElementById('sfxVolVal').textContent = v + '%';
+        }
+
+        function playDing() {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const t = audioCtx.currentTime;
+            const o1 = audioCtx.createOscillator();
+            const g1 = audioCtx.createGain();
+            o1.type = 'sine'; o1.frequency.setValueAtTime(880, t);
+            g1.gain.setValueAtTime(0.25, t);
+            g1.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+            o1.connect(g1); g1.connect(sfxGain);
+            o1.start(t); o1.stop(t + 0.25);
+
+            const o2 = audioCtx.createOscillator();
+            const g2 = audioCtx.createGain();
+            o2.type = 'sine'; o2.frequency.setValueAtTime(1174.66, t + 0.12);
+            g2.gain.setValueAtTime(0.2, t + 0.12);
+            g2.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+            o2.connect(g2); g2.connect(sfxGain);
+            o2.start(t + 0.12); o2.stop(t + 0.45);
+        }
+
+        function playBuzz() {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const t = audioCtx.currentTime;
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = 'sawtooth';
+            o.frequency.setValueAtTime(160, t);
+            o.frequency.linearRampToValueAtTime(80, t + 0.25);
+            g.gain.setValueAtTime(0.15, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+            o.connect(g); g.connect(sfxGain);
+            o.start(t); o.stop(t + 0.25);
+        }
+
+        // ── Particles (Cherry Blossoms) ──
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height * 0.5,
+                    sz: 2.5 + Math.random() * 4.5,
+                    vx: -0.3 + Math.random() * 0.6,
+                    vy: 0.25 + Math.random() * 0.45,
+                    rot: Math.random() * Math.PI * 2,
+                    rs: 0.015 + Math.random() * 0.03,
+                    op: 0.35 + Math.random() * 0.5,
+                    col: ['#FFB7C5','#FF9AAE','#FFC1D0','#FFD1DC'][Math.floor(Math.random()*4)]
+                });
+            }
+        }
+
+        function tickParticles() {
+            const hY = canvas.height * HORIZON_Y;
+            particles.forEach(p => {
+                p.x += p.vx + Math.sin(frame * 0.008 + p.rot) * 0.3;
+                p.y += p.vy;
+                p.rot += p.rs;
+                if (p.y > hY + 20 || p.x < -20 || p.x > canvas.width + 20) {
+                    p.x = Math.random() * canvas.width;
+                    p.y = -10;
+                }
+            });
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rot);
+                ctx.globalAlpha = p.op;
+                ctx.fillStyle = p.col;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, p.sz, p.sz * 0.55, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        // ── Popup Effects ──
+        function showCorrect() {
+            const emojis = ['👍','🎉','✨','💯','🔥'];
+            const el = document.createElement('div');
+            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            el.className = 'correct-popup';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+
+            if (streak > 1 && streak % 3 === 0) {
+                const badge = document.createElement('div');
+                badge.className = 'streak-badge';
+                badge.innerText = `${streak} COMBO!`;
+                document.body.appendChild(badge);
+                setTimeout(() => badge.remove(), 600);
+            }
+        }
+
+        function boostSpeed() {
+            speed *= 1.3;
+            const btn = document.getElementById('btn-speedup');
+            btn.classList.remove('bump');
+            void btn.offsetWidth;
+            btn.classList.add('bump');
+            // Show current multiplier in button
+            if (!boostSpeed._count) boostSpeed._count = 0;
+            boostSpeed._count++;
+            btn.innerHTML = `⚡ SPEED +${Math.round((Math.pow(1.3, boostSpeed._count) - 1) * 100)}%`;
+        }
+
+        function updateLivesDisplay() {
+            const el = document.getElementById('hud-lives');
+            el.innerText = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives);
+            el.classList.remove('shake');
+            void el.offsetWidth; // reflow
+            el.classList.add('shake');
+        }
+
+        function showWrongAnswer(correct) {
+            const el = document.createElement('div');
+            el.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(179,58,58,0.95);color:#fff;padding:16px 32px;border-radius:16px;font-family:"CookieRun-Bold",sans-serif;font-size:22px;z-index:300;text-align:center;backdrop-filter:blur(8px);box-shadow:0 8px 32px rgba(0,0,0,0.4);pointer-events:none;';
+            el.innerHTML = `<div style="font-size:14px;opacity:0.8;margin-bottom:6px;">정답은</div><div>${correct}</div>`;
+            document.body.appendChild(el);
+            setTimeout(() => {
+                el.style.transition = 'opacity 0.4s';
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 400);
+            }, 1200);
+        }
+
+        // ── Resize ──
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // ── Init ──
+        const savedId = localStorage.getItem('lw_korean_user_id');
+        if (savedId) {
+            document.getElementById('nickname').value = savedId;
+            document.getElementById('display-nickname').innerText = savedId;
+        }
+        initParticles();
+        // Draw idle background
+        drawBackground();
+        drawParticles();
+
+        // ── Game Control ──
+        function startGame() {
+            initAudio();
+            const id = document.getElementById('nickname').value.trim();
+            if (!id) { document.getElementById('nickname').focus(); return; }
+            localStorage.setItem('lw_korean_user_id', id);
+            document.getElementById('display-nickname').innerText = id;
+
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('ui-layer').style.display = 'block';
+            filteredIdioms = getFilteredIdioms();
+            score = 0; streak = 0; lives = 3; speed = DIFF_SPEED[selectedDiff];
+            targetLane = 1; currentLane = 1;
+            gates = []; hitActive = false; hitAnimationFrames = 0;
+            document.getElementById('score-display').innerText = '0';
+            updateLivesDisplay();
+            gameRunning = true;
+            boostSpeed._count = 0;
+            document.getElementById('btn-speedup').style.display = 'block';
+            document.getElementById('btn-speedup').innerHTML = '⚡ SPEED +30%';
+            lastFrameTime = performance.now();
+            startBgm();
+            nextQuestion();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function restartGame() {
+            document.getElementById('game-over-screen').style.display = 'none';
+            startGame();
+        }
+
+        function nextQuestion() {
+            const pool = filteredIdioms.length ? filteredIdioms : idiomDataset;
+            const idx = Math.floor(Math.random() * pool.length);
+            currentQuestion = pool[idx];
+            document.getElementById('display-definition').innerText = currentQuestion.mean;
+
+            let wrongs = [];
+            while (wrongs.length < 2) {
+                const w = pool[Math.floor(Math.random() * pool.length)].idm;
+                if (w !== currentQuestion.idm && !wrongs.includes(w)) wrongs.push(w);
+            }
+            const answers = [currentQuestion.idm, ...wrongs].sort(() => Math.random() - 0.5);
+            gates.push({
+                z: -0.2,
+                options: answers,
+                correctIdx: answers.indexOf(currentQuestion.idm),
+                passed: false
+            });
+        }
+
+        // ── Projection ──
+        function project(xLane, z) {
+            const vY = canvas.height * HORIZON_Y;
+            const sY = vY + z * (canvas.height - vY);
+            const rw = ROAD_WIDTH_TOP + z * (ROAD_WIDTH_BOTTOM - ROAD_WIDTH_TOP);
+            const lw = rw / LANES;
+            const sX = (canvas.width / 2) + (xLane - 1) * lw;
+            const s = Math.pow(z, 2) * 5 + 0.5;
+            return { x: sX, y: sY, s, lw };
+        }
+
+        // ── Game Loop ──
+        function gameLoop(now) {
+            if (!gameRunning) return;
+
+            // Delta time: dt=1 at 60fps, dt=0.5 at 120fps, dt=2 at 30fps
+            const elapsed = now - lastFrameTime;
+            lastFrameTime = now;
+            dt = Math.min(elapsed / 16.667, 3); // cap at 3x to prevent spiral
+
+            frame++;
+            if (!hitActive) landscapeOffset += speed * 80 * dt;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+            tickParticles();
+            drawParticles();
+            drawRoad();
+
+            if (hitActive) {
+                hitAnimationFrames += dt;
+                if (hitAnimationFrames >= MAX_HIT_FRAMES) {
+                    hitActive = false;
+                    if (lives <= 0) { gameOver(); return; }
+                    nextQuestion();
+                }
+            }
+
+            // Draw gates back-to-front
+            for (let i = gates.length - 1; i >= 0; i--) {
+                const g = gates[i];
+                if (!hitActive) g.z += speed * dt;
+                drawGate(g);
+
+                if (!g.passed && g.z >= PENGUIN_Z - 0.012 && g.z <= PENGUIN_Z + 0.012) {
+                    if (Math.round(targetLane) === g.correctIdx) {
+                        g.passed = true;
+                        score += 100;
+                        streak++;
+                        if (streak >= 3) score += streak * 10;
+                        document.getElementById('score-display').innerText = score.toLocaleString();
+                        speed = Math.min(0.006, speed + 0.00005);
+                        playDing();
+                        showCorrect();
+                        nextQuestion();
+                    } else if (!hitActive) {
+                        g.passed = true;
+                        g.wrongHit = true;
+                        g.wrongTimer = 60;
+                        hitActive = true;
+                        hitAnimationFrames = 0;
+                        streak = 0;
+                        lives--;
+                        updateLivesDisplay();
+                        playBuzz();
+                    }
+                }
+                if (g.wrongHit && g.wrongTimer > 0) g.wrongTimer -= dt;
+                if (g.z > 1.3) gates.splice(i, 1);
+            }
+
+            if (!hitActive) currentLane += (targetLane - currentLane) * (1 - Math.pow(0.88, dt));
+            const p = project(currentLane, PENGUIN_Z);
+            drawPenguin(p.x, p.y, p.s, hitActive, hitAnimationFrames);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ═══════════════════════════════
+        //  DRAWING FUNCTIONS
+        // ═══════════════════════════════
+
+        function drawBackground() {
+            const w = canvas.width, h = canvas.height;
+            const hY = h * HORIZON_Y;
+
+            // Sky gradient
+            const sky = ctx.createLinearGradient(0, 0, 0, hY);
+            sky.addColorStop(0, C.SKY_TOP);
+            sky.addColorStop(0.5, C.SKY_MID);
+            sky.addColorStop(1, C.SKY_BOT);
+            ctx.fillStyle = sky;
+            ctx.fillRect(0, 0, w, hY);
+
+            // Soft clouds
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, 0, w, hY);
+            ctx.clip();
+            drawClouds(hY);
+            ctx.restore();
+
+            // Mountain layers
+            drawMtnLayer(w, hY, 160, 7, landscapeOffset * 0.2, C.MTN_FAR, 0.35);
+            drawMtnLayer(w, hY, 120, 5, landscapeOffset * 0.4, C.MTN_MID, 0.5);
+            drawMtnLayer(w, hY, 80, 4, landscapeOffset * 0.6, C.MTN_NEAR, 0.7);
+
+            // Ground
+            const gnd = ctx.createLinearGradient(0, hY, 0, h);
+            gnd.addColorStop(0, C.GROUND_TOP);
+            gnd.addColorStop(1, C.GROUND_BOT);
+            ctx.fillStyle = gnd;
+            ctx.fillRect(0, hY, w, h - hY);
+        }
+
+        function drawClouds(hY) {
+            ctx.fillStyle = 'rgba(255,255,255,0.35)';
+            const cloudData = [
+                { x: 0.15, y: 0.2, r: 45 },
+                { x: 0.45, y: 0.15, r: 55 },
+                { x: 0.7, y: 0.25, r: 40 },
+                { x: 0.9, y: 0.12, r: 50 },
+            ];
+            cloudData.forEach(cd => {
+                const cx = ((cd.x * canvas.width) - landscapeOffset * 0.15 % canvas.width + canvas.width) % canvas.width;
+                const cy = cd.y * hY;
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, cd.r * 1.8, cd.r * 0.7, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx - cd.r * 0.6, cy + 5, cd.r * 1.2, cd.r * 0.55, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx + cd.r * 0.7, cy + 3, cd.r * 1.1, cd.r * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawMtnLayer(w, baseY, height, count, offset, color, alpha) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(-50, baseY);
+            const seg = w / count;
+            for (let i = -1; i <= count + 2; i++) {
+                const x = i * seg - (offset % seg);
+                const peakH = height + Math.sin(i * 2.1 + 0.5) * height * 0.35;
+                const py = baseY - peakH;
+                const cpx = x - seg * 0.35;
+                ctx.quadraticCurveTo(cpx, py + peakH * 0.4, x, py);
+            }
+            ctx.lineTo(w + 100, baseY);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawRoad() {
+            const w = canvas.width, h = canvas.height;
+            const vY = h * HORIZON_Y;
+            const halfT = ROAD_WIDTH_TOP / 2;
+            const halfB = ROAD_WIDTH_BOTTOM / 2;
+            const cx = w / 2;
+
+            // Path gradient
+            const pg = ctx.createLinearGradient(0, vY, 0, h);
+            pg.addColorStop(0, C.PATH);
+            pg.addColorStop(1, C.PATH_DARK);
+            ctx.fillStyle = pg;
+            ctx.beginPath();
+            ctx.moveTo(cx - halfT, vY);
+            ctx.lineTo(cx + halfT, vY);
+            ctx.lineTo(cx + halfB, h);
+            ctx.lineTo(cx - halfB, h);
+            ctx.closePath();
+            ctx.fill();
+
+            // Borders
+            ctx.strokeStyle = C.PATH_EDGE;
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(cx - halfT, vY); ctx.lineTo(cx - halfB, h);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx + halfT, vY); ctx.lineTo(cx + halfB, h);
+            ctx.stroke();
+
+            // Lane markers
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([28, 28]);
+            ctx.lineDashOffset = -frame * 4;
+            for (let i = 1; i < LANES; i++) {
+                const tx = cx + (i - 1.5) * (ROAD_WIDTH_TOP / LANES);
+                const bx = cx + (i - 1.5) * (ROAD_WIDTH_BOTTOM / LANES);
+                ctx.beginPath();
+                ctx.moveTo(tx, vY); ctx.lineTo(bx, h);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+        }
+
+        function drawGate(g) {
+            if (g.z < 0.01) return;
+
+            ctx.save();
+            g.options.forEach((text, i) => {
+                const pos = project(i, g.z);
+                const gw = pos.lw * 0.7;
+                const hMin = 90, hMax = 230;
+                const gh = hMin + (g.z / PENGUIN_Z) * (hMax - hMin);
+                const top = pos.y - gh;
+
+                // Alpha
+                let alpha = Math.min(1, g.z * 4);
+                if (g.z > PENGUIN_Z) alpha = Math.max(0, 1 - (g.z - PENGUIN_Z) * 5);
+                ctx.globalAlpha = alpha;
+
+                // Blur
+                let blur = Math.max(0, (0.4 - g.z) * 8);
+                if (g.z > PENGUIN_Z) blur = (g.z - PENGUIN_Z) * 18;
+                ctx.filter = blur > 0.5 ? `blur(${blur}px)` : 'none';
+
+                ctx.save();
+                ctx.translate(pos.x, top);
+
+                const pw = gw * 0.1; // pillar width
+
+                // ── Roof tile ──
+                ctx.fillStyle = C.GATE_ROOF;
+                ctx.beginPath();
+                ctx.moveTo(-gw / 2 - 10, 0);
+                ctx.lineTo(gw / 2 + 10, 0);
+                ctx.lineTo(gw / 2 + 5, -14);
+                ctx.lineTo(-gw / 2 - 5, -14);
+                ctx.closePath();
+                ctx.fill();
+                // Roof highlight
+                ctx.fillStyle = '#555';
+                ctx.fillRect(-gw / 2 - 4, -13, gw + 8, 3);
+
+                // ── Wooden pillars ──
+                ctx.fillStyle = C.GATE_WOOD;
+                ctx.fillRect(-gw / 2, 0, pw, gh);
+                ctx.fillRect(gw / 2 - pw, 0, pw, gh);
+                // Light edge
+                ctx.fillStyle = C.GATE_WOOD_LT;
+                ctx.fillRect(-gw / 2 + 2, 2, pw - 4, gh - 4);
+                ctx.fillRect(gw / 2 - pw + 2, 2, pw - 4, gh - 4);
+
+                // ── Paper panel (한지) ──
+                const panelX = -gw / 2 + pw;
+                const panelW = gw - pw * 2;
+                const isCorrectGlow = g.wrongHit && i === g.correctIdx && g.wrongTimer > 0;
+                ctx.fillStyle = isCorrectGlow ? `rgba(50,205,100,${0.3 + 0.7 * Math.abs(Math.sin(g.wrongTimer * 0.15))})` : C.GATE_PAPER;
+                ctx.fillRect(panelX, 6, panelW, gh - 12);
+
+                // Gold border (or green glow border)
+                if (isCorrectGlow) {
+                    ctx.shadowColor = '#32CD64';
+                    ctx.shadowBlur = 20;
+                    ctx.strokeStyle = '#32CD64';
+                    ctx.lineWidth = 4;
+                } else {
+                    ctx.strokeStyle = C.GOLD;
+                    ctx.lineWidth = 1.5;
+                }
+                ctx.strokeRect(panelX + 6, 12, panelW - 12, gh - 24);
+                ctx.shadowBlur = 0;
+
+                // ── Text (vertical) ──
+                ctx.fillStyle = isCorrectGlow ? '#fff' : '#2D2D2D';
+                const fontSize = Math.min(panelW * 0.45, (gh - 36) / (text.length + 0.3));
+                ctx.font = `900 ${fontSize}px 'CookieRun-Bold', sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                const spacing = (gh - 32) / text.length;
+                for (let j = 0; j < text.length; j++) {
+                    ctx.fillText(text[j], 0, 18 + (j + 0.5) * spacing);
+                }
+
+                // Correct answer subtle glow (only when very close, as hint)
+                if (i === g.correctIdx && g.z > PENGUIN_Z - 0.15 && g.z < PENGUIN_Z - 0.05) {
+                    ctx.strokeStyle = 'rgba(200,155,60,0.3)';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(panelX - 1, 4, panelW + 2, gh - 8);
+                }
+
+                ctx.restore();
+            });
+            ctx.restore();
+        }
+
+        function drawPenguin(x, y, s, isHit, hf) {
+            const sc = s * 0.45;
+            ctx.save();
+
+            let dx = x, dy = y - 8 * sc, rot = 0;
+            if (isHit) {
+                const p = hf / MAX_HIT_FRAMES;
+                dx += Math.sin(hf * 0.8) * 28 * (1 - p);
+                dy -= Math.abs(Math.sin(hf * 0.5)) * 35 * (1 - p);
+                rot = p * (Math.PI / 2);
+            }
+
+            ctx.translate(dx, dy);
+            ctx.rotate(rot);
+            ctx.scale(sc, sc);
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+            ctx.beginPath();
+            ctx.ellipse(0, 10, 24, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Feet (behind body, peeking out)
+            ctx.fillStyle = C.PG_BEAK;
+            const footBob = Math.sin(frame * 0.2) * 3;
+            ctx.beginPath(); ctx.ellipse(-9, 6 + footBob, 8, 4, -0.15, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(9, 6 - footBob, 8, 4, 0.15, 0, Math.PI * 2); ctx.fill();
+
+            // Tail (small white triangle)
+            ctx.fillStyle = '#ddd';
+            ctx.beginPath();
+            ctx.moveTo(-4, -2); ctx.lineTo(4, -2); ctx.lineTo(0, 4);
+            ctx.closePath();
+            ctx.fill();
+
+            // Body (back view — all blue, no belly)
+            ctx.fillStyle = C.PG_BODY;
+            ctx.beginPath(); ctx.ellipse(0, -14, 21, 23, 0, 0, Math.PI * 2); ctx.fill();
+
+            // Body back detail (slightly darker center stripe)
+            ctx.fillStyle = '#234893';
+            ctx.beginPath(); ctx.ellipse(0, -16, 8, 18, 0, 0, Math.PI * 2); ctx.fill();
+
+            // Wings (pumping animation)
+            ctx.fillStyle = C.PG_BODY;
+            const wingBob = Math.sin(frame * 0.15) * 4;
+            ctx.beginPath(); ctx.ellipse(-23, -16 + wingBob, 7, 15, -0.25, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(23, -16 - wingBob, 7, 15, 0.25, 0, Math.PI * 2); ctx.fill();
+            // Wing tips (darker)
+            ctx.fillStyle = '#1E3F7A';
+            ctx.beginPath(); ctx.ellipse(-25, -6 + wingBob, 5, 6, -0.2, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(25, -6 - wingBob, 5, 6, 0.2, 0, Math.PI * 2); ctx.fill();
+
+            // Scarf (back view — wraps around neck)
+            ctx.fillStyle = C.PG_SCARF;
+            ctx.beginPath();
+            ctx.moveTo(-16, -30); ctx.quadraticCurveTo(0, -26, 16, -30);
+            ctx.lineTo(14, -24); ctx.quadraticCurveTo(0, -20, -14, -24);
+            ctx.closePath();
+            ctx.fill();
+            // Scarf tails flowing behind (two tails flapping in the wind)
+            const tailWave = Math.sin(frame * 0.1) * 5;
+            const tailWave2 = Math.sin(frame * 0.1 + 0.8) * 4;
+            ctx.fillStyle = '#D4524F';
+            ctx.beginPath();
+            ctx.moveTo(-8, -26);
+            ctx.quadraticCurveTo(-12 + tailWave, -16, -10 + tailWave, -6);
+            ctx.lineTo(-6 + tailWave, -7);
+            ctx.quadraticCurveTo(-8, -18, -4, -26);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = C.PG_SCARF;
+            ctx.beginPath();
+            ctx.moveTo(2, -26);
+            ctx.quadraticCurveTo(6 + tailWave2, -18, 4 + tailWave2, -10);
+            ctx.lineTo(8 + tailWave2, -11);
+            ctx.quadraticCurveTo(10, -20, 6, -26);
+            ctx.closePath();
+            ctx.fill();
+
+            // Head (back of head — all blue, no face visible)
+            ctx.fillStyle = C.PG_BODY;
+            ctx.beginPath(); ctx.arc(0, -40, 15, 0, Math.PI * 2); ctx.fill();
+
+            // Back of head detail (darker patch)
+            ctx.fillStyle = '#234893';
+            ctx.beginPath(); ctx.arc(0, -39, 10, 0, Math.PI * 2); ctx.fill();
+
+            // ── 갓 (Traditional Korean hat) — seen from behind ──
+            // Brim (wide oval)
+            ctx.fillStyle = C.PG_HAT;
+            ctx.beginPath(); ctx.ellipse(0, -53, 24, 7, 0, 0, Math.PI * 2); ctx.fill();
+            // Crown
+            ctx.fillStyle = '#2D2D2D';
+            ctx.fillRect(-10, -66, 20, 13);
+            ctx.beginPath(); ctx.ellipse(0, -66, 10, 4, 0, 0, Math.PI * 2); ctx.fill();
+            // Hat band detail
+            ctx.fillStyle = '#444';
+            ctx.fillRect(-10, -55, 20, 2);
+
+            // Ribbons (갓끈) flowing behind
+            ctx.strokeStyle = C.GOLD;
+            ctx.lineWidth = 2;
+            const ribbonWave = Math.sin(frame * 0.08) * 4;
+            ctx.beginPath();
+            ctx.moveTo(-8, -53);
+            ctx.quadraticCurveTo(-14 + ribbonWave, -44, -18 + ribbonWave, -34);
+            ctx.quadraticCurveTo(-20 + ribbonWave * 0.5, -28, -16 + ribbonWave, -22);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(8, -53);
+            ctx.quadraticCurveTo(14 - ribbonWave, -44, 18 - ribbonWave, -34);
+            ctx.quadraticCurveTo(20 - ribbonWave * 0.5, -28, 16 - ribbonWave, -22);
+            ctx.stroke();
+
+            // Ribbon tassels (끝 장식)
+            ctx.fillStyle = C.GOLD;
+            ctx.beginPath(); ctx.arc(-16 + ribbonWave, -22, 2.5, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(16 - ribbonWave, -22, 2.5, 0, Math.PI * 2); ctx.fill();
+
+            ctx.restore();
+        }
+
+        // ── Game Over ──
+        function gameOver() {
+            gameRunning = false;
+            stopBgm();
+            document.getElementById('btn-speedup').style.display = 'none';
+            document.getElementById('ui-layer').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'flex';
+            document.getElementById('final-score').innerText = score.toLocaleString();
+            saveScore(score);
+        }
+
+        function saveScore(s) {
+            const name = document.getElementById('nickname').value || 'GUEST';
+            let ranks = JSON.parse(localStorage.getItem('lw_korean_ranks') || '[]');
+            ranks.push({ name, score: s, date: new Date().toISOString() });
+            ranks.sort((a, b) => b.score - a.score);
+            ranks = ranks.slice(0, 8);
+            localStorage.setItem('lw_korean_ranks', JSON.stringify(ranks));
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const el = document.getElementById('leaderboard-list');
+            const ranks = JSON.parse(localStorage.getItem('lw_korean_ranks') || '[]');
+            if (!ranks.length) {
+                el.innerHTML = '<div style="text-align:center;color:#bbb;padding:12px;font-size:13px;">아직 기록이 없어요</div>';
+                return;
+            }
+            const medals = ['🥇','🥈','🥉'];
+            el.innerHTML = ranks.map((r, i) => `
+                <div class="lb-row" style="${i < 3 ? 'background:rgba(200,155,60,' + (0.15 - i*0.04) + ');border:1px solid rgba(200,155,60,' + (0.3 - i*0.08) + ')' : ''}">
+                    <span class="rank">${i < 3 ? medals[i] : (i + 1)}</span>
+                    <span class="name">${r.name}</span>
+                    <span class="pts">${r.score.toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
+
+        // ── Input ──
+        window.addEventListener('keydown', e => {
+            if (!gameRunning || hitActive) return;
+            if (e.key === 'ArrowLeft' || e.key === 'a') { if (targetLane > 0) targetLane--; }
+            if (e.key === 'ArrowRight' || e.key === 'd') { if (targetLane < 2) targetLane++; }
+        });
+
+        window.addEventListener('touchstart', e => {
+            if (!gameRunning || hitActive) return;
+            if (e.target.closest('.ctrl-btn')) return;
+            const x = e.touches[0].clientX;
+            if (x < canvas.width / 2) { if (targetLane > 0) targetLane--; }
+            else { if (targetLane < 2) targetLane++; }
+        });
+
+        document.getElementById('btn-left').addEventListener('click', e => {
+            e.stopPropagation();
+            if (!gameRunning || hitActive) return;
+            if (targetLane > 0) targetLane--;
+        });
+        document.getElementById('btn-right').addEventListener('click', e => {
+            e.stopPropagation();
+            if (!gameRunning || hitActive) return;
+            if (targetLane < 2) targetLane++;
+        });
+
+        // Enter to start
+        document.getElementById('nickname').addEventListener('keydown', e => {
+            if (e.key === 'Enter') startGame();
+        });
+
+        renderLeaderboard();
+    </script>
+</body>
+
+</html>

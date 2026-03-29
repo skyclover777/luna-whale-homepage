@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>알콰리즈미의 보물상자 - Luna Math</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1729;--card:#1a2640;--accent:#10b981;--accent2:#059669;--text:#e2e8f0;--dim:#64748b;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--orange:#f59e0b;--gold:#fbbf24;--radius:16px}
+body{font-family:'Pretendard Variable',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+
+.header{padding:16px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.back-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.back-btn:hover{background:rgba(255,255,255,0.14)}
+.header-title{font-size:18px;font-weight:700;color:var(--accent);flex:1}
+.solved-badge{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:var(--accent);padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;white-space:nowrap}
+
+.intro-wrap{max-width:900px;margin:0 auto;padding:24px 24px 0}
+.intro-card{background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(5,150,105,0.04));border:1px solid rgba(16,185,129,0.18);border-radius:var(--radius);padding:28px 32px;text-align:center;line-height:2;color:var(--dim);font-size:15px}
+.intro-card .intro-emoji{font-size:48px;margin-bottom:8px}
+.intro-card .intro-title{font-size:22px;font-weight:800;color:var(--accent);margin-bottom:12px}
+.intro-card b{color:var(--text)}
+.intro-card .formula{font-size:16px;color:var(--accent);font-weight:700;margin:8px 0;letter-spacing:1px}
+
+.grid-wrap{max-width:900px;margin:0 auto;padding:20px 24px}
+.grid-label{font-size:13px;color:var(--dim);letter-spacing:2px;margin-bottom:10px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:400px){.grid{grid-template-columns:1fr}}
+.sc-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:20px 16px;text-align:center;cursor:pointer;transition:all .25s;position:relative}
+.sc-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px rgba(16,185,129,0.15)}
+.sc-card.active{border-color:var(--accent);background:rgba(16,185,129,0.08);box-shadow:0 0 20px rgba(16,185,129,0.1)}
+.sc-card.solved{border-color:rgba(34,197,94,0.4)}
+.sc-card.solved::after{content:'✅';position:absolute;top:8px;right:10px;font-size:16px}
+.sc-emoji{font-size:36px;margin-bottom:8px}
+.sc-name{font-size:15px;font-weight:700;margin-bottom:4px}
+.sc-desc{font-size:12px;color:var(--dim)}
+.sc-diff{margin-top:6px;display:flex;justify-content:center;gap:3px}
+.sc-diff .star{font-size:10px;color:var(--gold)}
+.sc-diff .star.empty{opacity:0.25}
+
+.game-area{max-width:900px;margin:0 auto;padding:0 24px 40px;display:none}
+.game-area.visible{display:block}
+.canvas-wrap{background:#000;border-radius:var(--radius);overflow:hidden;border:1px solid rgba(255,255,255,0.08);margin-bottom:16px;position:relative}
+canvas{width:100%;display:block;cursor:default}
+
+.back-to-grid{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s;margin-bottom:14px;font-family:inherit}
+.back-to-grid:hover{background:rgba(255,255,255,0.14)}
+
+.info-panel{background:var(--card);border-radius:var(--radius);padding:20px 24px;border:1px solid rgba(255,255,255,0.08)}
+.info-row{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;margin-bottom:12px;font-size:14px}
+.info-row:last-child{margin-bottom:0}
+.info-label{color:var(--dim);font-weight:600;min-width:70px}
+.info-val{color:var(--text);font-weight:700}
+.info-val.accent{color:var(--accent)}
+.info-formula{color:var(--accent);font-size:18px;font-weight:700;font-family:'Pretendard Variable',monospace;display:block;text-align:center;background:rgba(16,185,129,0.08);padding:10px 16px;border-radius:10px;margin:4px 0 8px;line-height:1.6;word-break:keep-all;letter-spacing:2px}
+
+.answer-display{background:#0a0f1e;border:2px solid var(--accent);border-radius:12px;padding:14px 16px;font-size:28px;font-weight:800;color:var(--accent);text-align:center;font-family:'JetBrains Mono','Pretendard Variable',monospace;min-height:58px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;letter-spacing:4px;position:relative;overflow:hidden}
+.answer-display::after{content:'';position:absolute;right:12px;width:2px;height:28px;background:var(--accent);animation:blink 1s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.answer-display.correct{border-color:var(--green);color:var(--green);animation:correctPulse .4s ease}
+.answer-display.wrong{border-color:var(--red);color:var(--red);animation:wrongShake .4s ease}
+@keyframes correctPulse{0%{box-shadow:0 0 0 rgba(34,197,94,0)}50%{box-shadow:0 0 30px rgba(34,197,94,0.4)}100%{box-shadow:0 0 0 rgba(34,197,94,0)}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:280px;margin:12px auto}
+.num-btn{background:var(--card);border:2px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s;font-family:inherit;-webkit-user-select:none;user-select:none}
+.num-btn:hover{border-color:var(--accent);background:rgba(16,185,129,0.1)}
+.num-btn:active{transform:scale(0.95)}
+.num-btn.confirm{grid-column:span 2;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;font-size:18px}
+.num-btn.confirm:hover{box-shadow:0 4px 20px rgba(16,185,129,0.4)}
+.num-btn.clear{background:rgba(239,68,68,0.12);color:var(--red);border-color:rgba(239,68,68,0.25)}
+.num-btn.clear:hover{background:rgba(239,68,68,0.22)}
+
+/* Digit Spinner */
+.digit-spinner{display:flex;gap:2px;align-items:center;justify-content:center;margin:8px 0}
+.digit-col{display:flex;flex-direction:column;align-items:center;width:38px}
+.digit-col .digit-up,.digit-col .digit-down{width:36px;height:26px;border:none;border-radius:6px;cursor:pointer;background:rgba(255,255,255,0.08);color:var(--accent);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .15s;-webkit-user-select:none;user-select:none}
+.digit-col .digit-up:hover,.digit-col .digit-down:hover{background:rgba(16,185,129,0.25)}
+.digit-col .digit-up:active,.digit-col .digit-down:active{transform:scale(.9)}
+.digit-val{font-size:28px;font-weight:800;color:var(--text);line-height:1;width:36px;height:38px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);border-radius:8px;border:1.5px solid rgba(255,255,255,0.12);font-family:'JetBrains Mono',monospace}
+.digit-label{font-size:9px;color:var(--dim);margin-top:2px}
+.sign-btn{width:36px;height:38px;border:none;border-radius:8px;cursor:pointer;background:rgba(0,0,0,0.4);color:var(--accent);font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;transition:all .15s;border:1.5px solid rgba(255,255,255,0.12);font-family:'JetBrains Mono',monospace;-webkit-user-select:none;user-select:none}
+.sign-btn:hover{background:rgba(16,185,129,0.15);border-color:var(--accent)}
+
+.hint-area{margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.action-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;font-weight:700;font-size:14px;padding:10px 22px;border:none;border-radius:12px;cursor:pointer;transition:all .2s;font-family:inherit}
+.action-btn:hover{transform:scale(1.03);box-shadow:0 4px 16px rgba(16,185,129,0.3)}
+.action-btn:active{transform:scale(0.97)}
+.action-btn.secondary{background:rgba(255,255,255,0.1);color:var(--text);border:1px solid rgba(255,255,255,0.15)}
+.action-btn.secondary:hover{background:rgba(255,255,255,0.18);box-shadow:none}
+.action-btn.danger{background:linear-gradient(135deg,var(--red),#dc2626)}
+.action-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.action-btn.next{background:linear-gradient(135deg,var(--gold),#f59e0b);margin-top:10px}
+
+.hint-text{color:var(--orange);font-size:13px;font-weight:600;background:rgba(245,158,11,0.1);padding:8px 14px;border-radius:10px;border:1px solid rgba(245,158,11,0.2);display:none;width:100%;margin-top:6px;text-align:center}
+.hint-text.show{display:block}
+
+.result-msg{margin-top:10px;padding:12px 16px;border-radius:10px;font-weight:700;font-size:15px;text-align:center;display:none}
+.result-msg.success{display:block;background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.result-msg.fail{display:block;background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+
+.progress-section{margin-bottom:14px}
+.progress-label{font-size:12px;color:var(--dim);margin-bottom:6px;font-weight:600}
+.progress-bar-wrap{width:100%;height:18px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)}
+.progress-bar{height:100%;border-radius:10px;transition:width .5s ease;background:linear-gradient(90deg,var(--accent),var(--gold));position:relative}
+
+.quiz-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(15,23,41,0.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:10;border-radius:var(--radius)}
+.quiz-overlay.show{display:flex}
+
+.complete-banner{text-align:center;padding:30px;background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(251,191,36,0.08));border:1px solid rgba(16,185,129,0.25);border-radius:var(--radius);margin-top:14px}
+.complete-banner .cb-emoji{font-size:56px;margin-bottom:8px}
+.complete-banner .cb-title{font-size:22px;font-weight:800;color:var(--gold);margin-bottom:8px}
+.complete-banner .cb-sub{font-size:14px;color:var(--dim)}
+
+@media(max-width:600px){
+  .header{padding:12px 16px}
+  .header-title{font-size:15px}
+  .intro-wrap,.grid-wrap{padding-left:16px;padding-right:16px}
+  .game-area{padding-left:16px;padding-right:16px}
+  .info-row{font-size:12px}
+  .intro-card{padding:20px 16px;font-size:13px}
+  .intro-card .intro-title{font-size:18px}
+  .info-formula{font-size:16px}
+  .numpad{max-width:100%}
+  .answer-display{font-size:24px;min-height:50px;padding:10px}
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="header">
+  <a href="index.html" class="back-btn">← Luna Math</a>
+  <div class="header-title">🔢 알콰리즈미의 보물상자</div>
+  <div class="solved-badge" id="solvedBadge">🏆 0 / 8</div>
+</div>
+
+<div class="intro-wrap" id="introWrap">
+  <div class="intro-card">
+    <div class="intro-emoji">📜</div>
+    <div class="intro-title">알콰리즈미의 보물상자</div>
+    서기 780년, 바그다드의 <b>'지혜의 집'</b>.<br>
+    알콰리즈미는 미지의 수를 찾는 혁명적인 방법을 발명했습니다.<br>
+    그가 쓴 <b>'알자브르'</b>라는 책이 바로 오늘날 <b>대수학(Algebra)</b>의 시작!<br>
+    <div class="formula">ax + b = c &nbsp;→&nbsp; x = ?</div>
+    방정식을 풀어 보물상자를 열어보세요! 🗝️
+  </div>
+</div>
+
+<div class="grid-wrap" id="gridWrap">
+  <div class="grid-label">🗝️ 보물상자 선택</div>
+  <div class="grid" id="scenarioGrid"></div>
+</div>
+
+<div class="game-area" id="gameArea">
+  <button class="back-to-grid" onclick="backToGrid()">← 상자 목록으로</button>
+  <div class="canvas-wrap" id="canvasWrap">
+    <canvas id="gameCanvas" width="880" height="500"></canvas>
+  </div>
+  <div class="info-panel" id="infoPanel">
+    <div class="progress-section">
+      <div class="progress-label">진행률: <span id="progressText">0 / 8</span></div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+    </div>
+    <div class="info-row">
+      <span class="info-label">방정식:</span>
+    </div>
+    <div class="info-formula" id="eqDisplay">—</div>
+    <div class="info-row">
+      <span class="info-label">x의 값은?</span>
+    </div>
+    <div style="text-align:center;margin-bottom:4px"><span style="font-size:11px;color:var(--dim)">마우스로 ▲▼ 클릭!</span></div>
+    <div class="digit-spinner" id="digitSpinner">
+      <button class="sign-btn" id="signBtn" onclick="toggleSign()">+</button>
+      <div class="digit-col"><button class="digit-up" onclick="spinDigit(1,1)">▲</button><div class="digit-val" id="sd1">0</div><button class="digit-down" onclick="spinDigit(1,-1)">▼</button><div class="digit-label">십</div></div>
+      <div class="digit-col"><button class="digit-up" onclick="spinDigit(0,1)">▲</button><div class="digit-val" id="sd0">0</div><button class="digit-down" onclick="spinDigit(0,-1)">▼</button><div class="digit-label">일</div></div>
+    </div>
+    <div class="answer-display" id="answerDisplay">_</div>
+    <div style="text-align:center;margin-bottom:6px"><span style="font-size:11px;color:var(--dim)">또는 넘패드로 입력</span></div>
+    <div class="numpad" id="numpad">
+      <button class="num-btn" onclick="pressKey('7')">7</button>
+      <button class="num-btn" onclick="pressKey('8')">8</button>
+      <button class="num-btn" onclick="pressKey('9')">9</button>
+      <button class="num-btn" onclick="pressKey('4')">4</button>
+      <button class="num-btn" onclick="pressKey('5')">5</button>
+      <button class="num-btn" onclick="pressKey('6')">6</button>
+      <button class="num-btn" onclick="pressKey('1')">1</button>
+      <button class="num-btn" onclick="pressKey('2')">2</button>
+      <button class="num-btn" onclick="pressKey('3')">3</button>
+      <button class="num-btn" onclick="pressKey('-')">−</button>
+      <button class="num-btn" onclick="pressKey('0')">0</button>
+      <button class="num-btn" onclick="pressKey('.')">.</button>
+      <button class="num-btn clear" onclick="pressKey('clear')">지우기</button>
+      <button class="num-btn confirm" onclick="pressKey('confirm')">확인!</button>
+    </div>
+    <div class="hint-area">
+      <button class="action-btn secondary" onclick="showHint()">💡 힌트 보기</button>
+      <div class="hint-text" id="hintText"></div>
+    </div>
+    <div id="resultMsg" class="result-msg"></div>
+    <div id="nextBtnWrap" style="text-align:center;display:none">
+      <button class="action-btn next" onclick="goNextScenario()">다음 상자로 →</button>
+    </div>
+  </div>
+</div>
+
+<div id="completeBanner" class="complete-banner" style="display:none;max-width:900px;margin:20px auto;padding:40px">
+  <div class="cb-emoji">🏆✨</div>
+  <div class="cb-title">모든 보물상자를 열었습니다!</div>
+  <div class="cb-sub">알콰리즈미의 대수학을 완벽하게 마스터했어요!<br>당신은 진정한 수학 탐험가입니다!</div>
+</div>
+
+<script>
+/* ── DATA ── */
+const SCENARIOS = [
+  { id:0, emoji:'🗝️', name:'첫 번째 열쇠', desc:'일차방정식 기초', eq:'x + 5 = 12', answer:7, hint:'양변에서 5를 빼보세요', difficulty:1 },
+  { id:1, emoji:'🔑', name:'두 번째 열쇠', desc:'곱셈이 있는 방정식', eq:'2x + 6 = 20', answer:7, hint:'먼저 6을 빼고, 2로 나누세요', difficulty:1 },
+  { id:2, emoji:'⚷', name:'세 번째 열쇠', desc:'뺄셈 방정식', eq:'3x − 9 = 15', answer:8, hint:'양변에 9를 더한 뒤, 3으로 나누세요', difficulty:2 },
+  { id:3, emoji:'🗝️', name:'균형 방정식', desc:'양변에 x가 있는', eq:'5x + 3 = 2x + 18', answer:5, hint:'x를 한쪽으로 모으세요 (5x−2x = 18−3)', difficulty:2 },
+  { id:4, emoji:'💎', name:'제곱의 비밀', desc:'제곱근 구하기', eq:'x² = 49', answer:7, hint:'어떤 수를 제곱하면 49가 될까요?', difficulty:3 },
+  { id:5, emoji:'🏺', name:'고대의 수수께끼', desc:'이차방정식 입문', eq:'x² + 3x = 28', answer:4, hint:'x=4를 넣어보세요: 16+12=28', difficulty:3 },
+  { id:6, emoji:'👑', name:'왕의 자물쇠', desc:'이차방정식 풀기', eq:'2x² − 8 = 0', answer:2, hint:'2x²=8 → x²=4 → x=?', difficulty:3 },
+  { id:7, emoji:'🌟', name:'최후의 보물', desc:'인수분해', eq:'x² − 5x + 6 = 0', answers:[2,3], hint:'(x−2)(x−3)=0 → x=2 또는 x=3', difficulty:4 }
+];
+
+/* ── STATE ── */
+let currentScenario = -1;
+let answerStr = '';
+let solved = JSON.parse(localStorage.getItem('alkh_solved') || '[]');
+let hintShown = false;
+let scenarioJustSolved = false;
+
+/* ── CANVAS ── */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = 880, H = 500;
+let time = 0, chestOpen = false, shakeTimer = 0;
+let particles = [];
+let bgStars = [];
+let animId = null;
+
+// Init background stars
+for (let i = 0; i < 60; i++) {
+  bgStars.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*2+0.5, speed: Math.random()*0.5+0.2, phase: Math.random()*Math.PI*2 });
+}
+
+/* ── SOUND ── */
+let audioCtx = null;
+function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+function playTone(freq,dur,type='sine',vol=0.12){
+  ensureAudio();
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+  o.connect(g);g.connect(audioCtx.destination);
+  o.start();o.stop(audioCtx.currentTime+dur);
+}
+function sndSuccess(){playTone(523,.15);setTimeout(()=>playTone(659,.15),150);setTimeout(()=>playTone(784,.3),300)}
+function sndFail(){playTone(200,.3,'square',0.08)}
+function sndKey(){playTone(800,.05,'sine',0.05)}
+function sndCoin(){playTone(1200+Math.random()*400,.1,'sine',0.06)}
+function sndOpen(){playTone(392,.2);setTimeout(()=>playTone(523,.2),120);setTimeout(()=>playTone(659,.2),240);setTimeout(()=>playTone(784,.4),360)}
+
+/* ── BUILD GRID ── */
+function buildGrid(){
+  const grid = document.getElementById('scenarioGrid');
+  grid.innerHTML = '';
+  SCENARIOS.forEach((sc, i) => {
+    const isSolved = solved.includes(sc.id);
+    const stars = Array.from({length:4}, (_,j) => `<span class="star${j<sc.difficulty?'':' empty'}">★</span>`).join('');
+    grid.innerHTML += `
+      <div class="sc-card${isSolved?' solved':''}" onclick="selectScenario(${i})">
+        <div class="sc-emoji">${sc.emoji}</div>
+        <div class="sc-name">${sc.name}</div>
+        <div class="sc-desc">${sc.desc}</div>
+        <div class="sc-diff">${stars}</div>
+      </div>`;
+  });
+  updateBadge();
+}
+
+function updateBadge(){
+  document.getElementById('solvedBadge').textContent = `🏆 ${solved.length} / 8`;
+  if(solved.length >= 8){
+    document.getElementById('completeBanner').style.display = 'block';
+  }
+}
+
+function updateProgress(){
+  const pct = (solved.length / 8 * 100).toFixed(0);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${solved.length} / 8`;
+}
+
+/* ── SCENARIO SELECT ── */
+function selectScenario(idx){
+  currentScenario = idx;
+  answerStr = '';
+  if(typeof resetAlkSpinner==='function') resetAlkSpinner();
+  hintShown = false;
+  scenarioJustSolved = false;
+  chestOpen = false;
+  shakeTimer = 0;
+  particles = [];
+
+  const sc = SCENARIOS[idx];
+  document.getElementById('eqDisplay').textContent = sc.eq;
+  document.getElementById('answerDisplay').textContent = '_';
+  document.getElementById('answerDisplay').className = 'answer-display';
+  document.getElementById('resultMsg').className = 'result-msg';
+  document.getElementById('resultMsg').textContent = '';
+  document.getElementById('hintText').className = 'hint-text';
+  document.getElementById('nextBtnWrap').style.display = 'none';
+  document.getElementById('numpad').style.pointerEvents = 'auto';
+  document.getElementById('numpad').style.opacity = '1';
+  updateProgress();
+
+  // If already solved, show open state
+  if(solved.includes(sc.id)){
+    chestOpen = true;
+    scenarioJustSolved = true;
+    document.getElementById('answerDisplay').textContent = sc.answers ? sc.answers.join(' 또는 ') : sc.answer;
+    document.getElementById('answerDisplay').className = 'answer-display correct';
+    showResult('success', `이미 풀었어요! x = ${sc.answers ? sc.answers.join(' 또는 ') : sc.answer} ✅`);
+    document.getElementById('numpad').style.pointerEvents = 'none';
+    document.getElementById('numpad').style.opacity = '0.3';
+    showNextBtn();
+  }
+
+  document.getElementById('introWrap').style.display = 'none';
+  document.getElementById('gridWrap').style.display = 'none';
+  document.getElementById('gameArea').classList.add('visible');
+
+  if(!animId) animate();
+}
+
+function backToGrid(){
+  document.getElementById('introWrap').style.display = '';
+  document.getElementById('gridWrap').style.display = '';
+  document.getElementById('gameArea').classList.remove('visible');
+  currentScenario = -1;
+  buildGrid();
+}
+
+/* ── DIGIT SPINNER ── */
+let sDigits=[0,0], sSign=1;
+function spinDigit(pos,dir){
+  sDigits[pos]=(sDigits[pos]+dir+10)%10;
+  document.getElementById('sd'+pos).textContent=sDigits[pos];
+  syncSpinnerToNumpad();
+}
+function toggleSign(){
+  sSign=sSign===1?-1:1;
+  document.getElementById('signBtn').textContent=sSign===1?'+':'−';
+  syncSpinnerToNumpad();
+}
+function syncSpinnerToNumpad(){
+  const val=sSign*(sDigits[1]*10+sDigits[0]);
+  answerStr=String(val);
+  updateDisplay();
+}
+function resetAlkSpinner(){
+  sDigits=[0,0]; sSign=1;
+  document.getElementById('sd0').textContent='0';
+  document.getElementById('sd1').textContent='0';
+  document.getElementById('signBtn').textContent='+';
+}
+
+/* ── NUMPAD ── */
+function pressKey(val){
+  if(scenarioJustSolved && val !== 'confirm') return;
+  ensureAudio();
+  if(val === 'clear'){
+    answerStr = '';
+    sndKey();
+  } else if(val === 'confirm'){
+    checkAnswer();
+    return;
+  } else if(val === '-'){
+    if(answerStr.length === 0){ answerStr = '-'; sndKey(); }
+  } else if(val === '.'){
+    if(!answerStr.includes('.')){ answerStr += '.'; sndKey(); }
+  } else {
+    if(answerStr.length < 8){ answerStr += val; sndKey(); }
+  }
+  updateDisplay();
+}
+
+function updateDisplay(){
+  document.getElementById('answerDisplay').textContent = answerStr || '_';
+}
+
+function checkAnswer(){
+  if(answerStr === '' || answerStr === '-' || answerStr === '.') return;
+  const num = parseFloat(answerStr);
+  if(isNaN(num)) return;
+  const sc = SCENARIOS[currentScenario];
+  const correct = sc.answers ? sc.answers.includes(num) : num === sc.answer;
+
+  if(correct){
+    if(!solved.includes(sc.id)){
+      solved.push(sc.id);
+      localStorage.setItem('alkh_solved', JSON.stringify(solved));
+    }
+    const displayAnswer = sc.answers ? sc.answers.join(' 또는 ') : sc.answer;
+    showResult('success', `정답! ${sc.eq} 에서 x = ${displayAnswer} 🎉`);
+    document.getElementById('answerDisplay').className = 'answer-display correct';
+    sndOpen();
+    chestOpen = true;
+    scenarioJustSolved = true;
+    spawnCoins(35);
+    setTimeout(()=>{ for(let i=0;i<10;i++) setTimeout(()=>sndCoin(), i*80); }, 400);
+    document.getElementById('numpad').style.pointerEvents = 'none';
+    document.getElementById('numpad').style.opacity = '0.3';
+    updateProgress();
+    updateBadge();
+    showNextBtn();
+  } else {
+    showResult('fail', '다시 생각해보세요! 💡');
+    document.getElementById('answerDisplay').className = 'answer-display wrong';
+    sndFail();
+    shakeTimer = 0.5;
+    setTimeout(()=>{
+      document.getElementById('answerDisplay').className = 'answer-display';
+    }, 500);
+  }
+}
+
+function showResult(type, msg){
+  const el = document.getElementById('resultMsg');
+  el.className = 'result-msg ' + type;
+  el.textContent = msg;
+}
+
+function showHint(){
+  if(currentScenario < 0) return;
+  const el = document.getElementById('hintText');
+  el.textContent = '💡 ' + SCENARIOS[currentScenario].hint;
+  el.classList.add('show');
+  hintShown = true;
+}
+
+function showNextBtn(){
+  // Find next unsolved
+  let nextIdx = -1;
+  for(let i = currentScenario + 1; i < SCENARIOS.length; i++){
+    if(!solved.includes(SCENARIOS[i].id)){ nextIdx = i; break; }
+  }
+  if(nextIdx < 0){
+    for(let i = 0; i < currentScenario; i++){
+      if(!solved.includes(SCENARIOS[i].id)){ nextIdx = i; break; }
+    }
+  }
+  if(nextIdx >= 0 || solved.length >= 8){
+    document.getElementById('nextBtnWrap').style.display = 'block';
+  }
+}
+
+function goNextScenario(){
+  if(solved.length >= 8){
+    backToGrid();
+    return;
+  }
+  let nextIdx = -1;
+  for(let i = currentScenario + 1; i < SCENARIOS.length; i++){
+    if(!solved.includes(SCENARIOS[i].id)){ nextIdx = i; break; }
+  }
+  if(nextIdx < 0){
+    for(let i = 0; i < currentScenario; i++){
+      if(!solved.includes(SCENARIOS[i].id)){ nextIdx = i; break; }
+    }
+  }
+  if(nextIdx >= 0) selectScenario(nextIdx);
+  else backToGrid();
+}
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown', e => {
+  if(currentScenario < 0) return;
+  if(e.key >= '0' && e.key <= '9') pressKey(e.key);
+  else if(e.key === '-') pressKey('-');
+  else if(e.key === '.') pressKey('.');
+  else if(e.key === 'Enter') pressKey('confirm');
+  else if(e.key === 'Backspace'){
+    answerStr = answerStr.slice(0, -1);
+    updateDisplay();
+    sndKey();
+  }
+});
+
+/* ── PARTICLES ── */
+function spawnCoins(n){
+  for(let i=0; i<n; i++){
+    particles.push({
+      x: W/2, y: H/2 - 20,
+      vx: (Math.random()-0.5)*12,
+      vy: -Math.random()*8 - 3,
+      r: Math.random()*6+4,
+      life: 1,
+      decay: 0.006 + Math.random()*0.006,
+      color: Math.random()>0.3 ? '#fbbf24' : '#fcd34d',
+      type: 'coin'
+    });
+  }
+}
+
+function updateParticles(){
+  for(let i=particles.length-1; i>=0; i--){
+    const p = particles[i];
+    p.x += p.vx;
+    p.vy += 0.18; // gravity
+    p.y += p.vy;
+    p.life -= p.decay;
+    if(p.life <= 0 || p.y > H+20) particles.splice(i, 1);
+  }
+}
+
+/* ── DRAWING ── */
+function drawBackground(){
+  // Dark teal gradient
+  const bg = ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0, '#0a1628');
+  bg.addColorStop(0.5, '#0d1f2d');
+  bg.addColorStop(1, '#091520');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,W,H);
+
+  // Arabian geometric pattern - subtle
+  ctx.save();
+  ctx.globalAlpha = 0.06;
+  ctx.strokeStyle = '#10b981';
+  ctx.lineWidth = 1;
+
+  // Draw Islamic star pattern grid
+  const sz = 80;
+  for(let gx = -sz; gx < W + sz; gx += sz){
+    for(let gy = -sz; gy < H + sz; gy += sz){
+      drawIslamicStar(gx + Math.sin(time*0.3 + gx*0.01)*2, gy, sz*0.4, 8);
+    }
+  }
+  ctx.restore();
+
+  // Draw decorative border arches
+  ctx.save();
+  ctx.globalAlpha = 0.08;
+  ctx.strokeStyle = '#10b981';
+  ctx.lineWidth = 1.5;
+  // Top arches
+  for(let i = 0; i < 12; i++){
+    const cx = i * 80 + 40;
+    ctx.beginPath();
+    ctx.arc(cx, 0, 35, 0, Math.PI, false);
+    ctx.stroke();
+  }
+  // Bottom arches
+  for(let i = 0; i < 12; i++){
+    const cx = i * 80 + 40;
+    ctx.beginPath();
+    ctx.arc(cx, H, 35, Math.PI, Math.PI*2, false);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawIslamicStar(cx, cy, r, points){
+  ctx.beginPath();
+  for(let i = 0; i < points; i++){
+    const a1 = (i / points) * Math.PI * 2 - Math.PI/2;
+    const a2 = ((i + 0.5) / points) * Math.PI * 2 - Math.PI/2;
+    const x1 = cx + Math.cos(a1) * r;
+    const y1 = cy + Math.sin(a1) * r;
+    const x2 = cx + Math.cos(a2) * r * 0.45;
+    const y2 = cy + Math.sin(a2) * r * 0.45;
+    if(i===0) ctx.moveTo(x1, y1);
+    else ctx.lineTo(x1, y1);
+    ctx.lineTo(x2, y2);
+  }
+  ctx.closePath();
+  ctx.stroke();
+}
+
+function drawStars(){
+  bgStars.forEach(s => {
+    const twinkle = Math.sin(time * s.speed * 3 + s.phase) * 0.5 + 0.5;
+    ctx.save();
+    ctx.globalAlpha = twinkle * 0.6 + 0.15;
+    ctx.fillStyle = Math.random() > 0.5 ? '#fbbf24' : '#fcd34d';
+    ctx.beginPath();
+    // 4-point star
+    const cr = s.r * (0.8 + twinkle * 0.4);
+    for(let i = 0; i < 4; i++){
+      const a = (i / 4) * Math.PI * 2 - Math.PI/2;
+      const a2 = ((i+0.5) / 4) * Math.PI * 2 - Math.PI/2;
+      ctx.lineTo(s.x + Math.cos(a)*cr, s.y + Math.sin(a)*cr);
+      ctx.lineTo(s.x + Math.cos(a2)*cr*0.3, s.y + Math.sin(a2)*cr*0.3);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+function drawChest(){
+  const sc = currentScenario >= 0 ? SCENARIOS[currentScenario] : null;
+  ctx.save();
+
+  // Shake offset
+  let sx = 0;
+  if(shakeTimer > 0){
+    sx = Math.sin(shakeTimer * 40) * 8 * shakeTimer;
+  }
+
+  const cx = W/2 + sx;
+  const cy = H/2 + 30;
+  const cw = 180, ch = 110; // chest body
+
+  if(!chestOpen){
+    // ── CLOSED CHEST ──
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + ch/2 + 10, cw*0.55, 14, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // Chest body
+    const bodyGrad = ctx.createLinearGradient(cx-cw/2, cy-ch/2, cx+cw/2, cy+ch/2);
+    bodyGrad.addColorStop(0, '#A0522D');
+    bodyGrad.addColorStop(0.4, '#8B4513');
+    bodyGrad.addColorStop(1, '#6B3410');
+    ctx.fillStyle = bodyGrad;
+    roundRect(cx-cw/2, cy-ch/2+20, cw, ch-20, 8);
+    ctx.fill();
+
+    // Metal bands
+    ctx.fillStyle = '#B8860B';
+    ctx.fillRect(cx-cw/2+5, cy-ch/2+25, cw-10, 6);
+    ctx.fillRect(cx-cw/2+5, cy+ch/2-20, cw-10, 6);
+
+    // Lid (closed)
+    const lidGrad = ctx.createLinearGradient(cx-cw/2, cy-ch/2-30, cx+cw/2, cy-ch/2+20);
+    lidGrad.addColorStop(0, '#CD853F');
+    lidGrad.addColorStop(0.5, '#A0522D');
+    lidGrad.addColorStop(1, '#8B4513');
+    ctx.fillStyle = lidGrad;
+    ctx.beginPath();
+    ctx.moveTo(cx-cw/2, cy-ch/2+22);
+    ctx.lineTo(cx-cw/2, cy-ch/2);
+    ctx.quadraticCurveTo(cx, cy-ch/2-40, cx+cw/2, cy-ch/2);
+    ctx.lineTo(cx+cw/2, cy-ch/2+22);
+    ctx.closePath();
+    ctx.fill();
+
+    // Lid metal band
+    ctx.strokeStyle = '#DAA520';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx-cw/2+5, cy-ch/2+8);
+    ctx.quadraticCurveTo(cx, cy-ch/2-28, cx+cw/2-5, cy-ch/2+8);
+    ctx.stroke();
+
+    // Lock
+    drawLock(cx, cy + 5, sc);
+
+    // Keyhole glow
+    ctx.save();
+    ctx.globalAlpha = 0.3 + Math.sin(time*3)*0.15;
+    const glw = ctx.createRadialGradient(cx, cy+5, 0, cx, cy+5, 40);
+    glw.addColorStop(0, 'rgba(251,191,36,0.4)');
+    glw.addColorStop(1, 'rgba(251,191,36,0)');
+    ctx.fillStyle = glw;
+    ctx.beginPath();
+    ctx.arc(cx, cy+5, 40, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+  } else {
+    // ── OPEN CHEST ──
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + ch/2 + 10, cw*0.55, 14, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // Inner glow
+    ctx.save();
+    const innerGlow = ctx.createRadialGradient(cx, cy - 20, 10, cx, cy - 20, 120);
+    innerGlow.addColorStop(0, 'rgba(251,191,36,0.5)');
+    innerGlow.addColorStop(0.5, 'rgba(251,191,36,0.15)');
+    innerGlow.addColorStop(1, 'rgba(251,191,36,0)');
+    ctx.fillStyle = innerGlow;
+    ctx.beginPath();
+    ctx.arc(cx, cy - 20, 120, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    // Chest body
+    const bodyGrad = ctx.createLinearGradient(cx-cw/2, cy-ch/2, cx+cw/2, cy+ch/2);
+    bodyGrad.addColorStop(0, '#A0522D');
+    bodyGrad.addColorStop(0.4, '#8B4513');
+    bodyGrad.addColorStop(1, '#6B3410');
+    ctx.fillStyle = bodyGrad;
+    roundRect(cx-cw/2, cy-ch/2+20, cw, ch-20, 8);
+    ctx.fill();
+
+    // Gold inside
+    ctx.fillStyle = '#DAA520';
+    roundRect(cx-cw/2+10, cy-ch/2+24, cw-20, 30, 4);
+    ctx.fill();
+    // Gold coin pile inside
+    for(let i=0; i<8; i++){
+      ctx.fillStyle = i%2===0 ? '#fbbf24' : '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(cx - 50 + i*14, cy-ch/2+38, 8, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // Metal bands
+    ctx.fillStyle = '#B8860B';
+    ctx.fillRect(cx-cw/2+5, cy-ch/2+55, cw-10, 5);
+    ctx.fillRect(cx-cw/2+5, cy+ch/2-20, cw-10, 5);
+
+    // Lid (open, rotated back)
+    ctx.save();
+    ctx.translate(cx, cy-ch/2+20);
+    ctx.rotate(-1.1); // ~63 degrees open
+    const lidGradO = ctx.createLinearGradient(-cw/2, -40, cw/2, 0);
+    lidGradO.addColorStop(0, '#CD853F');
+    lidGradO.addColorStop(1, '#8B4513');
+    ctx.fillStyle = lidGradO;
+    ctx.beginPath();
+    ctx.moveTo(-cw/2, 0);
+    ctx.lineTo(-cw/2, -15);
+    ctx.quadraticCurveTo(0, -50, cw/2, -15);
+    ctx.lineTo(cw/2, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#DAA520';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-cw/2+5, -6);
+    ctx.quadraticCurveTo(0, -38, cw/2-5, -6);
+    ctx.stroke();
+    ctx.restore();
+
+    // Sparkle rays from chest
+    ctx.save();
+    ctx.globalAlpha = 0.2 + Math.sin(time*4)*0.1;
+    for(let i=0; i<12; i++){
+      const angle = (i/12)*Math.PI*2 + time*0.5;
+      const rx = Math.cos(angle);
+      const ry = Math.sin(angle);
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx + rx*60, cy - 20 + ry*40);
+      ctx.lineTo(cx + rx*90, cy - 20 + ry*60);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+function drawLock(cx, cy, sc){
+  // Lock body
+  ctx.fillStyle = '#DAA520';
+  roundRect(cx-28, cy-18, 56, 40, 6);
+  ctx.fill();
+
+  // Lock shackle
+  ctx.strokeStyle = '#B8860B';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.arc(cx, cy-18, 18, Math.PI, 0, false);
+  ctx.stroke();
+
+  // Keyhole
+  ctx.fillStyle = '#3a2008';
+  ctx.beginPath();
+  ctx.arc(cx, cy-2, 6, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillRect(cx-3, cy+2, 6, 10);
+
+  // Equation text on lock body (small)
+  if(sc){
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px "Pretendard Variable", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(sc.eq, cx, cy+30 + 18);
+  }
+}
+
+function roundRect(x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+function drawEquation(){
+  if(currentScenario < 0) return;
+  const sc = SCENARIOS[currentScenario];
+  // Title at top
+  ctx.save();
+  ctx.fillStyle = '#10b981';
+  ctx.font = 'bold 16px "Pretendard Variable", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`📜 ${sc.name}`, W/2, 36);
+
+  // Difficulty stars
+  ctx.font = '14px sans-serif';
+  const starStr = '★'.repeat(sc.difficulty) + '☆'.repeat(4 - sc.difficulty);
+  ctx.fillStyle = '#fbbf24';
+  ctx.fillText(starStr, W/2, 58);
+  ctx.restore();
+
+  // Equation at bottom
+  ctx.save();
+  ctx.fillStyle = 'rgba(16,185,129,0.1)';
+  roundRect(W/2-160, H-60, 320, 40, 12);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(16,185,129,0.3)';
+  ctx.lineWidth = 1;
+  roundRect(W/2-160, H-60, 320, 40, 12);
+  ctx.stroke();
+  ctx.fillStyle = '#10b981';
+  ctx.font = 'bold 20px "Pretendard Variable", monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${sc.eq}  →  x = ?`, W/2, H-40);
+  ctx.restore();
+}
+
+function drawParticles(){
+  particles.forEach(p => {
+    ctx.save();
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color;
+    // Draw coin (circle with highlight)
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fill();
+    // Coin shine
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.beginPath();
+    ctx.arc(p.x - p.r*0.25, p.y - p.r*0.25, p.r*0.4, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+function drawProgressTop(){
+  const pct = solved.length / 8;
+  // Background bar
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  roundRect(20, 10, W-40, 12, 6);
+  ctx.fill();
+  // Progress
+  if(pct > 0){
+    const grad = ctx.createLinearGradient(20, 10, 20 + (W-40)*pct, 22);
+    grad.addColorStop(0, '#10b981');
+    grad.addColorStop(1, '#fbbf24');
+    ctx.fillStyle = grad;
+    roundRect(20, 10, (W-40)*pct, 12, 6);
+    ctx.fill();
+  }
+  // Text
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '10px "Pretendard Variable", sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(`${solved.length}/8`, W-24, 20);
+}
+
+/* ── MAIN LOOP ── */
+function animate(){
+  time += 0.016;
+  ctx.clearRect(0, 0, W, H);
+
+  drawBackground();
+  drawStars();
+  drawProgressTop();
+  drawChest();
+  drawEquation();
+  drawParticles();
+  updateParticles();
+
+  if(shakeTimer > 0) shakeTimer -= 0.016;
+
+  animId = requestAnimationFrame(animate);
+}
+
+/* ── INIT ── */
+buildGrid();
+</script>
+</body>
+</html>

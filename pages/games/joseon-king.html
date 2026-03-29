@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>나는 조선왕 👑 — LunaWhale</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0705;font-family:'Noto Sans KR',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ── Starfield BG ── */
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 60% 40% at 50% 0%,rgba(120,80,20,0.25) 0%,transparent 70%),
+  radial-gradient(ellipse 40% 30% at 80% 100%,rgba(60,30,10,0.3) 0%,transparent 60%);
+  pointer-events:none;z-index:0}
+
+/* ── Header ── */
+.header{position:relative;z-index:10;text-align:center;padding:18px 20px 10px;
+  background:linear-gradient(180deg,rgba(80,40,5,0.8) 0%,transparent 100%)}
+.header-emoji{font-size:28px;display:inline;margin-right:8px;filter:drop-shadow(0 2px 8px rgba(255,200,50,0.5))}
+.header h1{font-family:'Noto Serif KR',serif;font-size:clamp(16px,3vw,24px);font-weight:900;display:inline;
+  color:#f5d77a;text-shadow:0 2px 20px rgba(255,180,30,0.6);letter-spacing:2px}
+.header p{color:#b8964a;font-size:11px;margin-top:3px;letter-spacing:1px}
+.back-btn{position:absolute;top:14px;left:14px;background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,200,80,0.3);border-radius:8px;padding:5px 10px;
+  color:#d4a830;font-size:11px;cursor:pointer;text-decoration:none;
+  transition:all .2s;display:flex;align-items:center;gap:4px}
+.back-btn:hover{background:rgba(255,200,80,0.15);color:#f5d77a}
+
+/* ── Filter Bar ── */
+.filter-bar{position:relative;z-index:10;display:flex;gap:6px;justify-content:center;
+  padding:8px 20px;flex-wrap:wrap}
+.filter-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,200,80,0.2);
+  border-radius:20px;padding:4px 12px;color:#a08040;font-size:11px;cursor:pointer;
+  transition:all .25s;white-space:nowrap}
+.filter-btn:hover,.filter-btn.active{background:rgba(255,180,30,0.18);
+  border-color:rgba(255,180,30,0.6);color:#f5d77a}
+
+/* ── King Grid ── */
+.king-grid{position:relative;z-index:10;display:grid;grid-template-columns:repeat(7, 82px);gap:8px;
+  justify-content:center;padding:0 16px 20px;max-width:1200px;margin:0 auto}
+
+/* ── King Card ── */
+.king-card{width:82px;cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative}
+.king-card:hover{transform:translateY(-5px) scale(1.06)}
+.king-card:hover .king-avatar{box-shadow:0 8px 24px rgba(255,180,30,0.5);border-color:rgba(255,200,80,0.8)}
+.king-avatar{width:100%;aspect-ratio:1;border-radius:10px;border:2px solid rgba(255,200,80,0.25);
+  display:flex;align-items:center;justify-content:center;font-size:42px;
+  background:linear-gradient(135deg,#1a1208,#2a1e0a);
+  transition:all .25s;overflow:hidden;position:relative}
+.king-avatar img{width:100%;height:100%;object-fit:cover;image-rendering:auto}
+.king-num{position:absolute;top:3px;left:5px;font-size:8px;color:rgba(255,200,80,0.5);
+  font-family:'Noto Serif KR',serif}
+.era-badge{position:absolute;top:3px;right:3px;font-size:7px;padding:1px 4px;border-radius:4px;font-weight:700}
+.era-1{background:rgba(30,80,200,0.5);color:#80b4ff}
+.era-2{background:rgba(200,120,20,0.5);color:#ffd080}
+.era-3{background:rgba(150,30,30,0.5);color:#ff9090}
+.king-name{text-align:center;margin-top:5px;font-family:'Noto Serif KR',serif;
+  font-size:10px;font-weight:700;color:#e8c870;line-height:1.2}
+.king-period{text-align:center;font-size:8px;color:#6a5030;margin-top:1px}
+.king-icons{display:flex;gap:2px;justify-content:center;margin-top:3px;flex-wrap:wrap}
+.king-icon{font-size:10px;opacity:0.8;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5))}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;
+  display:none;align-items:center;justify-content:center;padding:16px;
+  backdrop-filter:blur(6px)}
+.modal-overlay.open{display:flex}
+.modal{background:linear-gradient(160deg,#1a1106,#0f0a04);border:1px solid rgba(255,200,80,0.35);
+  border-radius:24px;max-width:850px;width:100%;max-height:90vh;overflow-y:auto;
+  box-shadow:0 0 60px rgba(255,160,20,0.2),0 30px 80px rgba(0,0,0,0.8);
+  animation:popIn .35s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes popIn{from{opacity:0;transform:scale(0.85) translateY(20px)}to{opacity:1;transform:none}}
+
+.modal-header{padding:28px 24px 20px;border-bottom:1px solid rgba(255,200,80,0.12);
+  display:flex;align-items:flex-start;gap:18px;position:relative}
+.modal-avatar{width:88px;height:88px;border-radius:16px;border:2px solid rgba(255,200,80,0.4);
+  display:flex;align-items:center;justify-content:center;font-size:52px;
+  background:linear-gradient(135deg,#1e1608,#2e2410);overflow:hidden;flex-shrink:0}
+.modal-avatar img{width:100%;height:100%;object-fit:cover}
+.modal-title h2{font-family:'Noto Serif KR',serif;font-size:22px;font-weight:900;color:#f5d77a}
+.modal-title .sub{color:#8a6830;font-size:12px;margin-top:3px}
+.modal-title .reign{color:#c49a40;font-size:12px;margin-top:2px}
+.close-btn{position:absolute;top:16px;right:16px;width:32px;height:32px;
+  background:rgba(255,255,255,0.06);border:none;border-radius:50%;
+  color:#806040;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.close-btn:hover{background:rgba(255,180,30,0.2);color:#f5d77a}
+
+/* Stats */
+.stats-row{display:flex;gap:10px;padding:18px 24px;flex-wrap:wrap}
+.stat-box{flex:1;min-width:90px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,200,80,0.1);
+  border-radius:12px;padding:12px;text-align:center}
+.stat-label{font-size:10px;color:#7a6030;letter-spacing:1px;margin-bottom:6px}
+.stat-bar-wrap{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;margin:0 auto 6px;max-width:80px}
+.stat-bar{height:100%;border-radius:3px;transition:width 0.6s ease}
+.stat-val{font-size:11px;font-weight:700;color:#d4a830}
+
+/* Achievements */
+.achievements{padding:0 24px 16px}
+.achievements h3{font-size:12px;font-weight:700;color:#6a5030;letter-spacing:2px;margin-bottom:12px}
+/* Flip Cards */
+.ach-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+.ach-card{perspective:1000px;height:70px;cursor:pointer;opacity:0;transform:scale(0.8);transition:all 0.4s cubic-bezier(.34,1.56,.64,1)}
+.ach-card.show{opacity:1;transform:scale(1)}
+.ach-card-inner{position:relative;width:100%;height:100%;text-align:center;transition:transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);transform-style:preserve-3d}
+.ach-card.flipped .ach-card-inner{transform:rotateY(180deg)}
+.ach-front, .ach-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:12px;display:flex;align-items:center;padding:0 15px;border:1px solid rgba(255,200,80,0.15)}
+.ach-front{background:rgba(255,255,255,0.06);color:#8a6830;font-size:12px;justify-content:center;gap:8px}
+.ach-back{background:rgba(255,180,30,0.1);color:#f5d77a;transform:rotateY(180deg);text-align:left;gap:12px}
+.ach-icon{font-size:24px;flex-shrink:0}
+.ach-text h4{font-size:13px;font-weight:700;color:#f5d77a;margin-bottom:1px}
+.ach-text p{font-size:11px;color:#b8964a;line-height:1.4}
+
+/* Citizens */
+.citizens-area{padding:16px 24px 28px;border-top:1px solid rgba(255,200,80,0.1)}
+.citizens-area.unlocked .citizen-figure{border-color:rgba(255,200,80,0.6);box-shadow:0 0 15px rgba(255,200,80,0.2);cursor:pointer}
+.citizens-area.unlocked .citizen-figure:hover{transform:scale(1.1) rotate(5deg)}
+.citizens-area h3{font-size:12px;font-weight:700;color:#6a5030;letter-spacing:2px;margin-bottom:14px}
+.citizens-grid{display:flex;gap:15px;flex-wrap:wrap;justify-content:center}
+.citizen{display:flex;flex-direction:column;align-items:center;gap:6px;max-width:120px;
+  opacity:0;transform:translateY(20px)}
+.citizen.show{opacity:1;transform:none;animation:citizenJump 0.5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes citizenJump{
+  0%{transform:translateY(20px) scale(0.8)}
+  50%{transform:translateY(-10px) scale(1.1)}
+  100%{transform:none;scale:1}
+}
+.citizen-figure{
+  width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:24px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,200,80,0.15)}
+.speech-bubble{background:rgba(255,255,255,0.07);border:1px solid rgba(255,200,80,0.2);
+  border-radius:10px;padding:6px 10px;font-size:10px;color:#c8a060;line-height:1.4;
+  text-align:center;position:relative;opacity:0;transform:scale(0.5);transform-origin:bottom;
+  transition:all 0.3s cubic-bezier(.34,1.56,.64,1)}
+.speech-bubble.show{opacity:1;transform:scale(1)}
+.speech-bubble.revealing{animation:springPop 0.5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes springPop{0%{transform:scale(0.5)} 60%{transform:scale(1.2)} 100%{transform:scale(1)}}
+.speech-bubble::before{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);
+  width:8px;height:5px;background:rgba(255,200,80,0.2);clip-path:polygon(0% 0%, 100% 0%, 50% 100%)}
+
+/* Hidden */
+.king-card.hidden{display:none}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:rgba(0,0,0,0.3)}
+::-webkit-scrollbar-thumb{background:rgba(255,180,30,0.3);border-radius:3px}
+
+@media(max-width:600px){.king-card{width:70px}.king-avatar{font-size:22px}}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-btn" href="javascript:history.back()">← 뒤로</a>
+  <span class="header-emoji">👑</span>
+  <h1>나는 조선왕</h1>
+  <p>조선 500년을 이끈 군주들을 만나보세요</p>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filterKings('all',this)">전체</button>
+  <button class="filter-btn" onclick="filterKings('명군',this)">🌟 명군</button>
+  <button class="filter-btn" onclick="filterKings('문화',this)">🎭 문화</button>
+  <button class="filter-btn" onclick="filterKings('전쟁',this)">⚔️ 전쟁</button>
+  <button class="filter-btn" onclick="filterKings('개혁',this)">🔥 개혁</button>
+</div>
+
+<div class="king-grid" id="kingGrid"></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════
+const KINGS = [
+  {
+    id:1, name:"태조 이성계", nameEn:"Taejo", period:"1392–1398",
+    year:"재위 6년", emoji:"🏹",
+    era:1, type:["전쟁","개혁"],
+    stats:{military:95,people:60,culture:45,economy:55,diplomacy:65},
+    icons:["🏹","⚔️","🏯"],
+    achievements:[
+      {icon:"🏹",title:"위화도 회군",desc:"고려 대군을 이끌고 압록강 위화도에서 회군하여 조선 건국의 기반을 마련"},
+      {icon:"🏯",title:"한양 천도",desc:"풍수지리에 따라 한양올 새 수도로 정하고 경복궁과 도성을 건설"},
+      {icon:"📜",title:"조선 건국",desc:"1392년 7월 정식으로 왕위에 올라 새로운 유교 국가 조선을 선포"},
+      {icon:"⚔️",title:"사병 혁파 착수",desc:"정도전과 함께 왕권 강화를 위해 개별 사병 체제 개편 시도"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["새 나라가 열렸소!","고려는 이제 끝났구려"]},
+      {emoji:"👩",sayings:["한양이 새 수도라네","경복궁이 정말 웅장해"]},
+      {emoji:"👦",sayings:["이성계 장군님 만세!","이제 전쟁은 없겠지?"]},
+      {emoji:"🧑‍🌾",sayings:["토지 제도가 바뀐다지?","살기 좋아졌으면 좋겠소"]},
+      {emoji:"👨‍🍳",sayings:["나라 이름이 조선이라니 멋지네","새 술은 새 부대에!"]}
+    ]
+  },
+  {
+    id:2, name:"정종", nameEn:"Jeongjong", period:"1398–1400",
+    year:"재위 2년", emoji:"📜",
+    era:1, type:["개혁"],
+    stats:{military:35,people:65,culture:50,economy:55,diplomacy:50},
+    icons:["📜","🕊️"],
+    achievements:[
+      {icon:"🕊️",title:"왕자의 난 수습",desc:"제1차 왕자의 난 이후 혼란을 수습하기 위해 잠시 왕위를 계승"},
+      {icon:"🏛️",title:"도평의사사 폐지",desc:"고려의 잔재인 권력기관을 정리하여 왕중심 체제의 기틀을 마련"},
+      {icon:"📜",title:"집현전 설치 제안",desc:"학문 연구를 위한 기구 설치를 논의하기 시작"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["조용하게 흘러가는구려","피의 싸움은 이제 그만"]},
+      {emoji:"👩",sayings:["임금님이 참 어지시다던데","다음은 누가 왕이 될까?"]},
+      {emoji:"👦",sayings:["이방원 장군이 더 무서워요","궁궐이 조용하네"]},
+      {emoji:"🧑‍🌾",sayings:["농사만 짓게 해주시오","세금만 안 오르면 됐지"]},
+      {emoji:"👨‍💼",sayings:["개경으로 잠시 돌아갔다지?","한양이 그립구려"]}
+    ]
+  },
+  {
+    id:3, name:"태종 이방원", nameEn:"Taejong", period:"1400–1418",
+    year:"재위 18년", emoji:"🗡️",
+    era:1, type:["전쟁","개혁"],
+    stats:{military:85,people:55,culture:50,economy:75,diplomacy:70},
+    icons:["🗡️","⚖️","📜"],
+    achievements:[
+      {icon:"🗡️",title:"왕권 강화",desc:"사병을 완전히 혁파하고 왕이 직접 군권을 장악하는 강력한 체계 구축"},
+      {icon:"⚖️",title:"호패법 실시",desc:"전 국민에게 호패를 차게 하여 인구를 파악하고 국가 조세를 정비"},
+      {icon:"📜",title:"육조직계제",desc:"정승들의 권한을 줄이고 왕이 6조에 직접 명령하는 철권 통치"},
+      {icon:"🔔",title:"신문고 설치",desc:"백성들의 억울함을 직접 듣기 위해 대궐 앞에 북을 설치"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["임금님 눈빛이 무서워","그래도 기강은 잡혔군"]},
+      {emoji:"👩",sayings:["호패를 꼭 차야 한다네","세금이 투명해졌어"]},
+      {emoji:"👦",sayings:["북을 울리면 들어주실까?","나라가 힘이 세졌대"]},
+      {emoji:"🧑‍🌾",sayings:["사병들이 없으니 조용해","법이 엄격해졌구려"]},
+      {emoji:"👨‍🚒",sayings:["창덕궁이 새로 지어졌어","불조심 해야겠구려"]}
+    ]
+  },
+  {
+    id:4, name:"세종대왕", nameEn:"Sejong the Great", period:"1418–1450",
+    year:"재위 32년", emoji:"📚",
+    era:1, type:["명군","문화","개혁"],
+    stats:{military:70,people:98,culture:100,economy:85,diplomacy:80},
+    icons:["📚","🔤","🎵","🌾","🔭"],
+    achievements:[
+      {icon:"🔤",title:"훈민정음 창제",desc:"1443년 백성을 위해 누구나 배우기 쉬운 우리 글 한글을 창제"},
+      {icon:"🔭",title:"과학 기술 부흥",desc:"장영실 등을 등용해 측우기, 해시계, 물시계 등 혁신 기구 발명"},
+      {icon:"⚔️",title:"4군 6진 개척",desc:"북방 영토를 개척하여 오늘날 한반도의 국경선을 확정"},
+      {icon:"🌾",title:"공법(貢法) 시행",desc:"토질에 따라 세금을 공평하게 걷는 조세 제도의 대혁신"},
+      {icon:"🎼",title:"아악 정비",desc:"박연과 함께 예법에 맞는 우리만의 음악 체계를 완성"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["이런 성군은 처음이오!","글을 배울 수 있다니!"]},
+      {emoji:"👩",sayings:["임금님이 꿈에 나올 것 같아요","살기가 정말 좋구려"]},
+      {emoji:"👦",sayings:["한글이 너무 재밌어요!","나도 이제 편지 쓴다"]},
+      {emoji:"🧑‍🌾",sayings:["농사법이 책으로 나왔대","풍년이 계속되는구려"]},
+      {emoji:"👨‍🔬",sayings:["해시계로 시간을 알아요","조선이 세계 최고다!"]}
+    ]
+  },
+  {
+    id:5, name:"문종", nameEn:"Munjong", period:"1450–1452",
+    year:"재위 2년", emoji:"📖",
+    era:1, type:["문화"],
+    stats:{military:60,people:82,culture:88,economy:72,diplomacy:65},
+    icons:["📖","🛡️"],
+    achievements:[
+      {icon:"📖",title:"역사서 편찬",desc:"'고려사'와 '고려사절요' 등 방대한 역사서 정리를 완수"},
+      {icon:"⚔️",title:"문종 화차 개발",desc:"신무기 화차를 직접 설계하고 개량하여 국방력을 강화"},
+      {icon:"📜",title:"동국병감 편찬",desc:"전쟁의 역사를 정리하여 후대에 교훈을 남김"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["세종의 기품이 그대로구려","병약하셔서 걱정이오"]},
+      {emoji:"👩",sayings:["천재 임금님이시라네","더 오래 사셨으면..."]},
+      {emoji:"👦",sayings:["화차가 정말 신기해요","군기가 바짝 잡혔네"]},
+      {emoji:"🧑‍🌾",sayings:["백성을 아끼는 마음이 커","학문이 깊은 분이지"]},
+      {emoji:"👨‍🎨",sayings:["예술적 감각도 뛰어나셔","어진 분이 떠나실까 겁나"]}
+    ]
+  },
+  {
+    id:6, name:"단종", nameEn:"Danjong", period:"1452–1455",
+    year:"재위 3년", emoji:"🥀",
+    era:1, type:[],
+    stats:{military:20,people:70,culture:55,economy:55,diplomacy:40},
+    icons:["🥀","👑"],
+    achievements:[
+      {icon:"🥀",title:"비운의 등극",desc:"12세의 어린 나이에 왕위에 올라 권력 다툼의 중심에 섬"},
+      {icon:"🛖",title:"청령포 유배",desc:"숙부 수양대군에게 왕위를 뺏기고 영월로 유배되는 비극"},
+      {icon:"🕯️",title:"충절의 역사",desc:"사육신 등 임금을 향한 변치 않는 충성심의 상징이 됨"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["임금님이 너무 가련하오","수양이 너무하는구려"]},
+      {emoji:"👩",sayings:["어린 분이 무엇을 알겠소","눈물이 앞을 가리네"]},
+      {emoji:"👦",sayings:["단종 임금님 어디 계세요?","세상이 무서워요"]},
+      {emoji:"🧑‍🌾",sayings:["사육신이 의로웠지","민심은 단종에게 있거늘"]},
+      {emoji:"👨‍🦯",sayings:["역사가 슬프게 흐르네","비극의 시작이구려"]}
+    ]
+  },
+  {
+    id:7, name:"세조", nameEn:"Sejo", period:"1455–1468",
+    year:"재위 13년", emoji:"🗡️",
+    era:1, type:["전쟁","개혁"],
+    stats:{military:88,people:45,culture:60,economy:70,diplomacy:65},
+    icons:["🗡️","📜","⚔️"],
+    achievements:[
+      {icon:"📜",title:"경국대전 착수",desc:"조선의 통치 규범을 완성하기 위한 법전 편찬을 시작"},
+      {icon:"⚔️",title:"직전법 실시",desc:"현직 관리에게만 토지를 주어 국가 재정을 획기적으로 개선"},
+      {icon:"🏯",title:"원각사지 10층 석탑",desc:"불교를 장려하며 아름다운 탑과 사찰을 건립"},
+      {icon:"🏹",title:"군사 조직 정비",desc:"오위진법 등을 통해 조선의 군사력을 정점으로 끌어올림"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["무서운 카리스마요","기강은 확실히 잡혔군"]},
+      {emoji:"👩",sayings:["법이 까다로워졌어","단종 생각하면 마음 아파"]},
+      {emoji:"👦",sayings:["왕권이 엄청 세대요","전쟁은 안 나겠지?"]},
+      {emoji:"🧑‍🌾",sayings:["직전법이라니 관리들 울상","백성은 그냥 살만해"]},
+      {emoji:"👨‍🚒",sayings:["나라가 탄탄해진 건 맞지","힘의 정치를 하시네"]}
+    ]
+  },
+  {
+    id:8, name:"예종", nameEn:"Yejong", period:"1468–1469",
+    year:"재위 1년", emoji:"📜",
+    era:1, type:[],
+    stats:{military:45,people:58,culture:55,economy:60,diplomacy:52},
+    icons:["📜"],
+    achievements:[
+      {icon:"📜",title:"경국대전 보완",desc:"아버지 세조의 법전 편찬 사업을 성실히 계승"},
+      {icon:"⛓️",title:"남이의 옥 수습",desc:"강력한 무장 남이를 숙청하며 공신 세력을 견제"},
+      {icon:"🏛️",title:"잠채 엄금",desc:"소금 판매 독점을 막아 민생 안정 도모"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["너무 일찍 가시는구려","짧지만 성실하셨지"]},
+      {emoji:"👩",sayings:["궁궐에 곡소리가 끊이지 않아","1년이라니 너무하오"]},
+      {emoji:"👦",sayings:["왕이 또 바뀌나요?","공신들이 무서워요"]},
+      {emoji:"🧑‍🌾",sayings:["농사라도 짓게 해주오","잠깐 스쳐간 바람 같구려"]},
+      {emoji:"👨‍💼",sayings:["남이 장군이 아쉽네","법전은 언제 나오나"]}
+    ]
+  },
+  {
+    id:9, name:"성종", nameEn:"Seongjong", period:"1469–1494",
+    year:"재위 25년", emoji:"📚",
+    era:1, type:["명군","문화"],
+    stats:{military:65,people:85,culture:92,economy:80,diplomacy:78},
+    icons:["📚","⚖️","🌾"],
+    achievements:[
+      {icon:"⚖️",title:"경국대전 완성",desc:"1485년 조선 최고의 법전 경국대전을 완성해 법치주의 확립"},
+      {icon:"🏛️",title:"홍문관 설치",desc:"학문과 언론을 담당하는 홍문관을 만들어 신하들과 소통"},
+      {icon:"📗",title:"동국통감 편찬",desc:"고조선부터 고려까지의 역사를 정리한 통사 완성"},
+      {icon:"🎼",title:"악학궤범 간행",desc:"조선의 음악 이론과 악기 정보를 총망라한 서적 발간"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["드디어 법이 완성됐소!","태평성대가 왔구려"]},
+      {emoji:"👩",sayings:["글 읽는 소리가 기분 좋아","매너가 좋은 임금님이야"]},
+      {emoji:"👦",sayings:["공부하기 좋은 세상이래요","나도 선비가 될 거야"]},
+      {emoji:"🧑‍🌾",sayings:["세금이 공정해졌어","법대로 하니 억울함 없지"]},
+      {emoji:"👨‍🎨",sayings:["예술이 꽃피는 시대구려","문화를 아는 군주님이오"]}
+    ]
+  },
+  {
+    id:10, name:"연산군", nameEn:"Yeonsangun", period:"1494–1506",
+    year:"재위 12년", emoji:"💀",
+    era:2, type:["전쟁"],
+    stats:{military:60,people:5,culture:30,economy:30,diplomacy:25},
+    icons:["💀","🎭","🔥"],
+    achievements:[
+      {icon:"🔥",title:"사화의 시작",desc:"무오사화와 갑자사화를 통해 수많은 선비들을 잔혹하게 숙청"},
+      {icon:"🎭",title:"채홍사 파견",desc:"전국에서 미녀와 기생을 징발해 향락에 빠지고 국가 재정을 탕진"},
+      {icon:"🚫",title:"언관 기능 폐지",desc:"비판하는 신하들의 혀를 자르는 등 언로를 완전히 차단"},
+      {icon:"💀",title:"중종반정 폐위",desc:"폭정을 견디다 못한 신하들에 의해 조선 최초로 폐위"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["눈 마주치면 죽소!","조선이 망해가고 있어"]},
+      {emoji:"👩",sayings:["딸들 숨기기 바쁘네","임금님이 미쳤나 봐"]},
+      {emoji:"👦",sayings:["집 밖이 무서워요","아버지가 안 돌아와요"]},
+      {emoji:"🧑‍🌾",sayings:["세금이 말도 안 돼","반정이 정말 일어날까?"]},
+      {emoji:"👹",sayings:["잔치가 매일 열린다네","백성의 피눈물로 말이오"]}
+    ]
+  },
+  {
+    id:11, name:"중종", nameEn:"Jungjong", period:"1506–1544",
+    year:"재위 38년", emoji:"⚖️",
+    era:2, type:["개혁","문화"],
+    stats:{military:55,people:65,culture:72,economy:68,diplomacy:65},
+    icons:["⚖️","📜","🌿"],
+    achievements:[
+      {icon:"⚖️",title:"조광조와 개혁",desc:"사림파 조광조와 함께 도덕적 이상 정치를 실현하려 노력"},
+      {icon:"🚫",title:"기묘사화",desc:"훈구파의 반발로 결국 조광조를 숙청하며 개혁이 실패로 돌아감"},
+      {icon:"📜",title:"향약 보급",desc:"지방 자치와 유교 윤리를 위해 향약을 전국적으로 실시"},
+      {icon:"🩺",title:"대장금 등용",desc:"신분에 상관없이 실력 있는 의녀 대장금을 주치의로 임명"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["반정으로 선비들 살아났군","조광조가 너무 급했어"]},
+      {emoji:"👩",sayings:["임금님이 우유부단하셔","그래도 연산군보단 낫지"]},
+      {emoji:"👦",sayings:["대장금이 정말 잘 고친대","나도 의사가 될까?"]},
+      {emoji:"🧑‍🌾",sayings:["향약으로 마을이 깨끗해","세도가들 눈치 보느라 힘드네"]},
+      {emoji:"👨‍💼",sayings:["공신들이 너무 설쳐","임금님 기 좀 펴세요"]}
+    ]
+  },
+  {
+    id:12, name:"인종", nameEn:"Injong", period:"1544–1545",
+    year:"재위 8개월", emoji:"🕊️",
+    era:2, type:[],
+    stats:{military:40,people:75,culture:70,economy:65,diplomacy:60},
+    icons:["🕊️","❤️"],
+    achievements:[
+      {icon:"🕊️",title:"효심의 끝",desc:"너무나 지극한 효성으로 아버지 중종 승하 후 몸을 돌보지 않음"},
+      {icon:"❤️",title:"사림의 복권",desc:"기묘사화 때 희생된 조광조 등을 복권시키며 정의를 실현하려 함"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["참으로 어진 분이었어","하늘이 무심하시지"]},
+      {emoji:"👩",sayings:["8개월이 뭡니까...","문정왕후가 무섭구려"]},
+      {emoji:"👦",sayings:["임금님 돌아가셨대요?","착한 왕이 왜 일찍 가나"]},
+      {emoji:"🧑‍🌾",sayings:["살기가 잠깐 편했는데","태평성대 꿈꿨건만"]},
+      {emoji:"👨‍🦯",sayings:["별이 너무 빨리 졌소","조선의 운명이 슬프네"]}
+    ]
+  },
+  {
+    id:13, name:"명종", nameEn:"Myeongjong", period:"1545–1567",
+    year:"재위 22년", emoji:"👩‍👦",
+    era:2, type:[],
+    stats:{military:45,people:42,culture:55,economy:48,diplomacy:50},
+    icons:["👩‍👦","🌧️","🏹"],
+    achievements:[
+      {icon:"👩‍👦",title:"수렴청정",desc:"어머니 문정왕후의 섭정 아래 외척 세력이 권력을 독점"},
+      {icon:"🏹",title:"을사사화",desc:"권력 다툼으로 수많은 선비들이 다시 희생되는 비극 발생"},
+      {icon:"🔥",title:"임꺽정의 출현",desc:"부패한 관리들에 맞서 백성들의 영웅 임꺽정이 활동"},
+      {icon:"🏛️",title:"퇴계 이황 등용",desc:"성리학의 대가 이황을 등용해 학문적 기반을 닦으려 함"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["치맛바람이 너무 세구려","외척들이 나라 망치네"]},
+      {emoji:"👩",sayings:["임꺽정이 더 인기야","백성은 굶고 있다네"]},
+      {emoji:"👦",sayings:["도적들이 무섭지 않아요","관리들이 더 나빠요"]},
+      {emoji:"🧑‍🌾",sayings:["흉년이 계속되는군","임금님이 힘이 없으셔"]},
+      {emoji:"👨‍🍳",sayings:["문정왕후가 실세라지?","궁궐 소식이 흉흉해"]}
+    ]
+  },
+  {
+    id:14, name:"선조", nameEn:"Seonjo", period:"1567–1608",
+    year:"재위 41년", emoji:"🔥",
+    era:2, type:["전쟁"],
+    stats:{military:40,people:30,culture:65,economy:25,diplomacy:35},
+    icons:["🔥","🏹","⚔️"],
+    achievements:[
+      {icon:"⚔️",title:"임진왜란",desc:"7년간의 왜란을 겪으며 국가가 위기에 처했으나 의병과 수군의 활약으로 수호"},
+      {icon:"🏹",title:"이순신 등용",desc:"유성룡의 건의로 이순신을 전라좌수사에 임명하여 해전 승리의 발판 마련"},
+      {icon:"📙",title:"동의보감 착수",desc:"허준에게 백성들을 위한 의학서 편찬을 명하여 민생 안정을 도모"},
+      {icon:"📖",title:"붕당의 시작",desc:"사림파가 동인과 서인으로 나뉘어 본격적인 붕당 정치가 전개"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["왜놈들이 쳐들어왔다!","피란길이 너무 험하오"]},
+      {emoji:"👩",sayings:["이순신 장군이 최고야","아들들이 무사해야 할 텐데"]},
+      {emoji:"👦",sayings:["의병들이 싸우러 가요","임금님은 어디 계세요?"]},
+      {emoji:"🧑‍🌾",sayings:["논밭이 다 타버렸어","먹을 게 아무것도 없소"]},
+      {emoji:"👨‍🚒",sayings:["거북선이 정말 있대요!","나라를 지키는 건 백성뿐"]}
+    ]
+  },
+
+  {
+    id:15, name:"광해군", nameEn:"Gwanghaegun", period:"1608–1623",
+    year:"재위 15년", emoji:"🔮",
+    era:2, type:["전쟁","개혁"],
+    stats:{military:72,people:48,culture:62,economy:65,diplomacy:88},
+    icons:["🔮","⚖️","🏯"],
+    achievements:[
+      {icon:"🔮",title:"중립 외교",desc:"명과 후금 사이에서 실리적 중립 외교를 구사. 전란 후 국력 보전"},
+      {icon:"🏯",title:"동의보감 완성",desc:"허준의 동의보감 완성(1613). 조선 의학의 집대성"},
+      {icon:"⚖️",title:"인조반정으로 폐위",desc:"폐모살제(어머니 폐위·형제 살해)의 명목으로 1623년 반정"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["중립외교가 옳았다","혁명가였나? 폭군이었나?","동의보감이 생겼네"]},
+      {emoji:"👩",sayings:["외교는 잘했다지","인륜을 저버렸어","복잡한 분이야"]},
+      {emoji:"👦",sayings:["광해군 재평가 중!","외교의 달인이었나?","역사란 참 어렵다"]}
+    ]
+  },
+  {
+    id:16, name:"인조", nameEn:"Injo", period:"1623–1649",
+    year:"재위 26년", emoji:"😢",
+    era:2, type:["전쟁"],
+    stats:{military:30,people:20,culture:48,economy:25,diplomacy:18},
+    icons:["😢","⚔️","🏔️"],
+    achievements:[
+      {icon:"⚔️",title:"정묘·병자호란",desc:"두 차례 청의 침략을 받아 남한산성에 포위. 삼전도 굴욕적 항복"},
+      {icon:"🏔️",title:"삼전도의 굴욕",desc:"청 태종 앞에서 세 번 절하고 아홉 번 머리를 조아린 조선 최대의 치욕"},
+      {icon:"😢",title:"소현세자 죽음",desc:"청에 볼모로 갔던 소현세자가 귀국 후 의문사"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["오랑캐에게 무릎 꿇었다","나라가 망했구나","삼전도가 치욕이다"]},
+      {emoji:"👩",sayings:["전쟁이 두 번이나","아들들이 볼모로","굶어 죽겠다"]},
+      {emoji:"👦",sayings:["병자호란이 슬프다","삼전도를 기억해야","북벌이 필요해!"]}
+    ]
+  },
+  {
+    id:17, name:"효종", nameEn:"Hyojong", period:"1649–1659",
+    year:"재위 10년", emoji:"⚔️",
+    era:2, type:["전쟁","개혁"],
+    stats:{military:80,people:65,culture:55,economy:62,diplomacy:45},
+    icons:["⚔️","🏹","❤️"],
+    achievements:[
+      {icon:"⚔️",title:"북벌 운동",desc:"병자호란의 치욕을 씻기 위한 청 정벌 준비. 군비 강화에 힘씀"},
+      {icon:"🏹",title:"나선정벌",desc:"청의 요청으로 조총 부대를 파견하여 러시아군과 전투"},
+      {icon:"❤️",title:"대동법 확대",desc:"공납 개혁인 대동법을 충청도까지 확대. 백성 부담 경감"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["청을 쳐야 한다!","북벌이 희망이야","대동법 덕분에 살겠다"]},
+      {emoji:"👩",sayings:["세금이 줄었어요","북벌할 수 있을까?","10년이 너무 짧아"]},
+      {emoji:"👦",sayings:["북벌이 뭐예요?","나선정벌은 러시아?","효종이 의로웠대"]}
+    ]
+  },
+  {
+    id:18, name:"현종", nameEn:"Hyeonjong", period:"1659–1674",
+    year:"재위 15년", emoji:"📜",
+    era:2, type:[],
+    stats:{military:50,people:55,culture:60,economy:55,diplomacy:60},
+    icons:["📜","⚖️"],
+    achievements:[
+      {icon:"📜",title:"예송논쟁",desc:"왕실 상복 착용 기간을 두고 벌어진 남인·서인의 격렬한 예법 논쟁"},
+      {icon:"⚖️",title:"동철활자 주조",desc:"금속활자를 대규모 주조하여 출판 문화 발전"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["상복이 왜 싸우는가","당쟁이 너무해","아무도 일 안 해"]},
+      {emoji:"👩",sayings:["예법이 중요해요?","당파싸움 지겨워","그냥 농사나 짓자"]}
+    ]
+  },
+  {
+    id:19, name:"숙종", nameEn:"Sukjong", period:"1674–1720",
+    year:"재위 46년", emoji:"♟️",
+    era:2, type:["개혁"],
+    stats:{military:65,people:58,culture:70,economy:68,diplomacy:72},
+    icons:["♟️","🌊","⚖️"],
+    achievements:[
+      {icon:"♟️",title:"환국 정치",desc:"남인·서인을 번갈아 등용·숙청하는 환국 정치로 강력한 왕권 유지"},
+      {icon:"🌊",title:"백두산 정계비",desc:"1712년 청과 국경을 확정하는 백두산 정계비 건립"},
+      {icon:"⚖️",title:"상평통보 전국 유통",desc:"화폐 상평통보를 전국에 유통시켜 상업 경제 활성화"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["상평통보 편해","당파가 너무 심해","장희빈이 무섭다"]},
+      {emoji:"👩",sayings:["장희빈·인현왕후 드라마!","화폐가 생겨 편해요","왕이 무서운 분이야"]},
+      {emoji:"👦",sayings:["숙종 드라마 재밌어","백두산이 우리 땅!","환국이 뭐예요?"]}
+    ]
+  },
+  {
+    id:20, name:"경종", nameEn:"Gyeongjong", period:"1720–1724",
+    year:"재위 4년", emoji:"🥀",
+    era:2, type:[],
+    stats:{military:35,people:52,culture:48,economy:50,diplomacy:45},
+    icons:["🥀"],
+    achievements:[
+      {icon:"🥀",title:"노론·소론의 대립",desc:"왕세제(영조) 책봉을 둘러싸고 노론과 소론이 격렬하게 대립"},
+      {icon:"📜",title:"신임사화",desc:"소론이 노론을 탄압한 신임사화 발생"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["당쟁이 심하다","경종이 불쌍해","영조가 다음이겠지"]},
+      {emoji:"👩",sayings:["4년만 하셨네","병이 많으셨다나","다음 왕이 오래 해야"]}
+    ]
+  },
+  {
+    id:21, name:"영조", nameEn:"Yeongjo", period:"1724–1776",
+    year:"재위 52년", emoji:"⚖️",
+    era:2, type:["명군","개혁"],
+    stats:{military:60,people:85,culture:80,economy:82,diplomacy:75},
+    icons:["⚖️","📜","❤️","🌾"],
+    achievements:[
+      {icon:"⚖️",title:"탕평책",desc:"붕당 간 균형을 잡기 위한 탕평책 실시. 당쟁 완화에 힘씀"},
+      {icon:"📜",title:"속대전 편찬",desc:"경국대전을 보완한 속대전 편찬으로 법제 정비"},
+      {icon:"🌾",title:"균역법 실시",desc:"군역 부담을 줄여 농민의 세금 경감. 민생 安定"},
+      {icon:"❤️",title:"사도세자",desc:"아들 사도세자를 뒤주에 가두어 죽인 비극. 영조의 최대 오점"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["탕평이 옳다!","영조 52년 최장!","사도세자가 불쌍해"]},
+      {emoji:"👩",sayings:["균역법으로 살겠어","세금이 줄었다 감사!","뒤주 사건 너무 잔인해"]},
+      {emoji:"👦",sayings:["영조가 가장 오래!","사도세자 이야기 슬퍼","탕평책 배웠어요"]},
+      {emoji:"🧑‍🌾",sayings:["균역법 덕분에 살아","농사가 잘 돼요","좋은 세상이 됐다"]}
+    ]
+  },
+  {
+    id:22, name:"정조", nameEn:"Jeongjo", period:"1776–1800",
+    year:"재위 24년", emoji:"📚",
+    era:2, type:["명군","문화","개혁"],
+    stats:{military:72,people:90,culture:98,economy:80,diplomacy:75},
+    icons:["📚","🏯","💡","🌊"],
+    achievements:[
+      {icon:"🏯",title:"화성(수원) 건설",desc:"아버지 사도세자의 묘를 옮기고 수원 화성을 건설. 개혁의 새 거점"},
+      {icon:"📚",title:"규장각 설치",desc:"왕립 도서관 규장각 설치. 인재 양성과 학문 부흥의 중심지"},
+      {icon:"💡",title:"신해통공",desc:"육의전 특권 폐지로 자유 상업 확대. 상공업 진흥"},
+      {icon:"🌊",title:"초계문신제",desc:"젊은 관료를 선발하여 개혁적 인재를 집중 육성하는 제도"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["규장각이 생겼다!","정조가 자랑스럽다","화성이 대단해"]},
+      {emoji:"👩",sayings:["장사를 할 수 있어","학문이 꽃피었어요","수원 구경 가야지"]},
+      {emoji:"👦",sayings:["정조 최고 개혁!","규장각 책이 많대","화성은 유네스코!"]},
+      {emoji:"🧑‍🌾",sayings:["자유롭게 장사해","세금이 공평해졌어","이런 임금이 계속 있으면"]}
+    ]
+  },
+  {
+    id:23, name:"순조", nameEn:"Sunjo", period:"1800–1834",
+    year:"재위 34년", emoji:"🌧️",
+    era:3, type:[],
+    stats:{military:35,people:38,culture:50,economy:35,diplomacy:45},
+    icons:["🌧️","👨‍👩‍👦"],
+    achievements:[
+      {icon:"🌧️",title:"세도정치 시작",desc:"안동 김씨 세도정치가 시작. 왕권이 약화되고 삼정이 문란해짐"},
+      {icon:"📜",title:"신유박해",desc:"1801년 천주교 대탄압. 황사영 백서 사건으로 수백 명 순교"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["세도가들이 다 독식해","살기가 너무 어렵다","삼정이 문란하다"]},
+      {emoji:"👩",sayings:["세금이 자꾸 늘어","관리들이 부패했어","언제 좋아지나"]},
+      {emoji:"👦",sayings:["세도정치가 뭐예요?","부패가 나라를 망쳐","백성이 가장 중요해"]}
+    ]
+  },
+  {
+    id:24, name:"헌종", nameEn:"Heonjong", period:"1834–1849",
+    year:"재위 15년", emoji:"📜",
+    era:3, type:[],
+    stats:{military:30,people:32,culture:50,economy:32,diplomacy:40},
+    icons:["📜","🌧️"],
+    achievements:[
+      {icon:"📜",title:"동학 전파 시대",desc:"최제우에 의한 동학 창시(1860) 직전의 사회혼란기"},
+      {icon:"🌧️",title:"三政 문란 심화",desc:"전정·군정·환곡의 문란이 극심해져 농민 고통 가중"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["삼정이 너무 심해","관리들이 벼슬만 탐해","민란이 일어날 것 같아"]},
+      {emoji:"👩",sayings:["세금이 3중으로","굶는 사람이 늘었어","나라가 걱정돼"]}
+    ]
+  },
+  {
+    id:25, name:"철종", nameEn:"Cheoljong", period:"1849–1863",
+    year:"재위 14년", emoji:"🌾",
+    era:3, type:[],
+    stats:{military:28,people:35,culture:42,economy:30,diplomacy:35},
+    icons:["🌾","🌧️","🔥"],
+    achievements:[
+      {icon:"🔥",title:"임술농민봉기",desc:"1862년 진주 민란을 시작으로 전국 각지에 농민봉기 발생"},
+      {icon:"📖",title:"삼정이정청 설치",desc:"농민봉기 수습을 위해 삼정이정청을 설치했으나 근본 개혁 실패"},
+      {icon:"🌾",title:"강화도령 출신",desc:"강화도에서 가난하게 살던 왕族이 갑자기 즉위. 안동 김씨의 꼭두각시"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["민란이 전국에!","관리들이 나쁘다","나라가 망해간다"]},
+      {emoji:"👩",sayings:["봉기가 무서워요","강화도령이 왕이라니","삼정이 너무해"]},
+      {emoji:"👦",sayings:["철종은 불쌍해보여","강화도에서 왕이?","세도정치 나빠요"]}
+    ]
+  },
+  {
+    id:26, name:"고종", nameEn:"Gojong", period:"1863–1907",
+    year:"재위 44년", emoji:"🌍",
+    era:3, type:["개혁","전쟁"],
+    stats:{military:40,people:50,culture:60,economy:45,diplomacy:42},
+    icons:["🌍","⚡","📜","🔥"],
+    achievements:[
+      {icon:"⚡",title:"갑오개혁",desc:"1894년 일본의 강요로 시작된 근대 개혁. 신분제 폐지·과거제 폐지"},
+      {icon:"🌍",title:"대한제국 선포",desc:"1897년 황제로 즉위하여 대한제국 선포. 자주 독립 의지 표명"},
+      {icon:"🔥",title:"을미사변·아관파천",desc:"명성황후 시해 후 러시아 공사관으로 피신한 비극적 사건"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["나라가 위험해","일본이 무서워","황제가 되셨다지"]},
+      {emoji:"👩",sayings:["개화가 무서워요","명성황후가 불쌍해","나라를 지켜야"]},
+      {emoji:"👦",sayings:["독립이 필요해요","근대화가 뭐지?","조선이 끝나간다"]},
+      {emoji:"🧑‍🌾",sayings:["왜놈이 다 가져가","세금이 이상해졌어","독립운동 해야 해"]}
+    ]
+  },
+  {
+    id:27, name:"순종", nameEn:"Sunjong", period:"1907–1910",
+    year:"재위 3년", emoji:"🥀",
+    era:3, type:[],
+    stats:{military:10,people:55,culture:50,economy:20,diplomacy:10},
+    icons:["🥀","😢"],
+    achievements:[
+      {icon:"🥀",title:"경술국치",desc:"1910년 일제에 의해 강제 병합. 조선 왕조 519년의 역사가 막을 내림"},
+      {icon:"😢",title:"마지막 황제",desc:"대한제국의 마지막 황제. 일제는 '이왕'으로 격하시킴"}
+    ],
+    citizens:[
+      {emoji:"👴",sayings:["나라가 없어졌다…","519년 역사가 끝났어","일제에 저항해야"]},
+      {emoji:"👩",sayings:["이게 무슨 일이에요","독립을 해야 해요","순종이 불쌍해"]},
+      {emoji:"👦",sayings:["조선이 끝났어요","독립운동을 해야!","역사를 잊지마세요"]},
+      {emoji:"🧑‍🌾",sayings:["우리 땅이 없어졌다","독립을 위해 싸울 거야","고종 황제가 그립다"]}
+    ]
+  }
+];
+
+// ══════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════
+// ── Sound Engine (Synthetic) ──
+class SoundEngine {
+  constructor() {
+    this.ctx = null;
+  }
+  init() {
+    if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  playStat(pitch = 440) {
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(pitch, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(pitch * 1.5, this.ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.1);
+  }
+  playPop(pitch = 200) {
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(pitch, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(pitch * 0.5, this.ctx.currentTime + 0.15);
+    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.15);
+  }
+}
+const sounds = new SoundEngine();
+
+const grid = document.getElementById('kingGrid');
+const modal = document.getElementById('modal');
+
+function renderGrid(kings) {
+  grid.innerHTML = '';
+  kings.forEach(k => {
+    const card = document.createElement('div');
+    card.className = 'king-card';
+    card.dataset.type = k.type.join(' ');
+    card.innerHTML = `
+      <div class="king-avatar">
+        <div class="king-num">${k.id}</div>
+        <div class="era-badge era-${k.era}">${k.era === 1 ? '초기' : k.era === 2 ? '중기' : '말기'}</div>
+        <span style="font-size:48px">${k.emoji}</span>
+      </div>
+      <div class="king-name">${k.name}</div>
+      <div class="king-period">${k.period}</div>
+      <div class="king-icons">${k.icons.map(i => `<span class="king-icon">${i}</span>`).join('')}</div>
+    `;
+    card.addEventListener('click', () => openModal(k));
+    grid.appendChild(card);
+  });
+}
+
+// ── Stat color ──
+function statColor(v) {
+  if (v >= 80) return '#4caf50';
+  if (v >= 60) return '#ff9800';
+  if (v >= 40) return '#f44336';
+  return '#9e9e9e';
+}
+
+let flippedCount = 0;
+let totalAchievements = 0;
+let activeKing = null;
+
+function openModal(k) {
+  activeKing = k;
+  sounds.init();
+  modal.classList.add('open');
+  flippedCount = 0;
+  totalAchievements = k.achievements.length;
+  
+  const statsConfig = [
+    {label:'군사력', key:'military', color:'#ff4b2b', id:'mil'},
+    {label:'민심', key:'people', color:'#1cefff', id:'pop'},
+    {label:'문화', key:'culture', color:'#f5d77a', id:'cul'},
+    {label:'경제', key:'economy', color:'#4caf50', id:'eco'},
+    {label:'외교', key:'diplomacy', color:'#9c27b0', id:'dip'}
+  ];
+
+  const statsHtml = statsConfig.map(s => `
+    <div class="stat-box">
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-bar-wrap"><div class="stat-bar" id="bar-${s.id}" style="width:0;background:${s.color}"></div></div>
+      <div class="stat-val" id="val-${s.id}">0</div>
+    </div>`).join('');
+
+  const achHtml = k.achievements.map((a, i) =>
+    `<div class="ach-card" id="ach-${i}" onclick="flipCard(this)">
+      <div class="ach-card-inner">
+        <div class="ach-front">
+          <span style="font-size:18px">❓</span>
+          <span>업적 ${i+1} 확인하기</span>
+        </div>
+        <div class="ach-back">
+          <div class="ach-icon">${a.icon}</div>
+          <div class="ach-text"><h4>${a.title}</h4><p>${a.desc}</p></div>
+        </div>
+      </div>
+    </div>`
+  ).join('');
+
+  const citizenHtml = k.citizens.map((c, i) => {
+    return `<div class="citizen" id="cit-${i}" onclick="revealCitizen(${i}, this)">
+      <div class="speech-bubble" id="bubble-${i}">?</div>
+      <div class="citizen-figure">${c.emoji}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-header">
+      <div class="modal-avatar"><span style="font-size:52px">${k.emoji}</span></div>
+      <div class="modal-title">
+        <h2>${k.name}</h2>
+        <div class="sub">${k.nameEn} · 제${k.id}대</div>
+        <div class="reign">👑 ${k.period} (${k.year})</div>
+        <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">${k.type.map(t =>
+          `<span style="background:rgba(255,200,80,0.15);border:1px solid rgba(255,200,80,0.3);border-radius:8px;padding:2px 8px;font-size:10px;color:#c8a040">${t}</span>`
+        ).join('')}</div>
+      </div>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="stats-row">${statsHtml}</div>
+    <div class="achievements">
+      <h3>📌 주요 업적</h3>
+      <div class="ach-list">${achHtml}</div>
+    </div>
+    <div class="citizens-area">
+      <h3>💬 백성들의 반응</h3>
+      <div class="citizens-grid">${citizenHtml}</div>
+    </div>
+  `;
+
+  // Seq: Stats -> Achievements -> Citizens
+  animateStats(k.stats, statsConfig);
+}
+
+async function animateStats(stats, config) {
+  for(const s of config) {
+    const target = stats[s.key];
+    const bar = document.getElementById(`bar-${s.id}`);
+    const val = document.getElementById(`val-${s.id}`);
+    
+    let cur = 0;
+    const duration = 400;
+    const steps = 10;
+    const stepVal = target / steps;
+    const intervalTime = duration / steps;
+
+    const interval = setInterval(() => {
+      cur += stepVal;
+      if(cur >= target) {
+        cur = target;
+        clearInterval(interval);
+      }
+      bar.style.width = cur + '%';
+      val.innerText = Math.floor(cur);
+      sounds.playStat(400 + (cur*2));
+    }, intervalTime);
+
+    await new Promise(r => setTimeout(r, 150));
+  }
+  
+  await new Promise(r => setTimeout(r, 200));
+  animateAchievements();
+  animateCitizens();
+}
+
+async function animateAchievements() {
+  const items = document.querySelectorAll('.ach-card');
+  for(let i=0; i<items.length; i++) {
+    items[i].classList.add('show');
+    sounds.playPop(300 + (i*40));
+    await new Promise(r => setTimeout(r, 180));
+  }
+}
+
+function flipCard(el) {
+  if(el.classList.contains('flipped')) return;
+  el.classList.add('flipped');
+  sounds.playPop(500);
+  flippedCount++;
+  
+  if(flippedCount === totalAchievements) {
+    setTimeout(() => {
+      document.querySelector('.citizens-area').classList.add('unlocked');
+      // Subtle hint that citizens can be clicked
+      document.querySelectorAll('.speech-bubble').forEach(b => {
+        b.style.color = '#f5d77a';
+        b.innerText = 'Click!';
+      });
+      sounds.playPop(800);
+    }, 400);
+  }
+}
+
+async function animateCitizens() {
+  const items = document.querySelectorAll('.citizen');
+  for(let i=0; i<items.length; i++) {
+    items[i].classList.add('show');
+    sounds.playPop(200 + (i*30));
+    
+    setTimeout(() => {
+      const bubble = document.getElementById(`bubble-${i}`);
+      if(bubble) bubble.classList.add('show');
+    }, 200);
+
+    await new Promise(r => setTimeout(r, 150));
+  }
+}
+
+function revealCitizen(idx, el) {
+  if(flippedCount < totalAchievements) return;
+  const bubble = document.getElementById(`bubble-${idx}`);
+  if(bubble.classList.contains('revealed')) return;
+
+  const citizenData = activeKing.citizens[idx];
+  const say = citizenData.sayings[Math.floor(Math.random() * citizenData.sayings.length)];
+  
+  bubble.innerText = say;
+  bubble.classList.add('revealed', 'revealing');
+  sounds.playPop(600 + (idx*50));
+}
+
+function closeModal() {
+  modal.classList.remove('open');
+}
+
+function filterKings(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards = document.querySelectorAll('.king-card');
+  cards.forEach(card => {
+    const types = card.dataset.type;
+    card.classList.toggle('hidden', type !== 'all' && !types.includes(type));
+  });
+}
+
+// Keyboard close
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+
+renderGrid(KINGS);
+</script>
+</body>
+</html>

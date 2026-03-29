@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>튜링의 암호 해독기 - Luna Math</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1729;--card:#1a2640;--accent:#06b6d4;--accent2:#0891b2;--text:#e2e8f0;--dim:#64748b;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--radius:16px;--mono:'JetBrains Mono','Fira Code','SF Mono',monospace}
+body{font-family:'Pretendard Variable',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+
+/* CRT scanline overlay */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px)}
+
+/* Header */
+.header{padding:16px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(6,182,212,0.15)}
+.back-btn{background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.25);color:var(--text);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+.back-btn:hover{background:rgba(6,182,212,0.2);border-color:var(--accent)}
+.header-title{font-size:18px;font-weight:700;color:var(--accent)}
+
+/* Intro Card */
+.intro-card{max-width:900px;margin:24px auto 0;padding:0 24px}
+.intro-inner{background:linear-gradient(135deg,rgba(6,182,212,0.08),rgba(6,182,212,0.02));border:1px solid rgba(6,182,212,0.18);border-radius:var(--radius);padding:24px 28px;position:relative;overflow:hidden}
+.intro-inner::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(6,182,212,0.12),transparent 70%);border-radius:50%}
+.intro-title{font-size:15px;font-weight:800;color:var(--accent);margin-bottom:8px;letter-spacing:1px}
+.intro-text{font-size:13.5px;line-height:1.8;color:var(--dim)}
+.intro-text b{color:var(--text);font-weight:700}
+
+/* Scenario Grid */
+.grid-wrap{max-width:900px;margin:0 auto;padding:24px}
+.grid-label{font-size:12px;color:var(--dim);letter-spacing:2px;margin-bottom:12px;text-transform:uppercase}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.sc-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:20px 16px;text-align:center;cursor:pointer;transition:all .25s;position:relative}
+.sc-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px rgba(6,182,212,0.15)}
+.sc-card.active{border-color:var(--accent);background:rgba(6,182,212,0.08)}
+.sc-emoji{font-size:36px;margin-bottom:8px}
+.sc-name{font-size:15px;font-weight:700;margin-bottom:4px}
+.sc-desc{font-size:11px;color:var(--dim);margin-bottom:6px}
+.sc-diff{font-size:11px;color:var(--dim);letter-spacing:1px}
+.sc-card .done-badge{position:absolute;top:8px;right:8px;font-size:16px}
+.diff-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 1px;vertical-align:middle}
+.diff-dot.on{background:var(--accent)}
+.diff-dot.off{background:rgba(255,255,255,0.1)}
+
+/* Game Area */
+.game-area{max-width:900px;margin:0 auto;padding:0 24px 60px;display:none}
+.game-area.visible{display:block}
+.canvas-wrap{background:var(--card);border-radius:var(--radius);overflow:hidden;border:1px solid rgba(6,182,212,0.12);margin-bottom:16px;position:relative}
+canvas{width:100%;display:block}
+
+/* Info Panel */
+.info-panel{background:var(--card);border-radius:var(--radius);padding:24px;border:1px solid rgba(255,255,255,0.08)}
+.info-row{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.info-label{font-size:13px;font-weight:700;color:var(--dim);min-width:80px;flex-shrink:0}
+.info-val{font-size:15px;font-weight:600;word-break:break-all}
+.info-val.encrypted-text{font-family:var(--mono);letter-spacing:3px;font-size:18px;color:var(--red)}
+.info-val.decoded-text{font-family:var(--mono);letter-spacing:3px;font-size:18px;color:var(--accent);text-shadow:0 0 12px rgba(6,182,212,0.4)}
+
+.shift-control{display:flex;align-items:center;gap:12px}
+.shift-btn{width:40px;height:40px;border-radius:50%;background:var(--card);border:2px solid rgba(255,255,255,0.15);color:var(--text);font-size:18px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;line-height:1}
+.shift-btn:hover{border-color:var(--accent);background:rgba(6,182,212,0.15)}
+.shift-val{font-size:32px;font-weight:900;color:var(--accent);font-family:var(--mono);min-width:50px;text-align:center;text-shadow:0 0 16px rgba(6,182,212,0.5)}
+
+.btn-row{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.action-btn{padding:12px 24px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Pretendard Variable',sans-serif}
+.action-btn:not(.secondary){background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.action-btn:not(.secondary):hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(6,182,212,0.35)}
+.action-btn.secondary{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text)}
+.action-btn.secondary:hover{background:rgba(255,255,255,0.1)}
+
+.result-msg{margin-top:14px;padding:12px 16px;border-radius:10px;font-size:14px;font-weight:700;display:none}
+.result-msg.success{display:block;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:var(--green)}
+.result-msg.fail{display:block;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red)}
+
+/* Free mode extras */
+.free-mode-wrap{margin-top:16px;display:none}
+.free-mode-wrap.visible{display:block}
+.free-input{width:100%;padding:14px 18px;background:rgba(0,0,0,0.3);border:1px solid rgba(6,182,212,0.25);border-radius:12px;color:var(--accent);font-family:var(--mono);font-size:16px;letter-spacing:2px;outline:none;transition:border-color .2s}
+.free-input:focus{border-color:var(--accent)}
+.free-input::placeholder{color:rgba(100,116,139,0.5)}
+.mode-toggle{display:flex;gap:0;margin-bottom:12px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)}
+.mode-toggle button{flex:1;padding:10px 16px;background:rgba(255,255,255,0.04);border:none;color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Pretendard Variable',sans-serif}
+.mode-toggle button.active{background:rgba(6,182,212,0.15);color:var(--accent)}
+
+/* Progress Bar */
+.progress-wrap{max-width:900px;margin:0 auto;padding:0 24px 8px}
+.progress-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .4s ease}
+.progress-label{font-size:11px;color:var(--dim);margin-top:6px;text-align:right}
+
+@media(max-width:600px){
+  .grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .sc-card{padding:14px 10px}
+  .sc-emoji{font-size:28px}
+  .info-row{flex-direction:column;align-items:flex-start;gap:8px}
+  .shift-val{font-size:26px}
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <button class="back-btn" onclick="location.href='index.html'">← Luna Math</button>
+  <div class="header-title">🔐 튜링의 암호 해독기</div>
+</div>
+
+<!-- Intro Card -->
+<div class="intro-card">
+  <div class="intro-inner">
+    <div class="intro-title">📡 에니그마 프로젝트</div>
+    <div class="intro-text">
+      <b>1939년, 제2차 세계대전.</b> 독일의 에니그마 암호는 절대 해독 불가능하다고 여겨졌습니다.
+      하지만 영국의 천재 수학자 <b>앨런 튜링</b>은 기계를 만들어 매일 수천 개의 암호를 해독했습니다.
+      튜링의 업적이 없었다면 전쟁은 <b>2년 더</b> 길어졌을 것입니다.<br>
+      당신도 암호를 해독할 수 있을까요?
+    </div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-label" id="progressLabel">0 / 7 해독 완료</div>
+</div>
+
+<!-- Scenario Grid -->
+<div class="grid-wrap">
+  <div class="grid-label">📋 암호 미션 선택</div>
+  <div class="grid" id="scenarioGrid"></div>
+</div>
+
+<!-- Game Area -->
+<div class="game-area" id="gameArea">
+  <div class="canvas-wrap">
+    <canvas id="enigmaCanvas" width="880" height="500"></canvas>
+  </div>
+  <div class="info-panel">
+    <div class="info-row">
+      <span class="info-label">암호문:</span>
+      <span class="info-val encrypted-text" id="encryptedText">---</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">시프트:</span>
+      <div class="shift-control">
+        <button class="shift-btn" onclick="changeShift(-1)">&#9664;</button>
+        <span class="shift-val" id="shiftVal">0</span>
+        <button class="shift-btn" onclick="changeShift(1)">&#9654;</button>
+      </div>
+    </div>
+    <div class="info-row">
+      <span class="info-label">해독 결과:</span>
+      <span class="info-val decoded-text" id="decodedText">???</span>
+    </div>
+    <div class="btn-row">
+      <button class="action-btn" id="confirmBtn" onclick="confirmAnswer()">🔓 해독 완료!</button>
+      <button class="action-btn secondary" onclick="showHint()">💡 힌트</button>
+      <button class="action-btn secondary" onclick="closeGame()">✕ 닫기</button>
+    </div>
+    <div id="resultMsg" class="result-msg"></div>
+
+    <!-- Free Mode -->
+    <div class="free-mode-wrap" id="freeModeWrap">
+      <div class="mode-toggle">
+        <button class="active" id="modeEncrypt" onclick="setFreeMode('encrypt')">🔒 암호화</button>
+        <button id="modeDecrypt" onclick="setFreeMode('decrypt')">🔓 해독</button>
+      </div>
+      <input type="text" class="free-input" id="freeInput" placeholder="메시지를 입력하세요 (영어 대문자)" maxlength="30" oninput="onFreeInput()">
+      <div style="margin-top:12px">
+        <span class="info-label">결과:</span>
+        <span class="info-val decoded-text" id="freeResult" style="font-family:var(--mono);letter-spacing:3px;font-size:18px">---</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── DATA ── */
+const SCENARIOS = [
+  { id:0, emoji:'📨', name:'첫 번째 메시지', desc:'시저 암호 기초', encrypted:'KHOOR', shift:3, answer:'HELLO', hint:'K→H (3칸 뒤로)', difficulty:1 },
+  { id:1, emoji:'📩', name:'수학 메시지', desc:'4글자 해독', encrypted:'PDWK', shift:3, answer:'MATH', hint:'P→M (3칸 뒤로)', difficulty:1 },
+  { id:2, emoji:'🔬', name:'과학 메시지', desc:'7글자 해독', encrypted:'VFLHQFH', shift:3, answer:'SCIENCE', hint:'V→S (3칸)', difficulty:2 },
+  { id:3, emoji:'👍', name:'격려 메시지', desc:'두 단어 해독', encrypted:'JRRG MRE', shift:3, answer:'GOOD JOB', hint:'J→G (3칸)', difficulty:2 },
+  { id:4, emoji:'🌍', name:'인사 메시지', desc:'시프트 4 도전', encrypted:'LIPPS ASVPH', shift:4, answer:'HELLO WORLD', hint:'L→H (4칸)', difficulty:3 },
+  { id:5, emoji:'🍎', name:'과일 암호', desc:'시프트 1 도전', encrypted:'BQQMF', shift:1, answer:'APPLE', hint:'B→A (1칸)', difficulty:2 },
+  { id:6, emoji:'🎯', name:'비밀 코드', desc:'시프트 찾기!', encrypted:'FRPSXWHU', shift:3, answer:'COMPUTER', hint:'시프트가 몇 칸인지 찾아보세요', difficulty:3 },
+  { id:7, emoji:'✏️', name:'자유 모드', desc:'직접 암호화/해독', encrypted:'', shift:0, answer:'', hint:'직접 메시지를 입력하고 암호화해보세요!', difficulty:0, freeMode:true }
+];
+
+/* ── STATE ── */
+let currentScenario = -1;
+let currentShift = 0;
+let solved = JSON.parse(localStorage.getItem('turing_solved') || '[]');
+let crackAnimation = false;
+let crackTimer = 0;
+let freeMode = 'encrypt';
+let sparks = [];
+let wireProgress = 0;
+let activePairFrom = -1;
+let activePairTo = -1;
+let animFrame;
+
+const QWERTZ = 'QWERTZUIOPASDFGHJKLYXCVBNM';
+const ALPHA  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+/* ── AUDIO ── */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playTone(freq, dur, type='sine', vol=0.08){
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=type; o.frequency.value=freq;
+  g.gain.setValueAtTime(vol, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+dur);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime+dur);
+}
+function sndClick(){playTone(1000,.03,'sine',0.04)}
+function sndSuccess(){playTone(523,.15);setTimeout(()=>playTone(659,.15),150);setTimeout(()=>playTone(784,.3),300)}
+function sndFail(){playTone(200,.3,'square',0.08)}
+function sndType(){playTone(600+Math.random()*200,.05,'sine',0.03)}
+function sndDecode(){playTone(400,.1,'triangle',0.06);setTimeout(()=>playTone(800,.1,'triangle',0.06),100)}
+
+/* ── CIPHER ── */
+function caesarDecrypt(text, shift){
+  return text.split('').map(c=>{
+    if(c>='A'&&c<='Z') return String.fromCharCode(((c.charCodeAt(0)-65-shift+260)%26)+65);
+    return c;
+  }).join('');
+}
+function caesarEncrypt(text, shift){
+  return text.split('').map(c=>{
+    if(c>='A'&&c<='Z') return String.fromCharCode(((c.charCodeAt(0)-65+shift)%26)+65);
+    return c;
+  }).join('');
+}
+
+/* ── GRID ── */
+function renderGrid(){
+  const g=document.getElementById('scenarioGrid');
+  g.innerHTML='';
+  SCENARIOS.forEach((sc,i)=>{
+    const done=solved.includes(sc.id);
+    const d=document.createElement('div');
+    d.className='sc-card'+(currentScenario===i?' active':'');
+    let dots='';
+    for(let j=0;j<3;j++) dots+=`<span class="diff-dot ${j<sc.difficulty?'on':'off'}"></span>`;
+    if(sc.freeMode) dots='<span style="color:var(--accent);font-size:11px">FREE</span>';
+    d.innerHTML=`${done?'<span class="done-badge">✅</span>':''}<div class="sc-emoji">${sc.emoji}</div><div class="sc-name">${sc.name}</div><div class="sc-desc">${sc.desc}</div><div class="sc-diff">${dots}</div>`;
+    d.onclick=()=>selectScenario(i);
+    g.appendChild(d);
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  const total=7, done=solved.length;
+  document.getElementById('progressFill').style.width=((done/total)*100)+'%';
+  document.getElementById('progressLabel').textContent=`${done} / ${total} 해독 완료`;
+}
+
+/* ── SELECT SCENARIO ── */
+function selectScenario(i){
+  currentScenario=i;
+  const sc=SCENARIOS[i];
+  currentShift=0;
+  crackAnimation=false;
+  document.getElementById('shiftVal').textContent='0';
+  document.getElementById('resultMsg').className='result-msg';
+  document.getElementById('resultMsg').textContent='';
+
+  if(sc.freeMode){
+    document.getElementById('encryptedText').textContent='자유 입력';
+    document.getElementById('decodedText').textContent='---';
+    document.getElementById('confirmBtn').style.display='none';
+    document.getElementById('freeModeWrap').classList.add('visible');
+    document.getElementById('freeInput').value='';
+    document.getElementById('freeResult').textContent='---';
+    setFreeMode('encrypt');
+  } else {
+    document.getElementById('encryptedText').textContent=sc.encrypted;
+    document.getElementById('decodedText').textContent=caesarDecrypt(sc.encrypted, 0);
+    document.getElementById('confirmBtn').style.display='';
+    document.getElementById('freeModeWrap').classList.remove('visible');
+  }
+
+  document.getElementById('gameArea').classList.add('visible');
+  document.getElementById('gameArea').scrollIntoView({behavior:'smooth',block:'start'});
+  renderGrid();
+  sndDecode();
+  drawMachine();
+}
+
+function closeGame(){
+  document.getElementById('gameArea').classList.remove('visible');
+  currentScenario=-1;
+  renderGrid();
+}
+
+/* ── SHIFT ── */
+function changeShift(delta){
+  currentShift=((currentShift+delta)%26+26)%26;
+  document.getElementById('shiftVal').textContent=currentShift;
+  sndClick();
+  addSparks(6);
+
+  const sc=SCENARIOS[currentScenario];
+  if(sc && !sc.freeMode){
+    const decoded=caesarDecrypt(sc.encrypted, currentShift);
+    document.getElementById('decodedText').textContent=decoded;
+    // pick a letter pair to animate
+    if(sc.encrypted.length>0){
+      const idx=Math.floor(Math.random()*sc.encrypted.replace(/ /g,'').length);
+      const letters=sc.encrypted.replace(/ /g,'');
+      activePairFrom=QWERTZ.indexOf(letters[idx]);
+      activePairTo=QWERTZ.indexOf(decoded.replace(/ /g,'')[idx]);
+      wireProgress=0;
+    }
+  }
+  if(sc && sc.freeMode) onFreeInput();
+  drawMachine();
+}
+
+/* ── CONFIRM ── */
+function confirmAnswer(){
+  const sc=SCENARIOS[currentScenario];
+  if(!sc || sc.freeMode) return;
+  const decoded=caesarDecrypt(sc.encrypted, currentShift);
+  if(decoded===sc.answer){
+    sndSuccess();
+    crackAnimation=true; crackTimer=0;
+    if(!solved.includes(sc.id)){solved.push(sc.id);localStorage.setItem('turing_solved',JSON.stringify(solved));}
+    showResult('success', `암호 해독 성공! "${sc.answer}" 🔓`);
+    renderGrid();
+  } else {
+    sndFail();
+    showResult('fail','아직 완벽하지 않아요. 시프트를 조절해보세요!');
+  }
+}
+
+function showResult(type, msg){
+  const el=document.getElementById('resultMsg');
+  el.className='result-msg '+type;
+  el.textContent=msg;
+}
+
+function showHint(){
+  const sc=SCENARIOS[currentScenario];
+  if(!sc) return;
+  showResult('success','💡 '+sc.hint);
+  sndType();
+}
+
+/* ── FREE MODE ── */
+function setFreeMode(mode){
+  freeMode=mode;
+  document.getElementById('modeEncrypt').className=(mode==='encrypt'?'active':'');
+  document.getElementById('modeDecrypt').className=(mode==='decrypt'?'active':'');
+  document.getElementById('freeInput').placeholder=mode==='encrypt'?'평문 입력 (영어 대문자)':'암호문 입력 (영어 대문자)';
+  onFreeInput();
+}
+
+function onFreeInput(){
+  const val=document.getElementById('freeInput').value.toUpperCase();
+  let result='---';
+  if(val){
+    result=freeMode==='encrypt'?caesarEncrypt(val,currentShift):caesarDecrypt(val,currentShift);
+  }
+  document.getElementById('freeResult').textContent=result;
+  // Update canvas display
+  if(val.length>0){
+    const c=val.replace(/ /g,'')[0];
+    const r=result.replace(/ /g,'')[0];
+    if(c&&r){activePairFrom=QWERTZ.indexOf(c);activePairTo=QWERTZ.indexOf(r);wireProgress=0;}
+  }
+  drawMachine();
+}
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown',e=>{
+  if(currentScenario<0) return;
+  if(e.key==='ArrowLeft'){e.preventDefault();changeShift(-1);}
+  if(e.key==='ArrowRight'){e.preventDefault();changeShift(1);}
+  if(e.key==='Enter'){e.preventDefault();confirmAnswer();}
+});
+
+/* ── SPARKS ── */
+function addSparks(n){
+  for(let i=0;i<n;i++){
+    sparks.push({x:440,y:280,vx:(Math.random()-0.5)*6,vy:(Math.random()-0.5)*6,life:1,color:`hsl(${180+Math.random()*30},100%,${60+Math.random()*30}%)`});
+  }
+}
+
+/* ── CANVAS DRAWING ── */
+const canvas=document.getElementById('enigmaCanvas');
+const ctx=canvas.getContext('2d');
+
+function drawMachine(){
+  const W=880,H=500;
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  const bgGrad=ctx.createLinearGradient(0,0,0,H);
+  bgGrad.addColorStop(0,'#1a1a2e');
+  bgGrad.addColorStop(1,'#16213e');
+  ctx.fillStyle=bgGrad;
+  roundRect(ctx,20,10,W-40,H-20,16);
+  ctx.fill();
+
+  // Machine border
+  ctx.strokeStyle='rgba(6,182,212,0.12)';
+  ctx.lineWidth=1.5;
+  roundRect(ctx,20,10,W-40,H-20,16);
+  ctx.stroke();
+
+  // Inner glow
+  ctx.strokeStyle='rgba(6,182,212,0.06)';
+  ctx.lineWidth=3;
+  roundRect(ctx,24,14,W-48,H-28,14);
+  ctx.stroke();
+
+  drawRotors(ctx,W);
+  drawLetterBoard(ctx,W);
+  drawShiftDial(ctx,W,H);
+  drawOutputDisplay(ctx,W,H);
+  drawWires(ctx,W);
+  drawScanlines(ctx,W,H);
+  drawSparksCanvas(ctx);
+
+  // Crack animation
+  if(crackAnimation){
+    crackTimer++;
+    if(crackTimer<60){
+      ctx.save();
+      ctx.globalAlpha=Math.sin(crackTimer*0.3)*0.3+0.3;
+      ctx.fillStyle='rgba(34,197,94,0.08)';
+      ctx.fillRect(20,10,W-40,H-20);
+      ctx.restore();
+      // Success text
+      ctx.save();
+      ctx.font='bold 28px "Pretendard Variable",sans-serif';
+      ctx.textAlign='center';
+      ctx.fillStyle=`rgba(34,197,94,${Math.min(crackTimer/30,1)})`;
+      ctx.shadowColor='#22c55e';
+      ctx.shadowBlur=20;
+      ctx.fillText('🔓 DECRYPTED',W/2,H/2+10);
+      ctx.restore();
+      requestAnimationFrame(drawMachine);
+    } else {
+      crackAnimation=false;
+    }
+  }
+}
+
+function drawRotors(ctx,W){
+  // 3 rotors at top
+  const y=55, r=28;
+  const positions=[W/2-140,W/2,W/2+140];
+  const labels=['I','II','III'];
+  positions.forEach((x,i)=>{
+    // Outer ring
+    ctx.beginPath();
+    ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle='#0d1117';
+    ctx.fill();
+    ctx.strokeStyle='rgba(6,182,212,0.3)';
+    ctx.lineWidth=2;
+    ctx.stroke();
+
+    // Tick marks
+    for(let t=0;t<26;t++){
+      const a=(t/26)*Math.PI*2-Math.PI/2;
+      const inner=r-6, outer=r-2;
+      ctx.beginPath();
+      ctx.moveTo(x+Math.cos(a)*inner,y+Math.sin(a)*inner);
+      ctx.lineTo(x+Math.cos(a)*outer,y+Math.sin(a)*outer);
+      ctx.strokeStyle=t===currentShift?'var(--accent)':'rgba(255,255,255,0.15)';
+      ctx.lineWidth=t===currentShift?2:1;
+      ctx.stroke();
+    }
+
+    // Center text
+    ctx.font='bold 14px var(--mono)';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillStyle='rgba(6,182,212,0.7)';
+    ctx.fillText(labels[i],x,y);
+
+    // Shift indicator on center rotor
+    if(i===1){
+      ctx.font='bold 11px var(--mono)';
+      ctx.fillStyle='var(--accent)';
+      ctx.fillText('+'+currentShift,x,y+r+14);
+    }
+  });
+}
+
+function drawLetterBoard(ctx,W){
+  // 2 rows of 13 letters (QWERTZ layout)
+  const startY=110, rowH=42;
+  const row1=QWERTZ.slice(0,13);
+  const row2=QWERTZ.slice(13);
+
+  [row1,row2].forEach((row,ri)=>{
+    const y=startY+ri*rowH;
+    const totalW=row.length*36;
+    const startX=(W-totalW)/2;
+    for(let i=0;i<row.length;i++){
+      const x=startX+i*36+18;
+      const letter=row[i];
+      const letterIdx=ri*13+i;
+
+      let isFrom=letterIdx===activePairFrom;
+      let isTo=letterIdx===activePairTo;
+
+      // Circle
+      ctx.beginPath();
+      ctx.arc(x,y,15,0,Math.PI*2);
+      if(isFrom){
+        ctx.fillStyle='rgba(239,68,68,0.25)';
+        ctx.strokeStyle='#ef4444';
+        ctx.lineWidth=2;
+      } else if(isTo){
+        ctx.fillStyle='rgba(34,197,94,0.25)';
+        ctx.strokeStyle='#22c55e';
+        ctx.lineWidth=2;
+      } else {
+        ctx.fillStyle='rgba(255,255,255,0.04)';
+        ctx.strokeStyle='rgba(255,255,255,0.1)';
+        ctx.lineWidth=1;
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      // Glow
+      if(isFrom || isTo){
+        ctx.save();
+        ctx.shadowColor=isFrom?'#ef4444':'#22c55e';
+        ctx.shadowBlur=12;
+        ctx.beginPath();
+        ctx.arc(x,y,15,0,Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Letter
+      ctx.font='bold 12px var(--mono)';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillStyle=isFrom?'#ef4444':isTo?'#22c55e':'rgba(255,255,255,0.5)';
+      ctx.fillText(letter,x,y);
+    }
+  });
+}
+
+function drawShiftDial(ctx,W,H){
+  const cx=W/2, cy=265, r=70;
+
+  // Outer ring
+  ctx.beginPath();
+  ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.fillStyle='#0d1117';
+  ctx.fill();
+  ctx.strokeStyle='rgba(6,182,212,0.2)';
+  ctx.lineWidth=2;
+  ctx.stroke();
+
+  // Number ring
+  for(let i=0;i<26;i++){
+    const a=(i/26)*Math.PI*2-Math.PI/2;
+    const tx=cx+Math.cos(a)*(r-14);
+    const ty=cy+Math.sin(a)*(r-14);
+    ctx.font=i===currentShift?'bold 11px var(--mono)':'9px var(--mono)';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillStyle=i===currentShift?'#06b6d4':'rgba(255,255,255,0.2)';
+    ctx.fillText(i.toString(),tx,ty);
+  }
+
+  // Active indicator
+  const activeAngle=(currentShift/26)*Math.PI*2-Math.PI/2;
+  ctx.beginPath();
+  ctx.arc(cx+Math.cos(activeAngle)*(r-14),cy+Math.sin(activeAngle)*(r-14),4,0,Math.PI*2);
+  ctx.fillStyle='#06b6d4';
+  ctx.fill();
+  ctx.shadowColor='#06b6d4';
+  ctx.shadowBlur=10;
+  ctx.fill();
+  ctx.shadowBlur=0;
+
+  // Pointer line
+  ctx.beginPath();
+  ctx.moveTo(cx,cy);
+  ctx.lineTo(cx+Math.cos(activeAngle)*(r-26),cy+Math.sin(activeAngle)*(r-26));
+  ctx.strokeStyle='rgba(6,182,212,0.6)';
+  ctx.lineWidth=2;
+  ctx.stroke();
+
+  // Center number
+  ctx.font='bold 32px var(--mono)';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillStyle='#06b6d4';
+  ctx.save();
+  ctx.shadowColor='#06b6d4';
+  ctx.shadowBlur=20;
+  ctx.fillText(currentShift.toString(),cx,cy);
+  ctx.restore();
+
+  // Label
+  ctx.font='bold 10px "Pretendard Variable",sans-serif';
+  ctx.fillStyle='rgba(255,255,255,0.3)';
+  ctx.fillText('SHIFT',cx,cy+r+16);
+}
+
+function drawOutputDisplay(ctx,W,H){
+  const sc=SCENARIOS[currentScenario];
+  if(!sc) return;
+
+  // Output panel background
+  const px=60, py=360, pw=W-120, ph=70;
+  ctx.fillStyle='rgba(0,0,0,0.35)';
+  roundRect(ctx,px,py,pw,ph,10);
+  ctx.fill();
+  ctx.strokeStyle='rgba(6,182,212,0.12)';
+  ctx.lineWidth=1;
+  roundRect(ctx,px,py,pw,ph,10);
+  ctx.stroke();
+
+  // Label
+  ctx.font='bold 10px "Pretendard Variable",sans-serif';
+  ctx.textAlign='left';
+  ctx.fillStyle='rgba(6,182,212,0.5)';
+  ctx.fillText('OUTPUT',px+12,py+16);
+
+  // Decoded text with green phosphor glow
+  let decoded='???';
+  if(sc.freeMode){
+    const val=document.getElementById('freeInput')?.value?.toUpperCase()||'';
+    decoded=val?( freeMode==='encrypt'?caesarEncrypt(val,currentShift):caesarDecrypt(val,currentShift) ):'---';
+  } else {
+    decoded=caesarDecrypt(sc.encrypted, currentShift);
+  }
+  ctx.save();
+  ctx.font='bold 22px var(--mono)';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillStyle='#22c55e';
+  ctx.shadowColor='#22c55e';
+  ctx.shadowBlur=16;
+  ctx.fillText(decoded,W/2,py+46);
+  ctx.restore();
+
+  // Encrypted label below
+  if(!sc.freeMode){
+    ctx.font='11px var(--mono)';
+    ctx.textAlign='center';
+    ctx.fillStyle='rgba(239,68,68,0.5)';
+    ctx.fillText('ENCRYPTED: '+sc.encrypted,W/2,py+ph+16);
+  }
+
+  // Alphabet reference bar
+  const barY=py+ph+32;
+  ctx.font='9px var(--mono)';
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(255,255,255,0.2)';
+  for(let i=0;i<26;i++){
+    const bx=80+i*((W-160)/25);
+    ctx.fillStyle='rgba(255,255,255,0.15)';
+    ctx.fillText(ALPHA[i],bx,barY);
+    const shifted=String.fromCharCode(((i+currentShift)%26)+65);
+    ctx.fillStyle='rgba(6,182,212,0.4)';
+    ctx.fillText(shifted,bx,barY+14);
+  }
+  ctx.font='8px "Pretendard Variable",sans-serif';
+  ctx.textAlign='right';
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.fillText('원문',72,barY);
+  ctx.fillStyle='rgba(6,182,212,0.3)';
+  ctx.fillText('암호',72,barY+14);
+}
+
+function drawWires(ctx,W){
+  if(activePairFrom<0||activePairTo<0) return;
+  wireProgress=Math.min(wireProgress+0.08,1);
+
+  const row1Len=13;
+  // From position
+  const fromRow=activePairFrom<row1Len?0:1;
+  const fromIdx=activePairFrom<row1Len?activePairFrom:activePairFrom-row1Len;
+  const fromRowLen=fromRow===0?13:13;
+  const fromTotalW=fromRowLen*36;
+  const fromStartX=(W-fromTotalW)/2;
+  const fx=fromStartX+fromIdx*36+18;
+  const fy=110+fromRow*42+15;
+
+  // To position
+  const toRow=activePairTo<row1Len?0:1;
+  const toIdx=activePairTo<row1Len?activePairTo:activePairTo-row1Len;
+  const toRowLen=toRow===0?13:13;
+  const toTotalW=toRowLen*36;
+  const toStartX=(W-toTotalW)/2;
+  const tx=toStartX+toIdx*36+18;
+  const ty=110+toRow*42+15;
+
+  // Wire through rotor area
+  const midY=200;
+  const progress=wireProgress;
+
+  ctx.save();
+  ctx.strokeStyle='rgba(6,182,212,0.3)';
+  ctx.lineWidth=1.5;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();
+  ctx.moveTo(fx,fy);
+  ctx.quadraticCurveTo(fx,midY,W/2,midY);
+  ctx.quadraticCurveTo(tx,midY,tx,ty);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Animated pulse
+  if(progress<1){
+    const pulseX=fx+(tx-fx)*progress;
+    const pulseY=fy+(ty-fy)*progress;
+    ctx.beginPath();
+    ctx.arc(pulseX,pulseY,4,0,Math.PI*2);
+    ctx.fillStyle='#06b6d4';
+    ctx.shadowColor='#06b6d4';
+    ctx.shadowBlur=10;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawScanlines(ctx,W,H){
+  ctx.save();
+  ctx.globalAlpha=0.03;
+  for(let y=10;y<H-10;y+=3){
+    ctx.fillStyle='#000';
+    ctx.fillRect(20,y,W-40,1);
+  }
+  ctx.restore();
+}
+
+function drawSparksCanvas(ctx){
+  sparks=sparks.filter(s=>{
+    s.x+=s.vx;
+    s.y+=s.vy;
+    s.life-=0.03;
+    s.vy+=0.1;
+    if(s.life<=0) return false;
+    ctx.save();
+    ctx.globalAlpha=s.life;
+    ctx.fillStyle=s.color;
+    ctx.shadowColor=s.color;
+    ctx.shadowBlur=6;
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,2*s.life,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+    return true;
+  });
+  if(sparks.length>0) requestAnimationFrame(drawMachine);
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);
+  ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);
+  ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r);
+  ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();
+}
+
+/* ── DIAL CLICK ── */
+canvas.addEventListener('click',e=>{
+  if(currentScenario<0) return;
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=880/rect.width;
+  const mx=(e.clientX-rect.left)*scaleX;
+  const my=(e.clientY-rect.top)*(500/rect.height);
+  const cx=440,cy=265,r=70;
+  const dx=mx-cx,dy=my-cy;
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist<r+10 && dist>20){
+    // Calculate angle -> shift value
+    let angle=Math.atan2(dy,dx)+Math.PI/2;
+    if(angle<0) angle+=Math.PI*2;
+    let newShift=Math.round((angle/(Math.PI*2))*26)%26;
+    currentShift=newShift;
+    document.getElementById('shiftVal').textContent=currentShift;
+    sndClick();
+    addSparks(4);
+    const sc=SCENARIOS[currentScenario];
+    if(sc && !sc.freeMode){
+      const decoded=caesarDecrypt(sc.encrypted,currentShift);
+      document.getElementById('decodedText').textContent=decoded;
+    }
+    if(sc && sc.freeMode) onFreeInput();
+    drawMachine();
+  }
+});
+
+/* ── INIT ── */
+renderGrid();
+drawMachine();
+</script>
+</body>
+</html>

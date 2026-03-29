@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=no" name="viewport" />
+    <title>세포 빌더 - Luna Whale TECH</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Jua&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a1a;
+            --bg2: #0e0e24;
+            --cyan: #06b6d4;
+            --green: #10b981;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --yellow: #facc15;
+            --blue: #3b82f6;
+            --brown: #b45309;
+            --dark-green: #065f46;
+            --light-blue: #7dd3fc;
+            --light-purple: #c084fc;
+            --text: #e2e8f0;
+            --text-dim: #64748b;
+            --card-bg: rgba(15, 15, 40, 0.8);
+            --border: rgba(6, 182, 212, 0.15);
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== Cyber Grid Background ===== */
+        .cyber-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(6,182,212,.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6,182,212,.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            height: 100vh;
+        }
+
+        /* ===== Header ===== */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(12px);
+            flex-wrap: wrap;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(6,182,212,0.08);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--cyan);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(6,182,212,0.15);
+            border-color: rgba(6,182,212,0.3);
+        }
+
+        .page-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            padding: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .mode-btn {
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-family: 'Jua', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--text-dim);
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+        }
+
+        .mode-btn.active {
+            background: rgba(6,182,212,0.2);
+            color: var(--cyan);
+            box-shadow: 0 0 10px rgba(6,182,212,0.2);
+        }
+        
+        .mode-btn.active.plant {
+            background: rgba(16,185,137,0.2);
+            color: var(--green);
+            box-shadow: 0 0 10px rgba(16,185,137,0.2);
+        }
+
+        /* ===== Game Layout ===== */
+        .game-layout {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* ===== Sidebar (Palette) ===== */
+        .palette-panel {
+            width: 220px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px;
+            backdrop-filter: blur(12px);
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 16px;
+            color: var(--cyan);
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(6,182,212,0.2);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .block-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .block-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 5px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            cursor: grab;
+            transition: all 0.2s;
+            font-family: 'Jua', sans-serif;
+            font-size: 12px;
+            color: var(--text);
+            text-align: center;
+        }
+
+        .block-item:hover {
+            background: rgba(6,182,212,0.1);
+            border-color: rgba(6,182,212,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .block-item:active {
+            cursor: grabbing;
+        }
+
+        .block-icon {
+            font-size: 24px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+        }
+
+        /* ===== Main Canvas ===== */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 30px rgba(6,182,212,0.08), inset 0 0 30px rgba(0,0,0,0.3);
+            background: #050510;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        /* ===== Hint & Progress Panel ===== */
+        .bottom-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(12px);
+            flex-shrink: 0;
+        }
+
+        .hint-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Jua', sans-serif;
+            color: var(--yellow);
+            font-size: 16px;
+        }
+
+        .hint-icon {
+            font-size: 20px;
+        }
+
+        .progress-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: var(--text-dim);
+            font-family: 'Jua', sans-serif;
+        }
+
+        .progress-bar-container {
+            width: 150px;
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--cyan), var(--purple));
+            border-radius: 5px;
+            transition: width 0.3s ease-out;
+        }
+
+        /* ===== Ghost Block Dragging ===== */
+        .ghost-block {
+            position: fixed;
+            pointer-events: none; /* Let events pass to canvas */
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 5px;
+            background: rgba(6,182,212,0.6);
+            border: 1px solid var(--cyan);
+            border-radius: 10px;
+            font-family: 'Jua', sans-serif;
+            font-size: 12px;
+            color: #fff;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            opacity: 0.8;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .ghost-block .block-icon {
+            font-size: 32px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+        }
+
+        /* Float animation for canvas objects */
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ===== Modal UI ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,10,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 2px solid var(--cyan);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(6,182,212,0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'Jua', sans-serif;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 28px;
+            color: var(--cyan);
+            margin-bottom: 8px;
+        }
+
+        .modal-desc {
+            font-size: 16px;
+            color: var(--text);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal-icon {
+            font-size: 64px;
+            margin-bottom: 12px;
+            display: inline-block;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-family: 'Jua', sans-serif;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(6,182,212,0.4);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(6,182,212,0.6);
+        }
+        
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+    <div class="cyber-bg"></div>
+    
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <header class="top-bar">
+            <a href="../index.html" class="back-btn">
+                <span class="material-symbols-outlined">arrow_back</span>
+                TECH Home
+            </a>
+            
+            <h1 class="page-title">
+                🧬 Cell Builder
+            </h1>
+
+            <div class="mode-toggle">
+                <button class="mode-btn active" id="btnAnimalMode">동물세포 🦁</button>
+                <button class="mode-btn" id="btnPlantMode">식물세포 🌿</button>
+            </div>
+            <div class="mode-toggle" style="margin-left: 10px;">
+                <button class="mode-btn" style="color: #c084fc; border-color: #c084fc;" id="btnCompareMode">비교 모드 🔬</button>
+                <button class="mode-btn" style="color: #fcd34d; border-color: #fcd34d;" id="btnQuizMode">퀴즈 모드 ❓</button>
+            </div>
+        </header>
+
+        <!-- Main Game Area -->
+        <div class="game-layout">
+            
+            <!-- Left Sidebar: Palette -->
+            <aside class="palette-panel">
+                <div class="panel-title">소기관 블록</div>
+                <div class="block-grid" id="blockPalette">
+                    <!-- Blocks will be injected via JS -->
+                </div>
+            </aside>
+
+            <!-- Center/Right: Canvas & Info -->
+            <main class="canvas-area">
+                <div class="canvas-wrapper">
+                    <canvas id="gameCanvas"></canvas>
+                </div>
+                
+                <div class="bottom-panel">
+                    <div class="hint-box">
+                        <span class="hint-icon">💡</span>
+                        <span id="hintText">세포막을 먼저 만들어 세포의 기본 틀을 잡아볼까요?</span>
+                    </div>
+                    <div class="progress-box">
+                        <span class="progress-text" id="progressText">0/8 소기관</span>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="progressBar"></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+        </div>
+    </div>
+
+    <!-- Completion / Info Modal -->
+    <div class="modal-overlay" id="infoModal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modalIcon">🎉</div>
+            <h2 class="modal-title" id="modalTitle">세포 완성!</h2>
+            <p class="modal-desc" id="modalDesc">모든 소기관을 성공적으로 배치했습니다. 이제 각 소기관을 클릭해 자세한 설명을 확인해보세요.</p>
+            <button class="action-btn" id="modalBtn">확인</button>
+        </div>
+    </div>
+
+    <!-- Compare Modal -->
+    <div class="modal-overlay" id="compareModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-icon">🔬</div>
+            <h2 class="modal-title">동물세포 vs 식물세포</h2>
+            <div style="display: flex; gap: 20px; text-align: left; margin: 20px 0; color: var(--text);">
+                <div style="flex: 1; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid var(--cyan);">
+                    <h3 style="color: var(--cyan); margin-bottom: 10px;">🦁 동물세포</h3>
+                    <ul style="padding-left: 20px; line-height: 1.6;">
+                        <li><strong>리소좀 (⚫):</strong> 세포 내 소화 및 노폐물 처리 집중</li>
+                        <li><strong>중심체 (⚪):</strong> 세포 분열 시 방추사 형성</li>
+                        <li>모양: 둥글고 불규칙함 (세포벽 없음)</li>
+                    </ul>
+                </div>
+                <div style="flex: 1; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid #10b981;">
+                    <h3 style="color: #10b981; margin-bottom: 10px;">🌿 식물세포</h3>
+                    <ul style="padding-left: 20px; line-height: 1.6;">
+                        <li><strong>엽록체 (🟩):</strong> 빛을 이용해 광합성 수행</li>
+                        <li><strong>액포 (💧):</strong> 수분과 노폐물 저장 (매우 크게 발달)</li>
+                        <li><strong>세포벽 (🧱):</strong> 형태 유지 및 보호용 단단한 벽</li>
+                    </ul>
+                </div>
+            </div>
+            <button class="action-btn" id="closeCompareBtn">닫기</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Data & Constants ---
+        const BLOCK_TYPES = {
+            'membrane':   { id: 'membrane', name: '세포막', icon: '🩵', category: 'both', desc: '세포의 울타리', color: '#06b6d4' },
+            'nucleus':    { id: 'nucleus', name: '핵', icon: '🟡', category: 'both', desc: '세포의 뇌! DNA가 들어있어요', color: '#facc15' },
+            'mito':       { id: 'mito', name: '미토콘드리아', icon: '🔴', category: 'both', desc: '에너지 발전소! ATP를 만들어요', color: '#ef4444' },
+            'ribosome':   { id: 'ribosome', name: '리보솜', icon: '🔵', category: 'both', desc: '단백질 공장!', color: '#3b82f6' },
+            'er':         { id: 'er', name: '소포체', icon: '🟣', category: 'both', desc: '물질 운반 고속도로', color: '#8b5cf6' },
+            'golgi':      { id: 'golgi', name: '골지체', icon: '🟤', category: 'both', desc: '택배 포장 센터', color: '#b45309' },
+            'lysosome':   { id: 'lysosome', name: '리소좀', icon: '⚫', category: 'animal', desc: '쓰레기 분해 공장', color: '#475569' },
+            'centrosome': { id: 'centrosome', name: '중심체', icon: '⚪', category: 'animal', desc: '세포 분열 도우미', color: '#cbd5e1' },
+            'chloroplast':{ id: 'chloroplast', name: '엽록체', icon: '🟩', category: 'plant', desc: '광합성 태양광 패널!', color: '#10b981' },
+            'vacuole':    { id: 'vacuole', name: '액포', icon: '💧', category: 'plant', desc: '물탱크! 식물을 팽팽하게', color: '#7dd3fc' },
+            'cellwall':   { id: 'cellwall', name: '세포벽', icon: '🧱', category: 'plant', desc: '단단한 보호벽', color: '#065f46' }
+        };
+
+        const REQUIRED_ANIMAL = ['membrane', 'nucleus', 'mito', 'ribosome', 'er', 'golgi', 'lysosome', 'centrosome'];
+        const REQUIRED_PLANT = ['cellwall', 'membrane', 'nucleus', 'chloroplast', 'mito', 'vacuole', 'ribosome', 'er', 'golgi'];
+
+        const GRID_SIZE = 5; // 5x5 isometric grid
+        const TILE_W = 120;
+        const TILE_H = 60;
+
+        // --- State ---
+        let state = {
+            mode: 'animal', // 'animal' or 'plant'
+            grid: Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null)),
+            draggingBlockId: null,
+            ghostEl: null,
+            pointer: { x: 0, y: 0, isDragging: false },
+            hoverCoord: null, // {qx, qy}
+            dpr: window.devicePixelRatio || 1,
+            isComplete: false,
+            quizActive: false,
+            quizTarget: null
+        };
+
+        // --- DOM Elements ---
+        const DOM = {
+            btnAnimalMode: document.getElementById('btnAnimalMode'),
+            btnPlantMode: document.getElementById('btnPlantMode'),
+            blockPalette: document.getElementById('blockPalette'),
+            hintText: document.getElementById('hintText'),
+            progressText: document.getElementById('progressText'),
+            progressBar: document.getElementById('progressBar'),
+            canvas: document.getElementById('gameCanvas'),
+            modalOverlay: document.getElementById('infoModal'),
+            modalTitle: document.getElementById('modalTitle'),
+            modalDesc: document.getElementById('modalDesc'),
+            modalIcon: document.getElementById('modalIcon'),
+            modalBtn: document.getElementById('modalBtn'),
+            btnCompareMode: document.getElementById('btnCompareMode'),
+            btnQuizMode: document.getElementById('btnQuizMode'),
+            compareModal: document.getElementById('compareModal'),
+            closeCompareBtn: document.getElementById('closeCompareBtn')
+        };
+        let ctx;
+
+        // --- Init ---
+        function initApp() {
+            ctx = DOM.canvas.getContext('2d');
+            attachEventListeners();
+            setMode('animal');
+            handleResize();
+            requestAnimationFrame(renderLoop);
+        }
+
+        // --- UI & Events ---
+        function attachEventListeners() {
+            DOM.btnAnimalMode.addEventListener('click', () => setMode('animal'));
+            DOM.btnPlantMode.addEventListener('click', () => setMode('plant'));
+            DOM.btnCompareMode.addEventListener('click', () => {
+                DOM.compareModal.classList.add('active');
+            });
+            DOM.closeCompareBtn.addEventListener('click', () => {
+                DOM.compareModal.classList.remove('active');
+            });
+            DOM.btnQuizMode.addEventListener('click', toggleQuizMode);
+            window.addEventListener('resize', handleResize);
+
+            // Global pointer events for Custom Drag & Drop & Clicking
+            window.addEventListener('pointermove', onPointerMove, { passive: false });
+            window.addEventListener('pointerup', onPointerUp);
+            window.addEventListener('pointercancel', onPointerUp);
+            
+            // Modal dismiss
+            DOM.modalBtn.addEventListener('click', closeModal);
+        }
+
+        function setMode(mode) {
+            state.mode = mode;
+            state.isComplete = false;
+            state.quizActive = false;
+            state.quizTarget = null;
+            DOM.btnQuizMode.innerText = '퀴즈 모드 ❓';
+            
+            DOM.btnAnimalMode.className = `mode-btn ${mode === 'animal' ? 'active' : ''}`;
+            DOM.btnPlantMode.className = `mode-btn ${mode === 'plant' ? 'active plant' : ''}`;
+            
+            // Re-render palette
+            renderPalette();
+            resetGrid();
+            updateProgress();
+            
+            if (mode === 'animal') {
+                setHint('💡 세포막을 먼저 만들어 동물 세포의 틀을 잡아볼까요?');
+            } else {
+                setHint('💡 세포벽을 가장 바깥에 놓고 그 안에 세포막을 넣어보세요!');
+            }
+        }
+
+        function toggleQuizMode() {
+            state.quizActive = !state.quizActive;
+            if (state.quizActive) {
+                DOM.btnQuizMode.innerText = '퀴즈 종료 🛑';
+                generateQuiz();
+            } else {
+                DOM.btnQuizMode.innerText = '퀴즈 모드 ❓';
+                state.quizTarget = null;
+                setHint('자유 배치 모드로 돌아왔습니다. 캔버스를 계속 꾸며보세요!');
+            }
+        }
+
+        function generateQuiz() {
+            let placedTypes = new Set();
+            for (let x = 0; x < GRID_SIZE; x++) {
+                for (let y = 0; y < GRID_SIZE; y++) {
+                    if (state.grid[x][y]) placedTypes.add(state.grid[x][y].id);
+                }
+            }
+            const arr = Array.from(placedTypes);
+            if (arr.length === 0) {
+                setHint('🎯 퀴즈를 풀려면 먼저 캔버스에 소기관을 1개 이상 배치해주세요!');
+                state.quizActive = false;
+                DOM.btnQuizMode.innerText = '퀴즈 모드 ❓';
+                return;
+            }
+            state.quizTarget = arr[Math.floor(Math.random() * arr.length)];
+            const def = BLOCK_TYPES[state.quizTarget];
+            setHint(`🎯 퀴즈: "${def.desc}" 인 소기관을 클릭해보세요!`);
+        }
+
+        function renderPalette() {
+            DOM.blockPalette.innerHTML = '';
+            
+            Object.values(BLOCK_TYPES).forEach(block => {
+                if (block.category === 'both' || block.category === state.mode) {
+                    const el = document.createElement('div');
+                    el.className = 'block-item';
+                    el.dataset.id = block.id;
+                    el.innerHTML = `
+                        <div class="block-icon">${block.icon}</div>
+                        <span>${block.name}</span>
+                    `;
+                    // Custom Drag start
+                    el.addEventListener('pointerdown', (e) => onPointerDown(e, block.id, el));
+                    DOM.blockPalette.appendChild(el);
+                }
+            });
+        }
+
+        function resetGrid() {
+            state.grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
+        }
+
+        function setHint(text) {
+            DOM.hintText.innerHTML = text;
+        }
+
+        function updateProgress() {
+            const required = state.mode === 'animal' ? REQUIRED_ANIMAL : REQUIRED_PLANT;
+            
+            // Count unique placed organelles
+            const placedTypes = new Set();
+            for (let x = 0; x < GRID_SIZE; x++) {
+                for (let y = 0; y < GRID_SIZE; y++) {
+                    const cell = state.grid[x][y];
+                    if (cell && required.includes(cell.id)) {
+                        placedTypes.add(cell.id);
+                    }
+                }
+            }
+
+            const current = placedTypes.size;
+            const total = required.length;
+
+            DOM.progressText.innerText = `${current}/${total} 소기관`;
+            DOM.progressBar.style.width = `${(current / total) * 100}%`;
+            
+            if (current === total && !state.isComplete) {
+                state.isComplete = true;
+                setHint('✨ 축하합니다! 세포 완성!');
+                showModal('🎉', (state.mode === 'animal' ? '동물세포 완성!' : '식물세포 완성!'), 
+                    '모든 소기관을 제자리에 배치했습니다.<br>이제 자유롭게 배치하거나 캔버스의 소기관을 클릭해 역할을 복습해보세요!');
+            } else if (current < total) {
+                state.isComplete = false;
+            }
+        }
+        
+        function showModal(icon, title, desc) {
+            DOM.modalIcon.innerText = icon;
+            DOM.modalTitle.innerText = title;
+            DOM.modalDesc.innerHTML = desc;
+            DOM.modalOverlay.classList.add('active');
+        }
+        
+        function closeModal() {
+            DOM.modalOverlay.classList.remove('active');
+        }
+
+        // --- Drag & Drop Engine (Custom) ---
+        function onPointerDown(e, blockId, sourceElement) {
+            e.preventDefault();
+            // Create ghost element
+            state.draggingBlockId = blockId;
+            state.pointer.isDragging = true;
+            
+            const blockDef = BLOCK_TYPES[blockId];
+            state.ghostEl = document.createElement('div');
+            state.ghostEl.className = 'ghost-block';
+            state.ghostEl.innerHTML = `
+                <div class="block-icon">${blockDef.icon}</div>
+                <span>${blockDef.name}</span>
+            `;
+            document.body.appendChild(state.ghostEl);
+            
+            updatePointerPos(e);
+        }
+
+        function onPointerMove(e) {
+            updatePointerPos(e);
+
+            if (state.pointer.isDragging && state.ghostEl) {
+                e.preventDefault(); // Prevent scrolling while dragging on touch
+                state.ghostEl.style.left = state.pointer.x + 'px';
+                state.ghostEl.style.top = state.pointer.y + 'px';
+                
+                // Calculate if over canvas
+                const rect = DOM.canvas.getBoundingClientRect();
+                if (
+                    state.pointer.x >= rect.left && state.pointer.x <= rect.right &&
+                    state.pointer.y >= rect.top && state.pointer.y <= rect.bottom
+                ) {
+                    // Coordinates relative to canvas logic size
+                    const mx = (state.pointer.x - rect.left) * (DOM.canvas.width / rect.width / state.dpr);
+                    const my = (state.pointer.y - rect.top) * (DOM.canvas.height / rect.height / state.dpr);
+                    
+                    state.hoverCoord = screenToIso(mx, my);
+                } else {
+                    state.hoverCoord = null;
+                }
+            }
+        }
+
+        function onPointerUp(e) {
+            if (state.pointer.isDragging) {
+                if (state.hoverCoord) {
+                    const { qx, qy } = state.hoverCoord;
+                    if (qx >= 0 && qx < GRID_SIZE && qy >= 0 && qy < GRID_SIZE) {
+                        // Place block!
+                        state.grid[qx][qy] = { id: state.draggingBlockId, time: Date.now() };
+                        setHint(`✅ ${BLOCK_TYPES[state.draggingBlockId].name} 배치 완료!`);
+                        updateProgress();
+                    }
+                }
+
+                // Cleanup
+                if (state.ghostEl) {
+                    state.ghostEl.remove();
+                    state.ghostEl = null;
+                }
+                state.draggingBlockId = null;
+                state.pointer.isDragging = false;
+                
+            } else if (!state.pointer.moved) {
+                // Click detection on grid for info
+                if (state.hoverCoord) {
+                    const { qx, qy } = state.hoverCoord;
+                    if (qx >= 0 && qx < GRID_SIZE && qy >= 0 && qy < GRID_SIZE) {
+                        const cell = state.grid[qx][qy];
+                        if (cell) {
+                            if (state.quizActive && state.quizTarget) {
+                                if (cell.id === state.quizTarget) {
+                                    showModal('🎉', '정답입니다!', `맞아요! <strong>${BLOCK_TYPES[cell.id].name}</strong> 입니다.<br><br>새로운 문제를 낼게요.`);
+                                    generateQuiz();
+                                } else {
+                                    setHint(`❌ 앗, 이 소기관은 ${BLOCK_TYPES[cell.id].name} 이에요. 다시 찾아보세요!`);
+                                }
+                            } else {
+                                const blockDef = BLOCK_TYPES[cell.id];
+                                showModal(blockDef.icon, blockDef.name, blockDef.desc);
+                            }
+                        }
+                    }
+                }
+            }
+            // reset hover on up
+            if(!state.pointer.isDragging) state.hoverCoord = null;
+        }
+
+        function updatePointerPos(e) {
+            const oldX = state.pointer.x;
+            const oldY = state.pointer.y;
+            state.pointer.x = e.clientX || e.pageX || (e.touches && e.touches[0].clientX);
+            state.pointer.y = e.clientY || e.pageY || (e.touches && e.touches[0].clientY);
+            
+            // Check if moved significantly to distinguish drag vs click
+            if (Math.abs(state.pointer.x - oldX) > 3 || Math.abs(state.pointer.y - oldY) > 3) {
+                state.pointer.moved = true;
+            }
+        }
+        
+        // Setup simple pointerdown reset for click detection logic
+        window.addEventListener('pointerdown', (e) => {
+            if(!state.draggingBlockId) {
+                state.pointer.moved = false;
+                updatePointerPos(e);
+                // check if clicked on grid
+                const rect = DOM.canvas.getBoundingClientRect();
+                if (state.pointer.x >= rect.left && state.pointer.x <= rect.right &&
+                    state.pointer.y >= rect.top && state.pointer.y <= rect.bottom) {
+                    const mx = (state.pointer.x - rect.left) * (DOM.canvas.width / rect.width / state.dpr);
+                    const my = (state.pointer.y - rect.top) * (DOM.canvas.height / rect.height / state.dpr);
+                    state.hoverCoord = screenToIso(mx, my);
+                }
+            }
+        });
+
+        // --- Isometric Math & Rendering ---
+        // Origin of grid on canvas
+        function getGridOrigin() {
+            const w = DOM.canvas.width / state.dpr;
+            const h = DOM.canvas.height / state.dpr;
+            return { x: w / 2, y: h / 2 - (GRID_SIZE * TILE_H) / 4 + 40 };
+        }
+
+        function isoToScreen(qx, qy) {
+            const origin = getGridOrigin();
+            const sx = origin.x + (qx - qy) * (TILE_W / 2);
+            const sy = origin.y + (qx + qy) * (TILE_H / 2);
+            return { sx, sy };
+        }
+
+        function screenToIso(sx, sy) {
+            const origin = getGridOrigin();
+            const dx = sx - origin.x;
+            const dy = sy - origin.y;
+            
+            const qx = Math.floor((dy / TILE_H) + (dx / TILE_W));
+            const qy = Math.floor((dy / TILE_H) - (dx / TILE_W));
+            return { qx, qy };
+        }
+
+        function handleResize() {
+            const rect = DOM.canvas.parentElement.getBoundingClientRect();
+            DOM.canvas.width = rect.width * state.dpr;
+            DOM.canvas.height = rect.height * state.dpr;
+        }
+
+        function renderLoop() {
+            const w = DOM.canvas.width / state.dpr;
+            const h = DOM.canvas.height / state.dpr;
+            
+            // Clear Frame
+            ctx.save();
+            ctx.scale(state.dpr, state.dpr);
+            ctx.clearRect(0, 0, w, h);
+
+            // Draw Grid (Back to Front)
+            for (let qx = 0; qx < GRID_SIZE; qx++) {
+                for (let qy = 0; qy < GRID_SIZE; qy++) {
+                    const { sx, sy } = isoToScreen(qx, qy);
+                    
+                    // Draw base tile (Cytoplasm/Platform)
+                    drawIsoTile(sx, sy, 'rgba(6, 182, 212, 0.1)', 'rgba(6, 182, 212, 0.3)');
+                    
+                    // Hover highlight
+                    if (state.hoverCoord && state.hoverCoord.qx === qx && state.hoverCoord.qy === qy) {
+                        drawIsoTile(sx, sy, 'rgba(250, 204, 21, 0.3)', 'var(--yellow)');
+                    }
+                    
+                    // Draw placed block
+                    const cell = state.grid[qx][qy];
+                    if (cell) {
+                        drawBlock(sx, sy, cell);
+                    }
+                }
+            }
+
+            ctx.restore();
+            requestAnimationFrame(renderLoop);
+        }
+
+        function drawIsoTile(cx, cy, fillColor, strokeColor) {
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - TILE_H/2); // Top
+            ctx.lineTo(cx + TILE_W/2, cy); // Right
+            ctx.lineTo(cx, cy + TILE_H/2); // Bottom
+            ctx.lineTo(cx - TILE_W/2, cy); // Left
+            ctx.closePath();
+            
+            ctx.fillStyle = fillColor;
+            ctx.fill();
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        function drawBlock(cx, cy, cellData) {
+            const blockDef = BLOCK_TYPES[cellData.id];
+            
+            // Animation logic
+            const timeAlive = Date.now() - cellData.time;
+            const animDuration = 400; // ms
+            let scale = 1;
+            
+            if (timeAlive < animDuration) {
+                // Elastic pop effect
+                const t = timeAlive / animDuration;
+                scale = 1 + Math.sin(t * Math.PI) * 0.3 * (1 - t);
+            }
+            
+            // Draw a pseudo-3D block (simple vertical height)
+            const blockHeight = 40;
+            
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(scale, scale);
+            ctx.translate(-cx, -cy);
+            
+            // Generate darker shade for side
+            ctx.fillStyle = blockDef.color;
+            ctx.globalAlpha = 0.8;
+            
+            // Top face
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - TILE_H/2 - blockHeight); 
+            ctx.lineTo(cx + TILE_W/2, cy - blockHeight); 
+            ctx.lineTo(cx, cy + TILE_H/2 - blockHeight); 
+            ctx.lineTo(cx - TILE_W/2, cy - blockHeight); 
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = "rgba(255,255,255,0.4)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw Icon on Top face
+            ctx.save();
+            ctx.fillStyle = "#fff";
+            ctx.font = "32px 'JetBrains Mono'";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.globalAlpha = 1;
+            // Squash text vertically to fit isometric projection loosely
+            ctx.setTransform(state.dpr * scale, 0, 0, state.dpr * 0.5 * scale, cx * state.dpr, (cy - blockHeight) * state.dpr);
+            ctx.fillText(blockDef.icon, 0, 0);
+            ctx.restore();
+            
+            ctx.restore();
+        }
+
+        // Bootstrap
+        initApp();
+    </script>
+</body>
+</html>

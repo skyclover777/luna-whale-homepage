@@ -1,0 +1,3243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=no" name="viewport" />
+    <title>광석 감별사 - Luna Whale TECH</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Jua&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a1a;
+            --cyan: #06b6d4;
+            --green: #10b981;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --text: #e2e8f0;
+            --dim: #64748b;
+            --card: rgba(15,15,40,0.8);
+            --border: rgba(6,182,212,0.15);
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .cyber-bg {
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(6,182,212,.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6,182,212,.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0; pointer-events: none;
+        }
+
+        .scanlines {
+            position: fixed; inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+            pointer-events: none; z-index: 100;
+        }
+
+        .app-container {
+            position: relative; z-index: 1;
+            max-width: 1440px; margin: 0 auto; padding: 10px;
+            display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        /* ===== Top Bar ===== */
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 16px;
+            background: linear-gradient(180deg, #1a2744 0%, #0f1a30 100%);
+            border: 1px solid rgba(6,182,212,0.2);
+            border-radius: 14px;
+            margin-bottom: 8px;
+            backdrop-filter: blur(12px);
+            flex-wrap: wrap; gap: 6px;
+        }
+        .top-left { display: flex; align-items: center; gap: 10px; }
+        .back-btn {
+            display: flex; align-items: center; gap: 5px; padding: 6px 12px;
+            background: rgba(6,182,212,0.08); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--cyan); text-decoration: none;
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .back-btn:hover { background: rgba(6,182,212,0.15); }
+        .back-btn .material-symbols-outlined { font-size: 20px; }
+        .page-title { font-family: 'Jua', sans-serif; font-size: 28px; color: #fff; }
+        .page-title span { color: var(--orange); }
+        .top-right { display: flex; align-items: center; gap: 12px; font-size: 16px; }
+        .stat-badge {
+            padding: 5px 14px;
+            background: linear-gradient(180deg, #1e3a5f 0%, #152a45 100%);
+            border: 1px solid rgba(6,182,212,0.3);
+            border-radius: 10px;
+            color: var(--cyan); font-weight: 600; font-family: 'Jua', sans-serif; font-size: 18px;
+        }
+        .score-display { font-weight: 700; color: var(--green); font-size: 20px; display: flex; align-items: center; gap: 4px; }
+        .score-display::before {
+            content: '';
+            display: inline-block; width: 24px; height: 24px;
+            background: url('../../shared-assets/unity-ui/gui-pro-casual-game/GUI Pro-CasualGame/ResourcesData/Sprites/Components/Icon_ItemIcons/32/Icon_Star.png') center/contain no-repeat;
+        }
+
+        /* Hearts */
+        .lives-display { display: flex; gap: 2px; align-items: center; }
+        .heart-icon { width: 32px; height: 32px; object-fit: contain; transition: all 0.3s; filter: drop-shadow(0 0 4px rgba(255,50,50,0.4)); }
+        .heart-icon.lost { filter: grayscale(1) brightness(0.3); transform: scale(0.7); }
+        .heart-icon.breaking { animation: heartBreak 0.6s ease forwards; }
+        .heart-icon.danger { animation: heartDanger 0.8s ease infinite; }
+        @keyframes heartBreak {
+            0% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(255,50,50,0.4)); }
+            30% { transform: scale(1.4); filter: drop-shadow(0 0 12px rgba(255,0,0,0.8)); }
+            60% { transform: scale(0.5) rotate(15deg); filter: grayscale(0.5) brightness(0.5); }
+            100% { transform: scale(0.7); filter: grayscale(1) brightness(0.3); }
+        }
+        @keyframes heartDanger {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 8px rgba(255,0,0,0.6)); }
+        }
+        .lang-btn {
+            padding: 5px 10px; background: rgba(139,92,246,0.1);
+            border: 1px solid rgba(139,92,246,0.3); border-radius: 8px;
+            color: var(--purple); font-size: 16px; font-weight: 700; cursor: pointer;
+        }
+
+        /* ===== Game Layout ===== */
+        .game-layout { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+        /* Top: Tools (horizontal ribbon) */
+        .tool-panel {
+            width: 100%; flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 4px;
+            background: linear-gradient(180deg, #141e33 0%, #0d1525 100%);
+            border: 1px solid rgba(6,182,212,0.15);
+            border-radius: 14px; padding: 10px 12px; backdrop-filter: blur(12px);
+            align-items: center;
+        }
+        .tool-panel .panel-title { margin-right: 8px; }
+        .main-area { display: flex; gap: 8px; flex: 1; align-items: flex-start; position: relative; }
+        .panel-title {
+            font-family: 'Jua', sans-serif; font-size: 20px; color: var(--cyan);
+            padding: 4px 8px; border-bottom: 1px solid rgba(6,182,212,0.2); margin-bottom: 3px;
+        }
+        .group-label {
+            font-size: 15px; color: var(--dim); padding: 2px 6px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .tool-btn {
+            width: auto; padding: 8px 14px; font-size: 16px; text-align: left;
+            background: linear-gradient(180deg, #2a3f5f 0%, #1a2a44 100%);
+            border: 1px solid rgba(6,182,212,0.3);
+            border-radius: 8px;
+            color: #e2e8f0; cursor: pointer; transition: all 0.2s;
+            font-family: 'Jua', sans-serif; display: flex; align-items: center; gap: 6px;
+            text-shadow: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .tool-btn:hover {
+            background: linear-gradient(180deg, #3a5070 0%, #2a3f5f 100%);
+            border-color: rgba(6,182,212,0.5);
+            transform: translateY(-1px);
+            filter: none;
+        }
+        .tool-btn.active {
+            background: linear-gradient(180deg, #c47a20 0%, #a06010 100%);
+            border-color: #f59e0b;
+            color: #fff;
+            box-shadow: 0 0 12px rgba(245,158,11,0.3);
+            background-image: none;
+        }
+        .tool-btn.used {
+            position: relative;
+            background-image: none;
+        }
+        .tool-btn.used::after { content: '✓'; position: absolute; right: 8px; color: var(--green); font-size: 16px; }
+        .tool-btn:disabled { opacity: 0.35; cursor: not-allowed; filter: grayscale(0.5); }
+        .tool-btn small { font-size: 13px; }
+        .tool-icon { font-size: 20px; }
+
+        /* Break sub-tools */
+        .break-sub { display: none; flex-wrap: wrap; gap: 3px; padding-left: 4px; }
+        .break-sub.show { display: flex; flex-wrap: wrap; }
+        .break-sub .tool-btn { font-size: 15px; padding: 5px 8px; }
+        .hardness-sub { display: none; flex-wrap: wrap; gap: 3px; padding-left: 4px; }
+        .hardness-sub.show { display: flex; flex-wrap: wrap; }
+        .hardness-sub .tool-btn { font-size: 15px; padding: 5px 8px; }
+
+        /* Center: Canvas */
+        .canvas-area { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+        .canvas-wrapper {
+            position: relative; border-radius: 14px; overflow: hidden;
+            border: 1px solid rgba(6,182,212,0.2);
+            box-shadow: 0 0 30px rgba(6,182,212,0.08), inset 0 0 30px rgba(0,0,0,0.3);
+            background: #050510;
+            padding: 0;
+        }
+        #gameCanvas { display: block; width: 100%; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; }
+        .canvas-hud {
+            position: absolute; top: 8px; left: 10px; right: 10px;
+            display: flex; justify-content: space-between; pointer-events: none; z-index: 5;
+        }
+        .hud-item {
+            padding: 5px 12px; background: rgba(0,0,0,0.7); border-radius: 8px;
+            font-size: 16px; color: var(--dim); backdrop-filter: blur(8px);
+        }
+        .hud-item span { font-weight: 700; color: var(--cyan); }
+        .canvas-flash {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+            pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 4;
+        }
+        .canvas-flash.active { opacity: 1; }
+        .canvas-msg {
+            position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+            padding: 8px 20px; background: rgba(0,0,0,0.85); border-radius: 10px;
+            font-family: 'Jua', sans-serif; font-size: 20px; color: var(--cyan);
+            z-index: 5; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+        }
+        .canvas-msg.show { opacity: 1; }
+
+        /* Results chips */
+        .results-bar {
+            display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 14px;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; backdrop-filter: blur(12px); min-height: 40px; align-items: center;
+        }
+        .result-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 5px 12px; background: rgba(6,182,212,0.1);
+            border: 1px solid rgba(6,182,212,0.25); border-radius: 20px;
+            font-size: 16px; color: var(--cyan); font-family: 'Jua', sans-serif;
+            animation: chipIn 0.3s ease;
+        }
+        @keyframes chipIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .results-empty { color: var(--dim); font-size: 16px; font-style: italic; }
+
+        /* Right: Deduction Board — fixed overlay */
+        .deduction-panel {
+            position: fixed; top: 136px; right: 0; bottom: 8px; z-index: 20;
+            width: 205px;
+            display: flex; flex-direction: column; gap: 3px;
+            background: linear-gradient(180deg, rgba(10,16,32,0.93) 0%, rgba(6,10,22,0.93) 100%);
+            border: 1px solid rgba(6,182,212,0.2);
+            border-right: none;
+            border-radius: 14px 0 0 14px;
+            padding: 8px 7px 6px;
+            backdrop-filter: blur(18px);
+            overflow-y: auto;
+        }
+        .deduction-panel::-webkit-scrollbar { width: 4px; }
+        .deduction-panel::-webkit-scrollbar-thumb { background: rgba(6,182,212,0.2); border-radius: 4px; }
+
+        #suspectList { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; align-items: start; }
+
+        .suspect-card {
+            display: flex; align-items: center; justify-content: center;
+            padding: 5px 3px; background: rgba(30,41,59,0.6);
+            border: 1px solid rgba(100,116,139,0.2); border-radius: 7px;
+            cursor: pointer; transition: all 0.25s; font-family: 'Jua', sans-serif;
+            position: relative; overflow: hidden; text-align: center;
+        }
+        .suspect-card::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.05) 45%, transparent 50%);
+            transition: transform 0.5s;
+            transform: translateX(-100%);
+        }
+        .suspect-card:hover::after { transform: translateX(100%); }
+        .suspect-card:hover { border-color: var(--cyan); background: rgba(6,182,212,0.08); }
+        .suspect-card.eliminated {
+            opacity: 0.2; border-color: transparent;
+            text-decoration: line-through; pointer-events: none;
+            transform: scale(0.95);
+        }
+        .suspect-card.confirmed {
+            border-color: var(--green); background: rgba(16,185,129,0.15);
+            box-shadow: 0 0 12px rgba(16,185,129,0.2);
+        }
+        .suspect-card.wrong-pick {
+            border-color: var(--red); background: rgba(239,68,68,0.1);
+        }
+        .suspect-emoji { display: none; }
+        .suspect-name { font-size: 11px; color: var(--text); line-height: 1.2; word-break: keep-all; }
+        .suspect-info { display: none; }
+        .suspect-x { font-size: 13px; color: var(--red); display: none; }
+        .suspect-card.eliminated .suspect-x { display: block; }
+
+        .confirm-btn {
+            margin-top: 6px; padding: 12px; text-align: center;
+            background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
+            border: 2px solid #ef4444;
+            border-radius: 12px;
+            color: #fff; font-family: 'Jua', sans-serif; font-size: 22px;
+            cursor: pointer; transition: all 0.2s;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 12px rgba(220,38,38,0.3);
+        }
+        .confirm-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+        .confirm-btn:disabled { filter: grayscale(0.7) brightness(0.5); cursor: not-allowed; transform: none; }
+
+        .next-btn {
+            margin-top: 4px; padding: 12px; text-align: center;
+            background: linear-gradient(180deg, #059669 0%, #047857 100%);
+            border: 2px solid var(--green);
+            border-radius: 12px;
+            color: #fff; font-family: 'Jua', sans-serif; font-size: 22px;
+            cursor: pointer; transition: all 0.2s; display: none;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+        .next-btn:hover { transform: translateY(-1px); }
+        .next-btn.show { display: block; }
+
+        .remaining-count {
+            text-align: center; font-size: 18px; color: var(--dim);
+            padding: 4px; font-family: 'Jua', sans-serif;
+        }
+        .remaining-count span { color: var(--orange); font-weight: 700; }
+
+
+
+        /* Attempt Meter */
+        .attempt-meter {
+            display: flex; align-items: center; gap: 6px;
+            padding: 5px 12px; background: rgba(0,0,0,0.7); border-radius: 8px;
+            backdrop-filter: blur(8px);
+        }
+        .attempt-dots { display: flex; gap: 3px; }
+        .attempt-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            border: 1.5px solid rgba(6,182,212,0.5);
+            background: transparent; transition: all 0.3s;
+        }
+        .attempt-dot.used {
+            background: var(--cyan); border-color: var(--cyan);
+            box-shadow: 0 0 6px rgba(6,182,212,0.5);
+        }
+        .attempt-dot.over {
+            background: var(--red); border-color: var(--red);
+            box-shadow: 0 0 6px rgba(239,68,68,0.5);
+        }
+        .attempt-multiplier {
+            font-family: 'Jua', sans-serif; font-size: 16px;
+            font-weight: 700; padding: 2px 8px; border-radius: 6px;
+        }
+        /* Styled tooltips */
+        .tool-btn { position: relative; }
+        .tool-btn[data-tip]::before {
+            content: attr(data-tip);
+            position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+            padding: 8px 12px; background: rgba(0,0,0,0.95); border: 1px solid var(--cyan);
+            border-radius: 10px; font-size: 15px; color: var(--text); white-space: normal;
+            width: max-content; max-width: 250px; pointer-events: none;
+            opacity: 0; transition: opacity 0.2s; z-index: 50;
+            font-family: 'JetBrains Mono', monospace; line-height: 1.5;
+        }
+        .tool-btn[data-tip]:hover::before { opacity: 1; }
+        /* Result Overlay */
+        .result-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px); z-index: 200; display: none;
+            align-items: center; justify-content: center;
+        }
+        .result-overlay.show { display: flex; animation: fadeIn 0.3s ease; }
+        .result-card {
+            position: relative;
+            background: linear-gradient(135deg, #0e1a2e, #1a0e2e);
+            border: 2px solid var(--cyan);
+            border-radius: 24px;
+            padding: 30px; max-width: 520px; width: 90%;
+            text-align: center; overflow: hidden;
+            box-shadow: 0 0 60px rgba(6,182,212,0.2), 0 0 120px rgba(139,92,246,0.1);
+            animation: cardPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes cardPop {
+            0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.05) rotate(2deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .result-photo-wrap {
+            position: relative; width: 180px; height: 140px; margin: -30px auto 10px;
+            border-radius: 16px; overflow: hidden;
+            border: 2px solid rgba(6,182,212,0.4);
+            box-shadow: 0 0 30px rgba(6,182,212,0.2);
+        }
+        .result-photo {
+            width: 100%; height: 100%; object-fit: cover;
+            animation: photoReveal 0.6s ease 0.2s both;
+        }
+        @keyframes photoReveal { from { filter: blur(10px) brightness(2); transform: scale(1.2); } to { filter: blur(0) brightness(1); transform: scale(1); } }
+        .result-badge-mini {
+            position: absolute; bottom: -4px; right: -4px;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(0,0,0,0.8); border: 2px solid var(--cyan);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+        }
+        @keyframes badgePulse { 0%,100% { box-shadow: 0 0 20px rgba(6,182,212,0.3); } 50% { box-shadow: 0 0 40px rgba(6,182,212,0.5); } }
+        .result-emoji { font-size: 56px; }
+        .result-title {
+            font-family: 'Jua', sans-serif; font-size: 38px;
+            background: linear-gradient(90deg, var(--cyan), var(--green));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+        .result-points {
+            font-family: 'Jua', sans-serif; font-size: 28px; color: var(--orange);
+            animation: pointsBounce 0.6s ease 0.3s both;
+        }
+        @keyframes pointsBounce {
+            0% { transform: scale(0); } 50% { transform: scale(1.3); } 100% { transform: scale(1); }
+        }
+        .result-mineral-name {
+            font-family: 'Jua', sans-serif; font-size: 24px; color: #fff;
+            margin: 8px 0;
+        }
+        .result-info-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+            margin: 12px 0; text-align: left;
+        }
+        .result-info-item {
+            padding: 6px 10px; background: rgba(6,182,212,0.06);
+            border: 1px solid rgba(6,182,212,0.1); border-radius: 8px;
+            font-size: 15px; color: var(--dim);
+        }
+        .result-info-item span { color: var(--cyan); font-weight: 600; }
+        .result-fact {
+            margin-top: 10px; padding: 10px 14px;
+            background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2);
+            border-radius: 10px; font-size: 16px; color: var(--orange);
+            line-height: 1.6; text-align: left;
+        }
+        .result-next-btn {
+            margin-top: 14px; padding: 12px 30px;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            border: none; border-radius: 12px;
+            color: #fff; font-family: 'Jua', sans-serif; font-size: 22px;
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .result-next-btn:hover { transform: translateY(-2px); }
+        .result-particles {
+            position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+        }
+        .result-particle {
+            position: absolute; border-radius: 50%; animation: particleFly 1.5s ease-out forwards;
+        }
+        @keyframes particleFly {
+            0% { transform: translate(0,0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+        }
+        /* Category header in deduction */
+        .cat-header { display: none; }
+        .cat-header:first-child { margin-top: 0; }
+
+        /* Codex Modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px); z-index: 300; display: none;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: #0e0e24; border: 1px solid var(--border);
+            border-radius: 20px; padding: 20px; max-width: 680px;
+            width: 90%; max-height: 80vh; overflow-y: auto;
+            box-shadow: 0 0 60px rgba(6,182,212,0.1);
+        }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .modal-title { font-family: 'Jua', sans-serif; font-size: 30px; color: #fff; }
+        .modal-close {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+            color: var(--red); font-size: 22px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .codex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 10px; }
+        .codex-card {
+            background: rgba(30,41,59,0.6); border: 1px solid rgba(100,116,139,0.2);
+            border-radius: 12px; padding: 14px; text-align: center; transition: all 0.2s;
+        }
+        .codex-card.discovered { border-color: rgba(6,182,212,0.3); background: rgba(6,182,212,0.06); }
+        .codex-card.locked { opacity: 0.25; }
+        .codex-photo { width: 100%; height: 90px; object-fit: cover; border-radius: 8px; margin-bottom: 6px; }
+        .codex-emoji { font-size: 38px; margin-bottom: 6px; }
+        .codex-name { font-family: 'Jua', sans-serif; font-size: 18px; color: var(--text); }
+        .codex-detail { font-size: 15px; color: var(--cyan); margin-top: 4px; line-height: 1.5; }
+
+        /* Game Over Overlay */
+        .gameover-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(12px); z-index: 250; display: none;
+            align-items: center; justify-content: center; flex-direction: column;
+        }
+        .gameover-overlay.show { display: flex; }
+        .gameover-card {
+            text-align: center; padding: 40px;
+            background: linear-gradient(135deg, #1a0a0a, #2a0a1a);
+            border: 2px solid #ef4444; border-radius: 24px;
+            box-shadow: 0 0 80px rgba(239,68,68,0.3);
+            animation: cardPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .gameover-emoji { font-size: 72px; margin-bottom: 10px; }
+        .gameover-title {
+            font-family: 'Jua', sans-serif; font-size: 56px;
+            color: #ef4444; text-shadow: 0 0 20px rgba(239,68,68,0.5);
+            margin-bottom: 15px;
+        }
+        .gameover-score {
+            font-family: 'Jua', sans-serif; font-size: 32px; color: var(--orange);
+            margin-bottom: 10px;
+        }
+        .gameover-stats { font-size: 20px; color: var(--dim); margin-bottom: 20px; line-height: 2; }
+        .gameover-stats span { color: var(--cyan); font-weight: 700; }
+        .gameover-restart {
+            padding: 14px 40px; font-family: 'Jua', sans-serif; font-size: 26px;
+            background: linear-gradient(135deg, #ef4444, #f59e0b);
+            border: none; border-radius: 14px;
+            color: #fff; cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(239,68,68,0.3);
+        }
+        .gameover-restart:hover { transform: translateY(-3px); }
+
+        /* ===== Start Screen ===== */
+        .start-screen {
+            position: fixed; inset: 0; z-index: 300;
+            background: radial-gradient(ellipse at center, #0a1628 0%, #050510 100%);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .start-screen.hidden { display: none; }
+        .start-card {
+            text-align: center; padding: 40px;
+            animation: cardPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .start-title {
+            font-family: 'Jua', sans-serif; font-size: 60px; color: #fff;
+            text-shadow: 0 0 30px rgba(6,182,212,0.5), 0 4px 8px rgba(0,0,0,0.5);
+            margin-bottom: 5px;
+        }
+        .start-subtitle {
+            font-family: 'JetBrains Mono', monospace; font-size: 20px; color: var(--cyan);
+            letter-spacing: 4px; margin-bottom: 20px;
+        }
+        .start-desc {
+            font-family: 'Jua', sans-serif; font-size: 20px; color: var(--dim);
+            line-height: 1.6; margin-bottom: 30px;
+        }
+        .difficulty-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+            max-width: 500px; margin: 0 auto;
+        }
+        .diff-btn {
+            position: relative; border: none;
+            cursor: pointer; padding: 20px;
+            border-radius: 16px;
+            transition: transform 0.2s;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .diff-btn:nth-child(1) { background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%); }
+        .diff-btn:nth-child(2) { background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%); }
+        .diff-btn:nth-child(3) { background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); }
+        .diff-btn:nth-child(4) { background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%); }
+        .diff-btn:hover { transform: translateY(-4px) scale(1.03); }
+        .diff-name {
+            font-family: 'Jua', sans-serif; font-size: 32px; color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .diff-detail {
+            font-family: 'JetBrains Mono', monospace; font-size: 16px;
+            color: rgba(255,255,255,0.8); text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        /* ===== Combo Display ===== */
+        .combo-display {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 20px; background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(239,68,68,0.2));
+            border: 2px solid var(--orange); border-radius: 30px;
+            z-index: 50; animation: comboIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(12px);
+        }
+        .combo-count {
+            font-family: 'Jua', sans-serif; font-size: 34px; color: var(--orange);
+            text-shadow: 0 0 10px rgba(245,158,11,0.5);
+        }
+        .combo-label {
+            font-family: 'Jua', sans-serif; font-size: 22px; color: #fff;
+        }
+        @keyframes comboIn {
+            0% { transform: translateX(-50%) scale(0.3); }
+            50% { transform: translateX(-50%) scale(1.2); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        @media (max-width: 960px) {
+            .main-area { flex-direction: column; }
+            .deduction-panel { width: 100%; flex-direction: row; flex-wrap: wrap; max-height: none; }
+            .deduction-panel .panel-title { width: 100%; }
+            .suspect-card { flex: 0 0 auto; }
+            .tool-btn[data-tip]::before { display: none; }
+            .result-card { padding: 20px; }
+            .result-info-grid { grid-template-columns: 1fr; }
+            .difficulty-grid { grid-template-columns: 1fr; }
+            .start-title { font-size: 42px; }
+        }
+    </style>
+</head>
+<body>
+<div class="cyber-bg"></div>
+<div class="scanlines"></div>
+
+<!-- Combo Display -->
+<div class="combo-display" id="comboDisplay" style="display:none">
+    <span class="combo-count" id="comboCount">2</span>
+    <span class="combo-label">COMBO!</span>
+</div>
+
+<!-- Start Screen -->
+<div class="start-screen" id="startScreen">
+    <div class="start-card">
+        <div class="start-title">🔬 광석 감별사</div>
+        <div class="start-subtitle">Mineral Detective</div>
+        <div class="start-desc">도구를 사용해 광석을 조사하고<br>정체를 맞춰보세요!</div>
+        <div class="difficulty-grid">
+            <button class="diff-btn" onclick="startGame('easy')">
+                <div class="diff-name">쉬움</div>
+                <div class="diff-detail">광석 13종 | 보너스 ×1.5</div>
+            </button>
+            <button class="diff-btn" onclick="startGame('normal')">
+                <div class="diff-name">보통</div>
+                <div class="diff-detail">광석 26종 | 보너스 ×2</div>
+            </button>
+            <button class="diff-btn" onclick="startGame('hard')">
+                <div class="diff-name">어려움</div>
+                <div class="diff-detail">광석 40종 | 보너스 ×3</div>
+            </button>
+            <button class="diff-btn" onclick="startGame('expert')">
+                <div class="diff-name">전문가</div>
+                <div class="diff-detail">광석 150종 | 보너스 ×5</div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="app-container">
+    <div class="top-bar">
+        <div class="top-left">
+            <a href="index.html" class="back-btn">
+                <span class="material-symbols-outlined">arrow_back</span> 돌아가기
+            </a>
+            <div class="page-title">🔬 <span>광석 감별사</span></div>
+        </div>
+        <div class="top-right">
+            <div class="lives-display" id="livesDisplay">
+                <img src="../../shared-assets/unity-ui/gui-pro-casual-game/GUI Pro-CasualGame/ResourcesData/Sprites/Components/Icon_ItemIcons/64/Icon_Heart.png" class="heart-icon active" data-idx="0">
+                <img src="../../shared-assets/unity-ui/gui-pro-casual-game/GUI Pro-CasualGame/ResourcesData/Sprites/Components/Icon_ItemIcons/64/Icon_Heart.png" class="heart-icon active" data-idx="1">
+                <img src="../../shared-assets/unity-ui/gui-pro-casual-game/GUI Pro-CasualGame/ResourcesData/Sprites/Components/Icon_ItemIcons/64/Icon_Heart.png" class="heart-icon active" data-idx="2">
+                <img src="../../shared-assets/unity-ui/gui-pro-casual-game/GUI Pro-CasualGame/ResourcesData/Sprites/Components/Icon_ItemIcons/64/Icon_Heart.png" class="heart-icon active" data-idx="3">
+                <img src="../../shared-assets/unity-ui/gui-pro-casual-game/GUI Pro-CasualGame/ResourcesData/Sprites/Components/Icon_ItemIcons/64/Icon_Heart.png" class="heart-icon active" data-idx="4">
+            </div>
+            <div class="stat-badge" id="diffBadge" style="display:none">보통</div>
+            <div class="stat-badge" id="levelBadge">Lv.1</div>
+            <div class="score-display" id="scoreDisplay">0</div>
+            <div class="stat-badge" style="cursor:pointer" onclick="openCodex()">📦 <span id="collCount">0/0</span></div>
+            <button class="lang-btn" onclick="toggleLang()" id="langBtn">EN</button>
+        </div>
+    </div>
+
+    <div class="game-layout">
+        <!-- Top: Tools (horizontal ribbon) -->
+        <div class="tool-panel">
+            <div class="panel-title">🛠️ 도구</div>
+
+            <div class="group-label">깨기 BREAK</div>
+            <button class="tool-btn" id="tool-break" onclick="selectTool('break')" data-tip="광석을 깨서 내부 결정구조를 관찰합니다. 도구에 따라 깨지는 경도가 달라요!">
+                <span class="tool-icon">⛏️</span> 깨기
+            </button>
+            <div class="break-sub" id="breakSub">
+                <button class="tool-btn" onclick="tryBreak('wood')" data-tip="경도 3 이하의 부드러운 광석만 깰 수 있어요">🪵 나무망치 <small style="color:var(--dim)">(~3)</small></button>
+                <button class="tool-btn" onclick="tryBreak('steel')" data-tip="경도 6 이하의 광석을 깰 수 있어요">🔨 쇠망치 <small style="color:var(--dim)">(~6)</small></button>
+                <button class="tool-btn" onclick="tryBreak('chisel')" data-tip="경도 8 이하의 단단한 광석도 깰 수 있어요">⚒️ 정+망치 <small style="color:var(--dim)">(~8)</small></button>
+                <button class="tool-btn" onclick="tryBreak('diamond')" data-tip="경도 10까지! 다이아몬드도 자를 수 있어요">💎 다이아톱 <small style="color:var(--dim)">(10)</small></button>
+            </div>
+
+            <div class="group-label">실험 TEST</div>
+            <button class="tool-btn" id="tool-streak" onclick="selectTool('streak')" data-tip="도판 위에 광석을 긁어 조흔색(가루 색)을 확인합니다. 겉 색과 다를 수 있어요!">
+                <span class="tool-icon">📋</span> 조흔색
+            </button>
+            <button class="tool-btn" id="tool-flame" onclick="selectTool('flame')" data-tip="불꽃 반응 시험! 금속 원소에 따라 불꽃 색이 달라요. Cu=초록, Na=노랑, K=보라">
+                <span class="tool-icon">🔥</span> 불꽃
+            </button>
+            <button class="tool-btn" id="tool-acid" onclick="selectTool('acid')" data-tip="묽은 염산(HCl)을 떨어뜨려 반응을 봅니다. 탄산염 광물은 CO₂ 거품이 나요!">
+                <span class="tool-icon">🧪</span> 산성
+            </button>
+            <button class="tool-btn" id="tool-taste" onclick="selectTool('taste')" data-tip="혀로 살짝 맛봅니다! 암염(NaCl)은 짠맛, 금속광물은 금속맛이 나요. 실제 지질학자도 사용하는 방법!">
+                <span class="tool-icon">👅</span> 맛보기
+            </button>
+            <button class="tool-btn" id="tool-water" onclick="selectTool('water')" data-tip="물에 넣어봅니다! 경석은 뜨고, 암염은 녹아요!">
+                <span class="tool-icon">💧</span> 물반응
+            </button>
+
+            <div class="group-label">관찰 OBSERVE</div>
+            <button class="tool-btn" id="tool-hardness" onclick="selectTool('hardness')" data-tip="모스 경도 시험! 여러 도구로 긁어서 경도 범위를 좁혀가세요">
+                <span class="tool-icon">💎</span> 경도
+            </button>
+            <div class="hardness-sub" id="hardnessSub">
+                <button class="tool-btn" onclick="testHardness(2.5)" data-tip="손톱 경도 2.5 — 석고, 활석 등 매우 부드러운 광석이 긁혀요">💅 손톱 2.5</button>
+                <button class="tool-btn" onclick="testHardness(3.5)" data-tip="구리 동전 경도 3.5 — 방해석, 구리 등이 긁혀요">🪙 동전 3.5</button>
+                <button class="tool-btn" onclick="testHardness(5.5)" data-tip="칼날 경도 5.5 — 인회석, 흑요석 등이 긁혀요">🔪 칼 5.5</button>
+                <button class="tool-btn" onclick="testHardness(6.5)" data-tip="유리판 경도 6.5 — 장석, 황철석 등이 긁혀요">🪟 유리 6.5</button>
+            </div>
+            <button class="tool-btn" id="tool-magnet" onclick="selectTool('magnet')" data-tip="자석을 가까이 대서 자성 여부를 확인합니다. 자철석, 철 등이 끌려요!">
+                <span class="tool-icon">🧲</span> 자성
+            </button>
+            <button class="tool-btn" id="tool-luster" onclick="selectTool('luster')" data-tip="빛을 비춰 광택을 관찰합니다. 금속광택, 유리광택, 진주광택, 비단광택 등">
+                <span class="tool-icon">💡</span> 광택
+            </button>
+            <button class="tool-btn" id="tool-density" onclick="selectTool('density')" data-tip="저울에 올려 무게(밀도)를 측정합니다. 금은 19.3으로 매우 무겁고, 경석은 물에 떠요!">
+                <span class="tool-icon">⚖️</span> 무게
+            </button>
+            <button class="tool-btn" id="tool-crystal" onclick="selectTool('crystal')" data-tip="돋보기로 결정 구조를 관찰합니다. 육각기둥? 정육면체? 비정질?">
+                <span class="tool-icon">🔬</span> 결정
+            </button>
+            <button class="tool-btn" id="tool-cleavage" onclick="selectTool('cleavage')" data-tip="쪼개진 면을 관찰합니다. 매끈한 벽개면이 있나요?">
+                <span class="tool-icon">📐</span> 벽개
+            </button>
+            <button class="tool-btn" id="tool-uv" onclick="selectTool('uv')" data-tip="자외선(UV) 램프로 비춥니다. 형석은 형광으로 빛나요!">
+                <span class="tool-icon">🔮</span> UV
+            </button>
+            <button class="tool-btn" id="tool-conduct" onclick="selectTool('conduct')" data-tip="전기가 통하는지 테스트! 금속 광물은 전기가 흘러요.">
+                <span class="tool-icon">⚡</span> 전도
+            </button>
+        </div>
+
+        <!-- Bottom: Canvas + Deduction side by side -->
+        <div class="main-area">
+        <!-- Canvas + Results -->
+        <div class="canvas-area">
+            <div class="canvas-wrapper">
+                <canvas id="gameCanvas" width="700" height="420"></canvas>
+                <div class="canvas-hud">
+                    <div class="hud-item">광석 <span id="specNum">#1</span></div>
+                    <div class="attempt-meter">
+                        <span style="font-size:15px;color:var(--dim)">시도:</span>
+                        <div class="attempt-dots">
+                            <div class="attempt-dot"></div><div class="attempt-dot"></div>
+                            <div class="attempt-dot"></div><div class="attempt-dot"></div>
+                            <div class="attempt-dot"></div><div class="attempt-dot"></div>
+                            <div class="attempt-dot"></div><div class="attempt-dot"></div>
+                        </div>
+                        <span class="attempt-multiplier" id="attemptMult" style="color:var(--green)">×5 천재!</span>
+                    </div>
+                </div>
+                <div class="canvas-flash" id="canvasFlash"></div>
+                <div class="canvas-msg" id="canvasMsg"></div>
+            </div>
+            <div class="results-bar" id="resultsBar">
+                <span class="results-empty">도구를 사용하여 광석을 조사하세요</span>
+            </div>
+        </div>
+
+        <!-- Right: Deduction Board -->
+        <div class="deduction-panel" id="deductionPanel">
+            <div class="panel-title">🔎 용의 광석</div>
+            <button class="confirm-btn" id="confirmBtn" onclick="confirmAnswer()" disabled>🎯 이 광석이다!</button>
+            <button class="next-btn" id="nextBtn" onclick="nextSpecimen()">다음 광석 →</button>
+            <div class="remaining-count">남은 후보: <span id="remainCount">0</span>개</div>
+            <div id="suspectList"></div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<!-- Result Overlay -->
+<div class="result-overlay" id="resultOverlay">
+    <div class="result-card" id="resultCard">
+        <div class="result-particles" id="resultParticles"></div>
+        <div class="result-photo-wrap">
+            <img class="result-photo" id="resultPhoto" src="" alt="">
+            <div class="result-badge-mini">
+                <span class="result-emoji" id="resultEmoji"></span>
+            </div>
+        </div>
+        <div class="result-title" id="resultTitle"></div>
+        <div class="result-points" id="resultPoints"></div>
+        <div class="result-mineral-name" id="resultName"></div>
+        <div class="result-info-grid" id="resultInfoGrid"></div>
+        <div class="result-fact" id="resultFact"></div>
+        <button class="result-next-btn" onclick="closeResult()">다음 광석 →</button>
+    </div>
+</div>
+
+<!-- Codex Modal -->
+<div class="modal-overlay" id="codexModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="modal-title">📖 광물 도감</div>
+            <button class="modal-close" onclick="closeCodex()">✕</button>
+        </div>
+        <div class="codex-grid" id="codexGrid"></div>
+    </div>
+</div>
+
+<!-- Game Over Overlay -->
+<div class="gameover-overlay" id="gameoverOverlay">
+    <div class="gameover-card">
+        <div class="gameover-emoji">💀</div>
+        <div class="gameover-title">GAME OVER</div>
+        <div class="gameover-score">최종 점수: <span id="gameoverScore">0</span></div>
+        <div class="gameover-stats">
+            <div>발견한 광석: <span id="gameoverFound">0</span>개</div>
+            <div>최대 콤보: <span id="gameoverCombo">0</span></div>
+            <div>난이도: <span id="gameoverDiff">보통</span></div>
+        </div>
+        <button class="gameover-restart" onclick="restartGame()">🔄 다시 시작</button>
+    </div>
+</div>
+
+<script>
+/* ===================================================
+   광석 감별사 — Mineral Detective
+   Luna Whale TECH
+   추리형 광석 감별 게임
+=================================================== */
+
+// ===== i18n =====
+let lang = localStorage.getItem('md-lang') || 'ko';
+const langBtn = document.getElementById('langBtn');
+
+function t(ko, en) { return lang === 'ko' ? ko : en; }
+
+function toggleLang() {
+    lang = lang === 'ko' ? 'en' : 'ko';
+    localStorage.setItem('md-lang', lang);
+    langBtn.textContent = lang === 'ko' ? 'EN' : '한';
+    renderSuspects();
+    renderChips();
+}
+
+// ===== Sound =====
+const SFX_BASE = '../../assets/sounds/SonSounds/';
+const SFX = {
+    hammerHit:   'KF - Epic Hit - 3.mp3',
+    hammerFail:  'KF - Cinematic Hit - 5.mp3',
+    scratch:     'DA - Digital Click - 3.mp3',
+    flame:       'KF - Cinematic Hit - 2.mp3',
+    acid:        '062_뾰옥 (물방울).mp3',
+    fizz:        '044_tv지지직.mp3',
+    magnet:      'SCH - Epic Impact - 1.mp3',
+    noReact:     '086_팝.mp3',
+    light:       'DA - Chimes - 1.mp3',
+    weigh:       'DA - Book Drop - 1.mp3',
+    correct:     '049_띠룽 (슈퍼마리오 코인먹).mp3',
+    wrong:       '063_삐삑 (오답 -짧은).mp3',
+    eliminate:   'SCH - Click - 3.mp3',
+    levelUp:     'DA - Chimes - 2.mp3',
+    click:       'SCH - Click - 1.mp3',
+    appear:      'SCH - Cyber Rise - 3.mp3',
+    bounce:      'KF - Downer - 2.mp3',
+    saw:         'DA - Data - 5.mp3',
+};
+const sfxCache = {};
+let lastSfx = {};
+function playSound(name) {
+    const now = Date.now();
+    if (lastSfx[name] && now - lastSfx[name] < 100) return;
+    lastSfx[name] = now;
+    try {
+        if (!sfxCache[name]) { sfxCache[name] = new Audio(SFX_BASE + SFX[name]); sfxCache[name].volume = 0.4; }
+        sfxCache[name].currentTime = 0;
+        sfxCache[name].play().catch(() => {});
+    } catch(e) {}
+}
+
+// ===== Mineral Database (20 minerals) =====
+const DB = [
+    // ========== Level 1 — Easy (10) ==========
+    { id:1, lv:1, emoji:'🔮', kr:'석영', en:'Quartz', cat:'규산염',
+      color:[200,200,210], alts:[[180,180,200],[220,220,230],[190,195,215]],
+      crystal:'hexagonal', streak:[255,255,255], streakN:['흰색','White'],
+      hard:7, luster:'vitreous', density:2.65, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'none',water:0,uv:0,conduct:0,
+      factKr:'지구에서 두 번째로 흔한 광물! 모래 대부분이 석영이에요.',
+      factEn:'2nd most abundant mineral on Earth. Most sand is quartz!' },
+    { id:2, lv:1, emoji:'🪨', kr:'장석', en:'Feldspar', cat:'규산염',
+      color:[220,190,170], alts:[[210,185,165],[230,200,180],[215,190,172]],
+      crystal:'monoclinic', streak:[255,255,255], streakN:['흰색','White'],
+      hard:6, luster:'vitreous', density:2.56, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'perfect',water:0,uv:0,conduct:0,
+      factKr:'지각의 60%를 차지하는 가장 흔한 광물!',
+      factEn:'Makes up 60% of Earth\'s crust!' },
+    { id:3, lv:1, emoji:'✨', kr:'운모', en:'Mica', cat:'규산염',
+      color:[180,170,140], alts:[[190,180,150],[170,160,130],[185,175,145]],
+      crystal:'monoclinic', streak:[255,255,255], streakN:['흰색','White'],
+      hard:2.5, luster:'pearly', density:2.8, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'perfect',water:0,uv:0,conduct:0,
+      factKr:'얇은 종이처럼 벗겨져요! 옛날 창문 대용으로 썼어요.',
+      factEn:'Peels like thin paper! Once used for windows.' },
+    { id:4, lv:1, emoji:'🤍', kr:'방해석', en:'Calcite', cat:'탄산염',
+      color:[240,235,220], alts:[[235,230,215],[245,240,225],[238,233,218]],
+      crystal:'trigonal', streak:[255,255,255], streakN:['흰색','White'],
+      hard:3, luster:'vitreous', density:2.71, flame:[255,100,50], flameN:['주황빛','Orange'],
+      acidR:2, magnetic:false,taste:5, cleavage:'perfect',water:3,uv:1,conduct:0,
+      factKr:'산을 뿌리면 거품이 보글보글! CO₂ 가스가 나오는 거예요.',
+      factEn:'Fizzes vigorously with acid! CO₂ gas escaping.' },
+    { id:5, lv:1, emoji:'🖤', kr:'흑요석', en:'Obsidian', cat:'화산유리',
+      color:[30,30,45], alts:[[25,25,40],[35,35,50],[28,30,48]],
+      crystal:'amorphous', streak:[255,255,255], streakN:['흰색','White'],
+      hard:5.5, luster:'vitreous', density:2.35, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'none',water:0,uv:0,conduct:0,
+      factKr:'용암이 빠르게 식어서 만들어진 자연유리!',
+      factEn:'Natural glass formed when lava cools fast!' },
+    { id:21, lv:1, emoji:'💛', kr:'황', en:'Sulfur', cat:'원소광물',
+      color:[220,200,50], alts:[[230,210,60],[210,190,40],[225,205,55]],
+      crystal:'orthorhombic', streak:[255,255,200], streakN:['연노랑','Pale yellow'],
+      hard:2, luster:'waxy', density:2.07, flame:[80,80,255], flameN:['파란빛','Blue'],
+      acidR:0, magnetic:false,taste:2, cleavage:'poor',water:0,uv:1,conduct:0,
+      factKr:'불에 타면 파란 불꽃! 화산 근처에서 발견되는 노란 원소.',
+      factEn:'Burns with blue flame! Yellow element found near volcanoes.' },
+    { id:22, lv:1, emoji:'✏️', kr:'흑연', en:'Graphite', cat:'원소광물',
+      color:[55,55,60], alts:[[50,50,55],[60,60,65],[52,52,58]],
+      crystal:'hexagonal', streak:[40,40,40], streakN:['검은색','Black'],
+      hard:1.5, luster:'metallic', density:2.23, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'perfect',water:0,uv:0,conduct:2,
+      factKr:'연필심의 재료! 다이아몬드와 같은 탄소인데 구조가 달라요.',
+      factEn:'Pencil lead! Same carbon as diamond but different structure.' },
+    { id:23, lv:1, emoji:'🧂', kr:'암염', en:'Halite', cat:'할로겐화물',
+      color:[230,230,240], alts:[[235,235,245],[225,225,235],[232,232,242]],
+      crystal:'cubic', streak:[255,255,255], streakN:['흰색','White'],
+      hard:2.5, luster:'vitreous', density:2.16, flame:[255,200,50], flameN:['노란빛','Yellow'],
+      acidR:0, magnetic:false,taste:1, cleavage:'perfect',water:2,uv:0,conduct:0,
+      factKr:'소금! NaCl 결정이에요. 정육면체로 깨지고 짠맛이 나요.',
+      factEn:'Salt! NaCl crystal. Breaks into cubes and tastes salty.' },
+    { id:24, lv:1, emoji:'🫧', kr:'석고', en:'Gypsum', cat:'황산염',
+      color:[235,230,225], alts:[[240,235,230],[230,225,220],[237,232,227]],
+      crystal:'monoclinic', streak:[255,255,255], streakN:['흰색','White'],
+      hard:2, luster:'silky', density:2.32, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:5, cleavage:'perfect',water:3,uv:1,conduct:0,
+      factKr:'손톱으로 긁을 수 있을 만큼 부드러워요! 분필의 재료.',
+      factEn:'So soft you can scratch with a fingernail! Used for chalk.' },
+    { id:25, lv:1, emoji:'🫧', kr:'활석', en:'Talc', cat:'규산염',
+      color:[200,210,200], alts:[[205,215,205],[195,205,195],[202,212,202]],
+      crystal:'monoclinic', streak:[255,255,255], streakN:['흰색','White'],
+      hard:1, luster:'waxy', density:2.75, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:5, cleavage:'perfect',water:0,uv:0,conduct:0,
+      factKr:'모스 경도 1! 가장 부드러운 광물. 베이비파우더 원료!',
+      factEn:'Mohs 1 - softest mineral! Used for baby powder.' },
+
+    // ========== Level 2 — Medium (12) ==========
+    { id:6, lv:2, emoji:'💛', kr:'황철석', en:'Pyrite', cat:'황화물',
+      color:[200,180,80], alts:[[210,190,90],[190,170,70],[205,185,85]],
+      crystal:'cubic', streak:[50,50,30], streakN:['녹흑색','Greenish-black'],
+      hard:6.5, luster:'metallic', density:5.01, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:3, cleavage:'poor',water:0,uv:0,conduct:1,
+      factKr:'"바보의 금"! 금처럼 보이지만 조흔색이 달라요.',
+      factEn:'Fool\'s Gold! Looks like gold but different streak.' },
+    { id:7, lv:2, emoji:'🧲', kr:'자철석', en:'Magnetite', cat:'산화물',
+      color:[40,40,45], alts:[[35,35,40],[45,45,50],[38,38,43]],
+      crystal:'cubic', streak:[30,30,30], streakN:['검은색','Black'],
+      hard:6, luster:'metallic', density:5.18, flame:null, flameN:null,
+      acidR:0, magnetic:true,taste:3, cleavage:'none',water:0,uv:0,conduct:1,
+      factKr:'자석에 끌리는 특별한 광물! 나침반의 원리가 여기서!',
+      factEn:'Attracted to magnets! Compass invented thanks to this.' },
+    { id:8, lv:2, emoji:'❤️', kr:'적철석', en:'Hematite', cat:'산화물',
+      color:[100,50,50], alts:[[110,55,55],[90,45,45],[105,52,52]],
+      crystal:'trigonal', streak:[180,50,40], streakN:['붉은색','Red'],
+      hard:6, luster:'metallic', density:5.26, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:3, cleavage:'none',water:0,uv:0,conduct:0,
+      factKr:'조흔색이 빨간색! 고대인들이 동굴벽화에 사용했어요.',
+      factEn:'Red streak! Ancient humans painted cave walls with it.' },
+    { id:9, lv:2, emoji:'💜', kr:'형석', en:'Fluorite', cat:'할로겐화물',
+      color:[120,80,180], alts:[[130,90,190],[110,70,170],[125,85,185]],
+      crystal:'cubic', streak:[255,255,255], streakN:['흰색','White'],
+      hard:4, luster:'vitreous', density:3.18, flame:[200,50,50], flameN:['붉은빛','Red'],
+      acidR:1, magnetic:false,taste:0, cleavage:'perfect',water:0,uv:2,conduct:0,
+      factKr:'자외선에서 빛나요! "형광"이란 말이 형석에서 나왔어요.',
+      factEn:'Glows under UV! "Fluorescence" comes from Fluorite.' },
+    { id:26, lv:2, emoji:'⚙️', kr:'철', en:'Iron', cat:'원소광물',
+      color:[130,130,135], alts:[[120,120,125],[140,140,145],[135,135,140]],
+      crystal:'cubic', streak:[80,80,80], streakN:['회색','Gray'],
+      hard:4.5, luster:'metallic', density:7.87, flame:null, flameN:null,
+      acidR:0, magnetic:true,taste:3, cleavage:'none',water:0,uv:0,conduct:2,
+      factKr:'지구 핵의 주성분! 자석에 끌리고 녹이 슬어요.',
+      factEn:'Main component of Earth\'s core! Magnetic and rusts.' },
+    { id:27, lv:2, emoji:'🟤', kr:'구리', en:'Copper', cat:'원소광물',
+      color:[184,115,51], alts:[[190,120,55],[178,110,47],[187,118,53]],
+      crystal:'cubic', streak:[184,115,51], streakN:['구리색','Copper'],
+      hard:3, luster:'metallic', density:8.96, flame:[50,200,100], flameN:['초록빛','Green'],
+      acidR:0, magnetic:false,taste:3, cleavage:'none',water:0,uv:0,conduct:2,
+      factKr:'초록색 불꽃! 자유의 여신상이 초록색인 이유예요.',
+      factEn:'Green flame! Why Statue of Liberty is green.' },
+    { id:28, lv:2, emoji:'💚', kr:'공작석', en:'Malachite', cat:'탄산염',
+      color:[40,160,80], alts:[[35,150,70],[45,170,90],[42,165,85]],
+      crystal:'monoclinic', streak:[120,200,120], streakN:['연초록','Light green'],
+      hard:3.5, luster:'silky', density:3.8, flame:[50,200,100], flameN:['초록빛','Green'],
+      acidR:2, magnetic:false,taste:5, cleavage:'perfect',water:0,uv:0,conduct:0,
+      factKr:'구리가 산화되면 만들어지는 초록 광물! 산에 거품이 나요.',
+      factEn:'Green copper carbonate! Fizzes with acid like calcite.' },
+    { id:29, lv:2, emoji:'🔴', kr:'진사', en:'Cinnabar', cat:'황화물',
+      color:[180,30,30], alts:[[190,35,35],[170,25,25],[185,32,32]],
+      crystal:'trigonal', streak:[170,30,30], streakN:['선홍색','Scarlet'],
+      hard:2.5, luster:'adamantine', density:8.1, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'perfect',water:0,uv:0,conduct:0,
+      factKr:'수은의 원광석! 선명한 빨간색. 고대 안료로 사용했어요.',
+      factEn:'Mercury ore! Vivid red. Used as ancient pigment.' },
+    { id:30, lv:2, emoji:'🟡', kr:'황동석', en:'Chalcopyrite', cat:'황화물',
+      color:[190,175,60], alts:[[200,185,70],[180,165,50],[195,180,65]],
+      crystal:'tetragonal', streak:[40,50,30], streakN:['녹흑색','Greenish-black'],
+      hard:3.5, luster:'metallic', density:4.19, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:3, cleavage:'poor',water:0,uv:0,conduct:1,
+      factKr:'구리의 주요 광석! 황철석보다 부드럽고 더 노랗죠.',
+      factEn:'Primary copper ore! Softer and more golden than pyrite.' },
+    { id:31, lv:2, emoji:'🔲', kr:'방연석', en:'Galena', cat:'황화물',
+      color:[120,120,130], alts:[[130,130,140],[110,110,120],[125,125,135]],
+      crystal:'cubic', streak:[80,80,90], streakN:['진회색','Dark gray'],
+      hard:2.5, luster:'metallic', density:7.6, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:3, cleavage:'perfect',water:0,uv:0,conduct:1,
+      factKr:'납의 주요 광석! 완벽한 정육면체로 쪼개져요.',
+      factEn:'Primary lead ore! Breaks into perfect cubes.' },
+    { id:32, lv:2, emoji:'🫐', kr:'남동석', en:'Azurite', cat:'탄산염',
+      color:[30,50,160], alts:[[25,45,150],[35,55,170],[32,52,165]],
+      crystal:'monoclinic', streak:[40,60,180], streakN:['파란색','Blue'],
+      hard:3.5, luster:'vitreous', density:3.77, flame:null, flameN:null,
+      acidR:2, magnetic:false,taste:5, cleavage:'perfect',water:0,uv:0,conduct:0,
+      factKr:'진한 파란색 구리 광물! 산에 거품이 나고, 르네상스 안료였어요.',
+      factEn:'Deep blue copper mineral! Fizzes with acid. Renaissance pigment.' },
+    { id:33, lv:2, emoji:'🟢', kr:'감람석', en:'Olivine', cat:'규산염',
+      color:[100,160,50], alts:[[110,170,55],[90,150,45],[105,165,52]],
+      crystal:'orthorhombic', streak:[255,255,255], streakN:['흰색','White'],
+      hard:6.5, luster:'vitreous', density:3.32, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'poor',water:0,uv:0,conduct:0,
+      factKr:'현무암 속 초록 보석! 하와이 해변이 초록인 이유예요.',
+      factEn:'Green gem in basalt! Why Hawaiian beaches are green.' },
+
+    // ========== Level 3 — Hard (14) ==========
+    { id:11, lv:3, emoji:'🥇', kr:'금', en:'Gold', cat:'원소광물',
+      color:[220,190,50], alts:[[230,200,60],[210,180,40],[225,195,55]],
+      crystal:'cubic', streak:[220,190,50], streakN:['금색','Golden'],
+      hard:2.5, luster:'metallic', density:19.3, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:3, cleavage:'none',water:0,uv:0,conduct:2,
+      factKr:'조흔색이 금색이고, 밀도 19.3! 엄청 무거워요.',
+      factEn:'Golden streak and density 19.3! Extremely heavy.' },
+    { id:12, lv:3, emoji:'🥈', kr:'은', en:'Silver', cat:'원소광물',
+      color:[192,192,200], alts:[[200,200,208],[185,185,195],[195,195,203]],
+      crystal:'cubic', streak:[192,192,200], streakN:['은색','Silver'],
+      hard:2.5, luster:'metallic', density:10.5, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:3, cleavage:'none',water:0,uv:0,conduct:2,
+      factKr:'모든 금속 중 전기를 가장 잘 통하게 해요!',
+      factEn:'Best electrical conductor of all metals!' },
+    { id:34, lv:3, emoji:'⚪', kr:'백금', en:'Platinum', cat:'원소광물',
+      color:[210,210,215], alts:[[205,205,210],[215,215,220],[208,208,213]],
+      crystal:'cubic', streak:[200,200,200], streakN:['은백색','Silver-white'],
+      hard:4.5, luster:'metallic', density:21.45, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:3, cleavage:'none',water:0,uv:0,conduct:2,
+      factKr:'금보다 무거운 귀금속! 밀도 21.45로 초중량급이에요.',
+      factEn:'Heavier than gold! Density 21.45 - ultra heavyweight.' },
+    { id:35, lv:3, emoji:'🌈', kr:'비스무트', en:'Bismuth', cat:'원소광물',
+      color:[180,160,190], alts:[[170,150,180],[190,170,200],[185,165,195]],
+      crystal:'trigonal', streak:[200,200,200], streakN:['은백색','Silver-white'],
+      hard:2.5, luster:'metallic', density:9.78, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:3, cleavage:'perfect',water:0,uv:0,conduct:2,
+      factKr:'계단 모양 결정이 무지개색으로 빛나요! 위장약 성분이에요.',
+      factEn:'Staircase crystals with rainbow iridescence! Used in medicine.' },
+    { id:36, lv:3, emoji:'🟫', kr:'주석', en:'Tin', cat:'원소광물',
+      color:[180,175,170], alts:[[185,180,175],[175,170,165],[182,177,172]],
+      crystal:'tetragonal', streak:[200,200,200], streakN:['밝은회색','Light gray'],
+      hard:1.5, luster:'metallic', density:7.31, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:3, cleavage:'none',water:0,uv:0,conduct:2,
+      factKr:'구부리면 "주석 울음" 소리가 나요! 통조림 캔의 코팅 재료.',
+      factEn:'Makes a "tin cry" when bent! Used to coat tin cans.' },
+    { id:37, lv:3, emoji:'🟠', kr:'보크사이트', en:'Bauxite', cat:'산화물',
+      color:[170,100,50], alts:[[180,110,55],[160,90,45],[175,105,52]],
+      crystal:'amorphous', streak:[200,160,120], streakN:['황갈색','Yellowish-brown'],
+      hard:2.5, luster:'dull', density:2.55, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:5, cleavage:'none',water:4,uv:0,conduct:0,
+      factKr:'알루미늄의 원광석! 음료 캔이 여기서 나와요.',
+      factEn:'Aluminum ore! Soda cans come from this rock.' },
+    { id:38, lv:3, emoji:'⬛', kr:'크로마이트', en:'Chromite', cat:'산화물',
+      color:[50,45,40], alts:[[55,50,45],[45,40,35],[52,47,42]],
+      crystal:'cubic', streak:[60,50,40], streakN:['갈색','Brown'],
+      hard:5.5, luster:'metallic', density:4.6, flame:null, flameN:null,
+      acidR:0, magnetic:true,taste:3, cleavage:'none',water:0,uv:0,conduct:1,
+      factKr:'크롬의 원광석! 스테인리스 스틸을 만드는 데 필수예요.',
+      factEn:'Chromium ore! Essential for making stainless steel.' },
+    { id:39, lv:3, emoji:'🟤', kr:'주석석', en:'Cassiterite', cat:'산화물',
+      color:[80,60,40], alts:[[85,65,45],[75,55,35],[82,62,42]],
+      crystal:'tetragonal', streak:[230,220,200], streakN:['연갈색','Light brown'],
+      hard:7, luster:'adamantine', density:7.0, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'poor',water:0,uv:0,conduct:0,
+      factKr:'주석의 원광석! 청동기 시대를 가능하게 한 광물이에요.',
+      factEn:'Tin ore! Made the Bronze Age possible.' },
+    { id:40, lv:3, emoji:'🟡', kr:'중정석', en:'Barite', cat:'황산염',
+      color:[220,215,200], alts:[[225,220,205],[215,210,195],[222,217,202]],
+      crystal:'orthorhombic', streak:[255,255,255], streakN:['흰색','White'],
+      hard:3.5, luster:'vitreous', density:4.48, flame:[130,220,80], flameN:['연두빛','Yellow-green'],
+      acidR:0, magnetic:false,taste:5, cleavage:'perfect',water:0,uv:1,conduct:0,
+      factKr:'"무거운 돌"이란 뜻! 비금속인데 밀도가 4.48으로 무거워요.',
+      factEn:'Means "heavy stone"! Non-metallic but density 4.48.' },
+    { id:41, lv:3, emoji:'🪨', kr:'백운석', en:'Dolomite', cat:'탄산염',
+      color:[230,225,210], alts:[[235,230,215],[225,220,205],[232,227,212]],
+      crystal:'trigonal', streak:[255,255,255], streakN:['흰색','White'],
+      hard:3.5, luster:'vitreous', density:2.85, flame:null, flameN:null,
+      acidR:1, magnetic:false,taste:5, cleavage:'perfect',water:0,uv:1,conduct:0,
+      factKr:'방해석과 비슷하지만 산에 약하게만 반응해요! 분말로 하면 거품.',
+      factEn:'Like calcite but only mild fizz with acid! Powder fizzes more.' },
+    { id:42, lv:3, emoji:'🟤', kr:'섬아연석', en:'Sphalerite', cat:'황화물',
+      color:[140,100,50], alts:[[150,110,55],[130,90,45],[145,105,52]],
+      crystal:'cubic', streak:[200,180,130], streakN:['연갈색','Light brown'],
+      hard:3.5, luster:'adamantine', density:4.05, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'perfect',water:0,uv:0,conduct:0,
+      factKr:'아연의 주요 광석! 6방향으로 완벽하게 쪼개져요.',
+      factEn:'Primary zinc ore! Cleaves perfectly in 6 directions.' },
+    { id:43, lv:3, emoji:'🟢', kr:'인회석', en:'Apatite', cat:'인산염',
+      color:[80,180,140], alts:[[85,185,145],[75,175,135],[82,182,142]],
+      crystal:'hexagonal', streak:[255,255,255], streakN:['흰색','White'],
+      hard:5, luster:'vitreous', density:3.19, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'poor',water:0,uv:2,conduct:0,
+      factKr:'모스 경도 5의 기준 광물! 뼈와 치아의 주요 성분이에요.',
+      factEn:'Mohs 5 reference mineral! Main component of bones and teeth.' },
+    { id:44, lv:3, emoji:'🔶', kr:'금홍석', en:'Rutile', cat:'산화물',
+      color:[150,60,30], alts:[[160,65,35],[140,55,25],[155,62,32]],
+      crystal:'tetragonal', streak:[200,170,120], streakN:['연갈색','Light brown'],
+      hard:6, luster:'adamantine', density:4.25, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'poor',water:0,uv:0,conduct:0,
+      factKr:'티타늄의 원광석! 바늘 모양 결정이 석영 속에 들어있어요.',
+      factEn:'Titanium ore! Needle-like crystals found inside quartz.' },
+
+    // ========== Level 4 — Expert (14) ==========
+    { id:16, lv:4, emoji:'💎', kr:'토파즈', en:'Topaz', cat:'규산염',
+      color:[255,200,100], alts:[[255,210,110],[250,195,95],[255,205,105]],
+      crystal:'orthorhombic', streak:[255,255,255], streakN:['흰색','White'],
+      hard:8, luster:'vitreous', density:3.53, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'perfect',water:0,uv:0,conduct:0,
+      factKr:'경도 8! 11월의 탄생석이에요.',
+      factEn:'Hardness 8! November\'s birthstone.' },
+    { id:17, lv:4, emoji:'🔵', kr:'강옥', en:'Corundum', cat:'산화물',
+      color:[100,80,130], alts:[[110,90,140],[90,70,120],[105,85,135]],
+      crystal:'trigonal', streak:[255,255,255], streakN:['흰색','White'],
+      hard:9, luster:'adamantine', density:4.02, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'none',water:0,uv:0,conduct:0,
+      factKr:'루비와 사파이어의 원석! 다이아 다음 단단함.',
+      factEn:'Source of rubies & sapphires! 2nd hardest.' },
+    { id:18, lv:4, emoji:'💍', kr:'다이아몬드', en:'Diamond', cat:'원소광물',
+      color:[200,230,255], alts:[[210,240,255],[190,220,250],[205,235,255]],
+      crystal:'cubic', streak:[255,255,255], streakN:['흰색','White'],
+      hard:10, luster:'adamantine', density:3.52, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'perfect',water:0,uv:2,conduct:0,
+      factKr:'모스 경도 10! 자연에서 가장 단단한 순수 탄소.',
+      factEn:'Mohs 10! Hardest natural substance. Pure carbon.' },
+    { id:19, lv:4, emoji:'💚', kr:'에메랄드', en:'Emerald', cat:'규산염',
+      color:[50,160,80], alts:[[55,170,85],[45,150,75],[52,165,82]],
+      crystal:'hexagonal', streak:[255,255,255], streakN:['흰색','White'],
+      hard:7.5, luster:'vitreous', density:2.76, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'poor',water:0,uv:0,conduct:0,
+      factKr:'클레오파트라가 사랑한 보석! 크롬이 초록색을 만들어요.',
+      factEn:'Cleopatra\'s favorite gem! Chromium makes it green.' },
+    { id:20, lv:4, emoji:'❤️‍🔥', kr:'루비', en:'Ruby', cat:'산화물',
+      color:[180,30,50], alts:[[190,35,55],[170,25,45],[185,32,52]],
+      crystal:'trigonal', streak:[255,255,255], streakN:['흰색','White'],
+      hard:9, luster:'adamantine', density:4.02, flame:[200,50,50], flameN:['붉은빛','Red'],
+      acidR:0, magnetic:false,taste:0, cleavage:'none',water:0,uv:0,conduct:0,
+      factKr:'강옥의 일종! 크롬이 붉은색을 만들어요. 7월 탄생석.',
+      factEn:'Corundum colored red by chromium. July birthstone.' },
+    { id:45, lv:4, emoji:'🟣', kr:'자수정', en:'Amethyst', cat:'규산염',
+      color:[130,70,160], alts:[[140,80,170],[120,60,150],[135,75,165]],
+      crystal:'hexagonal', streak:[255,255,255], streakN:['흰색','White'],
+      hard:7, luster:'vitreous', density:2.65, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'none',water:0,uv:0,conduct:0,
+      factKr:'보라색 석영! 고대 그리스인은 이걸 지니면 술에 안 취한다고 믿었어요.',
+      factEn:'Purple quartz! Ancient Greeks believed it prevented intoxication.' },
+    { id:46, lv:4, emoji:'🌊', kr:'오팔', en:'Opal', cat:'규산염',
+      color:[200,220,230], alts:[[210,225,235],[190,215,225],[205,222,232]],
+      crystal:'amorphous', streak:[255,255,255], streakN:['흰색','White'],
+      hard:5.5, luster:'vitreous', density:2.1, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'none',water:4,uv:1,conduct:0,
+      factKr:'무지개빛이 일렁이는 보석! 물을 최대 20%까지 품고 있어요.',
+      factEn:'Rainbow play of color! Contains up to 20% water.' },
+    { id:47, lv:4, emoji:'🩵', kr:'터키석', en:'Turquoise', cat:'인산염',
+      color:[80,190,190], alts:[[85,195,195],[75,185,185],[82,192,192]],
+      crystal:'triclinic', streak:[200,230,220], streakN:['연청록','Pale blue-green'],
+      hard:5.5, luster:'waxy', density:2.76, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'none',water:4,uv:0,conduct:0,
+      factKr:'하늘색 보석! 고대 이집트부터 사랑받은 12월 탄생석.',
+      factEn:'Sky-blue gem! Loved since ancient Egypt. December birthstone.' },
+    { id:48, lv:4, emoji:'🟢', kr:'비취', en:'Jade', cat:'규산염',
+      color:[80,150,80], alts:[[85,155,85],[75,145,75],[82,152,82]],
+      crystal:'monoclinic', streak:[255,255,255], streakN:['흰색','White'],
+      hard:6.5, luster:'vitreous', density:3.33, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'none',water:0,uv:0,conduct:0,
+      factKr:'동양의 황금! 중국에서 금보다 귀하게 여긴 초록 보석.',
+      factEn:'Eastern gold! Valued more than gold in ancient China.' },
+    { id:49, lv:4, emoji:'🔷', kr:'청금석', en:'Lapis Lazuli', cat:'규산염',
+      color:[30,50,140], alts:[[25,45,130],[35,55,150],[32,52,145]],
+      crystal:'cubic', streak:[60,80,180], streakN:['파란색','Blue'],
+      hard:5.5, luster:'dull', density:2.75, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'none',water:0,uv:0,conduct:0,
+      factKr:'울트라마린 안료의 원료! 고대 이집트 파라오의 보석이었어요.',
+      factEn:'Source of ultramarine pigment! Pharaoh\'s gemstone.' },
+    { id:50, lv:4, emoji:'❤️', kr:'석류석', en:'Garnet', cat:'규산염',
+      color:[140,30,40], alts:[[150,35,45],[130,25,35],[145,32,42]],
+      crystal:'cubic', streak:[255,255,255], streakN:['흰색','White'],
+      hard:7, luster:'vitreous', density:3.9, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'none',water:0,uv:0,conduct:0,
+      factKr:'1월의 탄생석! 사포 연마제로도 사용되는 단단한 보석.',
+      factEn:'January birthstone! Also used as sandpaper abrasive.' },
+    { id:51, lv:4, emoji:'🟠', kr:'호박', en:'Amber', cat:'유기광물',
+      color:[200,140,30], alts:[[210,150,35],[190,130,25],[205,145,32]],
+      crystal:'amorphous', streak:[255,255,255], streakN:['흰색','White'],
+      hard:2.5, luster:'waxy', density:1.08, flame:[255,150,50], flameN:['오렌지빛','Orange'],
+      acidR:0, magnetic:false,taste:0, cleavage:'none',water:1,uv:1,conduct:0,
+      factKr:'나무 수액이 화석된 보석! 안에 곤충이 갇혀있기도 해요.',
+      factEn:'Fossilized tree resin! Sometimes contains trapped insects.' },
+    { id:52, lv:4, emoji:'🩷', kr:'전기석', en:'Tourmaline', cat:'규산염',
+      color:[40,80,60], alts:[[45,85,65],[35,75,55],[42,82,62]],
+      crystal:'trigonal', streak:[255,255,255], streakN:['흰색','White'],
+      hard:7, luster:'vitreous', density:3.1, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'poor',water:0,uv:0,conduct:0,
+      factKr:'열을 가하면 전기가 생기는 신기한 보석! 색상이 매우 다양해요.',
+      factEn:'Generates electricity when heated! Comes in many colors.' },
+    { id:53, lv:4, emoji:'🟡', kr:'지르콘', en:'Zircon', cat:'규산염',
+      color:[200,170,100], alts:[[210,180,110],[190,160,90],[205,175,105]],
+      crystal:'tetragonal', streak:[255,255,255], streakN:['흰색','White'],
+      hard:7.5, luster:'adamantine', density:4.6, flame:null, flameN:null,
+      acidR:0, magnetic:false,taste:0, cleavage:'poor',water:0,uv:0,conduct:0,
+      factKr:'지구에서 가장 오래된 광물! 44억 년 전 결정이 발견됐어요.',
+      factEn:'Earth\'s oldest mineral! 4.4 billion year old crystals found.' },
+
+    // ========== BONUS — 100 more minerals ==========
+    // Level 1 additions (easy)
+    {id:54,lv:1,emoji:'🕳️',kr:'경석',en:'Pumice',cat:'화산암',color:[200,195,185],alts:[[205,200,190],[195,190,180],[202,197,187]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:6,luster:'dull',density:0.64,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:1,uv:0,conduct:0,factKr:'물에 뜨는 유일한 돌! 구멍이 많아 아주 가벼워요.',factEn:'Only rock that floats! So porous it\'s lighter than water.'},
+    {id:55,lv:1,emoji:'🔥',kr:'부싯돌',en:'Flint',cat:'규산염',color:[70,65,55],alts:[[75,70,60],[65,60,50],[72,67,57]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'waxy',density:2.6,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'부딪치면 불꽃이 튀어요! 석기시대 도구의 핵심 재료.',factEn:'Sparks when struck! Key tool material of the Stone Age.'},
+    {id:56,lv:1,emoji:'🏔️',kr:'석회암',en:'Limestone',cat:'탄산염',color:[215,210,195],alts:[[220,215,200],[210,205,190],[217,212,197]],crystal:'trigonal',streak:[255,255,255],streakN:['흰색','White'],hard:3,luster:'dull',density:2.71,flame:null,flameN:null,acidR:2,magnetic:false,taste:5,cleavage:'none',water:0,uv:1,conduct:0,factKr:'산에 거품! 조개껍데기가 쌓여서 만들어진 퇴적암이에요.',factEn:'Fizzes with acid! Sedimentary rock made from seashells.'},
+
+    // Level 2 additions
+    {id:57,lv:2,emoji:'🔶',kr:'사문석',en:'Serpentine',cat:'규산염',color:[60,120,60],alts:[[65,125,65],[55,115,55],[62,122,62]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:3,luster:'waxy',density:2.55,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'뱀 비늘 무늬의 초록 광물! 석면의 원료이기도 해요.',factEn:'Snake-scale pattern! Also a source of asbestos.'},
+    {id:58,lv:2,emoji:'🔷',kr:'천청석',en:'Celestite',cat:'황산염',color:[160,190,220],alts:[[165,195,225],[155,185,215],[162,192,222]],crystal:'orthorhombic',streak:[255,255,255],streakN:['흰색','White'],hard:3.5,luster:'vitreous',density:3.96,flame:[200,50,50],flameN:['붉은빛','Red'],acidR:0,magnetic:false,taste:5,cleavage:'perfect',water:0,uv:1,conduct:0,factKr:'하늘색 결정! 스트론튬 원광석이에요. 불꽃놀이 빨간색 원료.',factEn:'Sky-blue crystals! Strontium ore used for red fireworks.'},
+    {id:59,lv:2,emoji:'⬜',kr:'사장석',en:'Plagioclase',cat:'규산염',color:[210,205,200],alts:[[215,210,205],[205,200,195],[212,207,202]],crystal:'triclinic',streak:[255,255,255],streakN:['흰색','White'],hard:6,luster:'vitreous',density:2.69,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'달 표면에서 가장 흔한 광물! 라브라도라이트도 여기 속해요.',factEn:'Most common mineral on the Moon! Labradorite belongs here.'},
+    {id:60,lv:2,emoji:'🟫',kr:'규선석',en:'Sillimanite',cat:'규산염',color:[170,160,140],alts:[[175,165,145],[165,155,135],[172,162,142]],crystal:'orthorhombic',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'vitreous',density:3.24,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'내화벽돌의 재료! 높은 온도를 견디는 변성광물이에요.',factEn:'Refractory brick material! Heat-resistant metamorphic mineral.'},
+    {id:61,lv:2,emoji:'🟠',kr:'능철석',en:'Siderite',cat:'탄산염',color:[140,110,70],alts:[[150,120,75],[130,100,65],[145,115,72]],crystal:'trigonal',streak:[255,255,255],streakN:['흰색','White'],hard:4,luster:'vitreous',density:3.96,flame:null,flameN:null,acidR:1,magnetic:false,taste:5,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'철 탄산염 광물! 산에 약간 거품이 나요.',factEn:'Iron carbonate! Mild fizz with acid.'},
+    {id:62,lv:2,emoji:'⚫',kr:'각섬석',en:'Hornblende',cat:'규산염',color:[35,40,30],alts:[[40,45,35],[30,35,25],[37,42,32]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:5.5,luster:'vitreous',density:3.1,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'화강암 속 검은 알갱이! 56도와 124도로 쪼개져요.',factEn:'Black grains in granite! Cleaves at 56° and 124°.'},
+    {id:63,lv:2,emoji:'🟢',kr:'녹니석',en:'Chlorite',cat:'규산염',color:[70,130,70],alts:[[75,135,75],[65,125,65],[72,132,72]],crystal:'monoclinic',streak:[200,230,200],streakN:['연초록','Pale green'],hard:2.5,luster:'pearly',density:2.8,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'초록색 판상 광물! 운모처럼 벗겨지지만 더 부드러워요.',factEn:'Green platy mineral! Peels like mica but softer.'},
+    {id:64,lv:2,emoji:'🔴',kr:'석류석(알만딘)',en:'Almandine',cat:'규산염',color:[130,30,35],alts:[[140,35,40],[120,25,30],[135,32,37]],crystal:'cubic',streak:[255,255,255],streakN:['흰색','White'],hard:7.5,luster:'vitreous',density:4.3,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'가장 흔한 석류석! 사포 연마제로 많이 사용돼요.',factEn:'Most common garnet! Widely used as sandpaper abrasive.'},
+    {id:65,lv:2,emoji:'🟡',kr:'사방황철석',en:'Marcasite',cat:'황화물',color:[195,185,90],alts:[[200,190,95],[190,180,85],[197,187,92]],crystal:'orthorhombic',streak:[50,50,30],streakN:['녹흑색','Greenish-black'],hard:6,luster:'metallic',density:4.88,flame:null,flameN:null,acidR:0,magnetic:false,taste:3,cleavage:'poor',water:0,uv:0,conduct:1,factKr:'황철석과 같은 성분이지만 결정 구조가 달라요!',factEn:'Same composition as pyrite but different crystal structure!'},
+    {id:66,lv:2,emoji:'🟤',kr:'갈철석',en:'Limonite',cat:'산화물',color:[150,110,50],alts:[[160,120,55],[140,100,45],[155,115,52]],crystal:'amorphous',streak:[160,120,50],streakN:['황갈색','Yellowish-brown'],hard:5,luster:'dull',density:3.8,flame:null,flameN:null,acidR:0,magnetic:false,taste:3,cleavage:'none',water:0,uv:0,conduct:0,factKr:'철이 녹슬면 만들어지는 광물! 황토색 안료의 원료.',factEn:'Forms when iron rusts! Source of ochre pigment.'},
+
+    // Level 3 additions
+    {id:67,lv:3,emoji:'🟦',kr:'남정석',en:'Lazurite',cat:'규산염',color:[40,50,150],alts:[[45,55,155],[35,45,145],[42,52,152]],crystal:'cubic',streak:[50,60,170],streakN:['파란색','Blue'],hard:5.5,luster:'dull',density:2.4,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'청금석의 주성분! 울트라마린 파란색을 만들어요.',factEn:'Main component of lapis lazuli! Creates ultramarine blue.'},
+    {id:68,lv:3,emoji:'🟠',kr:'스피넬',en:'Spinel',cat:'산화물',color:[180,40,60],alts:[[190,45,65],[170,35,55],[185,42,62]],crystal:'cubic',streak:[255,255,255],streakN:['흰색','White'],hard:8,luster:'vitreous',density:3.58,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'영국 왕관의 "루비"가 사실은 스피넬이었어요!',factEn:'The "ruby" in British Crown is actually spinel!'},
+    {id:69,lv:3,emoji:'🟡',kr:'크리소베릴',en:'Chrysoberyl',cat:'산화물',color:[190,200,80],alts:[[195,205,85],[185,195,75],[192,202,82]],crystal:'orthorhombic',streak:[255,255,255],streakN:['흰색','White'],hard:8.5,luster:'vitreous',density:3.73,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'경도 8.5! 알렉산드라이트와 캐츠아이의 원석.',factEn:'Hardness 8.5! Source of alexandrite and cat\'s eye.'},
+    {id:70,lv:3,emoji:'🟤',kr:'녹주석',en:'Beryl',cat:'규산염',color:[150,200,160],alts:[[155,205,165],[145,195,155],[152,202,162]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7.5,luster:'vitreous',density:2.76,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'에메랄드와 아쿠아마린의 원석! 베릴륨의 원광석.',factEn:'Source of emerald & aquamarine! Beryllium ore.'},
+    {id:71,lv:3,emoji:'🔵',kr:'청석',en:'Kyanite',cat:'규산염',color:[60,90,170],alts:[[65,95,175],[55,85,165],[62,92,172]],crystal:'triclinic',streak:[255,255,255],streakN:['흰색','White'],hard:5,luster:'vitreous',density:3.61,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'같은 결정인데 방향마다 경도가 달라요! 세로 5, 가로 7.',factEn:'Different hardness in different directions! 5 lengthwise, 7 crosswise.'},
+    {id:72,lv:3,emoji:'🟢',kr:'투휘석',en:'Diopside',cat:'규산염',color:[60,120,60],alts:[[65,125,65],[55,115,55],[62,122,62]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:5.5,luster:'vitreous',density:3.3,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'크롬이 들어가면 아름다운 에메랄드 초록! 93도로 쪼개져요.',factEn:'Chrome makes it emerald green! Cleaves at 93°.'},
+    {id:73,lv:3,emoji:'🟡',kr:'티탄석',en:'Titanite',cat:'규산염',color:[180,160,50],alts:[[185,165,55],[175,155,45],[182,162,52]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:5.5,luster:'adamantine',density:3.53,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'다이아몬드급 광채! 쐐기 모양 결정이 특징이에요.',factEn:'Diamond-like luster! Wedge-shaped crystals are distinctive.'},
+    {id:74,lv:3,emoji:'⚫',kr:'흑운모',en:'Biotite',cat:'규산염',color:[40,35,30],alts:[[45,40,35],[35,30,25],[42,37,32]],crystal:'monoclinic',streak:[200,200,200],streakN:['회색','Gray'],hard:2.5,luster:'vitreous',density:3.0,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'검은 운모! 화강암 속 반짝이는 검은 알갱이가 바로 이것.',factEn:'Black mica! Shiny black grains in granite are biotite.'},
+    {id:75,lv:3,emoji:'⬜',kr:'백운모',en:'Muscovite',cat:'규산염',color:[210,205,195],alts:[[215,210,200],[205,200,190],[212,207,197]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:2.5,luster:'pearly',density:2.82,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'투명한 운모! 러시아 창문에 사용되어 "모스크바의 유리"란 이름.',factEn:'Clear mica! Called "Muscovy glass" after Russian windows.'},
+    {id:76,lv:3,emoji:'🟤',kr:'안달루석',en:'Andalusite',cat:'규산염',color:[150,120,90],alts:[[155,125,95],[145,115,85],[152,122,92]],crystal:'orthorhombic',streak:[255,255,255],streakN:['흰색','White'],hard:7.5,luster:'vitreous',density:3.15,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'단면이 십자가 모양! "십자석"이라 불리기도 해요.',factEn:'Cross-shaped cross section! Also called "chiastolite".'},
+    {id:77,lv:3,emoji:'🟠',kr:'저어콘',en:'Monazite',cat:'인산염',color:[160,120,50],alts:[[165,125,55],[155,115,45],[162,122,52]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:5,luster:'waxy',density:5.2,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'희토류 원소의 주요 광석! 스마트폰에 필수적인 원소들.',factEn:'Key rare earth ore! Essential elements for smartphones.'},
+    {id:78,lv:3,emoji:'⚫',kr:'울펜석',en:'Wolframite',cat:'산화물',color:[40,35,35],alts:[[45,40,40],[35,30,30],[42,37,37]],crystal:'monoclinic',streak:[50,40,30],streakN:['갈흑색','Dark brown'],hard:5,luster:'metallic',density:7.3,flame:null,flameN:null,acidR:0,magnetic:false,taste:3,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'텅스텐의 원광석! 전구 필라멘트의 원료예요.',factEn:'Tungsten ore! Source of light bulb filaments.'},
+    {id:79,lv:3,emoji:'🟡',kr:'황옥',en:'Heliodor',cat:'규산염',color:[220,200,80],alts:[[225,205,85],[215,195,75],[222,202,82]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7.5,luster:'vitreous',density:2.76,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'녹주석의 노란 변종! 태양석이란 뜻이에요.',factEn:'Yellow beryl! Name means "gift of the sun".'},
+    {id:80,lv:3,emoji:'🩵',kr:'아쿠아마린',en:'Aquamarine',cat:'규산염',color:[130,200,220],alts:[[135,205,225],[125,195,215],[132,202,222]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7.5,luster:'vitreous',density:2.76,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'바다색 보석! 녹주석의 파란 변종. 3월 탄생석.',factEn:'Sea-colored gem! Blue beryl. March birthstone.'},
+
+    // Level 2 more
+    {id:81,lv:2,emoji:'🟤',kr:'규암',en:'Quartzite',cat:'규산염',color:[200,195,190],alts:[[205,200,195],[195,190,185],[202,197,192]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'vitreous',density:2.65,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'사암이 열과 압력으로 변한 변성암! 매우 단단해요.',factEn:'Sandstone metamorphosed by heat & pressure! Very hard.'},
+    {id:82,lv:2,emoji:'⬛',kr:'현무암',en:'Basalt',cat:'화산암',color:[50,50,55],alts:[[55,55,60],[45,45,50],[52,52,57]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:6,luster:'dull',density:3.0,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'지구 해양 지각의 주성분! 달 표면에도 있어요.',factEn:'Main ocean floor rock! Also found on the Moon.'},
+    {id:83,lv:2,emoji:'🩷',kr:'장미석영',en:'Rose Quartz',cat:'규산염',color:[210,160,170],alts:[[215,165,175],[205,155,165],[212,162,172]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'vitreous',density:2.65,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'분홍빛 석영! 사랑의 돌이라고 불려요.',factEn:'Pink quartz! Called the "stone of love".'},
+    {id:84,lv:2,emoji:'🟤',kr:'화강암',en:'Granite',cat:'규산염',color:[180,170,160],alts:[[190,180,170],[170,160,150],[185,175,165]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:6.5,luster:'dull',density:2.7,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'대륙 지각의 주성분! 석영+장석+운모의 혼합물.',factEn:'Continental crust! Mix of quartz + feldspar + mica.'},
+    {id:85,lv:2,emoji:'⬜',kr:'대리석',en:'Marble',cat:'탄산염',color:[240,238,235],alts:[[245,243,240],[235,233,230],[242,240,237]],crystal:'trigonal',streak:[255,255,255],streakN:['흰색','White'],hard:3,luster:'vitreous',density:2.71,flame:null,flameN:null,acidR:2,magnetic:false,taste:5,cleavage:'none',water:0,uv:1,conduct:0,factKr:'석회암이 변성된 암석! 미켈란젤로의 다비드 상 재료.',factEn:'Metamorphosed limestone! Michelangelo\'s David is made of it.'},
+    {id:86,lv:2,emoji:'⬛',kr:'편마암',en:'Gneiss',cat:'변성암',color:[130,125,120],alts:[[140,135,130],[120,115,110],[135,130,125]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:6.5,luster:'dull',density:2.7,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'줄무늬가 있는 변성암! 화강암이 열과 압력으로 변해요.',factEn:'Banded metamorphic rock! Granite transformed by heat & pressure.'},
+    {id:87,lv:2,emoji:'⬛',kr:'점판암',en:'Slate',cat:'변성암',color:[80,80,85],alts:[[85,85,90],[75,75,80],[82,82,87]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:3.5,luster:'dull',density:2.75,flame:null,flameN:null,acidR:0,magnetic:false,taste:5,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'얇은 판으로 쪼개지는 변성암! 지붕과 칠판의 재료.',factEn:'Splits into thin sheets! Used for roofs and blackboards.'},
+
+    // Level 3 more
+    {id:88,lv:3,emoji:'🟡',kr:'오티클레이즈',en:'Orthoclase',cat:'규산염',color:[215,195,170],alts:[[220,200,175],[210,190,165],[217,197,172]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:6,luster:'vitreous',density:2.56,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'모스 경도 6의 기준 광물! 도자기 유약의 재료.',factEn:'Mohs 6 reference mineral! Used in ceramic glazes.'},
+    {id:89,lv:3,emoji:'⬜',kr:'규회석',en:'Wollastonite',cat:'규산염',color:[235,230,225],alts:[[240,235,230],[230,225,220],[237,232,227]],crystal:'triclinic',streak:[255,255,255],streakN:['흰색','White'],hard:5,luster:'vitreous',density:2.9,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'석회암이 변성되면 만들어지는 흰 광물! 세라믹 원료.',factEn:'Forms when limestone metamorphoses! Ceramic raw material.'},
+    {id:90,lv:3,emoji:'🟤',kr:'녹렴석',en:'Epidote',cat:'규산염',color:[100,130,50],alts:[[105,135,55],[95,125,45],[102,132,52]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:6.5,luster:'vitreous',density:3.4,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'피스타치오 초록색! 변성암에서 자주 발견돼요.',factEn:'Pistachio green! Commonly found in metamorphic rocks.'},
+    {id:91,lv:3,emoji:'🟤',kr:'십자석',en:'Staurolite',cat:'규산염',color:[130,90,50],alts:[[135,95,55],[125,85,45],[132,92,52]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:7.5,luster:'vitreous',density:3.75,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'두 결정이 십자로 자라요! "요정의 십자가"라 불려요.',factEn:'Twin crystals form a cross! Called "fairy cross".'},
+    {id:92,lv:3,emoji:'⬜',kr:'빙정석',en:'Cryolite',cat:'할로겐화물',color:[230,235,240],alts:[[235,240,245],[225,230,235],[232,237,242]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:2.5,luster:'vitreous',density:2.97,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:2,uv:0,conduct:0,factKr:'물에 넣으면 투명하게 사라져요! 알루미늄 제련에 사용.',factEn:'Becomes invisible in water! Used in aluminum smelting.'},
+    {id:93,lv:3,emoji:'🟡',kr:'황비철석',en:'Arsenopyrite',cat:'황화물',color:[170,165,155],alts:[[175,170,160],[165,160,150],[172,167,157]],crystal:'monoclinic',streak:[50,50,40],streakN:['검은색','Black'],hard:5.5,luster:'metallic',density:6.07,flame:null,flameN:null,acidR:0,magnetic:false,taste:3,cleavage:'poor',water:0,uv:0,conduct:1,factKr:'비소의 원광석! 깨면 마늘 냄새가 나요. 주의!',factEn:'Arsenic ore! Smells like garlic when broken. Caution!'},
+    {id:94,lv:3,emoji:'🟤',kr:'인동석',en:'Enstatite',cat:'규산염',color:[160,150,130],alts:[[165,155,135],[155,145,125],[162,152,132]],crystal:'orthorhombic',streak:[255,255,255],streakN:['흰색','White'],hard:5.5,luster:'vitreous',density:3.2,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'운석에서 자주 발견되는 광물! 외계 물질의 증거.',factEn:'Commonly found in meteorites! Evidence of extraterrestrial matter.'},
+    {id:95,lv:3,emoji:'🟣',kr:'자주석',en:'Sugilite',cat:'규산염',color:[140,50,130],alts:[[145,55,135],[135,45,125],[142,52,132]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:6,luster:'waxy',density:2.74,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'1944년 일본에서 처음 발견된 보라색 보석!',factEn:'Purple gem first discovered in Japan in 1944!'},
+    {id:96,lv:3,emoji:'🔴',kr:'로도나이트',en:'Rhodonite',cat:'규산염',color:[200,80,100],alts:[[210,85,105],[190,75,95],[205,82,102]],crystal:'triclinic',streak:[255,255,255],streakN:['흰색','White'],hard:6,luster:'vitreous',density:3.6,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'장미빛 광물! 검은 산화망간 줄무늬가 특징이에요.',factEn:'Rose-pink mineral! Black manganese oxide veins are distinctive.'},
+    {id:97,lv:3,emoji:'🩵',kr:'라리마',en:'Larimar',cat:'규산염',color:[100,180,210],alts:[[105,185,215],[95,175,205],[102,182,212]],crystal:'triclinic',streak:[255,255,255],streakN:['흰색','White'],hard:5,luster:'silky',density:2.84,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'카리브해 색깔의 보석! 도미니카 공화국에서만 나와요.',factEn:'Caribbean-colored gem! Found only in Dominican Republic.'},
+
+    // Level 4 more
+    {id:98,lv:4,emoji:'🔵',kr:'사파이어',en:'Sapphire',cat:'산화물',color:[30,50,160],alts:[[35,55,170],[25,45,150],[32,52,165]],crystal:'trigonal',streak:[255,255,255],streakN:['흰색','White'],hard:9,luster:'adamantine',density:4.02,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'강옥의 파란 변종! 9월 탄생석. 루비와 같은 광물.',factEn:'Blue corundum! September birthstone. Same mineral as ruby.'},
+    {id:99,lv:4,emoji:'🟡',kr:'시트린',en:'Citrine',cat:'규산염',color:[230,190,60],alts:[[235,195,65],[225,185,55],[232,192,62]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'vitreous',density:2.65,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'노란 석영! 11월 탄생석. 자수정을 가열하면 만들어지기도 해요.',factEn:'Yellow quartz! November birthstone. Can be made by heating amethyst.'},
+    {id:100,lv:4,emoji:'🟤',kr:'연수정',en:'Smoky Quartz',cat:'규산염',color:[100,80,60],alts:[[105,85,65],[95,75,55],[102,82,62]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'vitreous',density:2.65,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'스코틀랜드의 국석! 방사선에 의해 갈색으로 변한 석영.',factEn:'Scotland\'s national gem! Quartz turned brown by radiation.'},
+    {id:101,lv:4,emoji:'🟢',kr:'페리도트',en:'Peridot',cat:'규산염',color:[130,180,50],alts:[[135,185,55],[125,175,45],[132,182,52]],crystal:'orthorhombic',streak:[255,255,255],streakN:['흰색','White'],hard:6.5,luster:'vitreous',density:3.32,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'감람석의 보석급! 8월 탄생석. 운석에서도 발견돼요.',factEn:'Gem-quality olivine! August birthstone. Found in meteorites too.'},
+    {id:102,lv:4,emoji:'🟡',kr:'크리소프레이즈',en:'Chrysoprase',cat:'규산염',color:[100,190,110],alts:[[105,195,115],[95,185,105],[102,192,112]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'vitreous',density:2.65,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'사과 초록색 석영! 니켈이 색을 만들어요.',factEn:'Apple-green quartz! Nickel creates the color.'},
+    {id:103,lv:4,emoji:'🔷',kr:'탄자나이트',en:'Tanzanite',cat:'규산염',color:[70,50,170],alts:[[75,55,175],[65,45,165],[72,52,172]],crystal:'orthorhombic',streak:[255,255,255],streakN:['흰색','White'],hard:6.5,luster:'vitreous',density:3.35,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'탄자니아에서만 나오는 보석! 1967년 발견된 희귀 광물.',factEn:'Only from Tanzania! Rare mineral discovered in 1967.'},
+    {id:104,lv:4,emoji:'🟡',kr:'스파듀민',en:'Spodumene',cat:'규산염',color:[200,210,190],alts:[[205,215,195],[195,205,185],[202,212,192]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'vitreous',density:3.18,flame:[200,50,50],flameN:['붉은빛','Red'],acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'리튬의 주요 광석! 쿤자이트와 히데나이트의 원석.',factEn:'Primary lithium ore! Source of kunzite and hiddenite.'},
+    {id:105,lv:4,emoji:'⬛',kr:'흑전기석',en:'Schorl',cat:'규산염',color:[20,20,25],alts:[[25,25,30],[15,15,20],[22,22,27]],crystal:'trigonal',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'vitreous',density:3.18,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'검은 전기석! 전체 전기석의 95%가 이 종류예요.',factEn:'Black tourmaline! 95% of all tourmaline is this variety.'},
+    {id:106,lv:4,emoji:'🩷',kr:'쿤자이트',en:'Kunzite',cat:'규산염',color:[220,170,200],alts:[[225,175,205],[215,165,195],[222,172,202]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'vitreous',density:3.18,flame:[200,50,50],flameN:['붉은빛','Red'],acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'분홍빛 스파듀민! 사랑의 보석이라 불려요.',factEn:'Pink spodumene! Called the "stone of love".'},
+    {id:107,lv:4,emoji:'🟢',kr:'말라카이트',en:'Dioptase',cat:'규산염',color:[20,160,100],alts:[[25,165,105],[15,155,95],[22,162,102]],crystal:'trigonal',streak:[80,180,130],streakN:['연초록','Light green'],hard:5,luster:'vitreous',density:3.3,flame:[50,200,100],flameN:['초록빛','Green'],acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'에메랄드보다 진한 초록! 구리 규산염 결정이에요.',factEn:'Greener than emerald! Copper silicate crystal.'},
+    {id:108,lv:4,emoji:'🟠',kr:'사금석',en:'Aventurine',cat:'규산염',color:[100,150,100],alts:[[105,155,105],[95,145,95],[102,152,102]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'vitreous',density:2.65,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'반짝이는 내포물이 있는 석영! 행운의 돌이라 불려요.',factEn:'Quartz with sparkly inclusions! Called "stone of luck".'},
+    {id:109,lv:4,emoji:'🟤',kr:'호안석',en:'Tiger\'s Eye',cat:'규산염',color:[160,120,40],alts:[[165,125,45],[155,115,35],[162,122,42]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'silky',density:2.65,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'호랑이 눈처럼 빛나는 보석! 빛의 줄무늬가 움직여요.',factEn:'Shines like a tiger\'s eye! Light stripe moves across surface.'},
+    {id:110,lv:4,emoji:'⬛',kr:'흑요석(눈꽃)',en:'Snowflake Obsidian',cat:'화산유리',color:[30,30,35],alts:[[25,25,30],[35,35,40],[28,28,33]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:5.5,luster:'vitreous',density:2.35,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'흑요석에 하얀 눈꽃 결정이 피어난 돌! 크리스토발라이트 포함.',factEn:'Obsidian with white snowflake crystals! Contains cristobalite.'},
+    {id:111,lv:3,emoji:'🟡',kr:'니켈',en:'Nickel',cat:'원소광물',color:[175,175,170],alts:[[180,180,175],[170,170,165],[177,177,172]],crystal:'cubic',streak:[200,200,200],streakN:['은백색','Silver-white'],hard:4,luster:'metallic',density:8.91,flame:null,flameN:null,acidR:0,magnetic:true,taste:3,cleavage:'none',water:0,uv:0,conduct:2,factKr:'자석에 끌리는 은백색 금속! 동전과 스테인리스에 사용.',factEn:'Silver metal attracted to magnets! Used in coins and stainless steel.'},
+    {id:112,lv:3,emoji:'🟠',kr:'코발트',en:'Cobalt',cat:'원소광물',color:[150,150,160],alts:[[155,155,165],[145,145,155],[152,152,162]],crystal:'hexagonal',streak:[200,200,200],streakN:['회색','Gray'],hard:5.5,luster:'metallic',density:8.9,flame:[50,80,255],flameN:['파란빛','Blue'],acidR:0,magnetic:true,taste:3,cleavage:'none',water:0,uv:0,conduct:2,factKr:'코발트 블루의 원료! 배터리에 필수적인 금속 원소.',factEn:'Source of cobalt blue! Essential metal for batteries.'},
+    {id:113,lv:2,emoji:'⬜',kr:'운석철',en:'Meteoritic Iron',cat:'원소광물',color:[160,155,150],alts:[[165,160,155],[155,150,145],[162,157,152]],crystal:'cubic',streak:[130,130,130],streakN:['회색','Gray'],hard:4.5,luster:'metallic',density:7.9,flame:null,flameN:null,acidR:0,magnetic:true,taste:3,cleavage:'none',water:0,uv:0,conduct:2,factKr:'우주에서 온 철! 비드만슈테텐 무늬가 나타나요.',factEn:'Iron from space! Shows Widmanstätten patterns.'},
+    {id:114,lv:2,emoji:'🟡',kr:'자연동',en:'Native Copper',cat:'원소광물',color:[190,100,40],alts:[[195,105,45],[185,95,35],[192,102,42]],crystal:'cubic',streak:[190,100,40],streakN:['구리색','Copper'],hard:2.5,luster:'metallic',density:8.96,flame:[50,200,100],flameN:['초록빛','Green'],acidR:0,magnetic:false,taste:3,cleavage:'none',water:0,uv:0,conduct:2,factKr:'자연 상태의 순수 구리! 인류 최초의 금속 도구 재료.',factEn:'Pure native copper! First metal tool material of humanity.'},
+    {id:115,lv:3,emoji:'🟤',kr:'아연',en:'Zinc',cat:'원소광물',color:[170,175,180],alts:[[175,180,185],[165,170,175],[172,177,182]],crystal:'hexagonal',streak:[200,200,200],streakN:['연회색','Light gray'],hard:2.5,luster:'metallic',density:7.13,flame:[100,200,100],flameN:['청록빛','Blue-green'],acidR:1,magnetic:false,taste:3,cleavage:'none',water:0,uv:0,conduct:2,factKr:'아연 도금으로 철을 녹으로부터 보호해요! 청록 불꽃.',factEn:'Galvanization protects iron from rust! Blue-green flame.'},
+    {id:116,lv:3,emoji:'🟤',kr:'납',en:'Lead',cat:'원소광물',color:[140,140,145],alts:[[145,145,150],[135,135,140],[142,142,147]],crystal:'cubic',streak:[180,180,180],streakN:['회색','Gray'],hard:1.5,luster:'metallic',density:11.34,flame:null,flameN:null,acidR:0,magnetic:false,taste:3,cleavage:'none',water:0,uv:0,conduct:2,factKr:'매우 무거운 금속! 밀도 11.34. 방사선 차폐에 사용.',factEn:'Very heavy metal! Density 11.34. Used for radiation shielding.'},
+    {id:117,lv:2,emoji:'🔴',kr:'보석광',en:'Realgar',cat:'황화물',color:[200,50,30],alts:[[210,55,35],[190,45,25],[205,52,32]],crystal:'monoclinic',streak:[200,100,50],streakN:['주황색','Orange'],hard:1.5,luster:'waxy',density:3.56,flame:null,flameN:null,acidR:0,magnetic:false,taste:3,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'선명한 빨간 비소 광물! 빛에 노출되면 노랗게 변해요.',factEn:'Vivid red arsenic mineral! Turns yellow when exposed to light.'},
+    {id:118,lv:2,emoji:'🟡',kr:'석황',en:'Orpiment',cat:'황화물',color:[220,200,50],alts:[[225,205,55],[215,195,45],[222,202,52]],crystal:'monoclinic',streak:[230,210,80],streakN:['노란색','Yellow'],hard:2,luster:'pearly',density:3.49,flame:null,flameN:null,acidR:0,magnetic:false,taste:3,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'금색 비소 광물! 고대 이집트에서 안료로 사용했어요.',factEn:'Golden arsenic mineral! Used as pigment in ancient Egypt.'},
+    {id:119,lv:3,emoji:'🟤',kr:'망간석',en:'Rhodochrosite',cat:'탄산염',color:[210,100,120],alts:[[215,105,125],[205,95,115],[212,102,122]],crystal:'trigonal',streak:[255,255,255],streakN:['흰색','White'],hard:3.5,luster:'vitreous',density:3.7,flame:null,flameN:null,acidR:1,magnetic:false,taste:5,cleavage:'perfect',water:0,uv:1,conduct:0,factKr:'장미빛 줄무늬의 아름다운 광물! 아르헨티나의 국석.',factEn:'Beautiful rose-banded mineral! National stone of Argentina.'},
+    {id:120,lv:3,emoji:'⬜',kr:'방소다석',en:'Sodalite',cat:'규산염',color:[50,60,130],alts:[[55,65,135],[45,55,125],[52,62,132]],crystal:'cubic',streak:[255,255,255],streakN:['흰색','White'],hard:5.5,luster:'vitreous',density:2.29,flame:[255,200,50],flameN:['노란빛','Yellow'],acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:1,conduct:0,factKr:'청금석과 비슷하지만 더 저렴한 파란 돌! 나트륨 함유.',factEn:'Blue like lapis but cheaper! Contains sodium.'},
+    {id:121,lv:4,emoji:'🟢',kr:'우바로바이트',en:'Uvarovite',cat:'규산염',color:[30,140,50],alts:[[35,145,55],[25,135,45],[32,142,52]],crystal:'cubic',streak:[255,255,255],streakN:['흰색','White'],hard:7.5,luster:'vitreous',density:3.77,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'유일하게 항상 초록색인 석류석! 매우 작은 결정으로만 나와요.',factEn:'Only garnet that\'s always green! Only found as tiny crystals.'},
+    {id:122,lv:4,emoji:'🟡',kr:'헬리오도르',en:'Golden Beryl',cat:'규산염',color:[235,210,80],alts:[[240,215,85],[230,205,75],[237,212,82]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7.5,luster:'vitreous',density:2.76,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'황금빛 녹주석! 철 이온이 노란색을 만들어요.',factEn:'Golden beryl! Iron ions create the yellow color.'},
+    {id:123,lv:4,emoji:'🩷',kr:'모가나이트',en:'Morganite',cat:'규산염',color:[230,180,190],alts:[[235,185,195],[225,175,185],[232,182,192]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7.5,luster:'vitreous',density:2.76,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'분홍빛 녹주석! JP 모건의 이름에서 따왔어요.',factEn:'Pink beryl! Named after financier J.P. Morgan.'},
+    {id:124,lv:4,emoji:'🟢',kr:'프레나이트',en:'Prehnite',cat:'규산염',color:[170,210,130],alts:[[175,215,135],[165,205,125],[172,212,132]],crystal:'orthorhombic',streak:[255,255,255],streakN:['흰색','White'],hard:6.5,luster:'vitreous',density:2.93,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'마치 포도 알갱이 같은 초록 보석! 남아공에서 처음 발견.',factEn:'Grape-like green gem! First discovered in South Africa.'},
+    {id:125,lv:4,emoji:'🟡',kr:'크리소콜라',en:'Chrysocolla',cat:'규산염',color:[60,170,160],alts:[[65,175,165],[55,165,155],[62,172,162]],crystal:'amorphous',streak:[200,230,220],streakN:['연청록','Pale blue-green'],hard:2.5,luster:'vitreous',density:2.2,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'청록색 구리 광물! 클레오파트라가 외교용 안료로 사용했어요.',factEn:'Turquoise copper mineral! Cleopatra used it as diplomatic pigment.'},
+    {id:126,lv:3,emoji:'⬛',kr:'흑운석',en:'Jet',cat:'유기광물',color:[20,20,22],alts:[[25,25,27],[15,15,17],[22,22,24]],crystal:'amorphous',streak:[40,35,30],streakN:['갈흑색','Dark brown'],hard:3.5,luster:'waxy',density:1.3,flame:[255,150,50],flameN:['오렌지빛','Orange'],acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'화석화된 나무! 빅토리아 여왕이 상복 장신구로 사용했어요.',factEn:'Fossilized wood! Queen Victoria wore it as mourning jewelry.'},
+    {id:127,lv:3,emoji:'🔴',kr:'산호',en:'Coral',cat:'유기광물',color:[200,80,70],alts:[[210,85,75],[190,75,65],[205,82,72]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:3.5,luster:'waxy',density:2.65,flame:null,flameN:null,acidR:2,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'바다 생물이 만든 보석! 탄산칼슘으로 산에 거품이 나요.',factEn:'Gem made by sea creatures! Calcium carbonate fizzes with acid.'},
+    {id:128,lv:4,emoji:'⬜',kr:'진주',en:'Pearl',cat:'유기광물',color:[235,230,225],alts:[[240,235,230],[230,225,220],[237,232,227]],crystal:'orthorhombic',streak:[255,255,255],streakN:['흰색','White'],hard:3,luster:'pearly',density:2.72,flame:null,flameN:null,acidR:2,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'조개 속 모래알이 만든 보석! 유일한 생물이 만드는 보석.',factEn:'Sand grain in oyster becomes gem! Only gem made by living creature.'},
+    {id:129,lv:2,emoji:'🟤',kr:'사암',en:'Sandstone',cat:'퇴적암',color:[200,170,120],alts:[[205,175,125],[195,165,115],[202,172,122]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:6,luster:'dull',density:2.35,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'모래가 굳어진 퇴적암! 그랜드 캐니언이 이 돌로 되어있어요.',factEn:'Cemented sand! Grand Canyon is made of this rock.'},
+    {id:130,lv:2,emoji:'⬛',kr:'셰일',en:'Shale',cat:'퇴적암',color:[90,85,75],alts:[[95,90,80],[85,80,70],[92,87,77]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:3,luster:'dull',density:2.4,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'진흙이 굳어진 퇴적암! 화석이 가장 많이 발견되는 암석.',factEn:'Hardened mud! Rock where most fossils are found.'},
+    {id:131,lv:3,emoji:'🟤',kr:'각력암',en:'Breccia',cat:'퇴적암',color:[160,130,100],alts:[[165,135,105],[155,125,95],[162,132,102]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:5,luster:'dull',density:2.5,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'깨진 돌 조각이 다시 굳어진 암석! 화산·지진 흔적.',factEn:'Broken rock fragments cemented together! Volcanic/earthquake evidence.'},
+    {id:132,lv:3,emoji:'⬛',kr:'응회암',en:'Tuff',cat:'화산암',color:[170,160,150],alts:[[175,165,155],[165,155,145],[172,162,152]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:3,luster:'dull',density:1.5,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'화산재가 굳어진 암석! 로마의 콜로세움이 이 돌로 지어졌어요.',factEn:'Solidified volcanic ash! Rome\'s Colosseum was built with it.'},
+    {id:133,lv:4,emoji:'🟤',kr:'규화목',en:'Petrified Wood',cat:'규산염',color:[150,110,70],alts:[[155,115,75],[145,105,65],[152,112,72]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'vitreous',density:2.6,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'나무가 돌이 된 화석! 나무 무늬가 그대로 남아있어요.',factEn:'Tree turned to stone! Wood grain perfectly preserved.'},
+    {id:134,lv:4,emoji:'🩵',kr:'문석',en:'Moonstone',cat:'규산염',color:[200,210,225],alts:[[205,215,230],[195,205,220],[202,212,227]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:6,luster:'pearly',density:2.57,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:1,conduct:0,factKr:'달빛이 떠다니는 보석! 빛에 따라 파란 광채가 움직여요.',factEn:'Floating moonlight gem! Blue sheen moves with the light.'},
+    {id:135,lv:4,emoji:'🌈',kr:'라브라도라이트',en:'Labradorite',cat:'규산염',color:[90,100,110],alts:[[95,105,115],[85,95,105],[92,102,112]],crystal:'triclinic',streak:[255,255,255],streakN:['흰색','White'],hard:6,luster:'vitreous',density:2.7,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'무지개빛이 번쩍이는 장석! 보는 각도마다 색이 변해요.',factEn:'Rainbow-flashing feldspar! Color changes with viewing angle.'},
+    {id:136,lv:3,emoji:'🟡',kr:'텅스텐',en:'Tungsten',cat:'원소광물',color:[140,140,145],alts:[[145,145,150],[135,135,140],[142,142,147]],crystal:'cubic',streak:[180,180,180],streakN:['회색','Gray'],hard:7.5,luster:'metallic',density:19.25,flame:null,flameN:null,acidR:0,magnetic:false,taste:3,cleavage:'none',water:0,uv:0,conduct:2,factKr:'녹는점이 가장 높은 금속! 3422°C. 전구 필라멘트 재료.',factEn:'Highest melting point metal! 3422°C. Light bulb filament.'},
+    {id:137,lv:3,emoji:'⬜',kr:'알루미늄',en:'Aluminum',cat:'원소광물',color:[200,200,205],alts:[[205,205,210],[195,195,200],[202,202,207]],crystal:'cubic',streak:[220,220,220],streakN:['은백색','Silver-white'],hard:2.75,luster:'metallic',density:2.7,flame:null,flameN:null,acidR:0,magnetic:false,taste:3,cleavage:'none',water:0,uv:0,conduct:2,factKr:'자연산은 매우 희귀! 지각에서 세 번째로 많지만 순수 형태는 드물어요.',factEn:'Native form is very rare! 3rd most abundant in crust but pure form is rare.'},
+    {id:138,lv:4,emoji:'🟡',kr:'감람석운석',en:'Pallasite',cat:'운석',color:[150,160,80],alts:[[155,165,85],[145,155,75],[152,162,82]],crystal:'orthorhombic',streak:[255,255,255],streakN:['흰색','White'],hard:6.5,luster:'vitreous',density:4.8,flame:null,flameN:null,acidR:0,magnetic:true,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'철 속에 감람석 결정! 소행성 핵과 맨틀의 경계에서 온 운석.',factEn:'Olivine crystals in iron! Meteorite from asteroid core-mantle boundary.'},
+    {id:139,lv:2,emoji:'⬛',kr:'흑운모편암',en:'Schist',cat:'변성암',color:[100,95,90],alts:[[105,100,95],[95,90,85],[102,97,92]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:4,luster:'pearly',density:2.7,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'판상으로 쪼개지는 변성암! 운모가 반짝이는 특징.',factEn:'Splits into plates! Shiny mica flakes are distinctive.'},
+    {id:140,lv:3,emoji:'🟤',kr:'천연유리',en:'Tektite',cat:'유리',color:[35,30,25],alts:[[40,35,30],[30,25,20],[37,32,27]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:5.5,luster:'vitreous',density:2.5,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'운석 충돌로 만들어진 유리! 수백만 년 전 하늘에서 내렸어요.',factEn:'Glass from meteorite impact! Rained from sky millions of years ago.'},
+    {id:141,lv:4,emoji:'🟡',kr:'벤토나이트',en:'Bentonite',cat:'규산염',color:[190,185,170],alts:[[195,190,175],[185,180,165],[192,187,172]],crystal:'monoclinic',streak:[255,255,255],streakN:['흰색','White'],hard:1.5,luster:'dull',density:2.6,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:4,uv:0,conduct:0,factKr:'물을 만나면 18배로 팽창하는 점토! 고양이 모래 원료.',factEn:'Clay that expands 18x with water! Cat litter material.'},
+    {id:142,lv:2,emoji:'🔵',kr:'석청',en:'Azurite Nodule',cat:'탄산염',color:[20,40,150],alts:[[25,45,155],[15,35,145],[22,42,152]],crystal:'monoclinic',streak:[40,60,180],streakN:['파란색','Blue'],hard:3.5,luster:'vitreous',density:3.77,flame:null,flameN:null,acidR:2,magnetic:false,taste:5,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'공작석의 자매 광물! 시간이 지나면 초록 공작석으로 변해요.',factEn:'Sister mineral of malachite! Transforms into green malachite over time.'},
+    {id:143,lv:3,emoji:'⬜',kr:'볼라스토나이트',en:'Witherite',cat:'탄산염',color:[225,220,210],alts:[[230,225,215],[220,215,205],[227,222,212]],crystal:'orthorhombic',streak:[255,255,255],streakN:['흰색','White'],hard:3.5,luster:'vitreous',density:4.29,flame:[130,220,80],flameN:['연두빛','Yellow-green'],acidR:2,magnetic:false,taste:5,cleavage:'poor',water:0,uv:1,conduct:0,factKr:'바륨 탄산염! 산에 거품이 나고 연두빛 불꽃이 나요.',factEn:'Barium carbonate! Fizzes with acid and gives yellow-green flame.'},
+    {id:144,lv:3,emoji:'🟡',kr:'오토클레이즈 (페그마타이트)',en:'Microcline',cat:'규산염',color:[80,170,150],alts:[[85,175,155],[75,165,145],[82,172,152]],crystal:'triclinic',streak:[255,255,255],streakN:['흰색','White'],hard:6,luster:'vitreous',density:2.56,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'아마존석의 원석! 청록색 장석으로 보석으로 사용돼요.',factEn:'Source of amazonite! Turquoise feldspar used as gemstone.'},
+    {id:145,lv:4,emoji:'🟢',kr:'말라카이트 드러시',en:'Malachite Druse',cat:'탄산염',color:[20,120,50],alts:[[25,125,55],[15,115,45],[22,122,52]],crystal:'monoclinic',streak:[100,180,100],streakN:['연초록','Light green'],hard:4,luster:'silky',density:4.0,flame:[50,200,100],flameN:['초록빛','Green'],acidR:2,magnetic:false,taste:5,cleavage:'perfect',water:0,uv:0,conduct:0,factKr:'둥근 공작석 군집! 동굴 벽에 초록 카펫처럼 자라요.',factEn:'Round malachite clusters! Grows like green carpet on cave walls.'},
+    {id:146,lv:4,emoji:'🟤',kr:'운석',en:'Chondrite',cat:'운석',color:[110,105,95],alts:[[115,110,100],[105,100,90],[112,107,97]],crystal:'amorphous',streak:[130,120,110],streakN:['갈회색','Brown-gray'],hard:4,luster:'dull',density:3.4,flame:null,flameN:null,acidR:0,magnetic:true,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'태양계의 원시 물질! 46억 년 전 태양계 탄생의 증거.',factEn:'Primordial solar system material! Evidence of solar system birth 4.6B years ago.'},
+    {id:147,lv:3,emoji:'🟡',kr:'자연금(사금)',en:'Placer Gold',cat:'원소광물',color:[230,200,60],alts:[[235,205,65],[225,195,55],[232,202,62]],crystal:'cubic',streak:[230,200,60],streakN:['금색','Golden'],hard:2.5,luster:'metallic',density:19.3,flame:null,flameN:null,acidR:0,magnetic:false,taste:3,cleavage:'none',water:0,uv:0,conduct:2,factKr:'강바닥에서 발견되는 금 알갱이! 골드러시의 주인공.',factEn:'Gold nuggets from riverbeds! Star of the Gold Rush.'},
+    {id:148,lv:2,emoji:'⬜',kr:'백악',en:'Chalk',cat:'탄산염',color:[245,243,238],alts:[[248,246,241],[242,240,235],[246,244,239]],crystal:'amorphous',streak:[255,255,255],streakN:['흰색','White'],hard:1,luster:'dull',density:2.5,flame:null,flameN:null,acidR:2,magnetic:false,taste:5,cleavage:'none',water:3,uv:1,conduct:0,factKr:'미세한 조개 화석! 도버 해안의 하얀 절벽이 백악으로 되어있어요.',factEn:'Microscopic shells! White Cliffs of Dover are made of chalk.'},
+    {id:149,lv:3,emoji:'🟡',kr:'크롬철석',en:'Chromite Ore',cat:'산화물',color:[45,42,38],alts:[[50,47,43],[40,37,33],[47,44,40]],crystal:'cubic',streak:[55,45,35],streakN:['갈색','Brown'],hard:5.5,luster:'metallic',density:4.8,flame:null,flameN:null,acidR:0,magnetic:true,taste:3,cleavage:'none',water:0,uv:0,conduct:1,factKr:'크롬과 페로크롬의 원료! 스테인리스 스틸 제조에 핵심.',factEn:'Source of chrome & ferrochrome! Key for stainless steel.'},
+    {id:150,lv:4,emoji:'🔴',kr:'알렉산드라이트',en:'Alexandrite',cat:'산화물',color:[60,120,80],alts:[[65,125,85],[55,115,75],[62,122,82]],crystal:'orthorhombic',streak:[255,255,255],streakN:['흰색','White'],hard:8.5,luster:'vitreous',density:3.73,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'poor',water:0,uv:0,conduct:0,factKr:'낮에는 초록, 밤에는 빨강! 색이 변하는 마법의 보석.',factEn:'Green by day, red by night! Color-changing magical gemstone.'},
+    {id:151,lv:4,emoji:'⬛',kr:'오닉스',en:'Onyx',cat:'규산염',color:[25,25,28],alts:[[30,30,33],[20,20,23],[27,27,30]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'waxy',density:2.65,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'검은 줄무늬 마노! 고대부터 카메오 보석으로 사용했어요.',factEn:'Black banded agate! Used for cameo gems since ancient times.'},
+    {id:152,lv:4,emoji:'🔴',kr:'카넬리안',en:'Carnelian',cat:'규산염',color:[190,60,30],alts:[[200,65,35],[180,55,25],[195,62,32]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'waxy',density:2.65,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'주황빛 석영! 나폴레옹이 행운의 돌로 지녔어요.',factEn:'Orange quartz! Napoleon carried it as a lucky charm.'},
+    {id:153,lv:4,emoji:'🟢',kr:'혈석',en:'Bloodstone',cat:'규산염',color:[40,80,40],alts:[[45,85,45],[35,75,35],[42,82,42]],crystal:'hexagonal',streak:[255,255,255],streakN:['흰색','White'],hard:7,luster:'waxy',density:2.65,flame:null,flameN:null,acidR:0,magnetic:false,taste:0,cleavage:'none',water:0,uv:0,conduct:0,factKr:'초록 바탕에 빨간 점! 피처럼 보이는 적철석 반점이에요.',factEn:'Green with red spots! Hematite spots look like blood drops.'},
+];
+
+// ===== Break tool power mapping =====
+const BREAK_POWER = { wood: 3, steel: 6, chisel: 8, diamond: 10 };
+const BREAK_NAMES = {
+    wood: ['나무망치','Wooden Mallet'],
+    steel: ['쇠망치','Steel Hammer'],
+    chisel: ['정+망치','Chisel+Hammer'],
+    diamond: ['다이아몬드 톱','Diamond Saw']
+};
+
+// ===== Luster / Crystal names =====
+const LUSTER_N = {
+    metallic:['금속광택','Metallic'], vitreous:['유리광택','Vitreous'],
+    pearly:['진주광택','Pearly'], silky:['비단광택','Silky'],
+    waxy:['밀랍광택','Waxy'], adamantine:['금강광택','Adamantine'], dull:['무광택','Dull']
+};
+const CRYSTAL_N = {
+    cubic:['정육면체','Cubic'], hexagonal:['육각기둥','Hexagonal'],
+    monoclinic:['단사정계','Monoclinic'], orthorhombic:['사방정계','Orthorhombic'],
+    tetragonal:['정방정계','Tetragonal'], triclinic:['삼사정계','Triclinic'],
+    amorphous:['비결정질','Amorphous'], trigonal:['삼방정계','Trigonal']
+};
+const DENSITY_LABELS = [['가벼움','Light'],['보통','Normal'],['무거움','Heavy'],['매우 무거움','Very Heavy']];
+const ACID_LABELS = [['반응 없음','No reaction'],['약한 거품','Mild fizz'],['강한 거품!','Strong fizz!']];
+const TASTE_LABELS = [['무맛','Tasteless'],['짠맛!','Salty!'],['쓴맛','Bitter'],['금속맛','Metallic'],['달콤한맛','Sweet'],['떫은맛','Chalky/Astringent']];
+const CLEAVAGE_N = {
+    'perfect':['완벽한 벽개','Perfect cleavage'],'good':['양호한 벽개','Good cleavage'],
+    'poor':['불량한 벽개','Poor cleavage'],'none':['벽개 없음 (패각상)','No cleavage (conchoidal)']
+};
+const UV_LABELS = [['반응 없음','No reaction'],['약한 형광','Weak fluorescence'],['강한 형광!','Strong fluorescence!'],['인광!','Phosphorescence!']];
+const CONDUCT_LABELS = [['부도체','Insulator'],['반도체','Semiconductor'],['도체!','Conductor!'],['초전도','Superconductor']];
+const WATER_LABELS = [['반응 없음','No reaction'],['뜸!','Floats!'],['녹음!','Dissolves!'],['부분 녹음','Partially dissolves'],['색 변화','Color change']];
+
+const CAT_COLORS = {
+    '규산염': '#3b82f6', '탄산염': '#10b981', '황화물': '#f59e0b',
+    '산화물': '#ef4444', '원소광물': '#8b5cf6', '할로겐화물': '#06b6d4',
+    '황산염': '#ec4899', '인산염': '#84cc16', '화산유리': '#64748b',
+    '화산암': '#78716c', '변성암': '#a78bfa', '퇴적암': '#d97706',
+    '유기광물': '#f97316', '운석': '#6366f1', '유리': '#94a3b8',
+};
+
+// ===== Difficulty Config =====
+let difficulty = 'normal';
+let combo = 0;
+let maxCombo = 0;
+const DIFF_CONFIG = {
+    easy:   { maxLv: 1, bonus: 1.5, label: '쉬움', labelEn: 'Easy' },
+    normal: { maxLv: 2, bonus: 2,   label: '보통', labelEn: 'Normal' },
+    hard:   { maxLv: 3, bonus: 3,   label: '어려움', labelEn: 'Hard' },
+    expert: { maxLv: 4, bonus: 5,   label: '전문가', labelEn: 'Expert' }
+};
+
+// ===== Game State =====
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+const MAX_LIVES = 5;
+let lives = MAX_LIVES;
+
+let cur = null; // current mineral
+let curTool = null;
+let tests = {}; // completed tests
+let testCount = 0;
+let score = 0;
+let level = 1;
+let coll = new Set();
+let specNum = 0;
+let answered = false;
+let broken = false;
+let brokenWith = null; // which tool broke it
+let animating = false;
+let selectedSuspect = null;
+
+// Eliminated suspects
+let eliminated = new Set();
+
+// Rock shape
+let rockShape = [], rockX = 0, rockY = 0, rockW = 0, rockH = 0;
+
+// Streak
+let streakActive = false, streakPts = [];
+
+// Anim
+let animState = { type: null, frame: 0, max: 0, data: {} };
+
+function save() {
+    // Score/collection are session-based now (reset per game)
+}
+
+// ===== Rock Shape =====
+const SHAPES = [
+    [[.15,.5],[.2,.25],[.35,.1],[.55,.08],[.75,.15],[.88,.3],[.92,.5],[.85,.72],[.7,.88],[.5,.92],[.3,.85],[.12,.7]],
+    [[.1,.45],[.18,.2],[.4,.05],[.65,.1],[.85,.25],[.95,.5],[.88,.75],[.65,.9],[.35,.95],[.15,.78]],
+    [[.2,.55],[.12,.3],[.3,.08],[.6,.05],[.82,.18],[.9,.42],[.88,.68],[.72,.88],[.45,.95],[.22,.82]],
+    [[.08,.5],[.15,.22],[.38,.06],[.62,.08],[.8,.2],[.92,.45],[.9,.7],[.75,.85],[.5,.92],[.25,.88],[.1,.72]],
+    [[.18,.48],[.22,.18],[.45,.05],[.7,.12],[.88,.35],[.92,.58],[.82,.82],[.58,.92],[.32,.88],[.12,.7]],
+];
+
+function genRockShape() {
+    const tpl = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+    rockW = 200 + Math.random() * 60;
+    rockH = 170 + Math.random() * 40;
+    rockX = (W - rockW) / 2;
+    rockY = (H - rockH) / 2 - 10;
+    rockShape = tpl.map(([px,py]) => [
+        rockX + (px + (Math.random()-.5)*.04) * rockW,
+        rockY + (py + (Math.random()-.5)*.04) * rockH
+    ]);
+}
+
+function hash(i) { return ((i * 2654435761) >>> 0) / 4294967296; }
+function mineralImg(m) { return `../../images/minerals/${m.id}_${m.en.toLowerCase().replace(/[\s'()]/g,'_').replace(/_+/g,'_')}.jpg`; }
+
+// ===== Render =====
+function render() {
+    ctx.clearRect(0, 0, W, H);
+
+    // BG
+    const bg = ctx.createRadialGradient(W/2, H/2, 50, W/2, H/2, 380);
+    bg.addColorStop(0, '#0d0d25');
+    bg.addColorStop(1, '#050510');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid dots
+    ctx.fillStyle = 'rgba(6,182,212,0.05)';
+    for (let x = 0; x < W; x += 30) for (let y = 0; y < H; y += 30) ctx.fillRect(x,y,1,1);
+
+    if (!cur) return;
+
+    if (broken) drawBroken(cur);
+    else drawWhole(cur);
+
+    if (animState.type) renderAnim();
+
+    // Streak plate
+    if (curTool === 'streak' || (tests.streak && streakPts.length > 0)) drawStreak();
+}
+
+function drawWhole(m) {
+    // Shadow
+    ctx.save();
+    ctx.beginPath();
+    rockShape.forEach(([x,y],i) => i===0 ? ctx.moveTo(x+6,y+10) : ctx.lineTo(x+6,y+10));
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fill();
+    ctx.restore();
+
+    // Body
+    ctx.save();
+    ctx.beginPath();
+    rockShape.forEach(([x,y],i) => i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y));
+    ctx.closePath();
+    ctx.clip();
+    pixelFill(m, 0, 0);
+    surfaceLines(m);
+    highlight();
+    ctx.restore();
+
+    // Outline
+    ctx.beginPath();
+    rockShape.forEach(([x,y],i) => i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y));
+    ctx.closePath();
+    ctx.strokeStyle = `rgba(${m.color[0]},${m.color[1]},${m.color[2]},0.5)`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+}
+
+function drawBroken(m) {
+    const gap = 35;
+    const mid = rockX + rockW/2;
+
+    // Left half
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(mid-gap/2, rockY-5);
+    rockShape.filter(([x])=>x<mid).forEach(([x,y])=>ctx.lineTo(x-gap/2,y));
+    ctx.lineTo(mid-gap/2, rockY+rockH+5);
+    ctx.closePath(); ctx.clip();
+    pixelFill(m, -gap/2, 0);
+    ctx.restore();
+
+    // Right half
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(mid+gap/2, rockY-5);
+    rockShape.filter(([x])=>x>=mid).forEach(([x,y])=>ctx.lineTo(x+gap/2,y));
+    ctx.lineTo(mid+gap/2, rockY+rockH+5);
+    ctx.closePath(); ctx.clip();
+    pixelFill(m, gap/2, 0);
+    ctx.restore();
+
+    // Cross-section crystal pattern
+    crystalFace(m, mid-gap/2-1, rockY, 10, rockH);
+    crystalFace(m, mid+gap/2-9, rockY, 10, rockH);
+}
+
+function pixelFill(m, ox, oy) {
+    const ps = 4;
+    for (let px=rockX-10; px<rockX+rockW+10; px+=ps) {
+        for (let py=rockY-10; py<rockY+rockH+10; py+=ps) {
+            const idx = ~~(px/ps)*317 + ~~(py/ps)*541;
+            const h = hash(idx);
+            const c = m.alts[~~(h*m.alts.length)];
+            const v = ~~((hash(idx+7777)-.5)*20);
+            ctx.fillStyle = `rgb(${c[0]+v},${c[1]+v},${c[2]+v})`;
+            ctx.fillRect(px+ox, py+oy, ps, ps);
+        }
+    }
+}
+
+function surfaceLines(m) {
+    ctx.strokeStyle = `rgba(${m.color[0]*.6},${m.color[1]*.6},${m.color[2]*.6},0.25)`;
+    ctx.lineWidth = 1;
+    for (let i=0; i<7; i++) {
+        ctx.beginPath();
+        ctx.moveTo(rockX+hash(i*99)*rockW, rockY+hash(i*99+50)*rockH);
+        ctx.lineTo(rockX+hash(i*99)*rockW+(hash(i*99+100)-.5)*80, rockY+hash(i*99+50)*rockH+(hash(i*99+150)-.5)*60);
+        ctx.stroke();
+    }
+}
+
+function highlight() {
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath();
+    ctx.ellipse(rockX+rockW*.35, rockY+rockH*.3, rockW*.2, rockH*.12, -.3, 0, Math.PI*2);
+    ctx.fill();
+}
+
+function crystalFace(m, x, y, w, h) {
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
+    const [cr,cg,cb] = m.color;
+    ctx.fillStyle = `rgb(${Math.min(255,cr+30)},${Math.min(255,cg+30)},${Math.min(255,cb+30)})`;
+    ctx.fillRect(x,y,w,h);
+    ctx.strokeStyle = `rgba(${cr*.5},${cg*.5},${cb*.5},0.5)`;
+    ctx.lineWidth = 1;
+    const p = m.crystal;
+    if (p==='cubic') { for(let gy=y;gy<y+h;gy+=11) for(let gx=x;gx<x+w;gx+=11) ctx.strokeRect(gx,gy,11,11); }
+    else if (p==='hexagonal'||p==='trigonal') { for(let gy=y;gy<y+h;gy+=13) { const off=(~~((gy-y)/13)%2)*6; for(let gx=x+off;gx<x+w;gx+=13) drawHex(gx,gy,6); } }
+    else if (p==='monoclinic') { for(let gy=y;gy<y+h;gy+=14) for(let gx=x;gx<x+w;gx+=9) { ctx.beginPath(); ctx.moveTo(gx+2,gy); ctx.lineTo(gx+9,gy); ctx.lineTo(gx+7,gy+14); ctx.lineTo(gx,gy+14); ctx.closePath(); ctx.stroke(); } }
+    else if (p==='orthorhombic') { for(let gy=y;gy<y+h;gy+=15) for(let gx=x;gx<x+w;gx+=9) ctx.strokeRect(gx,gy,9,15); }
+    else { for(let i=0;i<5;i++) { ctx.beginPath(); ctx.moveTo(x,y+hash(i*33)*h); ctx.bezierCurveTo(x+w*.3,y+hash(i*33+1)*h,x+w*.7,y+hash(i*33+2)*h,x+w,y+hash(i*33+3)*h); ctx.stroke(); } }
+    for(let i=0;i<4;i++) { ctx.fillStyle=`rgba(255,255,255,${.3+hash(i*111+99)*.4})`; ctx.fillRect(x+hash(i*111)*w,y+hash(i*111+50)*h,2,2); }
+    ctx.restore();
+}
+
+function drawHex(cx,cy,r) {
+    ctx.beginPath();
+    for(let i=0;i<6;i++){const a=Math.PI/3*i-Math.PI/6; if(i===0)ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)); else ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}
+    ctx.closePath(); ctx.stroke();
+}
+
+function drawStreak() {
+    const py=H-60, px=W/2-110, pw=220, ph=45;
+    ctx.fillStyle='#e8e4dc';
+    ctx.beginPath(); ctx.roundRect(px,py,pw,ph,6); ctx.fill();
+    ctx.strokeStyle='#ccc8c0'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.roundRect(px,py,pw,ph,6); ctx.stroke();
+    ctx.fillStyle='#999'; ctx.font='20px JetBrains Mono'; ctx.textAlign='center';
+    ctx.fillText(t('조흔판 (Streak Plate)','Streak Plate'),W/2,py+ph+12); ctx.textAlign='left';
+    if(streakPts.length>1) {
+        const sc=cur.streak;
+        ctx.strokeStyle=`rgb(${sc[0]},${sc[1]},${sc[2]})`; ctx.lineWidth=4; ctx.lineCap='round';
+        ctx.beginPath(); streakPts.forEach(([x,y],i)=>i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)); ctx.stroke();
+    }
+}
+
+// ===== Animations =====
+function startAnim(type, data, frames) {
+    animState={type,frame:0,max:frames,data}; animating=true; animLoop();
+}
+function animLoop() {
+    if(!animating) return;
+    animState.frame++;
+    render();
+    if(animState.frame>=animState.max) { animating=false; animState.type=null; render(); renderChips(); updateHud(); return; }
+    requestAnimationFrame(animLoop);
+}
+
+function renderAnim() {
+    const {type,frame,max,data} = animState;
+    const p = frame/max;
+
+    if (type==='hammerHit') {
+        const cx=rockX+rockW/2, cy=rockY+rockH/2;
+        const toolY = rockY - 60;
+        // Phase 1: Hammer raises (0~0.25)
+        if(p<.25) {
+            const raise = p/.25;
+            drawHammerTool(data.toolType, cx-15, toolY - raise*40, -raise*Math.PI/3);
+        }
+        // Phase 2: Hammer swings down (0.25~0.4)
+        else if(p<.4) {
+            const swing = (p-.25)/.15;
+            const angle = -Math.PI/3 * (1-swing*swing); // easeOut
+            drawHammerTool(data.toolType, cx-15, toolY - 40 + swing*50, angle);
+        }
+        // Phase 3: Impact! (0.4~0.55)
+        else if(p<.55) {
+            const ip=(p-.4)/.15;
+            // White flash
+            ctx.fillStyle=`rgba(255,255,255,${.6*(1-ip)})`;
+            ctx.beginPath(); ctx.arc(cx,cy,60*(1+ip*.3),0,Math.PI*2); ctx.fill();
+            // Rock fragments flying out
+            for(let i=0;i<16;i++) {
+                const a=(Math.PI*2/16)*i + hash(i*31)*.3;
+                const d=15+ip*70;
+                const fx=cx+Math.cos(a)*d, fy=cy+Math.sin(a)*d;
+                const sz=3+hash(i*77)*5;
+                const[r,g,b]=cur.alts[i%cur.alts.length];
+                ctx.fillStyle=`rgba(${r},${g},${b},${1-ip})`;
+                ctx.save(); ctx.translate(fx,fy); ctx.rotate(ip*3+i); ctx.fillRect(-sz/2,-sz/2,sz,sz); ctx.restore();
+            }
+            // Screen shake effect
+            if(ip<.5) { ctx.save(); ctx.translate(Math.sin(ip*30)*3, Math.cos(ip*25)*3); ctx.restore(); }
+        }
+        // Phase 4: Crack line appears (0.55~1.0)
+        else {
+            const cp=(p-.55)/.45;
+            ctx.strokeStyle=`rgba(255,255,255,${.6*cp})`;
+            ctx.lineWidth=2;
+            ctx.beginPath();
+            ctx.moveTo(cx, rockY+5);
+            ctx.lineTo(cx + Math.sin(cp*3)*8, rockY + rockH*cp);
+            ctx.stroke();
+        }
+    }
+    else if (type==='hammerBounce') {
+        const cx=rockX+rockW/2, cy=rockY+rockH/2;
+        const toolY = rockY - 60;
+        // Phase 1: Raise (0~0.2)
+        if(p<.2) {
+            const raise = p/.2;
+            drawHammerTool(data.toolType, cx-15, toolY - raise*40, -raise*Math.PI/3);
+        }
+        // Phase 2: Swing down (0.2~0.35)
+        else if(p<.35) {
+            const swing = (p-.2)/.15;
+            drawHammerTool(data.toolType, cx-15, toolY - 40 + swing*50, -Math.PI/3*(1-swing));
+        }
+        // Phase 3: Bounce! Tool flies back with sparks (0.35~0.65)
+        else if(p<.65) {
+            const bp=(p-.35)/.3;
+            // Hammer flies back
+            const bx = cx - 15 - bp*120;
+            const by = toolY + 10 - bp*80 + bp*bp*60; // parabola
+            drawHammerTool(data.toolType, bx, by, bp*Math.PI*.8);
+            // Impact sparks
+            for(let i=0;i<8;i++) {
+                const a=(Math.PI*2/8)*i, d=10+bp*40;
+                const alpha=Math.max(0,1-bp*1.5);
+                ctx.fillStyle=`rgba(255,200,50,${alpha})`;
+                ctx.fillRect(cx+Math.cos(a)*d-2,cy+Math.sin(a)*d-2,4,4);
+            }
+            // Shock waves on rock
+            if(bp<.4) {
+                ctx.strokeStyle=`rgba(255,200,100,${.5*(1-bp*2.5)})`;
+                ctx.lineWidth=2;
+                ctx.beginPath(); ctx.arc(cx,cy,20+bp*50,0,Math.PI*2); ctx.stroke();
+            }
+        }
+        // Phase 4: Result text (0.55~1)
+        if(p>.55) {
+            ctx.font='bold 22px Jua'; ctx.textAlign='center';
+            ctx.fillStyle='#ef4444';
+            ctx.fillText(t('튕겨나갔다! 더 강한 도구 필요!','Bounced off! Need stronger tool!'), W/2, rockY-40);
+            ctx.textAlign='left';
+        }
+    }
+    else if (type==='flame') {
+        const bx=W/2, by=H-20;
+        // Bunsen burner body
+        ctx.fillStyle='#444'; ctx.fillRect(bx-5,by-60,10,60); // tube
+        ctx.fillStyle='#555'; ctx.fillRect(bx-8,by-65,16,8); // nozzle
+        ctx.fillStyle='#666'; ctx.fillRect(bx-18,by,36,6); ctx.fillRect(bx-22,by+4,44,4); // base
+
+        // Gas valve knob
+        ctx.fillStyle='#888'; ctx.beginPath(); ctx.arc(bx+12,by-30,4,0,Math.PI*2); ctx.fill();
+
+        // Flame (multi-layered)
+        const fh=65+Math.sin(p*15)*8;
+        const fc=data.fc; const bc=[50,100,255];
+        const t1=Math.min(1,p*2.5);
+        const r=fc?lerp(bc[0],fc[0],t1):bc[0];
+        const g=fc?lerp(bc[1],fc[1],t1):bc[1];
+        const b=fc?lerp(bc[2],fc[2],t1):bc[2];
+
+        // Outer flame glow
+        const glow=ctx.createRadialGradient(bx,by-65-fh*.3,5,bx,by-65-fh*.3,fh*1.2);
+        glow.addColorStop(0,`rgba(${r},${g},${b},0.15)`);
+        glow.addColorStop(1,`rgba(${r},${g},${b},0)`);
+        ctx.fillStyle=glow; ctx.fillRect(bx-fh,by-65-fh,fh*2,fh*1.5);
+
+        // Inner flame
+        for(let layer=0;layer<3;layer++) {
+            const lw = 14-layer*4, lh=fh-layer*15;
+            const la = .9-layer*.25;
+            const lr=layer===0?r:layer===1?lerp(r,255,.5):255;
+            const lg=layer===0?g:layer===1?lerp(g,255,.5):255;
+            const lb=layer===0?b:layer===1?lerp(b,200,.5):200;
+            const wobble=Math.sin(p*20+layer*2)*3;
+            ctx.fillStyle=`rgba(${lr},${lg},${lb},${la})`;
+            ctx.beginPath();
+            ctx.moveTo(bx-lw/2+wobble,by-65);
+            ctx.quadraticCurveTo(bx-lw*.8+wobble,by-65-lh*.5,bx+wobble*.5,by-65-lh);
+            ctx.quadraticCurveTo(bx+lw*.8+wobble,by-65-lh*.5,bx+lw/2+wobble,by-65);
+            ctx.fill();
+        }
+
+        // Rock specimen held by tongs
+        if(p>.1) {
+            const holdP=Math.min(1,(p-.1)/.15);
+            const rx=bx-25, ry=by-65-fh*.3-holdP*10;
+            // Tongs
+            ctx.strokeStyle='#777'; ctx.lineWidth=3;
+            ctx.beginPath(); ctx.moveTo(bx-70,by-40); ctx.lineTo(rx+5,ry+8); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(bx-65,by-35); ctx.lineTo(rx+5,ry+12); ctx.stroke();
+            // Small rock piece
+            ctx.fillStyle=`rgb(${cur.color[0]},${cur.color[1]},${cur.color[2]})`;
+            ctx.beginPath(); ctx.arc(rx+5,ry+10,8,0,Math.PI*2); ctx.fill();
+            ctx.strokeStyle=`rgba(${cur.color[0]*0.6},${cur.color[1]*0.6},${cur.color[2]*0.6},0.8)`;
+            ctx.lineWidth=1; ctx.stroke();
+        }
+
+        // Result text
+        if(p>.65) {
+            ctx.font='bold 20px Jua'; ctx.textAlign='center';
+            ctx.fillStyle=fc?`rgb(${fc[0]},${fc[1]},${fc[2]})`:'#888';
+            ctx.fillText(fc?`🔥 ${data.fn}`:t('반응 없음','No reaction'),bx,by-65-fh-15);
+            ctx.textAlign='left';
+        }
+    }
+    else if (type==='acid') {
+        const cx=rockX+rockW/2, cy=rockY+rockH/2;
+        // Dropper/Pipette
+        const dropperX=cx+5, dropperBaseY=rockY-80;
+        const dropperTipY=rockY-15;
+
+        // Phase 1: Dropper appears and moves down (0~0.2)
+        const dropperY = dropperBaseY + (p<.2 ? (p/.2)*40 : 40);
+        if(p<.5) {
+            // Dropper body (glass tube)
+            ctx.fillStyle='rgba(200,230,200,0.3)'; // translucent glass
+            ctx.fillRect(dropperX-3, dropperY, 6, 50);
+            // Rubber bulb on top
+            ctx.fillStyle='#d44'; // red rubber
+            ctx.beginPath(); ctx.arc(dropperX, dropperY, 8, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle='#c33';
+            ctx.beginPath(); ctx.arc(dropperX, dropperY-3, 6, Math.PI, 0); ctx.fill();
+            // Tip
+            ctx.fillStyle='rgba(200,230,200,0.4)';
+            ctx.beginPath();
+            ctx.moveTo(dropperX-3, dropperY+50);
+            ctx.lineTo(dropperX-1, dropperY+58);
+            ctx.lineTo(dropperX+1, dropperY+58);
+            ctx.lineTo(dropperX+3, dropperY+50);
+            ctx.fill();
+            // Liquid inside
+            ctx.fillStyle='rgba(100,255,100,0.5)';
+            ctx.fillRect(dropperX-2, dropperY+15, 4, 35);
+
+            // Squeeze animation (bulb compresses)
+            if(p>.15 && p<.3) {
+                const sq=(p-.15)/.15;
+                ctx.fillStyle='#b22';
+                ctx.save();
+                ctx.translate(dropperX, dropperY);
+                ctx.scale(1+sq*.1, 1-sq*.2);
+                ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Phase 2: Drops falling (0.2~0.45)
+        if(p>.18&&p<.5) {
+            const dp = (p-.18)/.32;
+            for(let d=0;d<3;d++) {
+                const delay = d*0.12;
+                const ddp = Math.max(0, dp-delay);
+                if(ddp>0 && ddp<1) {
+                    const dy = dropperY+58 + ddp*80;
+                    const size = 3+Math.sin(ddp*Math.PI)*2;
+                    // Drop shape
+                    ctx.fillStyle=`rgba(100,255,100,${.7*(1-ddp)})`;
+                    ctx.beginPath();
+                    ctx.moveTo(dropperX, dy-size*2);
+                    ctx.quadraticCurveTo(dropperX+size, dy, dropperX, dy+size);
+                    ctx.quadraticCurveTo(dropperX-size, dy, dropperX, dy-size*2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        // Phase 3: Splash on rock (0.35~0.5)
+        if(p>.33&&p<.55) {
+            const sp=(p-.33)/.22;
+            ctx.fillStyle=`rgba(100,255,100,${.4*(1-sp)})`;
+            ctx.beginPath(); ctx.ellipse(cx,rockY+rockH*.3,10+sp*15,3+sp*5,0,0,Math.PI*2); ctx.fill();
+        }
+
+        // Phase 4: Bubbles (0.4~0.9) if reaction
+        if(p>.38&&data.r>0) {
+            const bp=(p-.38)/.62;
+            const count=data.r===2?25:10;
+            for(let i=0;i<count;i++) {
+                const delay=hash(i*77)*.3;
+                const bbp=Math.max(0,(bp-delay)/(1-delay));
+                if(bbp<=0||bbp>=1) continue;
+                const bx=cx+(hash(i*77+11)-.5)*50;
+                const by=rockY+rockH*.3-bbp*120;
+                const br=2+hash(i*77+99)*4;
+                const al=Math.max(0,1-bbp);
+                // Bubble
+                ctx.strokeStyle=`rgba(150,255,150,${al*.8})`;
+                ctx.fillStyle=`rgba(200,255,200,${al*.3})`;
+                ctx.lineWidth=1;
+                ctx.beginPath(); ctx.arc(bx,by,br+Math.sin(bbp*10)*.5,0,Math.PI*2);
+                ctx.fill(); ctx.stroke();
+                // Highlight
+                ctx.fillStyle=`rgba(255,255,255,${al*.3})`;
+                ctx.beginPath(); ctx.arc(bx-br*.3,by-br*.3,br*.3,0,Math.PI*2); ctx.fill();
+            }
+            // Foam on surface if strong
+            if(data.r===2 && bp<.8) {
+                for(let i=0;i<8;i++) {
+                    const fx=cx+(hash(i*33)-.5)*40;
+                    ctx.fillStyle=`rgba(200,255,200,${.3*(1-bp)})`;
+                    ctx.beginPath(); ctx.arc(fx,rockY+rockH*.3-5+hash(i*33+5)*10,3+hash(i*33+10)*4,0,Math.PI*2); ctx.fill();
+                }
+            }
+        }
+
+        // Result text
+        if(p>.65) {
+            ctx.font='bold 20px Jua'; ctx.textAlign='center';
+            const l=ACID_LABELS[data.r];
+            ctx.fillStyle=data.r>0?'#4f4':'#888';
+            ctx.fillText(data.r>0?'💨 '+t(l[0],l[1]):t(l[0],l[1]),cx,rockY-40);
+            ctx.textAlign='left';
+        }
+    }
+    else if (type==='magnet') {
+        const my=rockY+rockH/2;
+        // Horseshoe magnet drawn properly
+        const startX = rockX - 100;
+        const targetX = data.m ? rockX - 15 : startX + 40;
+        const mx = startX + (targetX-startX) * (data.m ? Math.min(1,p*1.5) : Math.sin(p*Math.PI*.8)*.7);
+
+        // Draw horseshoe magnet
+        ctx.save();
+        ctx.translate(mx, my);
+        // Arms
+        ctx.fillStyle='#cc3333'; ctx.fillRect(0,-20,35,10); // top arm (N)
+        ctx.fillStyle='#3355cc'; ctx.fillRect(0,10,35,10); // bottom arm (S)
+        // Curved part
+        ctx.strokeStyle='#888'; ctx.lineWidth=10;
+        ctx.beginPath(); ctx.arc(0,0,15,Math.PI/2,-Math.PI/2,true); ctx.stroke();
+        // N/S labels
+        ctx.font='bold 20px JetBrains Mono';
+        ctx.fillStyle='#fff'; ctx.fillText('N',12,-12); ctx.fillText('S',12,18);
+        ctx.restore();
+
+        // Magnetic field lines (if attracted)
+        if(data.m && p>.3) {
+            const fp=Math.min(1,(p-.3)/.4);
+            for(let i=0;i<6;i++) {
+                const ly=my-15+i*6;
+                const endX=rockX-5;
+                const curveP=fp;
+                ctx.strokeStyle=`rgba(6,182,212,${.15+Math.sin(p*8+i)*.1})`;
+                ctx.lineWidth=1;
+                ctx.setLineDash([4,4]);
+                ctx.beginPath();
+                ctx.moveTo(mx+35,ly);
+                ctx.quadraticCurveTo((mx+35+endX)/2, ly+(i-2.5)*3*curveP, endX, ly);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            // Attraction particles
+            if(p>.6) {
+                for(let i=0;i<5;i++) {
+                    const pp=((p-.6)*3+i*.2)%1;
+                    const px=rockX-5-pp*30;
+                    ctx.fillStyle=`rgba(6,182,212,${.5*(1-pp)})`;
+                    ctx.fillRect(px,my-8+i*4,3,2);
+                }
+            }
+            // Contact spark
+            if(p>.85) {
+                const sp=(p-.85)/.15;
+                ctx.fillStyle=`rgba(100,200,255,${.6*(1-sp)})`;
+                ctx.beginPath(); ctx.arc(rockX-5,my,8+sp*10,0,Math.PI*2); ctx.fill();
+            }
+        }
+
+        // Result text
+        if(p>.75) {
+            ctx.font='bold 20px Jua'; ctx.textAlign='center';
+            ctx.fillStyle=data.m?'#06b6d4':'#888';
+            ctx.fillText(data.m?'🧲 '+t('끌림!','Attracted!'):t('반응 없음','No reaction'),W/2,rockY-35);
+            ctx.textAlign='left';
+        }
+    }
+    else if (type==='luster') {
+        // Flashlight body
+        const flX = rockX - 60 + p*20; // slight movement
+        const flY = rockY - 30;
+        const beamTarget = rockX + p * rockW;
+
+        // Flashlight body
+        ctx.save();
+        ctx.translate(flX, flY);
+        ctx.rotate(Math.atan2(rockY+rockH*.3-flY, beamTarget-flX));
+        // Body tube
+        ctx.fillStyle='#555'; ctx.fillRect(0,-6,40,12);
+        ctx.fillStyle='#666'; ctx.fillRect(-5,-8,10,16); // head
+        // Lens
+        ctx.fillStyle='rgba(255,255,200,0.6)'; ctx.beginPath(); ctx.arc(-5,0,7,0,Math.PI*2); ctx.fill();
+        // Button
+        ctx.fillStyle='#888'; ctx.fillRect(15,-8,5,3);
+        // Grip lines
+        ctx.strokeStyle='#444'; ctx.lineWidth=1;
+        for(let i=0;i<3;i++) { ctx.beginPath(); ctx.moveTo(22+i*5,-6); ctx.lineTo(22+i*5,6); ctx.stroke(); }
+        ctx.restore();
+
+        // Light beam cone
+        const beamCx = beamTarget;
+        const beamCy = rockY+rockH*.3;
+        const beamW = 40+Math.sin(p*5)*5;
+
+        // Beam cone shape
+        ctx.save();
+        ctx.globalAlpha=.2;
+        ctx.fillStyle='rgba(255,255,200,1)';
+        ctx.beginPath();
+        ctx.moveTo(flX-3,flY);
+        ctx.lineTo(beamCx-beamW/2,beamCy-beamW/3);
+        ctx.lineTo(beamCx+beamW/2,beamCy+beamW/3);
+        ctx.lineTo(flX+3,flY);
+        ctx.fill();
+        ctx.globalAlpha=1;
+        ctx.restore();
+
+        // Spot light on rock
+        const spot=ctx.createRadialGradient(beamCx,beamCy,5,beamCx,beamCy,beamW);
+        spot.addColorStop(0,'rgba(255,255,220,0.35)');
+        spot.addColorStop(.5,'rgba(255,255,200,0.1)');
+        spot.addColorStop(1,'rgba(255,255,200,0)');
+        ctx.fillStyle=spot;
+        ctx.beginPath(); ctx.arc(beamCx,beamCy,beamW,0,Math.PI*2); ctx.fill();
+
+        // Reflection based on luster
+        const l=data.l;
+        if(l==='metallic') {
+            const si=Math.max(0,1-Math.abs(p-.5)*3);
+            ctx.fillStyle=`rgba(255,255,255,${.6*si})`;
+            ctx.beginPath(); ctx.arc(beamCx,beamCy,14,0,Math.PI*2); ctx.fill();
+            // Sharp specular lines
+            for(let i=0;i<4;i++) {
+                const a=Math.PI*2/4*i+p*2;
+                ctx.strokeStyle=`rgba(255,255,255,${.4*si})`;
+                ctx.lineWidth=1.5;
+                ctx.beginPath(); ctx.moveTo(beamCx,beamCy);
+                ctx.lineTo(beamCx+Math.cos(a)*20,beamCy+Math.sin(a)*20);
+                ctx.stroke();
+            }
+        } else if(l==='adamantine') {
+            for(let i=0;i<10;i++) {
+                const al=Math.max(0,.8-Math.abs(p-.2-i*.06)*4);
+                if(al<=0) continue;
+                const sx=beamCx+(hash(i*44)-.5)*30,sy=beamCy+(hash(i*44+22)-.5)*25;
+                // Star sparkle
+                ctx.fillStyle=`rgba(255,255,255,${al})`;
+                ctx.beginPath();
+                for(let j=0;j<4;j++) { const sa=Math.PI/2*j+p*3; ctx.moveTo(sx,sy); ctx.lineTo(sx+Math.cos(sa)*6,sy+Math.sin(sa)*6); }
+                ctx.strokeStyle=`rgba(255,255,255,${al})`; ctx.lineWidth=1.5; ctx.stroke();
+                ctx.beginPath(); ctx.arc(sx,sy,2,0,Math.PI*2); ctx.fill();
+            }
+        } else if(l==='pearly') {
+            const hue=p*360;
+            ctx.fillStyle=`hsla(${hue},60%,80%,0.15)`;
+            ctx.beginPath(); ctx.ellipse(beamCx,beamCy,28,18,p*.5,0,Math.PI*2); ctx.fill();
+            ctx.fillStyle=`hsla(${hue+120},60%,80%,0.1)`;
+            ctx.beginPath(); ctx.ellipse(beamCx+5,beamCy-5,20,12,p*.5+.5,0,Math.PI*2); ctx.fill();
+        } else if(l==='silky') {
+            ctx.fillStyle=`rgba(255,250,230,0.12)`;
+            for(let i=0;i<5;i++) ctx.fillRect(beamCx-3+i*2-5,rockY,2,rockH);
+        } else if(l==='waxy') {
+            ctx.fillStyle=`rgba(255,255,200,0.08)`;
+            ctx.beginPath(); ctx.ellipse(beamCx,beamCy,25,20,0,0,Math.PI*2); ctx.fill();
+        }
+
+        // Result text
+        if(p>.82) {
+            const ln=LUSTER_N[l]||[l,l];
+            ctx.font='bold 20px Jua'; ctx.textAlign='center';
+            ctx.fillStyle='#06b6d4';
+            ctx.fillText('💡 '+t(ln[0],ln[1]),W/2,rockY-38);
+            ctx.textAlign='left';
+        }
+    }
+    else if (type==='density') {
+        const sx=W/2, sy=H-40;
+        // Detailed balance scale
+        // Base
+        ctx.fillStyle='#5a4a3a';
+        ctx.fillRect(sx-25,sy+5,50,8); // base plate
+        ctx.fillRect(sx-3,sy-55,6,60); // pillar
+
+        // Decorative top
+        ctx.fillStyle='#8a7a6a';
+        ctx.beginPath(); ctx.arc(sx,sy-55,6,0,Math.PI*2); ctx.fill();
+
+        // Beam tilts
+        const tilt=data.cat*.08*(p>.25?Math.min(1,(p-.25)*2):0);
+        ctx.save(); ctx.translate(sx,sy-55); ctx.rotate(tilt);
+
+        // Beam
+        ctx.fillStyle='#9a8a7a'; ctx.fillRect(-75,-2,150,4);
+
+        // Left pan (specimen) — chain + pan
+        ctx.strokeStyle='#887'; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(-65,2); ctx.lineTo(-65,18); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-55,2); ctx.lineTo(-55,18); ctx.stroke();
+        // Pan
+        ctx.fillStyle='#aa9'; ctx.beginPath();
+        ctx.moveTo(-72,18); ctx.lineTo(-48,18); ctx.quadraticCurveTo(-60,28,-72,18); ctx.fill();
+        ctx.strokeStyle='#998'; ctx.lineWidth=1; ctx.beginPath();
+        ctx.moveTo(-72,18); ctx.lineTo(-48,18); ctx.quadraticCurveTo(-60,28,-72,18); ctx.stroke();
+
+        // Rock on left pan
+        if(p>.15) {
+            const drop=Math.min(1,(p-.15)/.1);
+            const ry = 12 - (1-drop)*30;
+            ctx.fillStyle=`rgb(${cur.color[0]},${cur.color[1]},${cur.color[2]})`;
+            ctx.beginPath(); ctx.ellipse(-60,ry,10,7,0,0,Math.PI*2); ctx.fill();
+            ctx.strokeStyle=`rgba(${cur.color[0]*.7},${cur.color[1]*.7},${cur.color[2]*.7},0.5)`;
+            ctx.lineWidth=1; ctx.stroke();
+        }
+
+        // Right pan (reference weights)
+        ctx.strokeStyle='#887'; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(55,2); ctx.lineTo(55,18); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(65,2); ctx.lineTo(65,18); ctx.stroke();
+        ctx.fillStyle='#aa9'; ctx.beginPath();
+        ctx.moveTo(48,18); ctx.lineTo(72,18); ctx.quadraticCurveTo(60,28,48,18); ctx.fill();
+        ctx.strokeStyle='#998'; ctx.lineWidth=1; ctx.beginPath();
+        ctx.moveTo(48,18); ctx.lineTo(72,18); ctx.quadraticCurveTo(60,28,48,18); ctx.stroke();
+
+        // Reference weight blocks
+        ctx.fillStyle='#776';
+        ctx.fillRect(54,10,12,8);
+        if(data.cat>=2) ctx.fillRect(54,4,12,6); // extra weight for heavy
+
+        ctx.restore();
+
+        // Pointer needle swinging
+        if(p>.25) {
+            const swing=Math.sin((p-.25)*8)*Math.max(0,1-(p-.25)*2);
+            ctx.save(); ctx.translate(sx,sy-55);
+            ctx.rotate(tilt+swing*.1);
+            ctx.fillStyle='#c44';
+            ctx.beginPath(); ctx.moveTo(-1,-5); ctx.lineTo(1,-5); ctx.lineTo(0,20); ctx.fill();
+            ctx.restore();
+        }
+
+        // Result text
+        if(p>.72) {
+            const lb=DENSITY_LABELS[data.cat];
+            ctx.font='bold 20px Jua'; ctx.textAlign='center';
+            ctx.fillStyle='#06b6d4';
+            ctx.fillText('⚖️ '+t(lb[0],lb[1]),sx,sy-75);
+            // Show density value
+            ctx.font='20px JetBrains Mono';
+            ctx.fillStyle='#64748b';
+            ctx.fillText(`${cur.density} g/cm³`,sx,sy-58);
+            ctx.textAlign='left';
+        }
+    }
+    else if (type==='taste') {
+        const cx=rockX+rockW/2, cy=rockY+rockH/2;
+        // Phase 1: Hand picks up small piece (0~0.2)
+        if(p<.2) {
+            const pp=p/.2;
+            ctx.save();
+            ctx.translate(cx+40, H-10-pp*120);
+            ctx.fillStyle='#e8b88a';
+            ctx.beginPath(); ctx.arc(0,0,14,0,Math.PI*2); ctx.fill();
+            ctx.fillRect(-3,-20,6,15);
+            ctx.fillRect(4,-18,5,13);
+            ctx.fillStyle=`rgb(${cur.color[0]},${cur.color[1]},${cur.color[2]})`;
+            ctx.beginPath(); ctx.arc(0,-22,5,0,Math.PI*2); ctx.fill();
+            ctx.restore();
+        }
+        // Phase 2: Move to mouth area (0.2~0.4)
+        else if(p<.4) {
+            const mp=(p-.2)/.2;
+            const hx=cx+40-mp*60, hy=H-130-mp*50;
+            ctx.save();
+            ctx.translate(hx, hy);
+            ctx.fillStyle='#e8b88a';
+            ctx.beginPath(); ctx.arc(0,0,14,0,Math.PI*2); ctx.fill();
+            ctx.fillRect(-3,-20,6,15);
+            ctx.fillRect(4,-18,5,13);
+            ctx.fillStyle=`rgb(${cur.color[0]},${cur.color[1]},${cur.color[2]})`;
+            ctx.beginPath(); ctx.arc(0,-22,5,0,Math.PI*2); ctx.fill();
+            ctx.restore();
+            if(mp>.5) {
+                const mop=(mp-.5)/.5;
+                ctx.fillStyle='#d44';
+                ctx.beginPath();
+                ctx.ellipse(cx-20, hy-30, 12*mop, 8*mop, 0, 0, Math.PI);
+                ctx.fill();
+                ctx.strokeStyle='#c77'; ctx.lineWidth=2;
+                ctx.beginPath();
+                ctx.ellipse(cx-20, hy-30, 15*mop, 4*mop, 0, Math.PI, 0);
+                ctx.stroke();
+            }
+        }
+        // Phase 3: Tasting - reaction (0.4~0.7)
+        else if(p<.7) {
+            const tp=(p-.4)/.3;
+            const hx=cx-20, hy=H-180;
+            ctx.fillStyle='#d44';
+            ctx.beginPath(); ctx.ellipse(hx, hy, 12, 8, 0, 0, Math.PI); ctx.fill();
+            ctx.fillStyle=`rgb(${cur.color[0]},${cur.color[1]},${cur.color[2]})`;
+            ctx.beginPath(); ctx.arc(hx, hy-3, 5, 0, Math.PI*2); ctx.fill();
+            const tv = data.tv;
+            if(tv===1) {
+                for(let i=0;i<6;i++) {
+                    const a=Math.PI*2/6*i+tp*2;
+                    ctx.fillStyle=`rgba(255,255,255,${.7*(1-tp)})`;
+                    ctx.fillRect(hx+Math.cos(a)*(15+tp*20)-1, hy+Math.sin(a)*(15+tp*20)-1, 3, 3);
+                }
+            } else if(tv===2) {
+                ctx.strokeStyle=`rgba(100,200,100,${.5*(1-tp)})`;
+                ctx.lineWidth=2;
+                for(let i=0;i<3;i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(hx-20, hy-15-i*8);
+                    ctx.quadraticCurveTo(hx, hy-20-i*8+Math.sin(tp*10)*5, hx+20, hy-15-i*8);
+                    ctx.stroke();
+                }
+            } else if(tv===3) {
+                for(let i=0;i<4;i++) {
+                    const sx=hx+(hash(i*55)-.5)*30, sy=hy-10-hash(i*55+11)*25;
+                    ctx.strokeStyle=`rgba(200,200,255,${.6*(1-tp)})`;
+                    ctx.lineWidth=1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(sx,sy); ctx.lineTo(sx+3,sy-6); ctx.lineTo(sx-2,sy-8); ctx.lineTo(sx+2,sy-14);
+                    ctx.stroke();
+                }
+            } else if(tv===5) {
+                for(let i=0;i<5;i++) {
+                    const dx=hx+(hash(i*33)-.5)*25, dy=hy-5-tp*30*hash(i*33+11);
+                    ctx.fillStyle=`rgba(200,200,200,${.3*(1-tp)})`;
+                    ctx.beginPath(); ctx.arc(dx,dy,4+tp*3,0,Math.PI*2); ctx.fill();
+                }
+            }
+        }
+        // Phase 4: Result (0.65~1)
+        if(p>.65) {
+            ctx.font='bold 20px Jua'; ctx.textAlign='center';
+            const tv=data.tv;
+            ctx.fillStyle=tv>0?'#f59e0b':'#888';
+            const label=data.tn;
+            ctx.fillText('👅 '+t(label[0],label[1]),W/2,rockY-40);
+            ctx.textAlign='left';
+        }
+    }
+    else if (type==='water') {
+        const cx=W/2, cy=H/2;
+        // Glass beaker
+        const bkX=cx-40, bkY=cy-30, bkW=80, bkH=100;
+        // Beaker outline
+        ctx.strokeStyle='rgba(150,200,255,0.5)'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.moveTo(bkX,bkY); ctx.lineTo(bkX,bkY+bkH); ctx.lineTo(bkX+bkW,bkY+bkH); ctx.lineTo(bkX+bkW,bkY); ctx.stroke();
+        // Water fill
+        const waterY = bkY + 25;
+        ctx.fillStyle='rgba(50,130,220,0.35)';
+        ctx.fillRect(bkX+2,waterY,bkW-4,bkH-25+bkY-waterY);
+        // Water surface wobble
+        ctx.fillStyle='rgba(100,180,255,0.25)';
+        for(let i=0;i<8;i++) { ctx.beginPath(); ctx.arc(bkX+10+i*9, waterY+Math.sin(p*10+i)*3, 5, 0, Math.PI*2); ctx.fill(); }
+        // Rock dropping in
+        const wv=data.w;
+        if(p<0.3) {
+            const drop=p/0.3;
+            const ry=bkY-40+(waterY-bkY+40+30)*drop;
+            ctx.fillStyle=`rgb(${cur.color[0]},${cur.color[1]},${cur.color[2]})`;
+            ctx.beginPath(); ctx.arc(cx,ry,12,0,Math.PI*2); ctx.fill();
+        } else if(p<0.45) {
+            // Splash
+            const sp=(p-0.3)/0.15;
+            for(let i=0;i<8;i++) {
+                const a=-Math.PI+Math.PI*i/7;
+                const d=10+sp*25;
+                ctx.fillStyle=`rgba(100,180,255,${0.6*(1-sp)})`;
+                ctx.beginPath(); ctx.arc(cx+Math.cos(a)*d, waterY-5+Math.sin(a)*d*0.5, 3, 0, Math.PI*2); ctx.fill();
+            }
+        }
+        // Reaction phase (0.4~0.9)
+        if(p>0.35) {
+            if(wv===1) {
+                // Float up
+                const fp=Math.min(1,(p-0.35)/0.3);
+                const fy=waterY+30-fp*35;
+                ctx.fillStyle=`rgb(${cur.color[0]},${cur.color[1]},${cur.color[2]})`;
+                ctx.beginPath(); ctx.arc(cx,fy,12,0,Math.PI*2); ctx.fill();
+                // Bobbing on surface
+                if(fp>=1) { ctx.beginPath(); ctx.arc(cx,waterY-5+Math.sin(p*8)*3,12,0,Math.PI*2); ctx.fill(); }
+            } else if(wv===2) {
+                // Dissolve - rock shrinks
+                const dp=Math.min(1,(p-0.35)/0.4);
+                const sz=12*(1-dp);
+                ctx.fillStyle=`rgba(${cur.color[0]},${cur.color[1]},${cur.color[2]},${1-dp})`;
+                ctx.beginPath(); ctx.arc(cx,waterY+30,sz,0,Math.PI*2); ctx.fill();
+                // Particles dispersing
+                for(let i=0;i<10;i++) {
+                    const a=Math.PI*2/10*i;
+                    ctx.fillStyle=`rgba(${cur.color[0]},${cur.color[1]},${cur.color[2]},${0.5*(1-dp)})`;
+                    ctx.beginPath(); ctx.arc(cx+Math.cos(a+p*3)*dp*30,waterY+30+Math.sin(a+p*3)*dp*20,2,0,Math.PI*2); ctx.fill();
+                }
+            } else if(wv===3) {
+                // Partial dissolve - rock gets smaller but stays
+                const dp=Math.min(1,(p-0.35)/0.4);
+                const sz=12-dp*4;
+                ctx.fillStyle=`rgb(${cur.color[0]},${cur.color[1]},${cur.color[2]})`;
+                ctx.beginPath(); ctx.arc(cx,waterY+30,sz,0,Math.PI*2); ctx.fill();
+                // Water gets cloudy
+                ctx.fillStyle=`rgba(${cur.color[0]},${cur.color[1]},${cur.color[2]},${0.1*dp})`;
+                ctx.fillRect(bkX+2,waterY,bkW-4,bkH-25);
+            } else if(wv===4) {
+                // Color change
+                ctx.fillStyle=`rgb(${cur.color[0]},${cur.color[1]},${cur.color[2]})`;
+                ctx.beginPath(); ctx.arc(cx,waterY+30,12,0,Math.PI*2); ctx.fill();
+                const cp=Math.min(1,(p-0.35)/0.3);
+                ctx.fillStyle=`rgba(${Math.min(255,cur.color[0]+60)},${Math.min(255,cur.color[1]+40)},${Math.min(255,cur.color[2]+30)},${0.5*cp})`;
+                ctx.beginPath(); ctx.arc(cx,waterY+30,14,0,Math.PI*2); ctx.fill();
+            } else {
+                // No reaction - just sits
+                ctx.fillStyle=`rgb(${cur.color[0]},${cur.color[1]},${cur.color[2]})`;
+                ctx.beginPath(); ctx.arc(cx,waterY+30,12,0,Math.PI*2); ctx.fill();
+            }
+        }
+        // Result text
+        if(p>0.7) {
+            const wl=WATER_LABELS[wv];
+            ctx.font='bold 22px Jua'; ctx.textAlign='center';
+            ctx.fillStyle=wv>0?'#3b82f6':'#888';
+            ctx.fillText('💧 '+t(wl[0],wl[1]),cx,bkY-20);
+            ctx.textAlign='left';
+        }
+    }
+    else if (type==='crystal') {
+        const cx=rockX+rockW/2, cy=rockY+rockH/2;
+        const crys=data.c;
+        // Magnifying glass moves over rock
+        const mgX=rockX+p*rockW, mgY=rockY+rockH*0.3+Math.sin(p*5)*10;
+        // Glass circle
+        ctx.strokeStyle='#aaa'; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.arc(mgX,mgY,28,0,Math.PI*2); ctx.stroke();
+        // Handle
+        ctx.strokeStyle='#8B6914'; ctx.lineWidth=5;
+        ctx.beginPath(); ctx.moveTo(mgX+20,mgY+20); ctx.lineTo(mgX+45,mgY+45); ctx.stroke();
+        // Magnified area (show crystal pattern)
+        ctx.save();
+        ctx.beginPath(); ctx.arc(mgX,mgY,26,0,Math.PI*2); ctx.clip();
+        ctx.fillStyle='rgba(255,255,240,0.15)'; ctx.fill();
+        // Draw crystal lattice inside lens
+        const [cr,cg,cb] = cur.color;
+        ctx.strokeStyle=`rgba(${Math.min(255,cr+80)},${Math.min(255,cg+80)},${Math.min(255,cb+80)},0.7)`;
+        ctx.lineWidth=1.5;
+        if(crys==='cubic') { for(let gy=mgY-24;gy<mgY+24;gy+=10) for(let gx=mgX-24;gx<mgX+24;gx+=10) ctx.strokeRect(gx,gy,10,10); }
+        else if(crys==='hexagonal'||crys==='trigonal') { for(let gy=mgY-24;gy<mgY+24;gy+=11) { const off=(~~((gy-mgY+24)/11)%2)*5; for(let gx=mgX-24+off;gx<mgX+24;gx+=11) drawHex(gx,gy,5); } }
+        else if(crys==='monoclinic') { for(let gy=mgY-24;gy<mgY+24;gy+=12) for(let gx=mgX-24;gx<mgX+24;gx+=8) { ctx.beginPath(); ctx.moveTo(gx+2,gy); ctx.lineTo(gx+8,gy); ctx.lineTo(gx+6,gy+12); ctx.lineTo(gx,gy+12); ctx.closePath(); ctx.stroke(); } }
+        else if(crys==='orthorhombic') { for(let gy=mgY-24;gy<mgY+24;gy+=13) for(let gx=mgX-24;gx<mgX+24;gx+=8) ctx.strokeRect(gx,gy,8,13); }
+        else if(crys==='tetragonal') { for(let gy=mgY-24;gy<mgY+24;gy+=12) for(let gx=mgX-24;gx<mgX+24;gx+=8) ctx.strokeRect(gx,gy,8,12); }
+        else if(crys==='triclinic') { for(let gy=mgY-24;gy<mgY+24;gy+=11) for(let gx=mgX-24;gx<mgX+24;gx+=9) { ctx.beginPath(); ctx.moveTo(gx+3,gy); ctx.lineTo(gx+9,gy+2); ctx.lineTo(gx+6,gy+11); ctx.lineTo(gx,gy+9); ctx.closePath(); ctx.stroke(); } }
+        else { /* amorphous - random curves */ for(let i=0;i<5;i++) { ctx.beginPath(); ctx.moveTo(mgX-20+hash(i*77)*40,mgY-20+hash(i*77+11)*40); ctx.bezierCurveTo(mgX-10+hash(i*77+22)*20,mgY-10+hash(i*77+33)*20,mgX+hash(i*77+44)*20,mgY+hash(i*77+55)*20,mgX-20+hash(i*77+66)*40,mgY-20+hash(i*77+77)*40); ctx.stroke(); } }
+        ctx.restore();
+        // Lens highlight
+        ctx.fillStyle='rgba(255,255,255,0.15)';
+        ctx.beginPath(); ctx.ellipse(mgX-8,mgY-10,10,6,-0.3,0,Math.PI*2); ctx.fill();
+        // Result text
+        if(p>0.75) {
+            const cn3=CRYSTAL_N[crys]||[crys,crys];
+            ctx.font='bold 22px Jua'; ctx.textAlign='center';
+            ctx.fillStyle='#06b6d4';
+            ctx.fillText('🔬 '+t(cn3[0],cn3[1]),W/2,rockY-40);
+            ctx.textAlign='left';
+        }
+    }
+    else if (type==='cleavage') {
+        const cx=rockX+rockW/2, cy=rockY+rockH/2;
+        const cl=data.cl;
+        // Magnifying glass on edge of rock
+        const mgX=cx+rockW*0.3, mgY=cy;
+        // Phase 1: chisel taps (0~0.3)
+        if(p<0.3) {
+            const tp=p/0.3;
+            const cX=cx-20, cY=cy-30+Math.sin(tp*Math.PI)*(-20);
+            ctx.fillStyle='#999'; ctx.beginPath();
+            ctx.moveTo(cX-2,cY+5); ctx.lineTo(cX+2,cY+5); ctx.lineTo(cX+4,cY-8); ctx.lineTo(cX-4,cY-8); ctx.fill();
+            ctx.fillStyle='#8B6914'; ctx.fillRect(cX-3,cY+5,6,20);
+            if(tp>0.7) { flash(); }
+        }
+        // Phase 2: show broken surface (0.3~1)
+        if(p>0.3) {
+            const zp=Math.min(1,(p-0.3)/0.3);
+            // Zoom circle on break edge
+            ctx.save();
+            ctx.strokeStyle='rgba(6,182,212,0.5)'; ctx.lineWidth=2;
+            ctx.beginPath(); ctx.arc(mgX,mgY,30+zp*10,0,Math.PI*2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(mgX,mgY,28+zp*10,0,Math.PI*2); ctx.clip();
+            ctx.fillStyle='rgba(0,0,20,0.8)'; ctx.fillRect(mgX-40,mgY-40,80,80);
+            // Draw cleavage pattern inside
+            ctx.strokeStyle='rgba(6,182,212,0.7)'; ctx.lineWidth=1.5;
+            if(cl==='perfect') {
+                // Smooth parallel lines
+                for(let i=0;i<8;i++) { ctx.beginPath(); ctx.moveTo(mgX-25,mgY-25+i*7); ctx.lineTo(mgX+25,mgY-25+i*7); ctx.stroke(); }
+                for(let i=0;i<6;i++) { ctx.beginPath(); ctx.moveTo(mgX-25+i*10,mgY-25); ctx.lineTo(mgX-25+i*10,mgY+25); ctx.stroke(); }
+            } else if(cl==='good') {
+                for(let i=0;i<6;i++) { ctx.beginPath(); ctx.moveTo(mgX-25,mgY-20+i*8); ctx.lineTo(mgX+25,mgY-20+i*8+hash(i*33)*6); ctx.stroke(); }
+            } else if(cl==='poor') {
+                for(let i=0;i<4;i++) { ctx.beginPath(); ctx.moveTo(mgX-20+hash(i*55)*10,mgY-20+i*10); ctx.bezierCurveTo(mgX-5,mgY-15+i*10,mgX+5,mgY-20+i*10+hash(i*55+11)*8,mgX+20,mgY-20+i*10+hash(i*55+22)*10); ctx.stroke(); }
+            } else { /* none - conchoidal fracture */
+                for(let i=0;i<5;i++) { const r=5+i*5; ctx.beginPath(); ctx.arc(mgX+hash(i*44)*10-5,mgY+hash(i*44+11)*10-5,r,0,Math.PI*2); ctx.stroke(); }
+            }
+            ctx.restore();
+        }
+        // Result text
+        if(p>0.7) {
+            const cln=CLEAVAGE_N[cl]||[cl,cl];
+            ctx.font='bold 22px Jua'; ctx.textAlign='center';
+            ctx.fillStyle='#06b6d4';
+            ctx.fillText('📐 '+t(cln[0],cln[1]),W/2,rockY-40);
+            ctx.textAlign='left';
+        }
+    }
+    else if (type==='uv') {
+        const cx=rockX+rockW/2, cy=rockY+rockH/2;
+        const uvv=data.u;
+        // Phase 1: Darken room (0~0.2)
+        const darkP=Math.min(1,p/0.2);
+        ctx.fillStyle=`rgba(0,0,10,${0.7*darkP})`;
+        ctx.fillRect(0,0,W,H);
+        // UV Lamp
+        const lampX=rockX-60, lampY=rockY-20;
+        ctx.fillStyle='#333'; ctx.fillRect(lampX,lampY,15,80); // body
+        ctx.fillStyle='#222'; ctx.fillRect(lampX-5,lampY+80,25,8); // base
+        // UV light cone
+        if(p>0.15) {
+            const lp=Math.min(1,(p-0.15)/0.2);
+            ctx.save(); ctx.globalAlpha=0.3*lp;
+            ctx.fillStyle='rgba(120,0,255,1)';
+            ctx.beginPath();
+            ctx.moveTo(lampX+15,lampY+10); ctx.lineTo(cx+rockW/2,cy-rockH/2);
+            ctx.lineTo(cx+rockW/2,cy+rockH/2); ctx.lineTo(lampX+15,lampY+70);
+            ctx.fill();
+            ctx.globalAlpha=1; ctx.restore();
+        }
+        // Fluorescence glow on rock (0.35~0.9)
+        if(p>0.3 && uvv>0) {
+            const gp=Math.min(1,(p-0.3)/0.3);
+            const glowColors = [null, 'rgba(100,200,255,', 'rgba(50,255,100,', 'rgba(200,150,255,'];
+            const gc = glowColors[uvv] || 'rgba(100,200,255,';
+            const intensity = uvv===2 ? 0.6 : uvv===3 ? 0.7 : 0.3;
+            // Glow around rock
+            const glow=ctx.createRadialGradient(cx,cy,10,cx,cy,rockW*0.7);
+            glow.addColorStop(0,gc+(intensity*gp)+')');
+            glow.addColorStop(0.5,gc+(intensity*0.5*gp)+')');
+            glow.addColorStop(1,gc+'0)');
+            ctx.fillStyle=glow;
+            ctx.beginPath(); ctx.arc(cx,cy,rockW*0.7,0,Math.PI*2); ctx.fill();
+            // Pulsing sparkles for strong
+            if(uvv>=2) {
+                for(let i=0;i<12;i++) {
+                    const a=Math.PI*2/12*i+p*2;
+                    const d=rockW*0.3+Math.sin(p*6+i)*10;
+                    const sx2=cx+Math.cos(a)*d, sy2=cy+Math.sin(a)*d;
+                    ctx.fillStyle=gc+(0.8*(1-((p*3+i*0.1)%1)))+')';
+                    ctx.beginPath(); ctx.arc(sx2,sy2,2+Math.sin(p*10+i)*1,0,Math.PI*2); ctx.fill();
+                }
+            }
+            // Phosphorescence lingers
+            if(uvv===3 && p>0.7) {
+                const pp2=(p-0.7)/0.3;
+                ctx.fillStyle=gc+(0.3*(1-pp2))+')';
+                ctx.beginPath(); ctx.arc(cx,cy,rockW*0.5,0,Math.PI*2); ctx.fill();
+            }
+        }
+        // Result text
+        if(p>0.7) {
+            const ul=UV_LABELS[uvv];
+            ctx.font='bold 22px Jua'; ctx.textAlign='center';
+            ctx.fillStyle=uvv>0?'#a855f7':'#888';
+            ctx.fillText('🔮 '+t(ul[0],ul[1]),W/2,rockY-40);
+            ctx.textAlign='left';
+        }
+    }
+    else if (type==='conduct') {
+        const cx=rockX+rockW/2, cy=rockY+rockH/2;
+        const cv=data.c;
+        // Two probes approaching from sides
+        const probeP=Math.min(1,p/0.3);
+        const leftX=rockX-80+probeP*60, rightX=rockX+rockW+80-probeP*60;
+        // Left probe (red wire)
+        ctx.strokeStyle='#e44'; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.moveTo(0,cy-10); ctx.lineTo(leftX,cy-10); ctx.stroke();
+        ctx.fillStyle='#c33'; ctx.fillRect(leftX-2,cy-16,8,12); // probe tip
+        ctx.fillStyle='#aaa'; ctx.fillRect(leftX,cy-14,4,8);
+        // Right probe (black wire)
+        ctx.strokeStyle='#444'; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.moveTo(W,cy+10); ctx.lineTo(rightX,cy+10); ctx.stroke();
+        ctx.fillStyle='#333'; ctx.fillRect(rightX-6,cy+4,8,12);
+        ctx.fillStyle='#aaa'; ctx.fillRect(rightX-4,cy+6,4,8);
+        // Light bulb above
+        const bulbX=cx, bulbY=rockY-60;
+        ctx.strokeStyle='#888'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.moveTo(bulbX,bulbY+15); ctx.lineTo(bulbX,bulbY+25); ctx.stroke();
+        ctx.fillStyle='#aa9'; ctx.fillRect(bulbX-5,bulbY+25,10,8); // socket
+        // Bulb glass
+        if(cv>0 && p>0.4) {
+            const lp2=Math.min(1,(p-0.4)/0.2);
+            const bright = cv>=2 ? 1 : 0.5;
+            ctx.fillStyle=`rgba(255,255,100,${0.8*lp2*bright})`;
+            ctx.beginPath(); ctx.arc(bulbX,bulbY,14,0,Math.PI*2); ctx.fill();
+            // Glow
+            const glow2=ctx.createRadialGradient(bulbX,bulbY,5,bulbX,bulbY,35);
+            glow2.addColorStop(0,`rgba(255,255,150,${0.3*lp2*bright})`);
+            glow2.addColorStop(1,'rgba(255,255,150,0)');
+            ctx.fillStyle=glow2; ctx.beginPath(); ctx.arc(bulbX,bulbY,35,0,Math.PI*2); ctx.fill();
+            // Sparks between probes and rock
+            if(cv>=2 && p>0.45) {
+                for(let i=0;i<6;i++) {
+                    const sp2=((p-0.45)*4+i*0.15)%1;
+                    const sx3=leftX+8+sp2*(cx-leftX-20), sy3=cy-10+Math.sin(sp2*20+i)*8;
+                    ctx.fillStyle=`rgba(100,200,255,${0.7*(1-sp2)})`;
+                    ctx.fillRect(sx3-1,sy3-1,3,3);
+                }
+            }
+            // Filament glow
+            ctx.strokeStyle=`rgba(255,200,50,${0.6*lp2*bright})`; ctx.lineWidth=1;
+            ctx.beginPath(); ctx.moveTo(bulbX-4,bulbY+8); ctx.lineTo(bulbX-2,bulbY-2); ctx.lineTo(bulbX+2,bulbY+4); ctx.lineTo(bulbX+4,bulbY-4); ctx.stroke();
+        } else {
+            // Dark bulb
+            ctx.strokeStyle='rgba(150,150,150,0.4)'; ctx.lineWidth=1.5;
+            ctx.beginPath(); ctx.arc(bulbX,bulbY,14,0,Math.PI*2); ctx.stroke();
+        }
+        // Result text
+        if(p>0.7) {
+            const cdl=CONDUCT_LABELS[cv];
+            ctx.font='bold 22px Jua'; ctx.textAlign='center';
+            ctx.fillStyle=cv>0?'#f59e0b':'#888';
+            ctx.fillText('⚡ '+t(cdl[0],cdl[1]),W/2,rockY-40);
+            ctx.textAlign='left';
+        }
+    }
+}
+
+// Draw hammer tool on canvas based on type
+function drawHammerTool(type, x, y, angle) {
+    ctx.save();
+    ctx.translate(x+15, y+25);
+    ctx.rotate(angle);
+
+    if(type==='wood') {
+        // Wooden handle
+        ctx.fillStyle='#8B6914'; ctx.fillRect(-3,0,6,35);
+        // Wood head
+        ctx.fillStyle='#A0522D'; ctx.fillRect(-12,-12,24,12);
+        ctx.strokeStyle='#6B3A0A'; ctx.lineWidth=1; ctx.strokeRect(-12,-12,24,12);
+    } else if(type==='steel') {
+        // Steel handle
+        ctx.fillStyle='#654321'; ctx.fillRect(-3,0,6,35);
+        // Steel head
+        ctx.fillStyle='#888'; ctx.fillRect(-14,-14,28,14);
+        ctx.fillStyle='#aaa'; ctx.fillRect(-14,-14,28,3); // highlight
+        ctx.strokeStyle='#555'; ctx.lineWidth=1; ctx.strokeRect(-14,-14,28,14);
+    } else if(type==='chisel') {
+        // Chisel handle
+        ctx.fillStyle='#8B6914'; ctx.fillRect(-3,5,6,30);
+        // Chisel blade
+        ctx.fillStyle='#999'; ctx.beginPath();
+        ctx.moveTo(-2,5); ctx.lineTo(2,5); ctx.lineTo(4,-8); ctx.lineTo(-4,-8);
+        ctx.fill();
+        ctx.strokeStyle='#666'; ctx.lineWidth=1; ctx.stroke();
+        // Small hammer above
+        ctx.fillStyle='#777'; ctx.fillRect(8,-6,12,8);
+        ctx.fillStyle='#654321'; ctx.fillRect(12,-6,3,20);
+    } else if(type==='diamond') {
+        // Diamond saw handle
+        ctx.fillStyle='#333'; ctx.fillRect(-3,5,6,25);
+        ctx.fillStyle='#555'; ctx.fillRect(-6,5,12,6); // grip
+        // Circular blade
+        ctx.strokeStyle='#bbb'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.arc(0,-8,14,0,Math.PI*2); ctx.stroke();
+        // Diamond edge dots
+        ctx.fillStyle='#8df';
+        for(let i=0;i<8;i++) {
+            const a=Math.PI*2/8*i;
+            ctx.beginPath(); ctx.arc(Math.cos(a)*14, -8+Math.sin(a)*14, 1.5, 0, Math.PI*2); ctx.fill();
+        }
+    }
+    ctx.restore();
+}
+
+function lerp(a,b,t) { return a+(b-a)*t; }
+function flash() { const f=document.getElementById('canvasFlash'); f.classList.add('active'); setTimeout(()=>f.classList.remove('active'),200); }
+function showMsg(text, dur=2000) { const m=document.getElementById('canvasMsg'); m.textContent=text; m.classList.add('show'); setTimeout(()=>m.classList.remove('show'),dur); }
+
+// ===== Tool Actions =====
+function selectTool(tool) {
+    if (answered) return;
+    if (animating) { animating = false; animState.type = null; } // cancel previous anim
+    document.querySelectorAll('.tool-panel .tool-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('breakSub').classList.remove('show');
+    document.getElementById('hardnessSub').classList.remove('show');
+
+    if (curTool === tool) { curTool = null; render(); return; }
+    curTool = tool;
+    const btn = document.getElementById('tool-'+tool);
+    if (btn) btn.classList.add('active');
+    playSound('click');
+
+    if (tool === 'break') { document.getElementById('breakSub').classList.add('show'); return; }
+    if (tool === 'hardness') { document.getElementById('hardnessSub').classList.add('show'); return; }
+    if (tool === 'streak') { streakPts = []; showMsg(t('도판 위를 드래그하세요!','Drag across the streak plate!')); render(); return; }
+
+    // Auto-execute
+    execTool(tool);
+
+}
+
+function tryBreak(type) {
+    if (broken || !cur) return;
+    if (animating) { animating = false; animState.type = null; } // cancel previous bounce
+    const power = BREAK_POWER[type];
+    const bn = BREAK_NAMES[type];
+    const emojis = { wood:'🪵', steel:'🔨', chisel:'⚒️', diamond:'💎' };
+
+    if (cur.hard <= power) {
+        // Success — break!
+        playSound(type==='diamond' ? 'saw' : 'hammerHit');
+        broken = true;
+        brokenWith = type;
+        tests.break = { tool: t(bn[0],bn[1]), power, crystal: cur.crystal };
+        testCount++;
+        flash();
+        startAnim('hammerHit', { toolType: type }, 50);
+        markUsed('break');
+        setTimeout(() => { eliminateByCrystal(); renderChips(); updateHud(); updateAttemptMeter(); }, 400);
+
+        // Also gives info: broke with power X → hardness ≤ X
+        if (!tests.hardness) tests.hardness = { min: 0, max: power };
+        else tests.hardness.max = Math.min(tests.hardness.max, power);
+        setTimeout(() => eliminateByHardness(), 500);
+    } else {
+        // Fail — bounces off!
+        playSound('bounce');
+        startAnim('hammerBounce', { toolType: type }, 55);
+        showMsg(t(`${bn[0]}(으)로는 안 깨진다!`, `${bn[1]} can't break it!`));
+
+        // This tells us: hardness > power
+        if (!tests.hardness) tests.hardness = { min: power, max: 10 };
+        else tests.hardness.min = Math.max(tests.hardness.min, power);
+
+        if (!tests._hardCounted) { tests._hardCounted = true; testCount++; markUsed('hardness'); }
+        setTimeout(() => { eliminateByHardness(); renderChips(); updateHud(); updateAttemptMeter(); }, 500);
+    }
+}
+
+function execTool(tool) {
+    if (tests[tool] || !cur) return;
+    const m = cur;
+
+    if (tool==='flame') {
+        playSound('flame');
+        const fn = m.flameN ? t(m.flameN[0],m.flameN[1]) : null;
+        tests.flame = { color: m.flame, name: fn };
+        startAnim('flame', { fc:m.flame, fn: fn||t('반응 없음','No reaction') }, 140);
+        testCount++; markUsed('flame');
+        setTimeout(() => { eliminateByFlame(); renderChips(); updateHud(); updateAttemptMeter(); }, 600);
+    }
+    else if (tool==='acid') {
+        playSound(m.acidR>0?'fizz':'acid');
+        tests.acid = { r: m.acidR };
+        startAnim('acid', { r:m.acidR }, 140);
+        testCount++; markUsed('acid');
+        setTimeout(() => { eliminateByAcid(); renderChips(); updateHud(); updateAttemptMeter(); }, 600);
+    }
+    else if (tool==='taste') {
+        const tasteVal = m.taste || 0;
+        playSound(tasteVal>0?'fizz':'noReact');
+        tests.taste = { tv: tasteVal };
+        startAnim('taste', { tv: tasteVal, tn: TASTE_LABELS[tasteVal] }, 70);
+        testCount++; markUsed('taste');
+        setTimeout(() => { eliminateByTaste(); renderChips(); updateHud(); updateAttemptMeter(); }, 400);
+    }
+    else if (tool==='magnet') {
+        playSound(m.magnetic?'magnet':'noReact');
+        tests.magnet = { m: m.magnetic };
+        startAnim('magnet', { m:m.magnetic }, 120);
+        testCount++; markUsed('magnet');
+        setTimeout(() => { eliminateByMagnet(); renderChips(); updateHud(); updateAttemptMeter(); }, 500);
+    }
+    else if (tool==='luster') {
+        playSound('light');
+        tests.luster = { l: m.luster };
+        startAnim('luster', { l:m.luster }, 150);
+        testCount++; markUsed('luster');
+        setTimeout(() => { eliminateByLuster(); renderChips(); updateHud(); updateAttemptMeter(); }, 500);
+    }
+    else if (tool==='density') {
+        playSound('weigh');
+        const d=m.density;
+        const cat = d<2.5?0 : d<4?1 : d<8?2 : 3;
+        tests.density = { d, cat };
+        startAnim('density', { cat }, 120);
+        testCount++; markUsed('density');
+        setTimeout(() => { eliminateByDensity(); renderChips(); updateHud(); updateAttemptMeter(); }, 500);
+    }
+    else if (tool==='water') {
+        const wv = m.water || 0;
+        playSound(wv>0?'fizz':'noReact');
+        tests.water = { w: wv };
+        startAnim('water', { w: wv }, 120);
+        testCount++; markUsed('water');
+        setTimeout(() => { eliminateByWater(); renderChips(); updateHud(); updateAttemptMeter(); }, 500);
+    }
+    else if (tool==='crystal') {
+        playSound('light');
+        tests.crystal = { c: m.crystal };
+        startAnim('crystal', { c: m.crystal }, 100);
+        testCount++; markUsed('crystal');
+        setTimeout(() => { eliminateByCrystalTool(); renderChips(); updateHud(); updateAttemptMeter(); }, 500);
+    }
+    else if (tool==='cleavage') {
+        playSound('scratch');
+        tests.cleavage = { cl: m.cleavage };
+        startAnim('cleavage', { cl: m.cleavage }, 100);
+        testCount++; markUsed('cleavage');
+        setTimeout(() => { eliminateByCleavage(); renderChips(); updateHud(); updateAttemptMeter(); }, 500);
+    }
+    else if (tool==='uv') {
+        const uvv = m.uv || 0;
+        playSound(uvv>0?'light':'noReact');
+        tests.uv = { u: uvv };
+        startAnim('uv', { u: uvv }, 130);
+        testCount++; markUsed('uv');
+        setTimeout(() => { eliminateByUV(); renderChips(); updateHud(); updateAttemptMeter(); }, 500);
+    }
+    else if (tool==='conduct') {
+        const cv = m.conduct || 0;
+        playSound(cv>0?'magnet':'noReact');
+        tests.conduct = { c: cv };
+        startAnim('conduct', { c: cv }, 110);
+        testCount++; markUsed('conduct');
+        setTimeout(() => { eliminateByConductivity(); renderChips(); updateHud(); updateAttemptMeter(); }, 500);
+    }
+}
+
+function testHardness(toolH) {
+    if (!cur || animating) return;
+    const scratched = cur.hard <= toolH;
+    playSound(scratched ? 'scratch' : 'noReact');
+
+    if (!tests.hardnessTests) tests.hardnessTests = [];
+    tests.hardnessTests.push({ tool: toolH, scratched });
+
+    if (!tests.hardness) tests.hardness = { min: 0, max: 10 };
+    if (scratched) tests.hardness.max = Math.min(tests.hardness.max, toolH);
+    else tests.hardness.min = Math.max(tests.hardness.min, toolH);
+
+    if (!tests._hardCounted) { tests._hardCounted = true; testCount++; markUsed('hardness'); }
+
+    flash();
+    showMsg(scratched ?
+        t(`경도 ≤ ${toolH} (긁힘!)`, `Hardness ≤ ${toolH} (Scratched!)`) :
+        t(`경도 > ${toolH} (안 긁힘)`, `Hardness > ${toolH} (No scratch)`)
+    );
+
+    eliminateByHardness();
+    renderChips();
+    updateHud();
+    updateAttemptMeter();
+    render();
+}
+
+// Streak interaction
+canvas.addEventListener('pointerdown', e => {
+    if (curTool !== 'streak' || tests.streak || animating) return;
+    const r = canvas.getBoundingClientRect();
+    const sx = W/r.width, sy = H/r.height;
+    const x = (e.clientX-r.left)*sx, y = (e.clientY-r.top)*sy;
+    if (y > H-70) { streakActive = true; streakPts = [[x,y]]; playSound('scratch'); }
+});
+canvas.addEventListener('pointermove', e => {
+    if (!streakActive) return;
+    const r = canvas.getBoundingClientRect();
+    const x = (e.clientX-r.left)*(W/r.width), y = (e.clientY-r.top)*(H/r.height);
+    streakPts.push([x, Math.max(H-60, Math.min(H-20, y))]);
+    render();
+});
+canvas.addEventListener('pointerup', () => {
+    if (!streakActive) return;
+    streakActive = false;
+    if (streakPts.length > 3) {
+        tests.streak = { rgb: cur.streak, name: t(cur.streakN[0], cur.streakN[1]) };
+        testCount++; markUsed('streak');
+        eliminateByStreak();
+        renderChips(); updateHud(); updateAttemptMeter();
+    }
+    render();
+});
+
+function markUsed(tool) {
+    const btn = document.getElementById('tool-'+tool);
+    if (btn) btn.classList.add('used');
+}
+
+// ===== Elimination Logic =====
+function getPool() {
+    const maxLv = DIFF_CONFIG[difficulty].maxLv;
+    return DB.filter(m => m.lv <= maxLv);
+}
+
+function eliminateByHardness() {
+    if (!tests.hardness) return;
+    const { min, max } = tests.hardness;
+    getPool().forEach(m => {
+        if (m.hard < min || m.hard > max) eliminate(m.id);
+    });
+}
+
+function eliminateByCrystal() {
+    if (!tests.break) return;
+    getPool().forEach(m => {
+        if (m.crystal !== cur.crystal) eliminate(m.id);
+    });
+}
+
+function eliminateByFlame() {
+    if (!tests.flame) return;
+    const hasFlame = !!tests.flame.color;
+    getPool().forEach(m => {
+        const mHas = !!m.flame;
+        if (hasFlame !== mHas) eliminate(m.id);
+        if (hasFlame && mHas) {
+            // Same flame color?
+            const [r1,g1,b1] = tests.flame.color;
+            const [r2,g2,b2] = m.flame;
+            if (Math.abs(r1-r2)+Math.abs(g1-g2)+Math.abs(b1-b2) > 100) eliminate(m.id);
+        }
+    });
+}
+
+function eliminateByAcid() {
+    if (!tests.acid) return;
+    getPool().forEach(m => {
+        if (m.acidR !== tests.acid.r) eliminate(m.id);
+    });
+}
+
+function eliminateByMagnet() {
+    if (!tests.magnet) return;
+    getPool().forEach(m => {
+        if (m.magnetic !== tests.magnet.m) eliminate(m.id);
+    });
+}
+
+function eliminateByLuster() {
+    if (!tests.luster) return;
+    getPool().forEach(m => {
+        if (m.luster !== tests.luster.l) eliminate(m.id);
+    });
+}
+
+function eliminateByDensity() {
+    if (!tests.density) return;
+    const myCat = tests.density.cat;
+    getPool().forEach(m => {
+        const d = m.density;
+        const cat = d<2.5?0 : d<4?1 : d<8?2 : 3;
+        if (cat !== myCat) eliminate(m.id);
+    });
+}
+
+function eliminateByStreak() {
+    if (!tests.streak) return;
+    const [sr,sg,sb] = tests.streak.rgb;
+    getPool().forEach(m => {
+        const [mr,mg,mb] = m.streak;
+        if (Math.abs(sr-mr)+Math.abs(sg-mg)+Math.abs(sb-mb) > 80) eliminate(m.id);
+    });
+}
+
+
+function eliminateByWater() {
+    if (!tests.water) return;
+    const wv = tests.water.w;
+    getPool().forEach(m => {
+        if ((m.water||0) !== wv) eliminate(m.id);
+    });
+}
+
+function eliminateByCrystalTool() {
+    if (!tests.crystal) return;
+    getPool().forEach(m => {
+        if (m.crystal !== tests.crystal.c) eliminate(m.id);
+    });
+}
+
+function eliminateByCleavage() {
+    if (!tests.cleavage) return;
+    getPool().forEach(m => {
+        if (m.cleavage !== tests.cleavage.cl) eliminate(m.id);
+    });
+}
+
+function eliminateByUV() {
+    if (!tests.uv) return;
+    const uv = tests.uv.u;
+    getPool().forEach(m => {
+        if ((m.uv||0) !== uv) eliminate(m.id);
+    });
+}
+
+function eliminateByConductivity() {
+    if (!tests.conduct) return;
+    const cv = tests.conduct.c;
+    getPool().forEach(m => {
+        if ((m.conduct||0) !== cv) eliminate(m.id);
+    });
+}
+function eliminateByTaste() {
+    if (!tests.taste) return;
+    const tv = tests.taste.tv;
+    getPool().forEach(m => {
+        if ((m.taste||0) !== tv) eliminate(m.id);
+    });
+}
+
+function eliminate(id) {
+    if (eliminated.has(id)) return;
+    eliminated.add(id);
+    playSound('eliminate');
+    renderSuspects();
+}
+
+// ===== Suspect List =====
+function renderSuspects() {
+    const pool = getPool();
+    const list = document.getElementById('suspectList');
+    const remaining = pool.filter(m => !eliminated.has(m.id));
+
+    // Group by category
+    const groups = {};
+    pool.forEach(m => {
+        if (!groups[m.cat]) groups[m.cat] = [];
+        groups[m.cat].push(m);
+    });
+
+    let html = '';
+    Object.keys(groups).forEach(cat => {
+        const catColor = CAT_COLORS[cat] || '#64748b';
+        html += `<div class="cat-header" style="color:${catColor};border-bottom-color:${catColor}40">${cat}</div>`;
+        groups[cat].forEach(m => {
+            const isElim = eliminated.has(m.id);
+            const isSel = selectedSuspect === m.id;
+            const cls = isElim ? 'eliminated' : isSel ? 'confirmed' : '';
+            const name = t(m.kr, m.en);
+            html += `<div class="suspect-card ${cls}" data-id="${m.id}" onclick="selectSuspect(${m.id})" style="border-left:3px solid ${catColor}">
+                <span class="suspect-emoji">${isElim ? '❌' : m.emoji}</span>
+                <span class="suspect-name">${name}</span>
+                <span class="suspect-info">${m.cat}</span>
+            </div>`;
+        });
+    });
+    list.innerHTML = html;
+
+    document.getElementById('remainCount').textContent = remaining.length;
+
+    // Enable confirm if exactly selected
+    const btn = document.getElementById('confirmBtn');
+    btn.disabled = !selectedSuspect || eliminated.has(selectedSuspect);
+
+    // Auto-select if only 1 left
+    if (remaining.length === 1 && !answered) {
+        selectedSuspect = remaining[0].id;
+        renderSuspects();
+    }
+}
+
+function selectSuspect(id) {
+    if (answered || eliminated.has(id)) return;
+    selectedSuspect = (selectedSuspect === id) ? null : id;
+    renderSuspects();
+}
+
+function confirmAnswer() {
+    if (!selectedSuspect || answered) return;
+    answered = true;
+
+    const correct = selectedSuspect === cur.id;
+    const cards = document.querySelectorAll('.suspect-card');
+
+    cards.forEach(c => {
+        const cid = +c.dataset.id;
+        if (cid === cur.id) c.classList.add('confirmed');
+        if (cid === selectedSuspect && !correct) c.classList.add('wrong-pick');
+    });
+
+    if (correct) {
+        playSound('correct');
+        flash();
+        combo++;
+        maxCombo = Math.max(maxCombo, combo);
+        const base = 10;
+        const attemptMult = getMultiplier(testCount);
+        const diffBonus = DIFF_CONFIG[difficulty].bonus;
+        const comboMult = Math.min(4, 1 + (combo - 1) * 0.3);
+        const pts = Math.round(base * attemptMult * diffBonus * comboMult);
+        score += pts;
+        coll.add(cur.id);
+        save();
+        updateCombo();
+        showResult(cur, pts, comboMult);
+        updateDisplays();
+        document.getElementById('confirmBtn').disabled = true;
+    } else {
+        combo = 0;
+        updateCombo();
+        loseHeart();
+        showMsg(t('틀렸어요! 하트 -1','Wrong! Heart -1'));
+        eliminated.add(selectedSuspect);
+        selectedSuspect = null;
+        if (lives > 0) {
+            setTimeout(() => { answered = false; renderSuspects(); }, 1200);
+        }
+    }
+}
+
+// checkLevelUp removed — difficulty sets pool at start
+
+// ===== Chips =====
+function renderChips() {
+    const bar = document.getElementById('resultsBar');
+    const chips = [];
+
+    if (tests.break) {
+        const cn = CRYSTAL_N[tests.break.crystal] || [tests.break.crystal, tests.break.crystal];
+        chips.push(`<span class="result-chip">⛏️ ${tests.break.tool} → ${t(cn[0],cn[1])}</span>`);
+    }
+    if (tests.hardness) {
+        const {min,max} = tests.hardness;
+        const r = min===0 ? `≤${max}` : max===10 ? `>${min}` : `${min}~${max}`;
+        chips.push(`<span class="result-chip">💎 ${t('경도','Hard')}: ${r}</span>`);
+    }
+    if (tests.streak) chips.push(`<span class="result-chip">📋 ${t('조흔','Streak')}: ${tests.streak.name}</span>`);
+    if (tests.flame) chips.push(`<span class="result-chip">🔥 ${t('불꽃','Flame')}: ${tests.flame.name||t('없음','None')}</span>`);
+    if (tests.acid) { const l=ACID_LABELS[tests.acid.r]; chips.push(`<span class="result-chip">🧪 ${t(l[0],l[1])}</span>`); }
+    if (tests.magnet) chips.push(`<span class="result-chip">🧲 ${tests.magnet.m?t('끌림','Yes'):t('무반응','No')}</span>`);
+    if (tests.luster) { const ln=LUSTER_N[tests.luster.l]||[tests.luster.l,tests.luster.l]; chips.push(`<span class="result-chip">💡 ${t(ln[0],ln[1])}</span>`); }
+    if (tests.density) { const lb=DENSITY_LABELS[tests.density.cat]; chips.push(`<span class="result-chip">⚖️ ${t(lb[0],lb[1])}</span>`); }
+    if (tests.taste) { const tl=TASTE_LABELS[tests.taste.tv]; chips.push(`<span class="result-chip">👅 ${t(tl[0],tl[1])}</span>`); }
+    if (tests.water) { const wl=WATER_LABELS[tests.water.w]; chips.push(`<span class="result-chip">💧 ${t(wl[0],wl[1])}</span>`); }
+    if (tests.crystal) { const cn2=CRYSTAL_N[tests.crystal.c]||[tests.crystal.c,tests.crystal.c]; chips.push(`<span class="result-chip">🔬 ${t(cn2[0],cn2[1])}</span>`); }
+    if (tests.cleavage) { const cl=CLEAVAGE_N[tests.cleavage.cl]||[tests.cleavage.cl,tests.cleavage.cl]; chips.push(`<span class="result-chip">📐 ${t(cl[0],cl[1])}</span>`); }
+    if (tests.uv) { const ul=UV_LABELS[tests.uv.u]; chips.push(`<span class="result-chip">🔮 UV: ${t(ul[0],ul[1])}</span>`); }
+    if (tests.conduct) { const cdl=CONDUCT_LABELS[tests.conduct.c]; chips.push(`<span class="result-chip">⚡ ${t(cdl[0],cdl[1])}</span>`); }
+
+    bar.innerHTML = chips.length > 0 ? chips.join('') : `<span class="results-empty">${t('도구를 사용하여 광석을 조사하세요','Use tools to examine the specimen')}</span>`;
+}
+
+
+// ===== Attempt Meter =====
+function getMultiplier(attempts) {
+    if(attempts<=2) return 5;
+    if(attempts<=4) return 3;
+    if(attempts<=6) return 2;
+    if(attempts<=8) return 1;
+    return 0.5;
+}
+
+function updateAttemptMeter() {
+    const dots = document.querySelectorAll('.attempt-dot');
+    dots.forEach((dot, i) => {
+        dot.classList.remove('used','over');
+        if(i < testCount) {
+            dot.classList.add(i < 5 ? 'used' : 'over');
+        }
+    });
+    const mult = getMultiplier(testCount);
+    const mEl = document.getElementById('attemptMult');
+    if(mEl) {
+        const labels = {5:'천재!',3:'훌륭해!',2:'잘했어!',1:'보통',0.5:'감점...'};
+        mEl.textContent = '×'+mult+' '+(labels[mult]||'');
+        mEl.style.color = mult>=3?'var(--green)':mult>=2?'var(--cyan)':mult>=1?'var(--orange)':'var(--red)';
+    }
+}
+// ===== HUD =====
+function updateHud() {
+    document.getElementById('specNum').textContent = '#'+specNum;
+}
+
+function updateDisplays() {
+    document.getElementById('scoreDisplay').textContent = score;
+    document.getElementById('levelBadge').textContent = 'Lv.'+level;
+    document.getElementById('collCount').textContent = coll.size + '/' + getPool().length;
+}
+
+// ===== Hearts System =====
+function updateHearts() {
+    document.querySelectorAll('.heart-icon').forEach((h, i) => {
+        h.classList.remove('breaking', 'lost', 'danger');
+        if (i >= lives) h.classList.add('lost');
+        else if (lives <= 2) h.classList.add('danger');
+    });
+}
+
+function loseHeart() {
+    lives--;
+    const hearts = document.querySelectorAll('.heart-icon');
+    const target = hearts[lives];
+    if (target) {
+        target.classList.add('breaking');
+        setTimeout(() => { target.classList.remove('breaking'); target.classList.add('lost'); }, 600);
+    }
+    // Add danger pulse to remaining hearts if low
+    if (lives <= 2) {
+        hearts.forEach((h, i) => {
+            if (i < lives) h.classList.add('danger');
+        });
+    }
+    playSound('wrong');
+
+    if (lives <= 0) {
+        setTimeout(() => showGameOver(), 1000);
+    }
+}
+
+function showGameOver() {
+    document.getElementById('gameoverScore').textContent = score;
+    document.getElementById('gameoverFound').textContent = coll.size;
+    document.getElementById('gameoverCombo').textContent = maxCombo;
+    document.getElementById('gameoverDiff').textContent = DIFF_CONFIG[difficulty].label;
+    document.getElementById('gameoverOverlay').classList.add('show');
+}
+
+function restartGame() {
+    document.getElementById('gameoverOverlay').classList.remove('show');
+    document.getElementById('startScreen').classList.remove('hidden');
+}
+
+function startGame(diff) {
+    difficulty = diff;
+    lives = MAX_LIVES;
+    score = 0;
+    combo = 0;
+    maxCombo = 0;
+    testCount = 0;
+    specNum = 0;
+    coll.clear();
+    eliminated.clear();
+
+    const cfg = DIFF_CONFIG[diff];
+    level = cfg.maxLv;
+
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('diffBadge').textContent = cfg.label;
+    document.getElementById('diffBadge').style.display = 'inline-flex';
+    updateHearts();
+    updateDisplays();
+    updateCombo();
+    nextSpecimen();
+}
+
+function updateCombo() {
+    const el = document.getElementById('comboDisplay');
+    if (combo >= 2) {
+        document.getElementById('comboCount').textContent = combo;
+        el.style.display = 'flex';
+        el.style.animation = 'none';
+        el.offsetHeight;
+        el.style.animation = 'comboIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    } else {
+        el.style.display = 'none';
+    }
+}
+
+// ===== Result Overlay =====
+function showResult(m, pts, comboMult) {
+    document.getElementById('resultPhoto').src = mineralImg(m);
+    document.getElementById('resultPhoto').alt = m.en;
+    document.getElementById('resultEmoji').textContent = m.emoji;
+    document.getElementById('resultTitle').textContent = t('정답!','Correct!');
+    const mult2 = getMultiplier(testCount);
+    const multLabels = {5:'천재!',3:'훌륭해!',2:'잘했어!',1:'보통',0.5:'감점...'};
+    const diffCfg = DIFF_CONFIG[difficulty];
+    let pointsText = `+${pts} ⭐  (${testCount}${t('회 시도',' tries')} ×${mult2}`;
+    if (combo >= 2) pointsText += ` | ${t('콤보','Combo')} ×${comboMult.toFixed(1)}`;
+    pointsText += ` | ${diffCfg.label} ×${diffCfg.bonus})`;
+    document.getElementById('resultPoints').textContent = pointsText;
+    document.getElementById('resultName').textContent = `${m.kr} / ${m.en}`;
+
+    const ln = LUSTER_N[m.luster]||[m.luster,m.luster];
+    const cn = CRYSTAL_N[m.crystal]||[m.crystal,m.crystal];
+    const tasteLabel = TASTE_LABELS[m.taste||0];
+
+    const clvn = CLEAVAGE_N[m.cleavage]||[m.cleavage,m.cleavage];
+    const uvLabel = UV_LABELS[m.uv||0];
+    const condLabel = CONDUCT_LABELS[m.conduct||0];
+    const waterLabel = WATER_LABELS[m.water||0];
+    const items = [
+        [t('분류','Category'), m.cat],
+        [t('결정계','Crystal'), t(cn[0],cn[1])],
+        [t('경도','Hardness'), `${m.hard} (Mohs)`],
+        [t('밀도','Density'), `${m.density} g/cm³`],
+        [t('광택','Luster'), t(ln[0],ln[1])],
+        [t('벽개','Cleavage'), t(clvn[0],clvn[1])],
+        [t('조흔색','Streak'), t(m.streakN[0],m.streakN[1])],
+        [t('불꽃','Flame'), m.flameN ? t(m.flameN[0],m.flameN[1]) : t('없음','None')],
+        [t('맛','Taste'), t(tasteLabel[0],tasteLabel[1])],
+        [t('물반응','Water'), t(waterLabel[0],waterLabel[1])],
+        [t('UV','UV'), t(uvLabel[0],uvLabel[1])],
+        [t('전도','Conduct'), t(condLabel[0],condLabel[1])],
+    ];
+
+    document.getElementById('resultInfoGrid').innerHTML = items.map(([label,val]) =>
+        `<div class="result-info-item">${label}: <span>${val}</span></div>`
+    ).join('');
+
+    document.getElementById('resultFact').textContent = t(m.factKr, m.factEn);
+
+    // Spawn confetti particles
+    const pc = document.getElementById('resultParticles');
+    pc.innerHTML = '';
+    const colors = ['#06b6d4','#10b981','#f59e0b','#ec4899','#8b5cf6','#ef4444'];
+    for(let i=0;i<30;i++) {
+        const p = document.createElement('div');
+        p.className = 'result-particle';
+        p.style.cssText = `left:50%;top:50%;width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;background:${colors[i%colors.length]};--dx:${(Math.random()-.5)*400}px;--dy:${(Math.random()-.5)*400}px;animation-delay:${Math.random()*.5}s;`;
+        pc.appendChild(p);
+    }
+
+    document.getElementById('resultOverlay').classList.add('show');
+}
+
+function closeResult() {
+    document.getElementById('resultOverlay').classList.remove('show');
+    nextSpecimen();
+}
+
+// ===== Codex =====
+function openCodex() {
+    const grid = document.getElementById('codexGrid');
+    grid.innerHTML = DB.map(m => {
+        const found = coll.has(m.id);
+        const locked = m.lv > level;
+        if (locked) return `<div class="codex-card locked"><div class="codex-emoji">🔒</div><div class="codex-name">Lv.${m.lv}</div></div>`;
+        if (!found) return `<div class="codex-card"><div class="codex-emoji">❓</div><div class="codex-name">???</div></div>`;
+        return `<div class="codex-card discovered"><img class="codex-photo" src="${mineralImg(m)}" alt="${m.en}"><div class="codex-name">${t(m.kr,m.en)}</div><div class="codex-detail">${t('경도','H')}:${m.hard} ${t(LUSTER_N[m.luster][0],LUSTER_N[m.luster][1])}<br>${t(m.factKr,m.factEn)}</div></div>`;
+    }).join('');
+    document.getElementById('codexModal').classList.add('show');
+}
+function closeCodex() { document.getElementById('codexModal').classList.remove('show'); }
+document.getElementById('codexModal').addEventListener('click', e => { if(e.target===e.currentTarget) closeCodex(); });
+
+// ===== Next =====
+function nextSpecimen() {
+    tests = {}; testCount = 0; broken = false; brokenWith = null;
+    answered = false; streakPts = []; curTool = null;
+    selectedSuspect = null; eliminated = new Set();
+    updateAttemptMeter();
+    document.querySelectorAll('.tool-panel .tool-btn').forEach(b => b.classList.remove('active','used'));
+    document.getElementById('breakSub').classList.remove('show');
+    document.getElementById('hardnessSub').classList.remove('show');
+    document.getElementById('nextBtn').classList.remove('show');
+    document.getElementById('confirmBtn').disabled = true;
+    document.getElementById('resultOverlay').classList.remove('show');
+    pickMineral();
+    genRockShape();
+    render(); renderChips(); renderSuspects(); updateHud();
+    playSound('appear');
+}
+
+function pickMineral() {
+    const pool = getPool();
+    let pick;
+    do { pick = pool[~~(Math.random()*pool.length)]; } while (pick===cur && pool.length>1);
+    cur = pick;
+    specNum++;
+}
+
+// ===== Init =====
+function init() {
+    // Show start screen — do NOT auto-start game
+    document.getElementById('startScreen').classList.remove('hidden');
+    updateDisplays();
+    updateHearts();
+}
+
+init();
+</script>
+<script src="../../assets/js/luna-nav.js"></script>
+</body>
+</html>

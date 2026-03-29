@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Luna Whale Art Lab - Share Your Work</title>
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../../assets/data/i18n.js?v=0312-2330"></script>
+    <script src="../../assets/data/classes-data.js?v=0312-2330"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1337ec",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f172a"
+                    },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] },
+                }
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .dark .glass-card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .star-btn {
+            color: #cbd5e1;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .star-btn.active {
+            color: #fbbf24;
+            transform: scale(1.1);
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+        }
+
+        .star-btn:hover {
+            transform: scale(1.2);
+            color: #fbbf24;
+        }
+
+        .img-thumb {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .img-thumb:hover {
+            transform: translateY(-4px);
+        }
+
+        .img-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .img-thumb .del-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            border-radius: 999px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            transition: background 0.2s;
+        }
+
+        .img-thumb .del-btn:hover {
+            background: #ef4444;
+        }
+
+        #upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #upload-zone:hover,
+        #upload-zone.over {
+            border-color: #1337ec;
+            background: rgba(19, 55, 236, 0.05);
+            transform: scale(1.01);
+        }
+
+        #lang-menu-rev {
+            display: none;
+        }
+
+        #lang-menu-rev.open {
+            display: block;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: #e2e8f0;
+            border-radius: 9999px;
+            transition: .3s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: .3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+        }
+
+        input:checked+.toggle-slider {
+            background: #1337ec;
+        }
+
+        input:checked+.toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        .success-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .success-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* Responsive Layout Tweaks */
+        @media (min-width: 1024px) {
+            .main-content {
+                display: grid;
+                grid-template-columns: 1.5fr 1fr;
+                gap: 2rem;
+            }
+
+            .sidebar-preview {
+                position: sticky;
+                top: 6rem;
+                height: fit-content;
+            }
+        }
+
+        .course-result-card {
+            animation: slideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+
+    <!-- Header -->
+    <header
+        class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center gap-4">
+        <button onclick="history.back()"
+            class="w-11 h-11 flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-95 shadow-sm">
+            <span class="material-symbols-outlined text-slate-600 dark:text-slate-300">arrow_back</span>
+        </button>
+        <div class="flex-1">
+            <h1 class="font-black text-2xl tracking-tight" data-i18n="rev_title">Share Your Work</h1>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block">Luna Whale Art Lab
+            </p>
+        </div>
+
+        <div class="relative" id="lang-container-rev">
+            <button onclick="toggleLangRev()"
+                class="w-11 h-11 flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-slate-600 dark:text-slate-300">language</span>
+            </button>
+            <div id="lang-menu-rev"
+                class="absolute right-0 top-14 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl w-56 py-2 z-50 overflow-hidden ring-1 ring-black/5">
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-8 pb-32">
+        <div class="main-content">
+            <!-- Left Side: Form -->
+            <div class="space-y-6">
+
+                <!-- Section 1: Course Identification -->
+                <section class="glass-card rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-primary">search</span>
+                        </div>
+                        <h2 class="font-black text-lg" data-i18n="rev_find_course">Find Your Course</h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2"
+                                data-i18n="rev_course_code">Course Code</label>
+                            <div class="relative">
+                                <input type="text" id="course-code-input" placeholder="e.g., RM04"
+                                    class="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-5 py-4 font-bold text-lg focus:ring-2 focus:ring-primary placeholder:text-slate-300 dark:placeholder:text-slate-600 uppercase transition-all text-slate-900 dark:text-white" />
+                                <div id="code-status" class="absolute right-4 top-1/2 -translate-y-1/2"></div>
+                            </div>
+                        </div>
+
+                        <!-- Course Confirmation Card (Hidden by default) -->
+                        <div id="course-confirm-card"
+                            class="hidden course-result-card bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 flex gap-4 items-center border border-slate-100 dark:border-slate-700">
+                            <img id="course-preview-img" src=""
+                                class="w-20 h-20 rounded-xl object-cover shadow-sm bg-white" />
+                            <div class="flex-1 overflow-hidden">
+                                <div id="course-preview-tag" class="text-[10px] font-black text-primary uppercase mb-1">
+                                </div>
+                                <h3 id="course-preview-title" class="font-black text-lg truncate pr-2"></h3>
+                                <p id="course-preview-id" class="text-xs text-slate-400 font-bold uppercase"></p>
+                            </div>
+                            <span class="material-symbols-outlined text-green-500 font-black">check_circle</span>
+                        </div>
+
+                        <div id="course-error" class="hidden text-xs font-bold text-red-500 pl-2">
+                            Course not found. Please check the code.
+                        </div>
+
+                        <!-- Manual fallback for future -->
+                        <div class="pt-2">
+                            <button onclick="toggleManualSelect()"
+                                class="text-xs font-bold text-primary hover:underline" data-i18n="rev_cant_find">Can't
+                                find your course?</button>
+                            <div id="manual-select-container" class="hidden mt-3">
+                                <select id="manual-select"
+                                    class="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary">
+                                    <option value="">Select manually...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section 2: Upload Artwork -->
+                <section class="glass-card rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-orange-600">photo_library</span>
+                        </div>
+                        <h2 class="font-black text-lg" data-i18n="rev_upload">Upload Your Artwork</h2>
+                    </div>
+
+                    <div id="upload-zone" class="p-10 text-center group"
+                        onclick="document.getElementById('img-input').click()"
+                        ondragover="event.preventDefault();this.classList.add('over')"
+                        ondragleave="this.classList.remove('over')" ondrop="handleImgDrop(event)">
+                        <div
+                            class="w-16 h-16 rounded-3xl bg-slate-50 dark:bg-slate-800 mx-auto flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-slate-400 text-3xl">add_photo_alternate</span>
+                        </div>
+                        <div class="text-sm font-black text-slate-600 dark:text-slate-300" data-i18n="cre_drag_images">
+                            Drag & drop images here</div>
+                        <div class="text-xs text-slate-400 mt-1 font-medium" data-i18n="cre_browse">or tap to browse
+                            gallery / folder</div>
+                        <p class="text-[10px] text-slate-400 mt-4 uppercase font-bold tracking-tighter"
+                            data-i18n="rev_upload_hint">Up to 5 photos • JPG, PNG allowed</p>
+                    </div>
+                    <input type="file" id="img-input" accept="image/*" multiple class="hidden"
+                        onchange="handleImgFiles(this.files)" />
+
+                    <div id="img-thumbs" class="flex gap-4 flex-wrap mt-6"></div>
+                </section>
+
+                <!-- Section 3: Rating & Feedback -->
+                <section class="glass-card rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-yellow-600">reviews</span>
+                        </div>
+                        <h2 class="font-black text-lg" data-i18n="rev_rating_title">Rate & Review</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4"
+                                data-i18n="rev_how_was_it">How was the class?</label>
+                            <div class="flex justify-between max-w-sm" id="stars">
+                                <button class="star-btn flex items-center justify-center p-1" data-val="1">
+                                    <span class="material-symbols-outlined">star</span>
+                                </button>
+                                <button class="star-btn flex items-center justify-center p-1" data-val="2">
+                                    <span class="material-symbols-outlined">star</span>
+                                </button>
+                                <button class="star-btn flex items-center justify-center p-1" data-val="3">
+                                    <span class="material-symbols-outlined">star</span>
+                                </button>
+                                <button class="star-btn flex items-center justify-center p-1" data-val="4">
+                                    <span class="material-symbols-outlined">star</span>
+                                </button>
+                                <button class="star-btn flex items-center justify-center p-1" data-val="5">
+                                    <span class="material-symbols-outlined">star</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2"
+                                data-i18n="rev_review">Your Feedback</label>
+                            <textarea id="review-text" rows="5" data-i18n-ph="rev_review_ph"
+                                placeholder="Your artistic journey..."
+                                class="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-5 py-4 text-sm resize-none focus:ring-2 focus:ring-primary outline-none text-slate-900 dark:text-white"></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section 4: Preferences -->
+                <section class="glass-card rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2"
+                                data-i18n="rev_nickname">Nickname</label>
+                            <input type="text" id="nickname" data-i18n-ph="rev_nickname_ph" placeholder="Art Whale"
+                                class="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-primary outline-none text-slate-900 dark:text-white" />
+                        </div>
+                        <div
+                            class="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+                            <div class="flex-1">
+                                <div class="text-sm font-black" data-i18n="rev_public">Public Gallery</div>
+                                <div class="text-[10px] text-slate-500 font-bold uppercase" data-i18n="rev_public_sub">
+                                    Show your work to others</div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="public-toggle" checked />
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Final Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                    <button onclick="history.back()"
+                        class="flex-1 py-5 rounded-3xl border-2 border-slate-100 dark:border-slate-800 text-sm font-black text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                        data-i18n="rev_cancel">Discard</button>
+                    <button onclick="submitReview()"
+                        class="flex-[2] py-5 rounded-3xl bg-primary text-white text-sm font-black hover:bg-blue-700 transition-all shadow-xl shadow-primary/30 active:scale-[0.98]"
+                        data-i18n="rev_submit">Submit Review</button>
+                </div>
+            </div>
+
+            <!-- Right Side: Preview / Empty State (PC Only) -->
+            <div class="sidebar-preview hidden lg:block">
+                <div class="glass-card rounded-3xl p-8 border border-white/40 shadow-xl">
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span class="material-symbols-outlined text-primary text-4xl">edit_note</span>
+                        </div>
+                        <h3 class="font-black text-xl mb-2" data-i18n="rev_live_preview">Live Preview</h3>
+                        <p class="text-xs text-slate-500 font-medium leading-relaxed px-4"
+                            data-i18n="rev_live_preview_desc">See how your review will look
+                            to others once published in the gallery.</p>
+                    </div>
+
+                    <div
+                        class="mt-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-6 relative">
+                        <!-- Preview Card Skeleton -->
+                        <div id="preview-placeholder">
+                            <div
+                                class="w-full aspect-square bg-slate-100 dark:bg-slate-800 rounded-2xl mb-4 animate-pulse">
+                            </div>
+                            <div class="h-4 w-2/3 bg-slate-100 dark:bg-slate-800 rounded mb-2 animate-pulse"></div>
+                            <div class="h-4 w-1/2 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"></div>
+                        </div>
+
+                        <!-- Real Preview Content -->
+                        <div id="real-preview" class="hidden">
+                            <div id="preview-img-container"
+                                class="w-full aspect-square rounded-2xl overflow-hidden mb-4 relative shadow-lg">
+                                <img id="preview-main-img" src="" class="w-full h-100 h-full object-cover" />
+                                <div class="absolute bottom-3 left-3 bg-white/90 backdrop-blur rounded-full px-3 py-1 text-[10px] font-black text-primary uppercase shadow-sm"
+                                    id="preview-course-tag"></div>
+                            </div>
+                            <h4 id="preview-title" class="font-black text-lg mb-1 leading-tight"></h4>
+                            <div class="flex gap-0.5 text-yellow-400 mb-3" id="preview-stars"></div>
+                            <p id="preview-text-val"
+                                class="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed italic">
+                            </p>
+                            <div
+                                class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-black"
+                                    id="preview-nick-initial"></div>
+                                <span class="text-xs font-black" id="preview-nick-name"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Overlay -->
+    <div class="success-overlay" id="success-overlay">
+        <div class="bg-white dark:bg-slate-900 rounded-[40px] p-10 mx-6 text-center max-w-sm shadow-2xl scale-90 transition-transform duration-300 transform"
+            id="success-card">
+            <div
+                class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-6">
+                <span class="material-symbols-outlined text-green-600 text-4xl scale-125">check_circle</span>
+            </div>
+            <h2 class="font-black text-2xl mb-3 tracking-tight" data-i18n="rev_success_title">🎉 Wonderful!</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed px-4"
+                data-i18n="rev_success_desc">Your artwork has been added to the gallery. Thank you for sharing your
+                journey with us!</p>
+            <button onclick="window.location.href='../main/gallery.html'"
+                class="w-full py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-lg shadow-primary/20 hover:bg-blue-700 transition-all"
+                data-i18n="nav_gallery">Go to Gallery</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedRating = 0;
+        let selectedImages = [];
+        let identifiedCourse = null;
+
+        // --- Course Lookup Logic ---
+        const codeInput = document.getElementById('course-code-input');
+        const confirmCard = document.getElementById('course-confirm-card');
+        const errorMsg = document.getElementById('course-error');
+
+        if (codeInput) {
+            codeInput.addEventListener('input', (e) => {
+                const code = e.target.value.trim().toUpperCase();
+                if (!code) {
+                    hideCourseInfo();
+                    return;
+                }
+
+                const course = CLASSES_DATA.find(c => c.courseCode === code);
+                if (course) {
+                    showCourseInfo(course);
+                } else {
+                    showError();
+                }
+            });
+        }
+
+        function showCourseInfo(course) {
+            identifiedCourse = course;
+            confirmCard.classList.remove('hidden');
+            errorMsg.classList.add('hidden');
+
+            const previewImg = document.getElementById('course-preview-img');
+            const previewTitle = document.getElementById('course-preview-title');
+            const previewTag = document.getElementById('course-preview-tag');
+            const previewId = document.getElementById('course-preview-id');
+
+            if (previewImg) previewImg.src = course.image;
+            if (previewTitle) previewTitle.textContent = lwT(course.titleKey, lwGetLang()) || course.id;
+            if (previewTag) previewTag.textContent = course.category;
+            if (previewId) previewId.textContent = `ID: ${course.id} • ${course.courseCode}`;
+
+            // Highlight input with success
+            codeInput.classList.add('ring-2', 'ring-green-500');
+            codeInput.classList.remove('ring-red-500');
+
+            updateLivePreview();
+        }
+
+        function showError() {
+            identifiedCourse = null;
+            confirmCard.classList.add('hidden');
+            errorMsg.classList.remove('hidden');
+            codeInput.classList.add('ring-2', 'ring-red-500');
+            codeInput.classList.remove('ring-green-500');
+            updateLivePreview();
+        }
+
+        function hideCourseInfo() {
+            identifiedCourse = null;
+            confirmCard.classList.add('hidden');
+            errorMsg.classList.add('hidden');
+            codeInput.classList.remove('ring-2', 'ring-green-500', 'ring-red-500');
+            updateLivePreview();
+        }
+
+        function toggleManualSelect() {
+            const container = document.getElementById('manual-select-container');
+            container.classList.toggle('hidden');
+            if (!container.classList.contains('hidden')) {
+                const select = document.getElementById('manual-select');
+                if (select.options.length <= 1) {
+                    const sorted = [...CLASSES_DATA].sort((a, b) => a.courseCode.localeCompare(b.courseCode));
+                    sorted.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.courseCode;
+                        opt.textContent = `${c.courseCode} - ${lwT(c.titleKey, lwGetLang())}`;
+                        select.appendChild(opt);
+                    });
+                }
+            }
+        }
+
+        const manualSelect = document.getElementById('manual-select');
+        if (manualSelect) {
+            manualSelect.addEventListener('change', (e) => {
+                if (e.target.value) {
+                    codeInput.value = e.target.value;
+                    const course = CLASSES_DATA.find(c => c.courseCode === e.target.value);
+                    if (course) showCourseInfo(course);
+                    document.getElementById('manual-select-container').classList.add('hidden');
+                }
+            });
+        }
+
+        // --- Stars Logic ---
+        document.querySelectorAll('.star-btn').forEach(star => {
+            star.addEventListener('click', function () {
+                selectedRating = parseInt(this.getAttribute('data-val'));
+                document.querySelectorAll('.star-btn').forEach((s, i) => {
+                    const icon = s.querySelector('.material-symbols-outlined');
+                    if (icon) {
+                        if (i < selectedRating) {
+                            icon.classList.add('FILL');
+                            icon.style.fontVariationSettings = "'FILL' 1";
+                            icon.style.color = '#f59e0b';
+                        } else {
+                            icon.classList.remove('FILL');
+                            icon.style.fontVariationSettings = "'FILL' 0";
+                            icon.style.color = '#94a3b8';
+                        }
+                    }
+                });
+                updateLivePreview();
+            });
+        });
+
+        // --- Image handling ---
+        function handleImgFiles(files) {
+            Array.from(files).forEach(f => {
+                if (selectedImages.length >= 5) return;
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    addImgThumb(e.target.result, f.name);
+                };
+                reader.readAsDataURL(f);
+            });
+        }
+
+        function handleImgDrop(e) {
+            e.preventDefault();
+            const zone = document.getElementById('upload-zone');
+            if (zone) zone.classList.remove('over');
+            handleImgFiles(e.dataTransfer.files);
+        }
+
+        function addImgThumb(src, name) {
+            const id = 'img-' + Date.now() + Math.random();
+            selectedImages.push({ id, src, name });
+            renderThumbs();
+            updateLivePreview();
+        }
+
+        function removeImg(id) {
+            selectedImages = selectedImages.filter(i => i.id !== id);
+            renderThumbs();
+            updateLivePreview();
+        }
+
+        function renderThumbs() {
+            const container = document.getElementById('img-thumbs');
+            if (!container) return;
+            container.innerHTML = selectedImages.map(img =>
+                `<div class="img-thumb flex-shrink-0 relative group">
+                    <img src="${img.src}" class="w-full h-full object-cover rounded-xl" alt="artwork" />
+                    <div class="del-btn absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center cursor-pointer shadow-md opacity-0 group-hover:opacity-100 transition-opacity" onclick="removeImg('${img.id}')">
+                        <span class="material-symbols-outlined" style="font-size:14px">close</span>
+                    </div>
+                </div>`
+            ).join('');
+
+            const zone = document.getElementById('upload-zone');
+            if (zone) zone.style.display = selectedImages.length >= 5 ? 'none' : 'flex';
+        }
+
+        // --- Live Preview Logic ---
+        function updateLivePreview() {
+            const placeholder = document.getElementById('preview-placeholder');
+            const real = document.getElementById('real-preview');
+            const nicknameInput = document.getElementById('nickname');
+            const textInput = document.getElementById('review-text');
+
+            if (!placeholder || !real || !nicknameInput || !textInput) return;
+
+            const nickname = nicknameInput.value.trim() || "Art Whale";
+            const text = textInput.value.trim() || "...";
+
+            if (!identifiedCourse && selectedImages.length === 0 && selectedRating === 0 && !textInput.value.trim()) {
+                placeholder.classList.remove('hidden');
+                real.classList.add('hidden');
+                return;
+            }
+
+            placeholder.classList.add('hidden');
+            real.classList.remove('hidden');
+
+            // Set main image
+            const mainImg = document.getElementById('preview-main-img');
+            if (mainImg) {
+                if (selectedImages.length > 0) {
+                    mainImg.src = selectedImages[0].src;
+                } else if (identifiedCourse) {
+                    mainImg.src = identifiedCourse.image;
+                } else {
+                    mainImg.src = 'https://via.placeholder.com/400x400?text=Your+Art+Here';
+                }
+            }
+
+            // Set details
+            const lang = lwGetLang();
+            const titleEl = document.getElementById('preview-title');
+            const tagEl = document.getElementById('preview-course-tag');
+            const textValEl = document.getElementById('preview-text-val');
+            const nickNameEl = document.getElementById('preview-nick-name');
+            const nickInitialEl = document.getElementById('preview-nick-initial');
+
+            if (titleEl) titleEl.textContent = identifiedCourse ? lwT(identifiedCourse.titleKey, lang) : 'Artwork Submission';
+            if (tagEl) tagEl.textContent = identifiedCourse ? identifiedCourse.category : 'General';
+            if (textValEl) textValEl.textContent = text;
+            if (nickNameEl) nickNameEl.textContent = nickname;
+            if (nickInitialEl) nickInitialEl.textContent = nickname.charAt(0).toUpperCase();
+
+            // Set stars
+            const starContainer = document.getElementById('preview-stars');
+            if (starContainer) {
+                let starsHtml = '';
+                for (let i = 0; i < 5; i++) {
+                    const isFilled = i < selectedRating;
+                    starsHtml += `<span class="material-symbols-outlined text-sm ${isFilled ? 'FILL' : ''}" style="color: ${isFilled ? '#f59e0b' : '#94a3b8'}; font-variation-settings: 'FILL' ${isFilled ? 1 : 0}">star</span>`;
+                }
+                starContainer.innerHTML = starsHtml;
+            }
+        }
+
+        const nickIn = document.getElementById('nickname');
+        if (nickIn) nickIn.addEventListener('input', updateLivePreview);
+        const textIn = document.getElementById('review-text');
+        if (textIn) textIn.addEventListener('input', updateLivePreview);
+
+        // --- Submission Logic ---
+        function submitReview() {
+            const nicknameInput = document.getElementById('nickname');
+            const textInput = document.getElementById('review-text');
+            const publicToggle = document.getElementById('public-toggle');
+            const isPublic = publicToggle ? publicToggle.checked : true;
+            const lang = lwGetLang();
+
+            if (!identifiedCourse) { alert(lwT('rev_alert_select', lang)); return; }
+            if (!nicknameInput || !nicknameInput.value.trim()) { alert(lwT('rev_alert_nick', lang)); return; }
+            if (selectedRating === 0) { alert(lwT('rev_alert_rating', lang)); return; }
+            if (selectedImages.length === 0) {
+                if (!confirm("Submit without photo?")) return;
+            }
+
+            const review = {
+                id: 'user-' + Date.now(),
+                nickname: nicknameInput.value.trim(),
+                classId: identifiedCourse.id,
+                courseCode: identifiedCourse.courseCode,
+                classTitle: lwT(identifiedCourse.titleKey, lang),
+                rating: selectedRating,
+                text: textInput ? textInput.value.trim() : "",
+                images: selectedImages.map(i => i.src),
+                createdAt: Date.now(),
+                public: isPublic
+            };
+
+            const existing = JSON.parse(localStorage.getItem('lw_reviews') || '[]');
+            existing.push(review);
+            localStorage.setItem('lw_reviews', JSON.stringify(existing));
+
+            // Show success overlay
+            const overlay = document.getElementById('success-overlay');
+            const card = document.getElementById('success-card');
+            if (overlay && card) {
+                overlay.style.display = 'flex';
+                setTimeout(() => {
+                    overlay.style.opacity = '1';
+                    card.style.transform = 'scale(1)';
+                }, 10);
+            }
+        }
+
+        // --- Language Switcher ---
+        function toggleLangRev() {
+            const menu = document.getElementById('lang-menu-rev');
+            if (menu) menu.classList.toggle('open');
+        }
+
+        document.addEventListener('click', (e) => {
+            const c = document.getElementById('lang-container-rev');
+            const menu = document.getElementById('lang-menu-rev');
+            if (c && menu && !c.contains(e.target)) {
+                menu.classList.remove('open');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof lwRenderLangPicker === 'function') {
+                lwRenderLangPicker('lang-menu-rev');
+            }
+
+            // Initial check from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            if (code && codeInput) {
+                codeInput.value = code;
+                const course = CLASSES_DATA.find(c => c.courseCode === code);
+                if (course) showCourseInfo(course);
+            }
+
+            // Drag & Drop visual feedback
+            const dropZone = document.getElementById('upload-zone');
+            if (dropZone) {
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('border-primary', 'bg-primary/5');
+                });
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('border-primary', 'bg-primary/5');
+                });
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('border-primary', 'bg-primary/5');
+                    handleImgDrop(e);
+                });
+            }
+
+            updateLivePreview();
+        });
+    </script>
+</body>
+
+</html>

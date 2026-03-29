@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>물감 혼합 시뮬레이터 - Luna Whale</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lexend:wght@300;400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lexend',sans-serif;background:#f8f6f3;min-height:100vh;color:#2c2420}
+.top-bar{position:sticky;top:0;z-index:50;background:rgba(248,246,243,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,0,0,.04);padding:14px 24px;display:flex;align-items:center;gap:14px}
+.back-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.back-btn:hover{background:rgba(0,0,0,.04)}
+.top-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#2c2420;flex:1;letter-spacing:-.5px}
+.container{max-width:1200px;margin:0 auto;padding:16px 20px}
+.subtitle{text-align:center;font-family:'Cormorant Garamond',serif;font-size:14px;color:#a09890;margin-bottom:16px;letter-spacing:-.2px}
+.main-layout{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start}
+@media(max-width:860px){.main-layout{grid-template-columns:1fr;}.recipe-section{order:3}}
+
+/* Mode toggle */
+.mode-row{display:flex;justify-content:center;gap:8px;margin-bottom:16px}
+.mode-btn{padding:5px 14px;border-radius:8px;border:1px solid rgba(0,0,0,.1);background:#fff;font-family:'Lexend',sans-serif;font-size:11px;color:#6b5c4e;cursor:pointer;transition:.2s}
+.mode-btn:hover{background:rgba(0,0,0,.03)}
+.mode-btn.active{background:#2c2420;color:#fff;border-color:#2c2420}
+
+/* Palette */
+.palette-section{margin-bottom:12px}
+.palette-label{font-size:10px;font-weight:600;color:#8b7355;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;text-align:center}
+.palette-grid{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.paint-tube{width:36px;height:36px;border-radius:8px;cursor:pointer;border:2.5px solid transparent;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.1);position:relative}
+.paint-tube:hover{transform:scale(1.1)}
+.paint-tube.selected{border-color:#2c2420;transform:scale(1.12)}
+.paint-tube .tube-name{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:7px;color:#a09890;white-space:nowrap;opacity:0;transition:.2s;pointer-events:none}
+.paint-tube:hover .tube-name{opacity:1}
+
+/* Mixing area */
+.mix-area{background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,.06);padding:16px}
+.mix-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.mix-title{font-size:14px;font-weight:600}
+.clear-btn{font-size:11px;color:#a09890;cursor:pointer;border:none;background:none;text-decoration:underline}
+
+/* Selected colors */
+.selected-colors{display:flex;gap:8px;justify-content:center;align-items:end;margin-bottom:12px;min-height:60px;flex-wrap:wrap}
+.color-slot{display:flex;flex-direction:column;align-items:center;gap:4px}
+.color-swatch{width:48px;height:48px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.12);position:relative;transition:.3s}
+.color-swatch .remove{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#2c2420;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:.2s}
+.color-swatch:hover .remove{opacity:1}
+.color-name{font-size:8px;color:#a09890;text-align:center;max-width:50px;line-height:1.2}
+.color-ratio{display:flex;align-items:center;gap:4px}
+.color-ratio input{width:50px;accent-color:#8b7355}
+.color-ratio span{font-size:10px;color:#6b5c4e;min-width:28px}
+.plus-sign{font-size:24px;color:#c4b8a8;font-weight:300;align-self:center;margin:0 4px}
+
+/* Arrow */
+.arrow-down{text-align:center;margin:16px 0;color:#c4b8a8}
+
+/* Result */
+.result-block{text-align:center}
+.result-swatch{width:80px;height:80px;border-radius:50%;margin:0 auto 10px;box-shadow:0 3px 14px rgba(0,0,0,.12);transition:background .4s}
+.result-info{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
+.result-item{text-align:center}
+.result-item .label{font-size:10px;color:#a09890;margin-bottom:2px}
+.result-item .value{font-size:13px;font-weight:600;color:#2c2420;cursor:pointer}
+.result-item .value:hover{text-decoration:underline}
+
+/* Paint texture overlay */
+.result-swatch{background-image:radial-gradient(ellipse at 30% 40%, rgba(255,255,255,.15) 0%, transparent 60%);background-blend-mode:overlay}
+
+/* Empty state */
+.empty-state{text-align:center;color:#c4b8a8;padding:20px 0}
+.empty-state .material-symbols-outlined{font-size:36px;display:block;margin-bottom:4px}
+.empty-state p{font-size:12px}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:#2c2420;color:#fff;padding:10px 24px;border-radius:10px;font-size:12px;opacity:0;transition:.3s;pointer-events:none;z-index:100}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Recipe section */
+.recipe-section{background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,.06);padding:14px;height:fit-content;position:sticky;top:70px}
+.recipe-title{font-size:12px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.recipe-title .material-symbols-outlined{font-size:18px;color:#8b7355}
+.recipe-list{display:flex;flex-direction:column;gap:4px}
+.recipe-row{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;cursor:pointer;transition:.2s}
+.recipe-row:hover{background:rgba(0,0,0,.03)}
+.recipe-colors{display:flex;gap:3px}
+.recipe-chip{width:18px;height:18px;border-radius:5px;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.recipe-arrow{color:#c4b8a8;font-size:12px}
+.recipe-result{width:24px;height:24px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.recipe-name{font-size:10px;color:#6b5c4e;flex:1}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">
+    <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+  </button>
+  <div class="top-title">Paint Mixer</div>
+</div>
+
+<div class="container">
+  <div class="subtitle">실제 물감처럼 감산혼합으로 색을 섞어보세요</div>
+
+  <div class="mode-row">
+    <button class="mode-btn active" id="mode-water" onclick="setMixMode('water',this)">💧 수채화</button>
+    <button class="mode-btn" id="mode-acrylic" onclick="setMixMode('acrylic',this)">🎨 아크릴</button>
+    <button class="mode-btn" id="mode-oil" onclick="setMixMode('oil',this)">🖌️ 유화</button>
+  </div>
+
+  <div class="main-layout">
+    <!-- Left: palette + mixing -->
+    <div>
+      <div class="palette-section">
+        <div class="palette-label">물감 팔레트 — 클릭하여 선택 (최대 4색)</div>
+        <div class="palette-grid" id="palette"></div>
+      </div>
+
+      <div class="mix-area">
+        <div class="mix-header">
+          <span class="mix-title">혼합 영역</span>
+          <button class="clear-btn" onclick="clearAll()">전체 지우기</button>
+        </div>
+        <div class="selected-colors" id="selected-colors">
+          <div class="empty-state" id="empty-state">
+            <span class="material-symbols-outlined">palette</span>
+            <p>위 팔레트에서 물감을 선택하세요</p>
+          </div>
+        </div>
+        <div class="arrow-down" id="arrow" style="display:none">
+          <span class="material-symbols-outlined" style="font-size:24px">arrow_downward</span>
+        </div>
+        <div class="result-block" id="result-block" style="display:none">
+          <div class="result-swatch" id="result-swatch"></div>
+          <div class="result-info">
+            <div class="result-item">
+              <div class="label">HEX</div>
+              <div class="value" id="result-hex" onclick="copyText(this.textContent)"></div>
+            </div>
+            <div class="result-item">
+              <div class="label">RGB</div>
+              <div class="value" id="result-rgb" onclick="copyText(this.textContent)"></div>
+            </div>
+            <div class="result-item">
+              <div class="label">혼합 비율</div>
+              <div class="value" id="result-ratio"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: recipes -->
+    <div class="recipe-section">
+      <div class="recipe-title">
+        <span class="material-symbols-outlined">auto_awesome</span>
+        혼합 레시피
+      </div>
+      <div class="recipe-list" id="recipe-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Paint colors (based on real paint pigments)
+const PAINTS = [
+  // Primaries
+  {name:'카드뮴 옐로우', hex:'#FFD700', cmyk:[0,0.16,1,0]},
+  {name:'레몬 옐로우', hex:'#FFF44F', cmyk:[0,0.04,0.69,0]},
+  {name:'옐로우 오커', hex:'#CC8400', cmyk:[0,0.35,1,0.2]},
+  {name:'카드뮴 레드', hex:'#E30022', cmyk:[0,1,0.85,0.11]},
+  {name:'알리자린 크림슨', hex:'#E32636', cmyk:[0,0.83,0.77,0.11]},
+  {name:'버밀리온', hex:'#E34234', cmyk:[0,0.71,0.77,0.11]},
+  {name:'울트라마린 블루', hex:'#3F00FF', cmyk:[0.75,1,0,0]},
+  {name:'코발트 블루', hex:'#0047AB', cmyk:[1,0.58,0,0.33]},
+  {name:'세룰리안 블루', hex:'#2A52BE', cmyk:[0.78,0.57,0,0.25]},
+  {name:'프탈로 블루', hex:'#000F89', cmyk:[1,0.89,0,0.46]},
+  // Secondaries
+  {name:'비리디안', hex:'#40826D', cmyk:[0.51,0,0.16,0.49]},
+  {name:'사프 그린', hex:'#507D2A', cmyk:[0.36,0,0.66,0.51]},
+  {name:'카드뮴 오렌지', hex:'#ED872D', cmyk:[0,0.44,0.81,0.07]},
+  {name:'퍼플', hex:'#800080', cmyk:[0,1,0,0.5]},
+  // Earth tones
+  {name:'번트 시에나', hex:'#E97451', cmyk:[0,0.5,0.65,0.09]},
+  {name:'번트 엄버', hex:'#8A3324', cmyk:[0,0.63,0.74,0.46]},
+  {name:'로 시에나', hex:'#C68642', cmyk:[0,0.33,0.67,0.22]},
+  {name:'로 엄버', hex:'#826644', cmyk:[0,0.22,0.48,0.49]},
+  // Neutrals
+  {name:'티타늄 화이트', hex:'#FAFAFA', cmyk:[0,0,0,0.02]},
+  {name:'아이보리 블랙', hex:'#1B1B1B', cmyk:[0,0,0,0.89]},
+  {name:'페인즈 그레이', hex:'#536878', cmyk:[0.33,0.12,0,0.53]},
+];
+
+const RECIPES = [
+  {colors:['카드뮴 옐로우','울트라마린 블루'], name:'자연스러운 녹색'},
+  {colors:['카드뮴 레드','울트라마린 블루'], name:'깊은 보라'},
+  {colors:['카드뮴 레드','카드뮴 옐로우'], name:'선명한 주황'},
+  {colors:['번트 시에나','울트라마린 블루'], name:'자연스러운 검정'},
+  {colors:['알리자린 크림슨','카드뮴 옐로우','티타늄 화이트'], name:'살구색 (피부톤)'},
+  {colors:['비리디안','카드뮴 옐로우','티타늄 화이트'], name:'밝은 민트'},
+  {colors:['울트라마린 블루','번트 엄버'], name:'그림자색'},
+  {colors:['코발트 블루','티타늄 화이트'], name:'하늘색'},
+];
+
+let selected = []; // [{paint, ratio}]
+let mixMode = 'water';
+
+// Build palette
+const paletteEl = document.getElementById('palette');
+PAINTS.forEach(p => {
+  const tube = document.createElement('div');
+  tube.className = 'paint-tube';
+  tube.style.background = p.hex;
+  tube.innerHTML = `<span class="tube-name">${p.name}</span>`;
+  tube.onclick = () => addColor(p);
+  paletteEl.appendChild(tube);
+});
+
+// Custom color picker
+const customTube = document.createElement('div');
+customTube.className = 'paint-tube';
+customTube.style.background = 'conic-gradient(red,yellow,lime,aqua,blue,magenta,red)';
+customTube.style.position = 'relative';
+customTube.innerHTML = `<span class="tube-name">직접 선택</span><input type="color" value="#888888" style="position:absolute;inset:0;opacity:0;cursor:pointer"/>`;
+customTube.querySelector('input').addEventListener('input', function() {
+  const hex = this.value;
+  const cmyk = rgbToCmyk(...hexToRgb(hex));
+  addColor({name: hex.toUpperCase(), hex, cmyk});
+});
+paletteEl.appendChild(customTube);
+
+// Build recipes
+const recipeList = document.getElementById('recipe-list');
+RECIPES.forEach(r => {
+  const paints = r.colors.map(n => PAINTS.find(p => p.name === n)).filter(Boolean);
+  const mixed = mixColors(paints.map(p => ({paint: p, ratio: 50})));
+  const row = document.createElement('div');
+  row.className = 'recipe-row';
+  row.innerHTML = `
+    <div class="recipe-colors">${paints.map(p => `<div class="recipe-chip" style="background:${p.hex}"></div>`).join('')}</div>
+    <span class="recipe-arrow">→</span>
+    <div class="recipe-result" style="background:${mixed}"></div>
+    <span class="recipe-name">${r.name}</span>
+  `;
+  row.onclick = () => {
+    selected = paints.map(p => ({paint: p, ratio: 50}));
+    renderSelected();
+  };
+  recipeList.appendChild(row);
+});
+
+function setMixMode(mode, btn) {
+  mixMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if(selected.length >= 2) renderSelected();
+}
+
+function addColor(paint) {
+  if(selected.length >= 4) return;
+  if(selected.find(s => s.paint.name === paint.name)) return;
+  selected.push({paint, ratio: 50});
+  renderSelected();
+}
+
+function removeColor(idx) {
+  selected.splice(idx, 1);
+  renderSelected();
+}
+
+function renderSelected() {
+  const container = document.getElementById('selected-colors');
+  const empty = document.getElementById('empty-state');
+  const arrow = document.getElementById('arrow');
+  const result = document.getElementById('result-block');
+
+  container.innerHTML = '';
+
+  if(selected.length === 0) {
+    container.innerHTML = '<div class="empty-state"><span class="material-symbols-outlined">palette</span><p>위 팔레트에서 물감을 선택하세요</p></div>';
+    arrow.style.display = 'none';
+    result.style.display = 'none';
+    document.querySelectorAll('.paint-tube').forEach(t => t.classList.remove('selected'));
+    return;
+  }
+
+  // Highlight selected in palette
+  document.querySelectorAll('.paint-tube').forEach(t => t.classList.remove('selected'));
+  selected.forEach(s => {
+    const idx = PAINTS.findIndex(p => p.name === s.paint.name);
+    if(idx >= 0) paletteEl.children[idx].classList.add('selected');
+  });
+
+  selected.forEach((s, i) => {
+    if(i > 0) {
+      const plus = document.createElement('span');
+      plus.className = 'plus-sign';
+      plus.textContent = '+';
+      container.appendChild(plus);
+    }
+    const slot = document.createElement('div');
+    slot.className = 'color-slot';
+    slot.innerHTML = `
+      <div class="color-swatch" style="background:${s.paint.hex}">
+        <div class="remove" onclick="event.stopPropagation();removeColor(${i})">×</div>
+      </div>
+      <div class="color-name">${s.paint.name}</div>
+      <div class="color-ratio">
+        <input type="range" min="10" max="100" value="${s.ratio}" oninput="updateRatio(${i},this.value)"/>
+        <span>${s.ratio}%</span>
+      </div>
+    `;
+    container.appendChild(slot);
+  });
+
+  if(selected.length >= 2) {
+    arrow.style.display = '';
+    result.style.display = '';
+    const mixed = mixColors(selected);
+    document.getElementById('result-swatch').style.backgroundColor = mixed;
+    document.getElementById('result-hex').textContent = mixed.toUpperCase();
+    const rgb = hexToRgb(mixed);
+    document.getElementById('result-rgb').textContent = `${rgb[0]}, ${rgb[1]}, ${rgb[2]}`;
+    const ratioStr = selected.map(s => `${s.paint.name} ${s.ratio}%`).join(' + ');
+    document.getElementById('result-ratio').textContent = ratioStr;
+  } else {
+    arrow.style.display = 'none';
+    result.style.display = 'none';
+  }
+}
+
+function updateRatio(idx, val) {
+  selected[idx].ratio = parseInt(val);
+  renderSelected();
+}
+
+// Subtractive color mixing using CMYK model
+function mixColors(colors) {
+  const totalRatio = colors.reduce((a, c) => a + c.ratio, 0);
+
+  // Convert all to CMYK and mix
+  let cMix = 0, mMix = 0, yMix = 0, kMix = 0;
+
+  colors.forEach(({paint, ratio}) => {
+    const w = ratio / totalRatio;
+    const cmyk = paint.cmyk || rgbToCmyk(...hexToRgb(paint.hex));
+
+    if(mixMode === 'water') {
+      // Watercolor: more transparent, colors layer
+      cMix += cmyk[0] * w;
+      mMix += cmyk[1] * w;
+      yMix += cmyk[2] * w;
+      kMix += cmyk[3] * w * 0.7; // less black in watercolor
+    } else if(mixMode === 'acrylic') {
+      // Acrylic: opaque, direct mix
+      cMix += cmyk[0] * w;
+      mMix += cmyk[1] * w;
+      yMix += cmyk[2] * w;
+      kMix += cmyk[3] * w;
+    } else {
+      // Oil: thick, slight darkening
+      cMix += cmyk[0] * w;
+      mMix += cmyk[1] * w;
+      yMix += cmyk[2] * w;
+      kMix += cmyk[3] * w * 1.1;
+    }
+  });
+
+  // Clamp
+  cMix = Math.min(1, cMix);
+  mMix = Math.min(1, mMix);
+  yMix = Math.min(1, yMix);
+  kMix = Math.min(1, kMix);
+
+  // CMYK to RGB
+  const r = Math.round(255 * (1 - cMix) * (1 - kMix));
+  const g = Math.round(255 * (1 - mMix) * (1 - kMix));
+  const b = Math.round(255 * (1 - yMix) * (1 - kMix));
+
+  return rgbToHex(
+    Math.max(0, Math.min(255, r)),
+    Math.max(0, Math.min(255, g)),
+    Math.max(0, Math.min(255, b))
+  );
+}
+
+function rgbToCmyk(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const k = 1 - Math.max(r, g, b);
+  if(k === 1) return [0, 0, 0, 1];
+  return [
+    (1 - r - k) / (1 - k),
+    (1 - g - k) / (1 - k),
+    (1 - b - k) / (1 - k),
+    k
+  ];
+}
+
+function hexToRgb(hex) {
+  const m = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+  return m ? [parseInt(m[1],16), parseInt(m[2],16), parseInt(m[3],16)] : [0,0,0];
+}
+
+function rgbToHex(r, g, b) {
+  return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+function clearAll() {
+  selected = [];
+  renderSelected();
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text);
+  const toast = document.getElementById('toast');
+  toast.textContent = text + ' 복사됨';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1500);
+}
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

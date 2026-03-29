@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Famous Art Gacha Pack - Luna Whale</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap"
+        rel="stylesheet">
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <!-- Firebase Authentication & Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../../assets/js/firebase-auth.js"></script>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#a413ec",
+                        "navy-900": "#0a1128",
+                        "gold-500": "#d4af37",
+                        "gold-300": "#f3e5ab"
+                    },
+                    fontFamily: {
+                        serif: ["Playfair Display", "serif"],
+                        display: ["Cinzel", "serif"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        body {
+            font-family: sans-serif;
+            overflow-x: hidden;
+        }
+
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+
+        .preserve-3d {
+            transform-style: preserve-3d;
+        }
+
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+
+        /* Antique Pack Styles */
+        .booster-pack {
+            background: linear-gradient(135deg, #0a1128 0%, #1a2a4a 50%, #0a1128 100%);
+            border: 2px solid #d4af37;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(212, 175, 55, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pack-texture {
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+            mix-blend-mode: multiply;
+            pointer-events: none;
+        }
+
+        /* Foil Hologram Effect */
+        .foil-hologram {
+            background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.5) 30%, rgba(255, 0, 255, 0.4) 40%, rgba(0, 255, 255, 0.4) 50%, transparent 60%);
+            background-size: 300% 300%;
+            mix-blend-mode: color-dodge;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .foil-animated {
+            animation: foil-shift 3s infinite linear;
+        }
+
+        @keyframes foil-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Card Ranks */
+        .card-common {
+            border-color: #718096;
+            background: linear-gradient(to bottom right, #2d3748, #1a202c);
+        }
+
+        .card-rare {
+            border-color: #4299e1;
+            background: linear-gradient(to bottom right, #2b6cb0, #1a365d);
+        }
+
+        .card-epic {
+            border-color: #9f7aea;
+            background: linear-gradient(to bottom right, #6b46c1, #322659);
+        }
+
+        .card-legendary {
+            border-image: linear-gradient(to bottom right, #d6bcfa, #f6e05e, #68d391, #63b3ed) 1;
+            border-width: 3px;
+            background: linear-gradient(to bottom right, #1a202c, #000000);
+            box-shadow: 0 0 25px rgba(246, 224, 94, 0.3);
+        }
+
+        /* Tear Effects - Enhanced */
+        .pack-container {
+            position: relative;
+            filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.5));
+            touch-action: none;
+        }
+
+        .pack-base {
+            position: absolute;
+            inset: 0;
+            background: #0a1128;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .peel-guide-arrow {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            pointer-events: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .peel-back-side {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            box-shadow: -5px 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        /* MTG Frame Styles */
+        .mtg-frame {
+            border: 5px solid #111;
+            border-radius: 12px;
+            background: #222;
+            padding: 4px;
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+        }
+
+        .mtg-inner {
+            border: 2px solid #555;
+            background: #000;
+            height: 100%;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .mtg-header {
+            background: linear-gradient(to right, #ccc, #eee, #ccc);
+            color: #000;
+            padding: 4px 8px;
+            font-weight: bold;
+            border-bottom: 2px solid #555;
+            display: flex;
+            justify-content: space-between
+        }
+
+        .mtg-art {
+            flex-grow: 1;
+            border-bottom: 2px solid #555;
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .mtg-type {
+            background: linear-gradient(to right, #ccc, #eee, #ccc);
+            color: #000;
+            padding: 2px 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-bottom: 2px solid #555;
+        }
+
+        .mtg-text {
+            background: #e0e0d0;
+            color: #111;
+            padding: 12px;
+            font-size: 0.85rem;
+            height: 110px;
+            font-family: Georgia, serif;
+            position: relative;
+        }
+
+        /* Redline Card Foil Effect */
+        .legendary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 9px;
+            background: linear-gradient(125deg, rgba(255, 0, 0, 0.3) 0%, rgba(255, 255, 0, 0.3) 20%, rgba(0, 255, 0, 0.3) 40%, rgba(0, 255, 255, 0.3) 60%, rgba(0, 0, 255, 0.3) 80%, rgba(255, 0, 255, 0.3) 100%);
+            background-size: 200% 200%;
+            animation: holo-shimmer 3s infinite linear;
+            mix-blend-mode: color-dodge;
+            pointer-events: none;
+            z-index: 30;
+        }
+
+        .legendary-art::after {
+            display: none;
+        }
+
+        @keyframes holo-shimmer {
+            0% {
+                background-position: 0% 0%;
+            }
+
+            50% {
+                background-position: 100% 100%;
+            }
+
+            100% {
+                background-position: 0% 0%;
+            }
+        }
+
+        /* Museum Background Elements */
+        .museum-hallway {
+            background-image: url('../../assets/images/museum-bg.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .bokeh-overlay {
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(255, 230, 150, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 60%, rgba(255, 200, 100, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 10%, rgba(200, 220, 255, 0.1) 0%, transparent 60%);
+            mix-blend-mode: screen;
+            filter: blur(12px);
+            pointer-events: none;
+        }
+    </style>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "framer-motion": "https://esm.sh/framer-motion@10.16.4?deps=react@18.2.0,react-dom@18.2.0",
+            "canvas-confetti": "https://esm.sh/canvas-confetti@1.6.0"
+        }
+    }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="../../assets/js/luna-nav.js"></script>
+<script>
+// ── LunaCoin Bridge (standalone pages) ──
+window.LunaCoinBridge = {
+    _key: 'luna_coins',
+    get coins() { return parseInt(localStorage.getItem(this._key) || '0'); },
+    spend(amount) {
+        const cur = this.coins;
+        if (cur < amount) return false;
+        localStorage.setItem(this._key, String(cur - amount));
+        // Firestore sync
+        try {
+            const user = firebase.auth().currentUser;
+            if (user) firebase.firestore().collection('users').doc(user.uid).update({ coins: cur - amount });
+        } catch(e) {}
+        return true;
+    }
+};
+</script>
+</head>
+
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Nav Placeholder -->
+    <div id="nav-placeholder"
+        class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 h-16 flex items-center px-4 justify-between">
+        <button onclick="window.location.href='../../index.html'" class="text-slate-400 hover:text-white"><span
+                class="material-symbols-outlined">arrow_back</span></button>
+        <span class="font-display font-bold text-gold-500 tracking-widest">LUNA WHALE</span>
+        <div class="w-8"></div>
+    </div>
+
+    <main class="flex-1 overflow-hidden relative" id="root"></main>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { motion, useMotionValue, useSpring, useTransform, useMotionTemplate, AnimatePresence } from 'framer-motion';
+        import confetti from 'canvas-confetti';
+
+        // --- Database ---
+        let currentDB = [];
+
+        // Load DB
+        const loadDatabase = async (packType = 'impressionism') => {
+            try {
+                const url = packType === '100artists' ? '../../data/cards/100_artists.json' : '../../data/cards/impressionism.json';
+                const res = await fetch(url);
+                const data = await res.json();
+                currentDB = data;
+                console.log(`Loaded DB (${packType}):`, currentDB.length, "cards");
+            } catch (e) {
+                console.error("Failed to load DB", e);
+            }
+        };
+
+        // Generate N cards depending on pack
+        const generatePack = (packType) => {
+            const pack = [];
+            const dbRef = currentDB.length > 0 ? currentDB : [];
+
+            if (dbRef.length === 0) return pack;
+
+            const pullCount = packType === '100artists' ? 3 : 2; // 3 cards for 100 artists, 2 for impressionism
+
+            for (let i = 0; i < pullCount; i++) {
+                if (i === 0) {
+                    // Guaranteed Rare+ for first card
+                    const rand = Math.random();
+                    let pool = 'Common';
+                    if (rand > 0.85) pool = 'Legendary';
+                    else if (rand > 0.60) pool = 'Epic';
+                    else if (rand > 0.30) pool = 'Rare';
+                    const subset = dbRef.filter(c => c.rarity === pool);
+                    const pick = subset.length > 0 ? subset[Math.floor(Math.random() * subset.length)] : dbRef[Math.floor(Math.random() * dbRef.length)];
+                    pack.push({ ...pick, uid: Math.random().toString(36).substr(2, 9) });
+                } else {
+                    // Mostly Common for others
+                    const rand = Math.random();
+                    const pool = rand > 0.90 ? 'Rare' : 'Common';
+                    const subset = dbRef.filter(c => c.rarity === pool);
+                    const pick = subset.length > 0 ? subset[Math.floor(Math.random() * subset.length)] : dbRef[Math.floor(Math.random() * dbRef.length)];
+                    pack.push({ ...pick, uid: Math.random().toString(36).substr(2, 9) });
+                }
+            }
+            return pack;
+        }
+
+        // --- Audio Manager ---
+        // Synthetic sounds disabled to fix weird noise
+        const playSynthSound = (type) => {
+            // No-op
+        };
+
+        // --- Masterpiece Style Card Component (Redline Pattern) ---
+        const Card = ({ data, index, total, revealDelay, onEnlarge }) => {
+            const [isFlipped, setIsFlipped] = useState(false);
+            const cardRef = useRef(null);
+            const x = useMotionValue(0);
+            const y = useMotionValue(0);
+            const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
+            const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
+
+            const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["15deg", "-15deg"]);
+            const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-15deg", "15deg"]);
+
+            const handleMouseMove = (e) => {
+                if (!cardRef.current || !isFlipped) return;
+                const rect = cardRef.current.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                x.set(mouseX / rect.width - 0.5);
+                y.set(mouseY / rect.height - 0.5);
+            };
+
+            const handleMouseLeave = () => { x.set(0); y.set(0); };
+
+            const isLegendary = data.rarity === 'Legendary';
+            const isEpic = data.rarity === 'Epic';
+
+            // Dynamic Fan spread calculation
+            const mid = (total - 1) / 2;
+            const diff = index - mid;
+            const spread = total > 2 ? 8 : 5; // degrees per card
+            const fanAngle = diff * spread;
+            const ySpread = total > 2 ? 8 : 5;
+            const fanYOffset = Math.abs(diff) * ySpread;
+
+            const handleFlip = () => {
+                if (!isFlipped) {
+                    setIsFlipped(true);
+                } else if (onEnlarge) {
+                    onEnlarge(data);
+                }
+                // Removed confetti
+            };
+
+            return (
+                <motion.div
+                    className="relative w-[250px] h-[350px] perspective-1000 flex-shrink-0 cursor-pointer z-50"
+                    initial={{ scale: 0, x: 0, y: 150, rotateZ: 0 }}
+                    animate={{ scale: 1, x: 0, y: fanYOffset, rotateZ: fanAngle }}
+                    transition={{ type: "spring", damping: 12, delay: 0.5 + (index * 0.1) }}
+                    style={{ zIndex: isFlipped ? 100 : 50 + index, pointerEvents: 'auto' }}
+                    onClick={handleFlip}
+                    onPointerDown={(e) => {
+                        // Backup for mobile touch
+                        if (e.pointerType === 'touch') {
+                            // handleFlip will trigger on click, but for safety:
+                            // we don't want to double flip, so handleFlip logic is better
+                        }
+                    }}
+                >
+                    <motion.div
+                        ref={cardRef}
+                        style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
+                        className="w-[250px] h-[350px] relative"
+                        whileHover={isFlipped ? { scale: 1.05 } : { scale: 1.02, y: -10 }}
+                    >
+                        <motion.div
+                            className="w-full h-full relative"
+                            style={{ transformStyle: 'preserve-3d' }}
+                            initial={{ rotateY: 180 }}
+                            animate={{ rotateY: isFlipped ? 0 : 180 }}
+                            transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
+                        >
+                            {/* FRONT FACE (Redline Spec) */}
+                            <div
+                                className={`absolute inset-0 backface-hidden rounded-[12px] bg-zinc-800 border-[8px] border-zinc-900 box-border overflow-hidden flex flex-col p-[6px] ${isLegendary ? 'legendary' : ''} pointer-events-auto`}
+                                style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', zIndex: 2 }}
+                            >
+                                {/* Zoom Icon Overlay - Very Obvious */}
+                                {isFlipped && (
+                                    <div
+                                        className="absolute top-1 right-1 z-[60] bg-gold-500/90 text-black rounded-full p-1.5 shadow-lg flex items-center justify-center cursor-pointer hover:bg-gold-400 hover:scale-110 transition-all border-2 border-zinc-900"
+                                        onClick={(e) => { e.stopPropagation(); if (onEnlarge) onEnlarge(data); }}
+                                        title="크게 보기"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px] leading-none font-bold">zoom_in</span>
+                                    </div>
+                                )}                              {/* Title Bar - MTG Style */}
+                                <div className="h-[30px] shrink-0 bg-gradient-to-r from-[#dcd1c4] to-[#c9bcae] rounded-t-[6px] rounded-b-[2px] border-[2px] border-zinc-900 px-[6px] flex justify-between items-center shadow-[inset_0_0_4px_rgba(255,255,255,0.5)] z-40 relative pt-[2px] cursor-pointer" onClick={(e) => { e.stopPropagation(); if (isFlipped && onEnlarge) onEnlarge(data); }}>
+                                    <div className="flex flex-col flex-1 min-w-0 pr-2 pb-[1px]">
+                                        <span className="text-[12px] font-bold text-zinc-900 leading-[1.1] tracking-tight font-display mb-[1px] truncate">{data.title_ko || data.title}</span>
+                                        <span className="text-[7px] text-zinc-600 leading-none truncate">{data.title_en}</span>
+                                    </div>
+                                    <div className="flex-shrink-0 flex items-center gap-[2px]">
+                                        {isLegendary && <span className="material-symbols-outlined text-[16px] text-yellow-600 drop-shadow-sm">stars</span>}
+                                        {data.rarity === 'Epic' && <span className="material-symbols-outlined text-[16px] text-purple-600 drop-shadow-sm">diamond</span>}
+                                        {data.rarity === 'Rare' && <span className="material-symbols-outlined text-[16px] text-blue-600 drop-shadow-sm">pentagon</span>}
+                                        {data.rarity === 'Common' && <span className="material-symbols-outlined text-[16px] text-zinc-500 drop-shadow-sm">circle</span>}
+                                    </div>
+                                </div>
+
+                                {/* Art Box */}
+                                <div
+                                    className={`mt-[4px] flex-1 relative border-[2px] border-zinc-900 shadow-[0_0_10px_rgba(0,0,0,0.8)] z-40 bg-zinc-950 overflow-hidden flex items-center justify-center cursor-pointer`}
+                                    onClick={(e) => { e.stopPropagation(); if (isFlipped && onEnlarge) onEnlarge(data); }}
+                                >
+                                    {/* Blurred Background Layer */}
+                                    <div
+                                        className="absolute inset-0 bg-center bg-cover blur-[8px] scale-110 opacity-70 pointer-events-none"
+                                        style={{ backgroundImage: `url(${data.img_thumb || data.img_large || data.url})` }}
+                                    ></div>
+                                    {/* Fitted Image */}
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <img src={data.img_thumb || data.img_large || data.url} alt={data.title_ko || data.title} className="w-full h-full object-contain drop-shadow-2xl" draggable="false" />
+                                    </div>
+                                </div>
+
+                                {/* Type Line */}
+                                <div className="mt-[4px] h-[22px] shrink-0 bg-gradient-to-r from-[#dcd1c4] to-[#c9bcae] rounded-[2px] border-[2px] border-zinc-900 px-[6px] flex justify-between items-center shadow-[inset_0_0_4px_rgba(255,255,255,0.5)] z-40 relative">
+                                    <span className="text-[11px] font-bold text-zinc-900 truncate">{data.artist_ko || data.artist}</span>
+                                    <span className="text-[9px] font-semibold text-zinc-700 whitespace-nowrap ml-2">{data.era_ko || data.era}</span>
+                                </div>
+
+                                {/* Text Box (TMI) */}
+                                <div
+                                    className="mt-[4px] h-[64px] shrink-0 bg-[#dcd1c4]/95 rounded-[2px] border-[2px] border-zinc-900 p-[6px] overflow-y-auto scroll-smooth custom-scrollbar shadow-inner relative flex flex-col gap-[4px] pointer-events-auto z-40 overscroll-contain"
+                                    onWheel={(e) => {
+                                        e.currentTarget.scrollBy({ top: Math.sign(e.deltaY) * 30, behavior: 'smooth' });
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                    }}
+                                    onTouchStart={(e) => e.stopPropagation()}
+                                    onTouchMove={(e) => e.stopPropagation()}
+                                    onPointerDown={(e) => e.stopPropagation()}
+                                >
+                                    <p className="text-[10px] leading-[1.3] text-zinc-900 whitespace-pre-wrap break-keep">
+                                        {data.desc_ko}
+                                    </p>
+                                    <p className="text-[9px] leading-[1.2] text-zinc-700 italic">
+                                        {data.desc_en}
+                                    </p>
+                                </div>
+
+                                {/* Bottom Info Line */}
+                                <div className="h-[12px] shrink-0 flex justify-between items-end px-[2px] mt-[4px] z-40 relative">
+                                    <span className="text-[10px] font-bold text-white tracking-widest leading-none drop-shadow-md">{data.year || '19c'}</span>
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-[8px] text-white/70 font-mono leading-none">{data.id}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* BACK FACE (Luna Whale Official) */}
+                            <div
+                                className="absolute inset-0 backface-hidden rounded-[12px] border-[1px] border-gold-500/30 overflow-hidden shadow-2xl pointer-events-auto"
+                                style={{ transform: "rotateY(180deg)", backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', zIndex: 1 }}
+                            >
+                                <img src="../../images/카드 뒷면 저용량.png" alt="Card Back" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-white/10 pointer-events-none"></div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                </motion.div>
+            );
+        };
+
+        const MasterpieceGacha = () => {
+            const [packState, setPackState] = useState('selecting'); // selecting -> sealed -> opening -> opened
+            const [selectedPackType, setSelectedPackType] = useState(null);
+            const [cards, setCards] = useState([]);
+            const [showGuide, setShowGuide] = useState(true);
+            const [enlargedCard, setEnlargedCard] = useState(null);
+            const [packKey, setPackKey] = useState(0);
+
+            const audioCtxRef = useRef(null);
+            const dragY = useMotionValue(0);
+
+            const handleSelectPack = async (type) => {
+                playSfx('click');
+                setSelectedPackType(type);
+                await loadDatabase(type);
+                setPackState('sealed');
+                playSfx('whoosh');
+            };
+
+            // Audio Synthesis for Tearing (can be repurposed for a 'swish' or 'pop')
+            const playTearSound = (val) => {
+                if (!audioCtxRef.current) {
+                    audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const ctx = audioCtxRef.current;
+                if (ctx.state === 'suspended') ctx.resume();
+
+                const v = Math.abs(val);
+                if (v < 20) return;
+
+                const bufferSize = ctx.sampleRate * 0.05;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+                const source = ctx.createBufferSource();
+                source.buffer = buffer;
+
+                const filter = ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(1200 + v * 3, ctx.currentTime);
+                filter.Q.value = 1;
+
+                const gain = ctx.createGain();
+                gain.gain.setValueAtTime(Math.min(0.1, v / 2000), ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+
+                source.connect(filter);
+                filter.connect(gain);
+                gain.connect(ctx.destination);
+                source.start();
+            };
+
+            const handleDrag = (_, info) => {
+                playTearSound(info.velocity.y);
+                if (Math.abs(info.offset.y) > 10) setShowGuide(false);
+            };
+
+            // DB is loaded upon pack selection
+
+            const savePackToCollection = async (pack) => {
+                const user = firebase.auth().currentUser;
+                if (!user) return;
+                try {
+                    const batch = firebase.firestore().batch();
+                    pack.forEach(card => {
+                        const docRef = firebase.firestore().collection('users').doc(user.uid).collection('cards').doc();
+                        batch.set(docRef, {
+                            ...card,
+                            packType: selectedPackType,
+                            drawnAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    });
+                    await batch.commit();
+                    console.log("Cards saved successfully to Firestore.");
+                } catch (e) {
+                    console.error("Error saving cards:", e);
+                }
+            };
+
+            const resetCollection = async () => {
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    alert("로그인 후 이용해주세요.");
+                    return;
+                }
+                const confirmReset = confirm("수집한 모든 카드를 초기화 하시겠습니까? (테스트용)");
+                if (!confirmReset) return;
+
+                try {
+                    const snapshot = await firebase.firestore().collection('users').doc(user.uid).collection('cards').get();
+                    if (snapshot.empty) {
+                        alert("삭제할 카드가 없습니다.");
+                        return;
+                    }
+                    const batch = firebase.firestore().batch();
+                    snapshot.docs.forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    await batch.commit();
+                    alert("성공적으로 초기화되었습니다.");
+                } catch (e) {
+                    console.error("Error resetting collection:", e);
+                    alert("초기화 중 에러가 발생했습니다.");
+                }
+            };
+
+            // 🔊 효과음 시스템
+            const gachaSfx = {
+                packOpen: new Audio('../../assets/sounds/SonSounds/DA - Paper Tear - 3.mp3'),
+                cardReveal: new Audio('../../assets/sounds/SonSounds/DA - Paper Turn - 3.mp3'),
+                sparkle: new Audio('../../assets/sounds/SonSounds/DA - Chimes - 1.mp3'),
+                rare: new Audio('../../assets/sounds/SonSounds/080_깨달음.mp3'),
+                legendary: new Audio('../../assets/sounds/SonSounds/049_띠룽 (슈퍼마리오 코인먹).mp3'),
+                click: new Audio('../../assets/sounds/SonSounds/DA - Pop - 3.mp3'),
+                whoosh: new Audio('../../assets/sounds/SonSounds/KF - Whoosh Soft - 2.mp3'),
+            };
+            Object.values(gachaSfx).forEach(a => { a.volume = 0.08; a.preload = 'auto'; });
+            gachaSfx.rare.volume = 0.12;
+            gachaSfx.legendary.volume = 0.15;
+            const playSfx = (name) => { try { const a = gachaSfx[name]; if(a){a.currentTime=0;a.play().catch(()=>{});} } catch(e){} };
+
+            const [coinError, setCoinError] = useState(false);
+            const [isMultiDraw, setIsMultiDraw] = useState(false);
+            const [multiCards, setMultiCards] = useState([]);
+
+            const openMultiPack = async (type) => {
+                // 10연뽑: 250코인
+                if (!window.LunaCoinBridge.spend(250)) {
+                    setCoinError(true);
+                    setTimeout(() => setCoinError(false), 2500);
+                    return;
+                }
+                playSfx('click');
+                await loadDatabase(type);
+                setSelectedPackType(type);
+                setIsMultiDraw(true);
+                const allCards = [];
+                for (let i = 0; i < 10; i++) {
+                    const pack = generatePack(type);
+                    allCards.push(...pack);
+                }
+                setMultiCards(allCards);
+                savePackToCollection(allCards);
+                setPackState('opened');
+                playSfx('legendary');
+                // 코인 UI 갱신
+                const el = document.getElementById('gachaCoinCount');
+                if (el) el.textContent = window.LunaCoinBridge.coins;
+            };
+
+            const openPack = () => {
+                if (packState !== 'sealed' && packState !== 'opening') return;
+                // 코인 차감 (30코인)
+                if (!window.LunaCoinBridge.spend(30)) {
+                    setCoinError(true);
+                    setTimeout(() => setCoinError(false), 2500);
+                    return;
+                }
+                setIsMultiDraw(false);
+                // 코인 UI 갱신
+                const el = document.getElementById('gachaCoinCount');
+                if (el) el.textContent = window.LunaCoinBridge.coins;
+                playSfx('packOpen');
+                setPackState('opening');
+                const newCards = generatePack(selectedPackType);
+                setCards(newCards);
+
+                // Wait for shake animation to finish before removing the pack and showing cards
+                setTimeout(() => {
+                    setPackState('opened');
+                    playSfx('sparkle');
+                    savePackToCollection(newCards);
+                    // 카드별 효과음 (0.3초 간격)
+                    newCards.forEach((card, i) => {
+                        setTimeout(() => {
+                            if (card.rarity === 'Legendary') playSfx('legendary');
+                            else if (card.rarity === 'Rare' || card.rarity === 'Epic') playSfx('rare');
+                            else playSfx('cardReveal');
+                        }, i * 300);
+                    });
+                }, 800);
+            };
+
+            const handleDragEnd = (_, info) => {
+                if (info.offset.y < -20 || info.velocity.y < -100) {
+                    openPack();
+                } else {
+                    dragY.set(0);
+                }
+            };
+
+            const resetPack = () => {
+                playSfx('whoosh');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setPackState('selecting');
+                setSelectedPackType(null);
+                setCards([]);
+                setShowGuide(true);
+                dragY.set(0);
+                setPackKey(prev => prev + 1);
+            };
+
+            return (
+                <div className="w-full h-full flex flex-col items-center justify-center p-4">
+                    {/* 코인 잔액 표시 */}
+                    <div className="fixed top-20 right-4 z-[100] flex items-center gap-1.5 bg-amber-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-amber-500/30 shadow-lg">
+                        <span className="text-sm">🪙</span>
+                        <span className="font-black text-amber-400 text-sm" id="gachaCoinCount">{window.LunaCoinBridge.coins}</span>
+                    </div>
+                    {/* 코인 부족 토스트 */}
+                    <AnimatePresence>
+                        {coinError && (
+                            <motion.div
+                                className="fixed top-32 left-1/2 -translate-x-1/2 z-[200] bg-red-900/90 backdrop-blur-md text-white px-6 py-3 rounded-2xl shadow-2xl border border-red-500/30 text-center"
+                                initial={{ opacity: 0, y: -20, scale: 0.9 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -20, scale: 0.9 }}
+                            >
+                                <div className="font-bold text-base">🪙 코인이 부족해요!</div>
+                                <div className="text-xs text-red-200 mt-1">카드 뽑기에는 30코인이 필요합니다</div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    {/* Museum Background Layer */}
+                    <div className="fixed inset-0 museum-hallway z-0 pointer-events-none">
+                        <div className="absolute inset-0 bg-black/60 pointer-events-none"></div>
+                        <div className="absolute inset-0 bokeh-overlay pointer-events-none"></div>
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)] pointer-events-none"></div>
+                    </div>
+
+                    <div className="relative w-full max-w-5xl flex-1 flex my-auto items-center justify-center perspective-1000 z-10 min-h-[600px]">
+                        <AnimatePresence mode="wait">
+                            {packState === 'selecting' && (
+                                <motion.div
+                                    key="selecting"
+                                    className="flex flex-col md:flex-row gap-8 items-center justify-center z-50 pointer-events-auto"
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                >
+                                    <button
+                                        onClick={() => handleSelectPack('impressionism')}
+                                        className="relative group w-[220px] transition-transform hover:scale-110 flex flex-col items-center gap-4 py-6"
+                                    >
+                                        <div className="relative">
+                                            <img src="../../images/impbooster_앞면.png" alt="Impressionism Pack" className="w-[180px] h-[270px] object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.5)] group-hover:drop-shadow-[0_30px_35px_rgba(0,0,0,0.6)] transition-all" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none rounded-lg"></div>
+                                        </div>
+                                        <div className="flex flex-col items-center text-center bg-zinc-900/40 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl w-full">
+                                            <span className="text-gold-400 font-bold text-lg drop-shadow-md font-display tracking-wider mb-1">인상주의 화가들</span>
+                                            <span className="text-white/50 font-medium text-[10px] uppercase tracking-tighter">Impressionism</span>
+                                            <div className="mt-3 px-4 py-1.5 bg-gold-500/10 rounded-full border border-gold-500/20 flex flex-col items-center min-w-[80px]">
+                                                <span className="text-[10px] text-gold-300/80 font-medium">총 64종</span>
+                                                <span className="text-gold-400 font-black text-xs leading-none mt-1">2장 개봉 🪙30</span>
+                                            </div>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); openMultiPack('impressionism'); }}
+                                                className="mt-2 px-4 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 rounded-full text-amber-400 font-bold text-[11px] transition-all hover:scale-105"
+                                            >
+                                                10연뽑 🪙250
+                                            </button>
+                                        </div>
+                                    </button>
+
+                                    <button
+                                        onClick={() => handleSelectPack('100artists')}
+                                        className="relative group w-[220px] transition-transform hover:scale-110 flex flex-col items-center gap-4 py-6"
+                                    >
+                                        <div className="relative">
+                                            <img src="../../images/100인 작가 앞면.png" alt="100 Artists Pack" className="w-[180px] h-[270px] object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.5)] group-hover:drop-shadow-[0_30px_35px_rgba(0,0,0,0.6)] transition-all" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none rounded-lg"></div>
+                                        </div>
+                                        <div className="flex flex-col items-center text-center bg-zinc-900/40 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl w-full">
+                                            <span className="text-gold-400 font-bold text-lg drop-shadow-md font-display tracking-wider mb-1">세기의 명화들</span>
+                                            <span className="text-white/50 font-medium text-[10px] uppercase tracking-tighter">100 Masterpieces</span>
+                                            <div className="mt-3 px-4 py-1.5 bg-gold-500/10 rounded-full border border-gold-500/20 flex flex-col items-center min-w-[80px]">
+                                                <span className="text-[10px] text-gold-300/80 font-medium">총 100종</span>
+                                                <span className="text-gold-400 font-black text-xs leading-none mt-1">3장 개봉 🪙30</span>
+                                            </div>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); openMultiPack('100artists'); }}
+                                                className="mt-2 px-4 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 rounded-full text-amber-400 font-bold text-[11px] transition-all hover:scale-105"
+                                            >
+                                                10연뽑 🪙250
+                                            </button>
+                                        </div>
+                                    </button>
+                                </motion.div>
+                            )}
+
+                            {(packState === 'sealed' || packState === 'opening') && (
+                                <motion.div
+                                    key={packKey}
+                                    className="pack-container absolute cursor-grab active:cursor-grabbing perspective-1000"
+                                    exit={{ opacity: 0, scale: 0.8, filter: 'blur(10px)', y: -100, pointerEvents: 'none' }}
+                                    initial={{ opacity: 0, rotateY: 180, scale: 0.8, y: 40 }}
+                                    animate={
+                                        packState === 'opening'
+                                            ? {
+                                                opacity: 1, rotateY: 0, scale: 1, y: 0,
+                                                x: [-5, 5, -5, 5, -8, 8, -10, 10, -5, 5, 0],
+                                                rotateZ: [-2, 2, -2, 2, -4, 4, -4, 4, -2, 2, 0]
+                                            }
+                                            : { opacity: 1, rotateY: 0, scale: 1, y: 0, x: 0, rotateZ: 0 }
+                                    }
+                                    transition={
+                                        packState === 'opening'
+                                            ? { duration: 0.6, ease: "easeOut" }
+                                            : { type: 'spring', damping: 20, stiffness: 200 }
+                                    }
+                                    style={{ transformStyle: 'preserve-3d', y: dragY }}
+                                    drag="y"
+                                    dragConstraints={{ top: -300, bottom: 50 }}
+                                    onDrag={handleDrag}
+                                    onDragEnd={handleDragEnd}
+                                    onClick={openPack}
+                                >
+                                    {/* The Pack Body */}
+                                    <div className="relative w-[340px] h-[550px] mx-auto z-20">
+                                        {/* Pack Front */}
+                                        <div className="absolute inset-0 backface-hidden flex justify-center items-center" style={{ backfaceVisibility: 'hidden' }}>
+                                            <img src={selectedPackType === '100artists' ? '../../images/100인 작가 앞면.png' : '../../images/impbooster_앞면.png'} alt="Pack Front" className="w-full h-full object-contain filter drop-shadow-2xl" />
+                                        </div>
+
+                                        {/* Pack Back */}
+                                        <div className="absolute inset-0 backface-hidden flex justify-center items-center" style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden' }}>
+                                            <img src={selectedPackType === '100artists' ? '../../images/100인 작가 뒷면.png' : '../../images/impbooster_뒷면.png'} alt="Pack Back" className="w-full h-full object-contain filter drop-shadow-2xl" />
+                                        </div>
+                                    </div>
+
+                                    {/* Interaction Guide */}
+                                    {showGuide && (
+                                        <div className="absolute inset-x-0 -bottom-16 flex justify-center z-40 pointer-events-none">
+                                            <motion.div
+                                                className="flex flex-col items-center gap-2"
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                            >
+                                                <motion.div
+                                                    className="flex flex-col items-center gap-1 bg-navy-800/90 text-gold-500 border border-gold-500/50 px-4 py-2 rounded-full font-bold text-xs shadow-2xl backdrop-blur-md"
+                                                    animate={{ y: [-5, 5, -5] }}
+                                                    transition={{ repeat: Infinity, duration: 1.5 }}
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">touch_app</span>
+                                                    터치하거나 위로 밀어서 개봉하세요
+                                                </motion.div>
+                                            </motion.div>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Cards Revealed Fan (1회 뽑기) */}
+                        {packState === 'opened' && cards.length > 0 && !isMultiDraw && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center z-[60] pointer-events-none">
+                                <motion.button
+                                    className="mb-8 px-8 py-3 bg-gold-500/10 hover:bg-gold-500/20 text-gold-500 border border-gold-500/50 rounded-full font-bold tracking-widest transition-all shadow-lg backdrop-blur-md z-70 pointer-events-auto"
+                                    initial={{ opacity: 0, y: -20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 1.0 }}
+                                    onClick={resetPack}
+                                >
+                                    한 번 더 열기 🪙30
+                                </motion.button>
+                                <motion.div
+                                    className="flex flex-row gap-4 sm:gap-12 w-full max-w-4xl items-center justify-center relative mt-4 pointer-events-none"
+                                    initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                >
+                                    {cards.map((data, idx) => (
+                                        <div key={data.uid || idx} className="relative z-50 pointer-events-auto">
+                                            <Card data={data} index={idx} total={cards.length} onEnlarge={() => setEnlargedCard(data)} />
+                                        </div>
+                                    ))}
+                                </motion.div>
+                            </div>
+                        )}
+
+                        {/* 10연뽑 결과 그리드 */}
+                        {packState === 'opened' && isMultiDraw && multiCards.length > 0 && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-start z-[60] overflow-y-auto py-8 pointer-events-auto">
+                                <motion.div
+                                    className="text-center mb-4"
+                                    initial={{ opacity: 0, y: -20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                >
+                                    <div className="text-2xl font-black text-gold-400 font-display tracking-wider">10연뽑 결과!</div>
+                                    <div className="text-sm text-white/50 mt-1">{multiCards.length}장 획득</div>
+                                </motion.div>
+                                <motion.div
+                                    className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 w-full max-w-3xl px-4"
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                >
+                                    {multiCards.map((data, idx) => (
+                                        <motion.div
+                                            key={data.uid || idx}
+                                            className="cursor-pointer hover:scale-105 transition-transform"
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: idx * 0.05 }}
+                                            onClick={() => setEnlargedCard(data)}
+                                        >
+                                            <div className={`relative rounded-xl overflow-hidden shadow-lg border-2 ${data.rarity === 'Legendary' ? 'border-amber-400 shadow-amber-400/30' : data.rarity === 'Epic' ? 'border-purple-400 shadow-purple-400/20' : data.rarity === 'Rare' ? 'border-blue-400 shadow-blue-400/20' : 'border-white/10'}`}>
+                                                <img src={data.imageUrl || data.image} alt={data.title} className="w-full aspect-[3/4] object-cover" />
+                                                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                                                    <div className="text-[10px] font-bold text-white truncate">{data.title}</div>
+                                                    <div className={`text-[9px] font-bold ${data.rarity === 'Legendary' ? 'text-amber-400' : data.rarity === 'Epic' ? 'text-purple-400' : data.rarity === 'Rare' ? 'text-blue-400' : 'text-white/50'}`}>{data.rarity}</div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </motion.div>
+                                <motion.button
+                                    className="mt-6 px-8 py-3 bg-gold-500/10 hover:bg-gold-500/20 text-gold-500 border border-gold-500/50 rounded-full font-bold tracking-widest transition-all shadow-lg backdrop-blur-md"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.5 }}
+                                    onClick={resetPack}
+                                >
+                                    돌아가기
+                                </motion.button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Enlarged Card Modal */}
+                    <AnimatePresence>
+                        {enlargedCard && (
+                            <motion.div
+                                className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setEnlargedCard(null)}
+                            >
+                                <motion.div
+                                    className="relative flex items-center justify-center"
+                                    initial={{ scale: 0.8, y: 50, opacity: 0 }}
+                                    animate={{ scale: 1.5, y: 0, opacity: 1 }}
+                                    exit={{ scale: 0.8, y: 50, opacity: 0 }}
+                                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <div className={`w-[250px] h-[350px] relative rounded-[12px] bg-zinc-800 border-[8px] border-zinc-900 box-border overflow-hidden flex flex-col p-[6px] ${enlargedCard.rarity === 'Legendary' ? 'legendary' : ''} shadow-2xl bg-zinc-800`}>
+                                        <div className="h-[30px] shrink-0 bg-gradient-to-r from-[#dcd1c4] to-[#c9bcae] rounded-t-[6px] rounded-b-[2px] border-[2px] border-zinc-900 px-[6px] flex justify-between items-center shadow-[inset_0_0_4px_rgba(255,255,255,0.5)] z-40 relative pt-[2px]">
+                                            <div className="flex flex-col flex-1 min-w-0 pr-2 pb-[1px]">
+                                                <span className="text-[12px] font-bold text-zinc-900 leading-[1.1] tracking-tight font-display mb-[1px] truncate">{enlargedCard.title_ko || enlargedCard.title}</span>
+                                                <span className="text-[7px] text-zinc-600 leading-none truncate">{enlargedCard.title_en}</span>
+                                            </div>
+                                            <div className="flex-shrink-0 flex items-center">
+                                                {enlargedCard.rarity === 'Legendary' && <span className="material-symbols-outlined text-[16px] text-yellow-600 drop-shadow-sm">stars</span>}
+                                                {enlargedCard.rarity === 'Epic' && <span className="material-symbols-outlined text-[16px] text-purple-600 drop-shadow-sm">diamond</span>}
+                                                {enlargedCard.rarity === 'Rare' && <span className="material-symbols-outlined text-[16px] text-blue-600 drop-shadow-sm">pentagon</span>}
+                                                {enlargedCard.rarity === 'Common' && <span className="material-symbols-outlined text-[16px] text-zinc-500 drop-shadow-sm">circle</span>}
+                                            </div>
+                                        </div>
+                                        <div className={`mt-[4px] flex-1 relative border-[2px] border-zinc-900 shadow-[0_0_10px_rgba(0,0,0,0.8)] z-40 bg-zinc-950 overflow-hidden flex items-center justify-center`}>
+                                            <div className="absolute inset-0 bg-center bg-cover blur-[8px] scale-110 opacity-70 pointer-events-none" style={{ backgroundImage: `url(${enlargedCard.img_mid || enlargedCard.img_large || enlargedCard.url})` }}></div>
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                <img src={enlargedCard.img_mid || enlargedCard.img_large || enlargedCard.url} alt={enlargedCard.title_ko || enlargedCard.title} className="w-full h-full object-contain drop-shadow-2xl" draggable="false" />
+                                            </div>
+                                        </div>
+                                        <div className="mt-[4px] h-[22px] shrink-0 bg-gradient-to-r from-[#dcd1c4] to-[#c9bcae] rounded-[2px] border-[2px] border-zinc-900 px-[6px] flex justify-between items-center shadow-[inset_0_0_4px_rgba(255,255,255,0.5)] z-40 relative">
+                                            <span className="text-[11px] font-bold text-zinc-900 truncate">{enlargedCard.artist_ko || enlargedCard.artist}</span>
+                                            <span className="text-[9px] font-semibold text-zinc-700 whitespace-nowrap ml-2">{enlargedCard.era_ko || enlargedCard.era}</span>
+                                        </div>
+                                        <div
+                                            className="mt-[4px] h-[64px] shrink-0 bg-[#dcd1c4]/95 rounded-[2px] border-[2px] border-zinc-900 p-[6px] overflow-y-auto scroll-smooth custom-scrollbar shadow-inner relative flex flex-col gap-[4px] pointer-events-auto z-40"
+                                            onWheel={(e) => {
+                                                e.currentTarget.scrollBy({ top: Math.sign(e.deltaY) * 30, behavior: 'smooth' });
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                            }}
+                                            onTouchStart={(e) => e.stopPropagation()}
+                                            onPointerDown={(e) => e.stopPropagation()}
+                                        >
+                                            <p className="text-[10px] leading-[1.3] text-zinc-900 whitespace-pre-wrap break-keep">{enlargedCard.desc_ko}</p>
+                                            <p className="text-[9px] leading-[1.2] text-zinc-700 italic">{enlargedCard.desc_en}</p>
+                                        </div>
+                                        <div className="h-[12px] shrink-0 flex justify-between items-end px-[2px] mt-[4px] z-40 relative">
+                                            <span className="text-[10px] font-bold text-white tracking-widest leading-none drop-shadow-md">{enlargedCard.year || '19c'}</span>
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-[8px] text-white/70 font-mono leading-none">{enlargedCard.id}</span>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => setEnlargedCard(null)} className="absolute -top-[10px] -right-[10px] bg-red-500/80 hover:bg-red-500 border border-white/20 text-white rounded-full size-6 flex items-center justify-center backdrop-blur transition-colors z-[100] shadow-xl">
+                                            <span className="material-symbols-outlined text-[14px] font-bold leading-none">close</span>
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Bottom Controls */}
+                    <motion.div
+                        className="absolute bottom-8 flex flex-row items-center gap-6 z-50 pb-[env(safe-area-inset-bottom)]"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: packState === 'opened' ? 1 : 0, y: packState === 'opened' ? 0 : 30 }}
+                        transition={{ delay: 2.5 }}
+                    >
+                        <button onClick={resetPack} className="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-full font-bold tracking-wide border border-slate-600 transition-all text-sm shadow-xl">
+                            다시 뽑기 (테스트)
+                        </button>
+                        <button onClick={() => window.location.href = "masterpiece-collection.html"} className="px-6 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white rounded-full font-bold tracking-wide shadow-xl hover:shadow-primary/50 transition-all text-sm">
+                            컬렉션 보러가기
+                        </button>
+                    </motion.div>
+
+                </div>
+            )
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<MasterpieceGacha />);
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

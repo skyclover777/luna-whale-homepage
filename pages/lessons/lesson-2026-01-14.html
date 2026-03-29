@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>겨울 과자 나라 풍경 꾸미기 | 루나웨일</title>
+<style>
+:root{--g0:#0d1117;--g1:#1b2735;--g2:#2c3e50;--glow:#4ecdc4;--pale:#45b7aa;--acc:#f39c12;--cream:#fefaf2;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#000;color:var(--cream);user-select:none;}
+#sw{width:100%;height:100%;position:relative;overflow:hidden;}
+.slide{position:absolute;inset:0;opacity:0;transform:scale(.97);transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.4,0,.2,1);pointer-events:none;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.slide.active{opacity:1;transform:scale(1);pointer-events:auto;}
+.slide.exit-left{opacity:0;transform:scale(1.03);}
+.bg{position:absolute;inset:0;background:linear-gradient(135deg,var(--g0) 0%,var(--g1) 50%,var(--g2) 100%);}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:12px 28px;background:rgba(13,17,23,0.75);backdrop-filter:blur(20px);border-bottom:1px solid rgba(78,205,196,0.1);}
+.lcode{position:fixed;top:52px;left:28px;z-index:201;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);font-size:9px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,0.28);font-family:monospace;backdrop-filter:blur(8px);pointer-events:none;}
+.tlogo{font-size:14px;font-weight:700;color:var(--glow);cursor:pointer;transition:.2s;}.tlogo:hover{opacity:.7;}
+.tsc{font-size:13px;color:rgba(255,255,255,.4);}.tsc strong{color:rgba(255,255,255,.9);}
+.tbadges{display:flex;gap:8px;}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.bl{background:rgba(78,205,196,.12);color:var(--glow);border:1px solid rgba(78,205,196,.25);}
+.ba{background:rgba(243,156,18,.12);color:var(--acc);border:1px solid rgba(243,156,18,.25);}
+.dots{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;display:flex;gap:6px;align-items:center;}
+.dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.2);cursor:pointer;transition:all .3s;}
+.dot.active{width:22px;background:var(--glow);}
+.arr{position:fixed;top:50%;z-index:200;transform:translateY(-50%);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;transition:all .25s;backdrop-filter:blur(8px);}
+.arr:hover{background:rgba(78,205,196,.2);color:#fff;border-color:var(--glow);transform:translateY(-50%) scale(1.1);}
+.arr:disabled{opacity:.1;cursor:default;pointer-events:none;}
+#bp{left:16px;}#bn{right:16px;}
+@media(max-width:768px){.arr{display:none;}.tsc{display:none;}}
+.sc{position:relative;z-index:2;flex:1;min-height:0;display:flex;flex-direction:column;padding:80px 80px 60px;overflow:hidden;}
+@media(max-width:768px){.sc{padding:72px 24px 50px;}}
+#s0 .bg{background:linear-gradient(135deg,#070b10,var(--g1),var(--g2));}
+#s0 .bgimg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;animation:coverReveal 1.8s .3s cubic-bezier(.25,.46,.45,.94) forwards;}
+@keyframes coverReveal{0%{opacity:0;transform:scale(1.1);}100%{opacity:.5;transform:scale(1);}}
+#s0 .hov{position:absolute;inset:0;background:linear-gradient(to top,rgba(7,11,16,.97) 0%,rgba(7,11,16,.6) 35%,rgba(7,11,16,.2) 70%,transparent 100%);}
+#s0 .sc{justify-content:flex-end;padding-bottom:90px;}
+#s0 .ew{opacity:0;animation:fadeUp .8s .8s forwards;}
+#s0 .stitle{opacity:0;animation:fadeUp .8s 1s forwards;}
+#s0 .ssub{opacity:0;animation:fadeUp .8s 1.2s forwards;}
+#s0 .metas{opacity:0;animation:fadeUp .8s 1.4s forwards;}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(25px);}100%{opacity:1;transform:translateY(0);}}
+.ew{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--pale);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.ew::before{content:'';display:block;width:20px;height:2px;background:var(--pale);}
+.stitle{font-size:clamp(34px,4.5vw,62px);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;background:linear-gradient(135deg,#fff 0%,var(--glow) 50%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.ssub{font-size:clamp(15px,1.6vw,20px);color:rgba(255,255,255,.55);font-style:italic;margin-bottom:28px;}
+.metas{display:flex;gap:14px;flex-wrap:wrap;}
+.mc{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:30px;padding:6px 14px;font-size:13px;color:rgba(255,255,255,.75);}
+.pt{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.p{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(78,205,196,.45),transparent);animation:pf linear infinite;}
+@keyframes pf{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:.7}90%{opacity:.25}100%{transform:translateY(-60px) scale(1);opacity:0}}
+.sprout-leaf{position:absolute;pointer-events:none;animation:leafDrift ease-in-out infinite;}
+@keyframes leafDrift{0%{transform:translateY(100vh) translateX(0) rotate(0deg) scale(.3);opacity:0}10%{opacity:.6}40%{transform:translateY(50vh) translateX(25px) rotate(90deg) scale(.9);}70%{transform:translateY(20vh) translateX(-15px) rotate(180deg) scale(1);}100%{transform:translateY(-40px) translateX(10px) rotate(270deg) scale(.5);opacity:0}}
+.soil-layer{position:absolute;bottom:0;left:0;right:0;height:60px;pointer-events:none;z-index:1;background:linear-gradient(to top,rgba(13,17,23,.6),rgba(13,17,23,.2),transparent);border-top:1px solid rgba(78,205,196,.06);}
+.sprout-glow{position:absolute;border-radius:50%;filter:blur(40px);pointer-events:none;animation:sproutPulse 6s ease-in-out infinite alternate;}
+@keyframes sproutPulse{0%{opacity:.08;transform:scale(.85);}100%{opacity:.2;transform:scale(1.15);}}
+.gg{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;align-content:start;margin-top:4px;perspective:1200px;}
+.gc-wrap{position:relative;cursor:pointer;height:clamp(160px,21vh,210px);}
+.gc-wrap.flipped .gc-inner{transform:rotateY(180deg);}
+.gc-inner{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;}
+.gc-front,.gc-back{position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;display:flex;flex-direction:column;}
+.gc-front{background:rgba(44,62,80,.35);border:1px solid rgba(78,205,196,.18);transition:border-color .3s,box-shadow .3s;align-items:center;justify-content:center;gap:3px;text-align:center;padding:12px 14px;}
+.gc-wrap:hover .gc-front{border-color:rgba(78,205,196,.5);box-shadow:0 6px 24px rgba(78,205,196,.1);}
+.gc-front::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,var(--glow),var(--acc));opacity:0;transition:.3s;}
+.gc-wrap:hover .gc-front::before{opacity:1;}
+.gc-front .gci{font-size:28px;}
+.gc-front h3{font-size:clamp(16px,2vw,22px);font-weight:800;color:var(--glow);}
+.gc-front p{font-size:clamp(10px,1.1vw,12px);line-height:1.45;color:rgba(255,255,255,.55);}
+.gc-flip-hint{font-size:9px;color:rgba(255,255,255,.2);margin-top:auto;padding-top:2px;}
+.gc-back{background:rgba(13,17,23,.95);border:1px solid rgba(78,205,196,.25);transform:rotateY(180deg);padding:12px 14px;gap:5px;overflow:hidden;}
+.gc-back::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,rgba(120,200,255,.8),rgba(255,200,120,.8));}
+.gc-back-title{font-size:11px;font-weight:800;color:#fff;display:flex;align-items:center;gap:4px;padding-top:2px;}
+.gc-sec{display:flex;flex-direction:column;gap:1px;}
+.gc-sec-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.gc-sec-label.research{color:rgba(120,200,255,.85);}
+.gc-sec-label.caution{color:rgba(255,200,120,.85);}
+.gc-sec p{font-size:10px;line-height:1.55;color:rgba(255,255,255,.6);margin:0;}
+.gc-sec .cite{font-size:8px;color:rgba(255,255,255,.25);font-style:italic;}
+.gc-back-hint{font-size:8px;color:rgba(255,255,255,.18);text-align:right;margin-top:auto;}
+.ml{display:grid;grid-template-columns:1fr 1fr;gap:28px;flex:1;align-items:center;}
+@media(max-width:768px){.ml{grid-template-columns:1fr;}}
+.mph{aspect-ratio:4/3;border-radius:20px;overflow:hidden;position:relative;}
+.mph img{width:100%;height:100%;object-fit:cover;transition:transform .6s;}
+.mph:hover img{transform:scale(1.05);}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.mi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.8);transition:all .2s;}
+.mi:hover{background:rgba(78,205,196,.08);border-color:rgba(78,205,196,.2);}
+.sl{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1;align-items:center;}
+@media(max-width:768px){.sl{grid-template-columns:1fr;}}
+.sph{aspect-ratio:4/3;border-radius:20px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.sph img{width:100%;height:100%;object-fit:cover;transition:transform 8s cubic-bezier(.25,.46,.45,.94);}
+.slide.active .sph img{transform:scale(1.08);}
+.snum{font-size:88px;font-weight:900;line-height:.9;background:linear-gradient(135deg,rgba(78,205,196,.15),transparent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;}
+.sb h3{font-size:clamp(20px,2.5vw,32px);font-weight:800;color:#fff;margin-bottom:12px;line-height:1.2;}
+.sb h3 em{color:var(--glow);font-style:normal;}
+.sb p{font-size:15px;line-height:1.85;color:rgba(255,255,255,.72);margin-bottom:14px;}
+.tip{background:rgba(243,156,18,.07);border:1px solid rgba(243,156,18,.2);border-radius:12px;padding:12px 16px;font-size:13px;color:rgba(243,156,18,.9);line-height:1.6;}
+.gal-wrap{overflow-y:auto;flex:1;min-height:0;margin-top:6px;padding-bottom:8px;}
+.gal-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+@media(max-width:900px){.gal-grid{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:600px){.gal-grid{grid-template-columns:repeat(3,1fr);}}
+.gal-item{border-radius:10px;overflow:hidden;cursor:pointer;position:relative;aspect-ratio:1/1;background:rgba(255,255,255,.05);}
+.gal-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.25,.46,.45,.94);}
+.gal-item:hover img{transform:scale(1.12);}
+.gal-item::after{content:'';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);transition:.3s;}
+.gal-item:hover::after{opacity:1;}
+#lbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(20px);}
+#lbox.open{display:flex;}
+#lbox-img{max-width:90vw;max-height:72vh;object-fit:contain;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.8);}
+.lbox-actions{display:flex;gap:12px;margin-top:16px;}
+.lbox-dl{padding:10px 24px;background:var(--glow);color:#000;border-radius:10px;font-weight:700;text-decoration:none;font-size:13px;letter-spacing:.5px;transition:.2s;}
+.lbox-dl:hover{background:#fff;}
+.lbox-cl{padding:10px 24px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:10px;font-weight:700;cursor:pointer;border:none;font-size:13px;font-family:inherit;transition:.2s;}
+.lbox-cl:hover{background:rgba(255,255,255,.2);}
+.tnote{position:absolute;bottom:16px;right:24px;z-index:10;max-width:260px;padding:10px 14px;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.06);border-radius:10px;backdrop-filter:blur(14px);font-size:11px;line-height:1.6;color:rgba(255,255,255,0.35);transition:opacity .3s;}
+.tnote strong{color:rgba(255,255,255,0.5);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;display:block;margin-bottom:3px;}
+.tnote ul{list-style:none;padding:0;margin:0;}
+.tnote ul li{margin-bottom:2px;}
+.tnote ul li::before{content:'\00B7';margin-right:4px;color:var(--glow);opacity:.5;}
+@media(max-width:768px){.tnote{display:none;}}
+.done-center{align-items:center;justify-content:center;text-align:center;gap:20px;}
+.back-btn{margin-top:24px;background:rgba(78,205,196,.15);border:1px solid rgba(78,205,196,.4);color:var(--glow);border-radius:14px;padding:14px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.25s;}
+.end-bar{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:10px;flex-wrap:wrap;justify-content:center;z-index:20;}
+.end-bar .back-btn{margin-top:0;padding:11px 22px;font-size:13px;}
+.end-bar .ai-btn{background:linear-gradient(135deg,rgba(120,180,255,.2),rgba(200,140,255,.2));border:1px solid rgba(160,140,255,.4);color:rgba(200,180,255,.95);border-radius:14px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.25s;display:flex;align-items:center;gap:6px;}
+.end-bar .ai-btn:hover{background:linear-gradient(135deg,rgba(120,180,255,.35),rgba(200,140,255,.35));border-color:rgba(200,180,255,.6);}
+.ai-panel{display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);backdrop-filter:blur(16px);align-items:center;justify-content:center;padding:24px;}
+.ai-panel.open{display:flex;}
+.ai-box{background:rgba(22,36,50,.97);border:1px solid rgba(160,140,255,.2);border-radius:20px;max-width:640px;width:100%;max-height:85vh;overflow-y:auto;padding:28px 30px;position:relative;display:flex;flex-direction:column;gap:12px;box-shadow:0 40px 100px rgba(0,0,0,.6);}
+.ai-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0;background:linear-gradient(90deg,rgba(120,180,255,.8),rgba(200,140,255,.8));}
+.ai-box h3{font-size:18px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;}
+.ai-box .ai-desc{font-size:12px;color:rgba(255,255,255,.4);line-height:1.5;}
+.ai-msg{position:relative;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 50px 14px 16px;font-size:13px;line-height:1.7;color:rgba(255,255,255,.75);transition:border-color .2s;}
+.ai-msg:hover{border-color:rgba(160,140,255,.3);}
+.ai-copy{position:absolute;top:50%;right:10px;transform:translateY(-50%);background:rgba(160,140,255,.15);border:1px solid rgba(160,140,255,.3);color:rgba(200,180,255,.8);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;font-family:inherit;transition:.2s;white-space:nowrap;}
+.ai-copy:hover{background:rgba(160,140,255,.3);color:#fff;}
+.ai-copy.copied{background:rgba(100,200,140,.2);border-color:rgba(100,200,140,.4);color:rgba(150,230,170,.9);}
+.ai-close{position:absolute;top:16px;right:20px;background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;transition:.2s;padding:4px 8px;}
+.ai-close:hover{color:#fff;}
+.back-btn:hover{background:rgba(78,205,196,.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(78,205,196,.15);}
+.slide.active:not(#s0) .sc>*{animation:contentIn .6s both;}
+.slide.active:not(#s0) .sc>*:nth-child(1){animation-delay:.1s;}
+.slide.active:not(#s0) .sc>*:nth-child(2){animation-delay:.2s;}
+.slide.active:not(#s0) .sc>*:nth-child(3){animation-delay:.3s;}
+.slide.active:not(#s0) .sc>*:nth-child(4){animation-delay:.4s;}
+.slide.active:not(#s0) .sc>*:nth-child(5){animation-delay:.5s;}
+@keyframes contentIn{0%{opacity:0;transform:translateY(15px);}100%{opacity:1;transform:translateY(0);}}
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;flex:1;overflow-y:auto;align-content:start;padding-bottom:10px;}
+.ref-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .3s;}
+.ref-grid img:hover{transform:scale(1.03);border-color:rgba(255,255,255,.3);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.ref-note{font-size:11px;color:rgba(255,255,255,.35);text-align:center;margin-top:4px;}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+<div class="topbar">
+  <span class="tlogo" onclick="typeof LunaApp!=='undefined'?LunaApp.navigate('monthlyDetail',{month:'2026-01'}):history.back()">&#127754; Luna Whale</span>
+  <div class="tsc"><strong id="cn">1</strong> / <span id="tn">9</span></div>
+  <div class="tbadges"><span class="badge bl">레벨 1</span><span class="badge ba">5~8세</span></div>
+</div>
+<button class="arr" id="bp" onclick="nav(-1)">&lsaquo;</button>
+<button class="arr" id="bn" onclick="nav(1)">&rsaquo;</button>
+<div class="dots" id="db"></div>
+<div id="sw">
+<div class="lcode">26M01B4</div>
+
+<!-- S0: COVER -->
+<div class="slide active" id="s0">
+  <div class="bg"></div>
+  <div class="bgimg" style="background-image:url('../../images/lessons/2026-01/l14-cover.jpg');"></div>
+  <div class="hov"></div>
+  <div class="pt" id="pt"></div>
+  <div class="soil-layer"></div>
+  <div class="sprout-glow" style="width:280px;height:280px;background:rgba(78,205,196,.15);bottom:10%;left:-40px;"></div>
+  <div class="sprout-glow" style="width:200px;height:200px;background:rgba(243,156,18,.1);top:25%;right:-30px;animation-delay:3s;"></div>
+  <div class="sc">
+    <div class="ew">&#127849; 2026년 1월 &middot; 관찰+상상</div>
+    <h1 class="stitle">겨울 과자 나라<br>풍경 꾸미기</h1>
+    <p class="ssub">"붕어빵 산, 호빵 구름! 맛있는 과자 나라를 그려볼까?"</p>
+    <div class="metas">
+      <div class="mc">&#128100; 레벨 1 &middot; 5~8세</div>
+      <div class="mc">&#9201;&#65039; 60~80분</div>
+      <div class="mc">&#9995; 관찰 &middot; 상상화</div>
+    </div>
+  </div>
+</div>
+
+<!-- S1: OBJECTIVES -->
+<div class="slide" id="s1">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">수업 목표</div>
+    <h2 class="stitle">오늘 배우는 것들</h2>
+    <div class="gg">
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">&#128064;</div>
+            <h3>관찰력 발달</h3>
+            <p>실제 겨울 간식 사진을 관찰하며 모양, 색깔, 질감 발견해요</p>
+            <span class="gc-flip-hint">&#8635; 클릭해서 더 알아봐요</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">&#128064; 관찰력 발달</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; 교육적 효과</div>
+            <p>정밀 관찰은 <strong style='color:rgba(120,200,255,.9);'>시각적 분석력</strong>을 키웁니다</p>
+            <p class="cite">Gardner (1983)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; 유의점</div>
+            <p>오감 활용 격려</p></div>
+            <span class="gc-back-hint">&#8635; 다시 클릭</span>
+          </div>
+        </div>
+      </div>
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">&#9999;&#65039;</div>
+            <h3>색연필 묘사</h3>
+            <p>참고 그림을 활용하여 간식의 특징을 색연필로 묘사해요</p>
+            <span class="gc-flip-hint">&#8635; 클릭해서 더 알아봐요</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">&#9999;&#65039; 색연필 묘사</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; 교육적 효과</div>
+            <p>색연필 기법은 <strong style='color:rgba(120,200,255,.9);'>소근육 발달</strong>에 도움을 줍니다</p>
+            <p class="cite">Lowenfeld (1987)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; 유의점</div>
+            <p>힘 조절 연습</p></div>
+            <span class="gc-back-hint">&#8635; 다시 클릭</span>
+          </div>
+        </div>
+      </div>
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">&#127748;</div>
+            <h3>상상 풍경 구성</h3>
+            <p>관찰한 간식을 풍경 요소로 상상하여 과자 나라를 만들어요</p>
+            <span class="gc-flip-hint">&#8635; 클릭해서 더 알아봐요</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">&#127748; 상상 풍경 구성</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; 교육적 효과</div>
+            <p>상상화는 <strong style='color:rgba(120,200,255,.9);'>창의적 발상력</strong>을 키웁니다</p>
+            <p class="cite">Vygotsky (1978)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; 유의점</div>
+            <p>자유로운 구성</p></div>
+            <span class="gc-back-hint">&#8635; 다시 클릭</span>
+          </div>
+        </div>
+      </div>
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">&#127850;</div>
+            <h3>스토리텔링</h3>
+            <p>과자 나라에 숨겨진 이야기를 만들어 발표해요</p>
+            <span class="gc-flip-hint">&#8635; 클릭해서 더 알아봐요</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">&#127850; 스토리텔링</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; 교육적 효과</div>
+            <p>내러티브는 <strong style='color:rgba(120,200,255,.9);'>언어 표현력과 상상력</strong>을 동시 발달시킵니다</p>
+            <p class="cite">Bruner (1986)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; 유의점</div>
+            <p>정답 없음 강조</p></div>
+            <span class="gc-back-hint">&#8635; 다시 클릭</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>플립카드를 클릭하여 상세 정보 확인</li>
+        <li>목표에 맞춘 수업 진행</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S2: MATERIALS -->
+<div class="slide" id="s2">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">준비물</div>
+    <h2 class="stitle">수업 전에 준비해요</h2>
+    <div class="ml">
+      <div class="mph" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;aspect-ratio:auto;height:auto;max-height:280px">
+        <img src="../../images/lessons/2026-01/l14-mat01.jpg" loading="lazy" alt="준비물 1" style="border-radius:12px;width:100%;height:auto;object-fit:cover;aspect-ratio:1/1">
+        <img src="../../images/lessons/2026-01/l14-mat02.jpg" loading="lazy" alt="준비물 2" style="border-radius:12px;width:100%;height:auto;object-fit:cover;aspect-ratio:1/1">
+        <img src="../../images/lessons/2026-01/l14-mat03.jpg" loading="lazy" alt="준비물 3" style="border-radius:12px;width:100%;height:auto;object-fit:cover;aspect-ratio:1/1">
+        <img src="../../images/lessons/2026-01/l14-mat04.jpg" loading="lazy" alt="준비물 4" style="border-radius:12px;width:100%;height:auto;object-fit:cover;aspect-ratio:1/1">
+      </div>
+      <div class="mg">
+        <div class="mi">&#128196; 8절 도화지</div>
+        <div class="mi">&#9999;&#65039; 다양한 색연필</div>
+        <div class="mi">&#128394;&#65039; 사인펜</div>
+        <div class="mi">&#128247; 간식 실물 사진</div>
+        <div class="mi">&#128218; 색연필 모음집 프린트</div>
+        <div class="mi">&#128397;&#65039; 크레파스</div>
+        <div class="mi">&#128394;&#65039; 연필/지우개</div>
+        <div class="mi">&#129367; 간식 참고자료</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>재료 미리 배분</li>
+        <li>참고 자료 테이블마다 배치</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S3: REFERENCE IMAGES -->
+<div class="slide" id="s3">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">레퍼런스 이미지</div>
+    <h2 class="stitle" style="font-size:clamp(22px,2.8vw,36px);">참고 작품 살펴보기</h2>
+    <p style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:12px;">선생님용 — 필요시 프린트하여 수업에 활용하세요</p>
+    <div class="ref-grid">
+      <img src="../../images/lessons/2026-01/refs/l14-ref01.jpg" loading="lazy" alt="레퍼런스 1">
+      <img src="../../images/lessons/2026-01/refs/l14-ref02.jpg" loading="lazy" alt="레퍼런스 2">
+      <img src="../../images/lessons/2026-01/refs/l14-ref03.jpg" loading="lazy" alt="레퍼런스 3">
+      <img src="../../images/lessons/2026-01/refs/l14-ref04.jpg" loading="lazy" alt="레퍼런스 4">
+      <img src="../../images/lessons/2026-01/refs/l14-ref05.jpg" loading="lazy" alt="레퍼런스 5">
+      <img src="../../images/lessons/2026-01/refs/l14-ref06.jpg" loading="lazy" alt="레퍼런스 6">
+      <img src="../../images/lessons/2026-01/refs/l14-ref07.jpg" loading="lazy" alt="레퍼런스 7">
+      <img src="../../images/lessons/2026-01/refs/l14-ref08.jpg" loading="lazy" alt="레퍼런스 8">
+    </div>
+  </div>
+</div>
+
+<!-- S4: STEP 1 -->
+<div class="slide" id="s4">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">단계별 가이드</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">차근차근 따라해요</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2026-01/l14-step1.jpg" loading="lazy" alt="Step 1"></div>
+      <div class="sb">
+        <div class="snum">01</div>
+        <h3>맛있는 겨울 간식 <em>탐색대</em></h3>
+        <p>간식 사진을 보며 오감을 활용해 이야기해요.</p>
+        <div class="tip">&#128161; "붕어빵 비늘이 어떻게 생겼니?"</div>
+      </div>
+    </div>
+    <div style="position:absolute;bottom:70px;left:50%;transform:translateX(-50%);z-index:10;background:rgba(0,0,0,.7);border:1px solid rgba(78,205,196,.3);border-radius:16px;padding:14px 20px;backdrop-filter:blur(12px);text-align:center;min-width:340px;">
+      <div style="font-size:12px;font-weight:800;color:var(--glow);margin-bottom:8px;">&#127850; SNACK LANDSCAPE BUILDER</div>
+      <div id="slSlots" style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;">
+        <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:8px 12px;font-size:13px;min-width:80px;" id="sl1">&#9968; 호빵 산</div>
+        <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:8px 12px;font-size:13px;min-width:80px;" id="sl2">&#127754; 팥죽 바다</div>
+        <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:8px 12px;font-size:13px;min-width:80px;" id="sl3">&#127794; 막대과자 나무</div>
+      </div>
+      <button onclick="(function(){var m=['호빵 산','붕어빵 산','군고구마 산','호두과자 산'];var s=['팥죽 바다','초콜릿 바다','꿀 강','딸기우유 호수'];var t=['막대과자 나무','솜사탕 나무','사탕 꽃','귤 태양'];document.getElementById('sl1').innerHTML='&#9968; '+m[Math.floor(Math.random()*m.length)];document.getElementById('sl2').innerHTML='&#127754; '+s[Math.floor(Math.random()*s.length)];document.getElementById('sl3').innerHTML='&#127794; '+t[Math.floor(Math.random()*t.length)];})()" style="background:linear-gradient(135deg,var(--glow),var(--acc));color:#000;border:none;border-radius:10px;padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">&#127922; 랜덤 풍경!</button>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>오감 관찰 유도</li>
+        <li>소요시간: 약 10분</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S5: STEP 2 -->
+<div class="slide" id="s5">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">단계별 가이드</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">차근차근 따라해요</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2026-01/l14-step2.jpg" loading="lazy" alt="Step 2"></div>
+      <div class="sb">
+        <div class="snum">02</div>
+        <h3>색연필로 <em>꼼꼼 관찰 그리기</em></h3>
+        <p>모음집을 참고하여 마음에 드는 간식 2~3가지를 크게 그려요.</p>
+        <div class="tip">&#128161; "살살 칠하면 호빵, 꾹꾹 칠하면 붕어빵!"</div>
+      </div>
+    </div>
+    
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>다양한 색 섞기</li>
+        <li>소요시간: 약 25분</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S6: STEP 3 -->
+<div class="slide" id="s6">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">단계별 가이드</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">차근차근 따라해요</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2026-01/l14-step3.jpg" loading="lazy" alt="Step 3"></div>
+      <div class="sb">
+        <div class="snum">03</div>
+        <h3>과자 나라 <em>풍경 꾸미기</em></h3>
+        <p>그린 간식들이 주인공이 되는 상상 풍경을 그려요.</p>
+        <div class="tip">&#128161; "호빵 산, 팥죽 바다, 호두과자 돌멩이!"</div>
+      </div>
+    </div>
+    
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>빈 곳도 채우기</li>
+        <li>소요시간: 약 40분</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S7: STEP 4 -->
+<div class="slide" id="s7">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">단계별 가이드</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">차근차근 따라해요</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2026-01/l14-step4.jpg" loading="lazy" alt="Step 4"></div>
+      <div class="sb">
+        <div class="snum">04</div>
+        <h3>우리들의 <em>달콤한 세상</em></h3>
+        <p>완성된 그림을 소개하고 숨겨진 이야기를 발표해요.</p>
+        <div class="tip">&#128161; "과자 나라에 누가 살고 있니?"</div>
+      </div>
+    </div>
+    
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>발표 격려</li>
+        <li>소요시간: 약 5분</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S8: GALLERY + AI REPORT -->
+<div class="slide" id="s8">
+  <div class="bg"></div>
+  <div class="sc" style="padding:50px 60px 16px;">
+    <div class="ew" style="margin-bottom:2px;">&#127912; 작품 갤러리</div>
+    <h2 class="stitle" style="font-size:clamp(20px,2.5vw,32px);margin-bottom:2px;">이런 작품들이 나와요!</h2>
+    <p style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:6px;">클릭하면 크게 볼 수 있어요</p>
+    <div class="gal-wrap">
+      <div class="gal-grid">
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal01.jpg','l14-gal01.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal01.jpg" loading="lazy" alt="작품1"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal02.jpg','l14-gal02.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal02.jpg" loading="lazy" alt="작품2"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal03.jpg','l14-gal03.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal03.jpg" loading="lazy" alt="작품3"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal04.jpg','l14-gal04.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal04.jpg" loading="lazy" alt="작품4"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal05.jpg','l14-gal05.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal05.jpg" loading="lazy" alt="작품5"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal06.jpg','l14-gal06.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal06.jpg" loading="lazy" alt="작품6"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal07.jpg','l14-gal07.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal07.jpg" loading="lazy" alt="작품7"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal08.jpg','l14-gal08.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal08.jpg" loading="lazy" alt="작품8"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal09.jpg','l14-gal09.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal09.jpg" loading="lazy" alt="작품9"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal10.jpg','l14-gal10.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal10.jpg" loading="lazy" alt="작품10"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal11.jpg','l14-gal11.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal11.jpg" loading="lazy" alt="작품11"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal12.jpg','l14-gal12.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal12.jpg" loading="lazy" alt="작품12"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal13.jpg','l14-gal13.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal13.jpg" loading="lazy" alt="작품13"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal14.jpg','l14-gal14.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal14.jpg" loading="lazy" alt="작품14"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal15.jpg','l14-gal15.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal15.jpg" loading="lazy" alt="작품15"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal16.jpg','l14-gal16.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal16.jpg" loading="lazy" alt="작품16"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal17.jpg','l14-gal17.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal17.jpg" loading="lazy" alt="작품17"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal18.jpg','l14-gal18.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal18.jpg" loading="lazy" alt="작품18"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal19.jpg','l14-gal19.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal19.jpg" loading="lazy" alt="작품19"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal20.jpg','l14-gal20.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal20.jpg" loading="lazy" alt="작품20"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal21.jpg','l14-gal21.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal21.jpg" loading="lazy" alt="작품21"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal22.jpg','l14-gal22.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal22.jpg" loading="lazy" alt="작품22"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal23.jpg','l14-gal23.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal23.jpg" loading="lazy" alt="작품23"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal24.jpg','l14-gal24.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal24.jpg" loading="lazy" alt="작품24"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal25.jpg','l14-gal25.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal25.jpg" loading="lazy" alt="작품25"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-01/l14-gal26.jpg','l14-gal26.jpg')"><img src="../../images/lessons/2026-01/thumbs/l14-gal26.jpg" loading="lazy" alt="작품26"></div>
+      </div>
+    </div>
+    <div class="ai-panel" id="aiPanel" onclick="if(event.target===this)this.classList.remove('open')">
+      <div class="ai-box">
+        <button class="ai-close" onclick="document.getElementById('aiPanel').classList.remove('open')">&#10005;</button>
+        <h3>&#10024; 학부모 안내 문구</h3>
+        <p class="ai-desc">오늘 수업 후 학부모님께 보낼 메시지 예시입니다. 복사 버튼을 눌러 바로 사용하세요!</p>
+        <div class="ai-msg">안녕하세요! 오늘 아이들이 겨울 간식을 관찰하고 '과자 나라 풍경'을 그렸어요 &#127849; 붕어빵 산과 호빵 구름이 가득한 맛있는 세상이 탄생했답니다!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">&#9999;&#65039; 오늘의 미술 수업! 색연필로 간식의 질감을 꼼꼼히 관찰하고 상상 풍경으로 확장했어요. 관찰력과 상상력이 빛났답니다!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">"호빵이 산이 되었어!" 오늘 아이들이 겨울 간식으로 상상의 나라를 만들었어요. 집에서도 "어떤 이야기가 숨겨져 있어?" 물어봐 주세요!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">&#127850; 오늘 수업에서 관찰→묘사→상상→발표까지 다양한 활동이 이루어졌어요!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">오늘은 겨울 간식을 관찰하고 상상의 과자 나라를 완성했어요! 색연필 묘사력과 창의적 발상력이 자연스럽게 발달했답니다.<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">&#128075; 안녕하세요! 오늘 우리 반 친구들이 세상에서 가장 달콤한 풍경화를 완성했어요. 관찰력과 상상력이 가득한 작품이랍니다!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>완성 작품 사진 촬영</li>
+        <li>감상 시간 확보</li>
+      </ul>
+    </div>
+  </div>
+  <div class="end-bar">
+    <button class="back-btn" onclick="typeof LunaApp!=='undefined'?LunaApp.navigate('monthlyDetail',{month:'2026-01'}):history.back()">&#128218; 수업 홈</button>
+    <button class="back-btn" onclick="typeof LunaApp!=='undefined'?LunaApp.navigate('home'):location.href='../../index.html'">&#127968; 메인 페이지</button>
+    <button class="ai-btn" onclick="document.getElementById('aiPanel').classList.add('open')">&#10024; AI 리포트</button>
+  </div>
+</div>
+
+</div>
+  <div id="lbox" onclick="if(event.target===this)closeLb()">
+    <img id="lbox-img" src="" alt="">
+    <div class="lbox-actions">
+      <a class="lbox-dl" href="" download="">&#11015; 다운로드</a>
+      <button class="lbox-cl" onclick="closeLb()">&#10005; 닫기</button>
+    </div>
+  </div>
+
+<script>
+const total=9;let cur=0;
+function buildDots(){const db=document.getElementById('db');db.innerHTML='';for(let i=0;i<total;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=(()=>{const x=i;return()=>go(x);})();db.appendChild(d);}}
+function go(n){if(n===cur)return;const slides=document.querySelectorAll('.slide');slides[cur].classList.remove('active');slides[cur].classList.add('exit-left');slides[n].classList.remove('exit-left');slides[n].classList.add('active');document.querySelectorAll('.dot')[cur].classList.remove('active');document.querySelectorAll('.dot')[n].classList.add('active');cur=n;document.getElementById('cn').textContent=cur+1;document.getElementById('bp').disabled=cur===0;document.getElementById('bn').disabled=cur===total-1;setTimeout(()=>document.querySelectorAll('.slide').forEach(s=>{if(!s.classList.contains('active'))s.classList.remove('exit-left');}),700);}
+function nav(d){if(cur+d>=0&&cur+d<total)go(cur+d);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')nav(1);if(e.key==='ArrowLeft')nav(-1);if(e.key==='Escape')closeLb();});
+let tx=0;document.getElementById('sw').addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.getElementById('sw').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)nav(dx<0?1:-1);});
+(function(){
+  const pt=document.getElementById('pt');
+  for(let i=0;i<10;i++){const p=document.createElement('div');p.className='p';const s=15+Math.random()*30;p.style.cssText='width:'+s+'px;height:'+s+'px;left:'+Math.random()*100+'%;animation-duration:'+(8+Math.random()*14)+'s;animation-delay:'+Math.random()*10+'s;';pt.appendChild(p);}
+  const leaves=['🍩','🐟','🍊'];
+  for(let i=0;i<12;i++){
+    const l=document.createElement('div');l.className='sprout-leaf';
+    l.textContent=leaves[Math.floor(Math.random()*leaves.length)];
+    const s=12+Math.random()*16;
+    l.style.cssText='font-size:'+s+'px;left:'+Math.random()*90+'%;animation-duration:'+(10+Math.random()*14)+'s;animation-delay:'+Math.random()*12+'s;';
+    pt.appendChild(l);
+  }
+})();
+buildDots();document.getElementById('tn').textContent=total;document.getElementById('bp').disabled=true;
+
+function copyMsg(btn){var t=btn.parentElement.childNodes[0].textContent.trim();navigator.clipboard.writeText(t).then(function(){btn.textContent='\uBCF5\uC0AC\uB428!';btn.classList.add('copied');setTimeout(function(){btn.textContent='\uBCF5\uC0AC';btn.classList.remove('copied');},1500);});}
+function openLb(src,fn){var lb=document.getElementById('lbox');lb.querySelector('#lbox-img').src=src;var dl=lb.querySelector('.lbox-dl');dl.href=src;dl.download=fn;lb.classList.add('open');}
+function closeLb(){document.getElementById('lbox').classList.remove('open');}
+document.querySelectorAll(".ref-grid img").forEach(i=>i.addEventListener("click",()=>openLb(i.src,i.alt||"ref")));
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<!-- Recent Lessons -->
+<script src="../../assets/js/recent-lessons.js?v=0321"></script>
+<script>document.addEventListener("DOMContentLoaded",function(){if(typeof RecentLessons!=="undefined")RecentLessons.saveFromLessonPage();});</script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

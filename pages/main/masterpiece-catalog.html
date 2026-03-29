@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luna - 유럽 회화 여행 · Impressionism Series</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d4a853",
+                        "primary-dim": "#8b6914",
+                    },
+                    fontFamily: {
+                        sans: ['Lexend', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="../../assets/data/i18n.js?v=0314"></script>
+    <script src="../../assets/js/app.js?v=0314"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background: #06080e;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        /* ── Floating Orbs ── */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .orb-1 {
+            width: 900px; height: 900px;
+            background: radial-gradient(circle, rgba(212,168,83,0.35) 0%, rgba(139,105,20,0.2) 40%, transparent 70%);
+            filter: blur(100px);
+            top: -15%; left: -10%;
+            animation: orbFloat1 40s ease-in-out infinite alternate;
+        }
+        .orb-2 {
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, rgba(90,60,160,0.3) 0%, rgba(45,21,96,0.18) 40%, transparent 70%);
+            filter: blur(100px);
+            bottom: -20%; right: -15%;
+            animation: orbFloat2 50s ease-in-out infinite alternate;
+        }
+        .orb-3 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(180,120,60,0.2) 0%, transparent 60%);
+            filter: blur(80px);
+            top: 40%; left: 50%;
+            animation: orbFloat3 35s ease-in-out infinite alternate;
+        }
+        @keyframes orbFloat1 {
+            0%   { transform: translate(0, 0) scale(1); }
+            25%  { transform: translate(8vw, 12vh) scale(1.08); }
+            50%  { transform: translate(15vw, 5vh) scale(0.95); }
+            75%  { transform: translate(5vw, 20vh) scale(1.12); }
+            100% { transform: translate(12vw, 8vh) scale(1); }
+        }
+        @keyframes orbFloat2 {
+            0%   { transform: translate(0, 0) scale(1); }
+            25%  { transform: translate(-12vw, -8vh) scale(1.1); }
+            50%  { transform: translate(-5vw, -18vh) scale(0.92); }
+            75%  { transform: translate(-18vw, -5vh) scale(1.08); }
+            100% { transform: translate(-8vw, -14vh) scale(1.05); }
+        }
+        @keyframes orbFloat3 {
+            0%   { transform: translate(0, 0) scale(1); }
+            50%  { transform: translate(-10vw, 8vh) scale(1.15); }
+            100% { transform: translate(5vw, -5vh) scale(0.9); }
+        }
+
+        /* ── Glass Nav ── */
+        .glass-nav {
+            background: rgba(6, 8, 14, 0.75);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(212, 168, 83, 0.08);
+        }
+
+        /* ── Book Card ── */
+        .book-card-container {
+            perspective: 1200px;
+        }
+        .book-card {
+            transform: rotateY(-20deg) rotateX(5deg);
+            transform-style: preserve-3d;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: -15px 15px 30px rgba(0, 0, 0, 0.5);
+        }
+        .book-card-container:hover .book-card {
+            transform: rotateY(0deg) rotateX(0deg) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+        .book-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 4px 0 0 4px;
+            z-index: 10;
+        }
+        .book-spine {
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 20px;
+            background: linear-gradient(90deg, rgba(0,0,0,0.3) 0%, transparent 100%);
+            z-index: 5;
+        }
+
+        /* Active card glow on hover */
+        .book-card-container.active:hover .book-card {
+            box-shadow: 0 20px 60px rgba(212, 168, 83, 0.2), 0 0 80px rgba(212, 168, 83, 0.08);
+        }
+
+        /* Coming soon overlay */
+        .coming-soon-overlay {
+            background: rgba(6, 8, 14, 0.7);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+        }
+
+        /* ── Animations ── */
+        @keyframes cardFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .card-animate {
+            opacity: 0;
+            animation: cardFadeIn 0.7s ease-out forwards;
+        }
+
+        @keyframes heroFadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .hero-animate {
+            animation: heroFadeIn 0.8s ease-out forwards;
+        }
+        .hero-animate-delay {
+            opacity: 0;
+            animation: heroFadeIn 0.8s ease-out 0.2s forwards;
+        }
+        .hero-animate-delay-2 {
+            opacity: 0;
+            animation: heroFadeIn 0.8s ease-out 0.4s forwards;
+        }
+
+        /* ── Badge shimmer ── */
+        .badge-shimmer {
+            background: linear-gradient(135deg, rgba(212,168,83,0.15), rgba(212,168,83,0.05), rgba(212,168,83,0.15));
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+            border: 1px solid rgba(212, 168, 83, 0.2);
+        }
+        @keyframes shimmer {
+            0%, 100% { background-position: 200% 0; }
+            50%      { background-position: -200% 0; }
+        }
+
+        /* ── Decorative line ── */
+        .gold-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212,168,83,0.3), transparent);
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(20, 20, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 168, 83, 0.2);
+            border-radius: 16px;
+            padding: 16px 28px;
+            z-index: 999;
+            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(212,168,83,0.15); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(212,168,83,0.3); }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="dark">
+    <!-- Floating Orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Glass Nav -->
+    <nav class="glass-nav fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <button onclick="history.back()"
+                class="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 hover:bg-primary/10 border border-white/5 hover:border-primary/20 transition-all duration-300">
+                <span class="material-symbols-outlined text-white/70">arrow_back</span>
+            </button>
+            <div>
+                <h1 class="text-base font-black tracking-tight text-white/90">유럽 회화 여행</h1>
+                <p class="text-[10px] text-primary/60 font-semibold tracking-widest uppercase">Impressionism Series</p>
+            </div>
+        </div>
+        <div id="lang-dropdown"></div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative z-10 w-full max-w-5xl mx-auto px-6 pt-36 pb-12 text-center">
+        <div class="hero-animate inline-flex items-center gap-2 badge-shimmer rounded-full px-5 py-2 mb-8">
+            <span class="material-symbols-outlined text-primary text-sm">palette</span>
+            <span class="text-primary font-black uppercase tracking-[0.3em] text-[10px]">Impressionism Series</span>
+        </div>
+        <h2 class="hero-animate text-4xl sm:text-5xl md:text-6xl font-black mb-6 leading-[1.15] tracking-tight">
+            유럽 회화 여행<br>
+            <span class="bg-gradient-to-r from-primary via-yellow-200 to-primary bg-clip-text text-transparent">인상주의 20강</span>
+        </h2>
+        <p class="hero-animate-delay text-slate-400 max-w-2xl mx-auto text-sm md:text-base leading-relaxed mb-8">
+            인상주의 거장들의 빛, 색채, 터치를 배우는 프리미엄 아트 클래스.<br class="hidden sm:block">
+            모네부터 드가까지 — 위대한 화가들의 기법을 직접 체험합니다.
+        </p>
+        <div class="hero-animate-delay-2 flex items-center justify-center gap-8 text-xs text-white/30 font-semibold uppercase tracking-widest">
+            <span>20 Lessons</span>
+            <span class="w-1 h-1 rounded-full bg-primary/40"></span>
+            <span>6 Masters</span>
+            <span class="w-1 h-1 rounded-full bg-primary/40"></span>
+            <span>Premium</span>
+        </div>
+        <div class="gold-line w-full max-w-md mx-auto mt-12"></div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 w-full max-w-7xl mx-auto px-6 pt-8 pb-32">
+
+        <!-- Curriculum Grid -->
+        <div id="curriculum-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 lg:gap-14">
+        </div>
+
+        <!-- Footer Text -->
+        <div class="text-center mt-24">
+            <div class="gold-line w-full max-w-sm mx-auto mb-10"></div>
+            <p class="text-sm text-white/20 font-medium tracking-wide">더 많은 작가와 사조가 추가될 예정입니다</p>
+            <p class="text-[10px] text-white/10 mt-2 uppercase tracking-[0.3em] font-semibold">Luna Whale &middot; Art Education</p>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">
+        <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-lg">schedule</span>
+            <span class="text-sm font-semibold text-white/80">준비 중입니다</span>
+        </div>
+    </div>
+
+    <script>
+        const LESSONS = [
+            { num: 1,  artist: '모네', title: '빛과 수면', active: true, colors: ['#0d1117','#1a2040'], thumb: '../../assets/images/cards/impressionism/thumb/monet_water_lilies.jpg', link: '../lessons/impressionism-01-monet-light-water.html' },
+            { num: 2,  artist: '모네', title: '연작: 순간의 기록', active: true, colors: ['#0d1117','#1a2040'], thumb: '../../images/lessons/impressionism/02-monet-series-moments/masterpiece-01.jpg', link: '../lessons/impressionism-02-monet-series-moments.html' },
+            { num: 3,  artist: '세잔', title: '구조적 색채 이론', active: true, colors: ['#1a0f05','#2d1a0a'], thumb: '../../images/lessons/impressionism/03-cezanne-structural-color/thumbs/style-01-1.jpg', link: '../lessons/impressionism-03-cezanne-structural-color.html' },
+            { num: 4,  artist: '세잔', title: '풍경 구조와 색의 조화', active: true, colors: ['#1a0f05','#2d1a0a'], thumb: '../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-01-1.jpg', link: '../lessons/impressionism-04-cezanne-landscape-harmony.html' },
+            { num: 5,  artist: '고흐', title: '감정적 색채와 터치', active: true, colors: ['#1a1800','#0a1a2d'], thumb: '../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-01-1.jpg', link: '../lessons/impressionism-05-vangogh-emotional-color.html' },
+            { num: 6,  artist: '고흐', title: '야경과 별빛 표현', active: true, colors: ['#1a1800','#0a1a2d'], thumb: '../../images/lessons/impressionism/06-vangogh-starry-night/thumbs/style-01-1.jpg', link: '../lessons/impressionism-06-vangogh-starry-night.html' },
+            { num: 7,  artist: '고갱', title: '원시적 원색 실험', active: false, colors: ['#1a0510','#2d0a1a'] },
+            { num: 8,  artist: '고갱', title: '상징주의와 비례 파괴', active: false, colors: ['#1a0510','#2d0a1a'] },
+            { num: 9,  artist: '드가', title: '인물 스케치 순간 포착', active: false, colors: ['#0f0a1a','#1a1030'] },
+            { num: 10, artist: '드가', title: '실내 조명과 그림자', active: false, colors: ['#0f0a1a','#1a1030'] },
+            { num: 11, artist: '마네', title: '도시 풍경과 현대적 삶', active: false, colors: ['#0a1a0f','#1a2d1a'] },
+            { num: 12, artist: '마네', title: '평면성과 간결한 색채', active: false, colors: ['#0a1a0f','#1a2d1a'] },
+            { num: 13, artist: null, title: '역동적인 하늘과 구름', active: false, colors: ['#0f0f1a','#1a1a2d'] },
+            { num: 14, artist: null, title: '바다의 깊이와 파도의 움직임', active: false, colors: ['#0f0f1a','#1a1a2d'] },
+            { num: 15, artist: null, title: '나무와 숲의 복잡한 색채', active: false, colors: ['#0f0f1a','#1a1a2d'] },
+            { num: 16, artist: null, title: '야외 풍경 종합 실습', active: false, colors: ['#0f0f1a','#1a1a2d'] },
+            { num: 17, artist: null, title: '확장 예정', active: false, colors: ['#0a0a0f','#151520'] },
+            { num: 18, artist: null, title: '확장 예정', active: false, colors: ['#0a0a0f','#151520'] },
+            { num: 19, artist: null, title: '확장 예정', active: false, colors: ['#0a0a0f','#151520'] },
+            { num: 20, artist: null, title: '확장 예정', active: false, colors: ['#0a0a0f','#151520'] },
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lwRenderLangPicker) lwRenderLangPicker('lang-dropdown');
+            renderGrid();
+        });
+
+        function renderGrid() {
+            const grid = document.getElementById('curriculum-grid');
+            if (!grid) return;
+
+            grid.innerHTML = LESSONS.map((lesson, i) => {
+                const numStr = String(lesson.num).padStart(2, '0');
+                const isActive = lesson.active;
+                const artistLabel = lesson.artist || '테마';
+                const bgStyle = isActive && lesson.thumb
+                    ? `background-image: url('${lesson.thumb}'); background-size: cover; background-position: center;`
+                    : `background: linear-gradient(135deg, ${lesson.colors[0]}, ${lesson.colors[1]});`;
+
+                return `
+                    <div class="book-card-container card-animate ${isActive ? 'active' : ''}"
+                         style="animation-delay: ${i * 100}ms"
+                         onclick="${isActive ? `window.location.href='${lesson.link}'` : 'showToast()'}">
+                        <div class="book-card relative aspect-[3/4] rounded-r-xl overflow-hidden cursor-pointer group"
+                             style="${bgStyle}">
+                            <div class="book-spine"></div>
+
+                            ${isActive && lesson.thumb ? `
+                                <!-- Active card image overlay -->
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10"></div>
+                            ` : `
+                                <!-- Number watermark for non-image cards -->
+                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                                    <span class="text-[120px] sm:text-[140px] font-black text-white/[0.03] leading-none">${numStr}</span>
+                                </div>
+                            `}
+
+                            <!-- Card content -->
+                            <div class="absolute inset-0 p-5 flex flex-col justify-between z-10">
+                                <!-- Top: Number + Status -->
+                                <div class="flex items-start justify-between">
+                                    <span class="text-3xl font-black ${isActive ? 'text-primary' : 'text-white/15'} leading-none">${numStr}</span>
+                                    ${isActive ? `
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/20">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                            <span class="text-[8px] font-black text-emerald-400 uppercase tracking-widest">Active</span>
+                                        </span>
+                                    ` : `
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/5">
+                                            <span class="text-[8px] font-black text-white/25 uppercase tracking-widest">Soon</span>
+                                        </span>
+                                    `}
+                                </div>
+
+                                <!-- Bottom: Info -->
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="text-[9px] font-black ${isActive ? 'text-primary/70' : 'text-white/20'} uppercase tracking-[0.2em]">${artistLabel}</span>
+                                    </div>
+                                    <h3 class="text-base sm:text-lg font-black ${isActive ? 'text-white' : 'text-white/40'} leading-snug mb-1">${lesson.title}</h3>
+                                    ${isActive ? `
+                                        <div class="flex items-center gap-1.5 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <span class="text-[10px] font-bold text-primary/80">수업 시작하기</span>
+                                            <span class="material-symbols-outlined text-primary/80 text-sm">arrow_forward</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+
+                            ${!isActive ? `
+                                <!-- Coming Soon overlay -->
+                                <div class="coming-soon-overlay absolute inset-0 flex flex-col items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div class="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+                                        <span class="material-symbols-outlined text-white/30 text-xl">lock</span>
+                                    </div>
+                                    <span class="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">곧 출시</span>
+                                </div>
+                            ` : `
+                                <!-- Active hover button -->
+                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100 z-20">
+                                    <div class="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center shadow-2xl shadow-primary/30">
+                                        <span class="material-symbols-outlined text-white text-2xl">auto_stories</span>
+                                    </div>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* ── Toast ── */
+        let toastTimer = null;
+        function showToast() {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+        }
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

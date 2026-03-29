@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Mixing Laboratory - Luna Whale</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1a365d',
+                        'sky-blue': '#e0f2fe',
+                        'accent-gold': '#fbbf24',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- React & Babel via esm.sh for browser-native ESM -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+        }
+    }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Material Symbols -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pour {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            30% {
+                transform: rotate(-45deg);
+            }
+
+            70% {
+                transform: rotate(-45deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        @keyframes slotRoll {
+            0% {
+                transform: translateY(-10px) scale(0.95);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: translateY(0) scale(1.05);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(10px) scale(0.95);
+                opacity: 0.5;
+            }
+        }
+
+        .animate-pour {
+            animation: pour 0.6s ease-in-out;
+        }
+
+        .animate-slot {
+            animation: slotRoll 0.1s linear infinite;
+        }
+
+        /* Make scrollbar hidden for cleaner look but still scrollable */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body
+    class="bg-sky-blue dark:bg-slate-900 transition-colors duration-300 min-h-screen text-slate-800 dark:text-slate-100 flex flex-col font-sans">
+
+    <div id="root" class="flex-1 flex flex-col"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
+
+        const PAINT_COLORS = [
+            { name: "Titanium White", hex: "#FFFFFF" },
+            { name: "Ivory Black", hex: "#222222" },
+            { name: "Cadmium Red", hex: "#E30022" },
+            { name: "Phthalo Blue", hex: "#000F89" },
+            { name: "Cadmium Yellow", hex: "#FFF600" },
+            { name: "Sap Green", hex: "#507D2A" },
+            { name: "Magenta", hex: "#FF0090" },
+            { name: "Cyan", hex: "#00AEEE" },
+            { name: "Burnt Sienna", hex: "#E97451" },
+            { name: "Yellow Ochre", hex: "#CB9D06" },
+            { name: "Dioxazine Purple", hex: "#6B21A8" },
+            { name: "Cobalt Teal", hex: "#20B2AA" },
+        ];
+
+        function hexToRgb(hex) {
+            let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : [255, 255, 255];
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + (1 << 24 | Math.round(r) << 16 | Math.round(g) << 8 | Math.round(b)).toString(16).slice(1).toUpperCase();
+        }
+
+        function rgbToCmyk(r, g, b) {
+            let rc = r / 255;
+            let gc = g / 255;
+            let bc = b / 255;
+            let k = 1 - Math.max(rc, gc, bc);
+            if (k === 1) return [0, 0, 0, 1];
+            let c = (1 - rc - k) / (1 - k);
+            let m = (1 - gc - k) / (1 - k);
+            let y = (1 - bc - k) / (1 - k);
+            return [c, m, y, k];
+        }
+
+        function cmykToRgb(c, m, y, k) {
+            let r = 255 * (1 - c) * (1 - k);
+            let g = 255 * (1 - m) * (1 - k);
+            let b = 255 * (1 - y) * (1 - k);
+            return [r, g, b];
+        }
+
+        // Subtractive mixing by averaging CMYK absorption 
+        function mixSubtractive(rgbColors) {
+            if (rgbColors.length === 0) return [255, 255, 255];
+            let totalC = 0, totalM = 0, totalY = 0, totalK = 0;
+
+            for (let rgb of rgbColors) {
+                let [c, m, y, k] = rgbToCmyk(rgb[0], rgb[1], rgb[2]);
+                totalC += c; totalM += m; totalY += y; totalK += k;
+            }
+
+            let count = rgbColors.length;
+            return cmykToRgb(totalC / count, totalM / count, totalY / count, totalK / count);
+        }
+
+        function calculateDistance(rgb1, rgb2) {
+            return Math.sqrt(Math.pow(rgb1[0] - rgb2[0], 2) + Math.pow(rgb1[1] - rgb2[1], 2) + Math.pow(rgb1[2] - rgb2[2], 2));
+        }
+
+        // Greedy algorithm to find optimal recipe mimicking 5% drops
+        function getOptimalRecipe(targetRgb, activePaints) {
+            let currentMix = [];
+            for (let drop = 0; drop < 20; drop++) {
+                let bestColorIdx = -1;
+                let minDist = Infinity;
+                for (let i = 0; i < activePaints.length; i++) {
+                    let testMix = [...currentMix, i];
+                    let testRgbArray = testMix.map(idx => hexToRgb(activePaints[idx].hex));
+                    let mixedRgb = mixSubtractive(testRgbArray);
+                    let dist = calculateDistance(targetRgb, mixedRgb);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        bestColorIdx = i;
+                    }
+                }
+                currentMix.push(bestColorIdx);
+            }
+
+            let counts = {};
+            currentMix.forEach(idx => {
+                counts[idx] = (counts[idx] || 0) + 5;
+            });
+
+            return Object.keys(counts).map(idx => ({
+                color: activePaints[parseInt(idx)],
+                percentage: counts[idx]
+            })).sort((a, b) => b.percentage - a.percentage);
+        }
+
+        function App() {
+            const [isDarkMode, setIsDarkMode] = useState(false);
+            const [targetColor, setTargetColor] = useState('#FF8C00');
+            const [mixedColors, setMixedColors] = useState([]); // array of hex
+            const [showResult, setShowResult] = useState(false);
+            const [recipe, setRecipe] = useState([]);
+            const [isDragging, setIsDragging] = useState(false);
+
+            // New state variables for features
+            const [isRandomizing, setIsRandomizing] = useState(false);
+            const [isPouring, setIsPouring] = useState(false);
+            const [paletteMode, setPaletteMode] = useState(12);
+
+            useEffect(() => {
+                const storedTheme = localStorage.getItem('theme');
+                if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                    setIsDarkMode(true);
+                }
+            }, []);
+
+            const toggleTheme = () => {
+                if (isDarkMode) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    setIsDarkMode(false);
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    setIsDarkMode(true);
+                }
+            };
+
+            const pickTargetColor = async () => {
+                if (!window.EyeDropper) {
+                    alert('Your browser does not support the EyeDropper API. Please try Chrome, Edge or a supported browser.');
+                    return;
+                }
+                const eyeDropper = new window.EyeDropper();
+                try {
+                    const result = await eyeDropper.open();
+                    setTargetColor(result.sRGBHex);
+                } catch (e) {
+                    console.log('User canceled color selection');
+                }
+            };
+
+            const randomizeColor = () => {
+                if (isRandomizing) return;
+                setIsRandomizing(true);
+
+                let counter = 0;
+                const maxSpins = 15;
+                const intervalId = setInterval(() => {
+                    // Pick a random vibrant color
+                    const r = Math.floor(Math.random() * 256);
+                    const g = Math.floor(Math.random() * 256);
+                    const b = Math.floor(Math.random() * 256);
+                    setTargetColor(rgbToHex(r, g, b));
+
+                    counter++;
+                    if (counter >= maxSpins) {
+                        clearInterval(intervalId);
+                        setIsRandomizing(false);
+                    }
+                }, 50);
+            };
+
+            const addColorDrop = (hex) => {
+                if (mixedColors.length < 20) {
+                    setMixedColors(prev => [...prev, hex]);
+                }
+            };
+
+            const handleDrop = (e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                const hex = e.dataTransfer.getData("colorHex");
+                if (hex) addColorDrop(hex);
+            };
+
+            const handleDragOver = (e) => {
+                e.preventDefault();
+                setIsDragging(true);
+            };
+
+            const handleDragLeave = () => {
+                setIsDragging(false);
+            };
+
+            const resetCanvas = () => {
+                if (isPouring) return;
+                setIsPouring(true);
+
+                // Clear the canvas exactly when the bucket finishes tipping
+                setTimeout(() => {
+                    setMixedColors([]);
+                }, 300);
+
+                // End animation after CSS duraton (0.6s)
+                setTimeout(() => {
+                    setIsPouring(false);
+                }, 600);
+            };
+
+            const handleShowResult = () => {
+                const targetRgb = hexToRgb(targetColor);
+                const calcRecipe = getOptimalRecipe(targetRgb, activePaints);
+                setRecipe(calcRecipe);
+                setShowResult(true);
+            };
+
+            // Values
+            let currentRgb = [255, 255, 255];
+            if (mixedColors.length > 0) {
+                const rgbArray = mixedColors.map(hexToRgb);
+                // Pad with white (water/paper base) up to 20 drops total (100%)
+                while (rgbArray.length < 20) {
+                    rgbArray.push([255, 255, 255]);
+                }
+                currentRgb = mixSubtractive(rgbArray);
+            }
+            const mixedHex = rgbToHex(currentRgb[0], currentRgb[1], currentRgb[2]);
+
+            const targetRgb = hexToRgb(targetColor);
+            const dist = calculateDistance(targetRgb, currentRgb);
+            let similarity = Math.max(0, ((1 - dist / 441.67) * 100)).toFixed(1);
+            if (mixedColors.length === 0) similarity = 0;
+
+            const dropsPercent = mixedColors.length * 5;
+
+            // Get active paints based on paletteMode (5, 8, 12)
+            const getActivePaints = () => {
+                if (paletteMode === 5) {
+                    // CMYK + White
+                    return PAINT_COLORS.filter(p => ["Cyan", "Magenta", "Cadmium Yellow", "Ivory Black", "Titanium White"].includes(p.name));
+                } else if (paletteMode === 8) {
+                    // Standard 8 Colors
+                    return PAINT_COLORS.filter(p => ["Titanium White", "Ivory Black", "Cadmium Red", "Phthalo Blue", "Cadmium Yellow", "Sap Green", "Dioxazine Purple", "Burnt Sienna"].includes(p.name));
+                }
+                // Mode 12
+                return PAINT_COLORS;
+            };
+
+            const activePaints = getActivePaints();
+
+            return (
+                <div className="flex flex-col h-full grow">
+                    {/* Header */}
+                    <header className="p-2 md:p-3 flex justify-between items-center relative z-10 shrink-0">
+                        <a href="../../index.html" className="flex items-center gap-2 text-primary-blue dark:text-sky-blue hover:opacity-80 transition-opacity">
+                            <span className="material-symbols-outlined text-sm">arrow_back</span>
+                            <span className="font-bold text-xs md:text-sm tracking-widest uppercase hidden md:inline">Back</span>
+                        </a>
+                        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-accent-gold text-xl md:text-2xl">science</span>
+                            <h1 className="text-sm md:text-xl font-black text-primary-blue dark:text-sky-blue tracking-tighter whitespace-nowrap uppercase"> Mixing Lab</h1>
+                        </div>
+                        <button onClick={toggleTheme} className="p-2 rounded-full bg-white/50 dark:bg-slate-800/50 backdrop-blur shadow hover:bg-white dark:hover:bg-slate-700 transition flex items-center justify-center text-primary-blue dark:text-sky-400">
+                            <span className="material-symbols-outlined">{isDarkMode ? 'light_mode' : 'dark_mode'}</span>
+                        </button>
+                    </header>
+
+                    {/* Main Content */}
+                    <main className="flex-1 overflow-y-auto w-full max-w-7xl mx-auto px-4 pb-2 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-center no-scrollbar">
+
+                        {/* Left Side: Target & Mixing Canvas */}
+                        <div className="flex-1 flex flex-col gap-2 md:gap-3 w-full max-w-lg mx-auto">
+                            {/* Target Color Card */}
+                            <div className="bg-white dark:bg-slate-800 rounded-xl p-3 md:p-4 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col gap-2">
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest">Target Color (목표 색상)</h2>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={randomizeColor}
+                                            disabled={isRandomizing}
+                                            className="flex items-center gap-1.5 md:gap-2 bg-gradient-to-r from-pink-400 to-rose-500 hover:from-pink-500 hover:to-rose-600 text-white text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-full transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                                        >
+                                            <span className={`material-symbols-outlined text-[14px] ${isRandomizing ? 'animate-slot' : ''}`}>casino</span>
+                                            랜덤 색상
+                                        </button>
+                                        <button onClick={pickTargetColor} className="flex items-center gap-1.5 md:gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-full transition-colors">
+                                            <span className="material-symbols-outlined text-[14px]">colorize</span>
+                                            스포이트
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="h-16 md:h-20 w-full rounded-xl shadow-inner flex items-center justify-center transition-colors duration-300 relative overflow-hidden" style={{ backgroundColor: targetColor }}>
+                                    <span className="bg-black/40 text-white text-xs px-2 py-1 rounded backdrop-blur font-mono z-10">{targetColor.toUpperCase()}</span>
+                                </div>
+                            </div>
+
+                            {/* Canvas Area */}
+                            <div className="bg-white dark:bg-slate-800 rounded-xl p-3 md:p-4 shadow-md border border-slate-100 dark:border-slate-700 flex flex-col gap-2">
+                                <h2 className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">Mixing Canvas (도화지)</h2>
+
+                                <div className="relative">
+                                    <div
+                                        className={`w-full aspect-[4/3] max-h-[140px] md:max-h-[180px] rounded-[30px] shadow-inner border-4 transition-all duration-300 mx-auto flex items-center justify-center relative overflow-hidden group ${isDragging ? 'border-primary-blue dark:border-sky-400 scale-[1.02]' : 'border-slate-100 dark:border-slate-700'}`}
+                                        style={{ backgroundColor: mixedHex }}
+                                        onDrop={handleDrop}
+                                        onDragOver={handleDragOver}
+                                        onDragLeave={handleDragLeave}
+                                    >
+                                        {mixedColors.length === 0 && (
+                                            <div className="flex flex-col items-center gap-2 text-slate-400 dark:text-slate-500 opacity-80 pointer-events-none">
+                                                <span className="material-symbols-outlined text-4xl">format_paint</span>
+                                                <span className="text-sm font-medium">물감을 떨어뜨려주세요!</span>
+                                            </div>
+                                        )}
+
+                                        {/* Splash effect layer when pouring */}
+                                        {isPouring && (
+                                            <div className="absolute inset-0 bg-blue-400/30 animate-pulse"></div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2 mt-2">
+                                    <div className="flex justify-between items-end">
+                                        <div className="flex flex-col gap-0.5">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs md:text-sm font-bold text-slate-500">유사도:</span>
+                                                <span className={`text-xl md:text-2xl font-black ${similarity >= 85 ? 'text-green-500' : similarity >= 50 ? 'text-amber-500' : 'text-slate-700 dark:text-slate-300'}`}>
+                                                    {similarity}%
+                                                </span>
+                                                {/* Cute Mascot */}
+                                                <div className="text-xl md:text-2xl ml-1 animate-bounce" style={{ animationDuration: '2s' }}>
+                                                    {mixedColors.length === 0 ? '🎨' :
+                                                        similarity >= 85 ? '😍' :
+                                                            similarity >= 50 ? '🤔' :
+                                                                '💦'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-0.5">
+                                            <span className="text-xs md:text-sm font-bold text-slate-500">물감량:</span>
+                                            <span className={`text-lg md:text-xl font-black ${dropsPercent >= 100 ? 'text-red-500' : 'text-primary-blue dark:text-sky-400'}`}>
+                                                {dropsPercent}%
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="h-4 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden flex shadow-inner relative">
+                                        <div className="h-full bg-gradient-to-r from-emerald-400 to-green-500 transition-all duration-300 ease-out" style={{ width: `${similarity}%` }}></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Side: Palette Controls */}
+                        <div className="flex-1 w-full max-w-lg mx-auto bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col gap-4 md:gap-5 relative">
+                            <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900 rounded-xl p-1.5 pl-3">
+                                <h2 className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest">Palette (팔레트)</h2>
+                                <button
+                                    onClick={resetCanvas}
+                                    className={`flex items-center gap-1.5 text-white transition-all text-xs font-bold bg-gradient-to-r from-blue-400 to-cyan-500 hover:from-blue-500 hover:to-cyan-600 px-4 py-2 rounded-xl shadow-sm ${isPouring ? 'animate-pour' : ''}`}
+                                >
+                                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                                    물통 비우기
+                                </button>
+                            </div>
+
+                            <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed -mt-2 px-2">
+                                튜브를 클릭하거나 도화지로 드래그하세요. 1회당 5%씩 적용되며, 감산혼합(Subtractive Mixing)으로 실제 물감처럼 섞입니다.
+                            </p>
+
+                            {/* Preset Buttons */}
+                            <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl">
+                                {[5, 8, 12].map(num => (
+                                    <button
+                                        key={num}
+                                        onClick={() => setPaletteMode(num)}
+                                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${paletteMode === num ? 'bg-white dark:bg-slate-800 text-primary-blue dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                                    >
+                                        {num} Colors
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="grid grid-cols-4 sm:grid-cols-4 gap-2 md:gap-3 flex-1 content-start">
+                                {activePaints.map((paint, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => addColorDrop(paint.hex)}
+                                        draggable
+                                        onDragStart={(e) => {
+                                            e.dataTransfer.setData("colorHex", paint.hex);
+                                        }}
+                                        disabled={dropsPercent >= 100}
+                                        className={`flex flex-col items-center gap-1.5 md:gap-2 focus:outline-none group select-none ${dropsPercent >= 100 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:-translate-y-1 transition-transform'}`}
+                                    >
+                                        <div
+                                            className="w-12 h-12 md:w-14 md:h-14 rounded-full shadow-md border-[3px] border-white dark:border-slate-700 relative overflow-hidden flex items-center justify-center group-hover:shadow-lg transition-all"
+                                            style={{ backgroundColor: paint.hex }}
+                                        >
+                                            <div className="absolute top-0 left-0 w-full h-1/2 bg-white/20 rounded-b-full"></div>
+                                        </div>
+                                        <span className="text-[9px] md:text-[10px] font-bold text-center leading-tight break-keep text-slate-600 dark:text-slate-400">{paint.name}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={handleShowResult}
+                                className="mt-3 w-full py-3 bg-gradient-to-r from-primary-blue to-blue-800 dark:from-sky-600 dark:to-blue-800 text-white font-bold rounded-xl shadow-lg shadow-blue-900/20 hover:shadow-xl hover:scale-[1.02] transition-all flex justify-center items-center gap-2 group"
+                            >
+                                <span className="material-symbols-outlined group-hover:rotate-12 transition-transform text-sm">receipt_long</span>
+                                레시피 확인 (View Recipe)
+                            </button>
+                        </div>
+
+                    </main>
+
+                    {/* Result Modal */}
+                    {showResult && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowResult(false)}>
+                            <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-slide-up" onClick={e => e.stopPropagation()}>
+                                <div className="p-6 md:p-8 flex flex-col gap-6 text-center">
+                                    <div>
+                                        <h2 className="text-xl md:text-2xl font-black text-primary-blue dark:text-sky-400">Amazing Job, Little Artist!</h2>
+                                        <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">목표 색상을 가장 비슷하게 만드는 마법의 레시피예요.</p>
+                                    </div>
+
+                                    <div className="flex items-center justify-center gap-4 my-2">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full shadow-inner border-[4px] border-slate-100 dark:border-slate-700" style={{ backgroundColor: targetColor }}></div>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase">Target</span>
+                                        </div>
+                                        <span className="material-symbols-outlined text-slate-300">arrow_forward</span>
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full shadow-inner border-[4px] border-slate-100 dark:border-slate-700" style={{ backgroundColor: rgbToHex(mixSubtractive(recipe.flatMap(r => Array(Math.round(r.percentage / 5)).fill(hexToRgb(r.color.hex))))[0], mixSubtractive(recipe.flatMap(r => Array(Math.round(r.percentage / 5)).fill(hexToRgb(r.color.hex))))[1], mixSubtractive(recipe.flatMap(r => Array(Math.round(r.percentage / 5)).fill(hexToRgb(r.color.hex))))[2]) }}></div>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase">Recipe Mix</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-2 w-full text-left bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl max-h-[200px] overflow-y-auto no-scrollbar">
+                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wide border-b border-slate-200 dark:border-slate-700 pb-2 mb-2">Optimal Recipe</h3>
+                                        {recipe.map((r, idx) => (
+                                            <div key={idx} className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-5 h-5 rounded-full shadow-sm border border-white/20" style={{ backgroundColor: r.color.hex }}></div>
+                                                    <span className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300">{r.color.name} Paint</span>
+                                                </div>
+                                                <span className="text-sm font-black text-primary-blue dark:text-sky-500">{r.percentage}%</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <button onClick={() => setShowResult(false)} className="w-full py-4 mt-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 font-bold rounded-2xl transition shadow-sm">
+                                        창 닫기 (Close)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>종이오리기 - Luna Whale</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Lexend:wght@300;400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lexend',sans-serif;background:#f8f6f3;min-height:100vh;color:#2c2420}
+
+/* Top Bar */
+.top-bar{position:sticky;top:0;z-index:50;background:rgba(248,246,243,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,0,0,.04);padding:14px 24px;display:flex;align-items:center;gap:14px}
+.back-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.back-btn:hover{background:rgba(0,0,0,.04)}
+.top-title{font-family:'Jua',sans-serif;font-size:22px;color:#2c2420;flex:1;letter-spacing:-.3px}
+.top-count{font-size:11px;color:#a09890;font-weight:400;letter-spacing:.5px}
+
+/* Category Bar */
+.cat-bar{display:flex;gap:12px;padding:20px 24px 8px;max-width:1200px;margin:0 auto;justify-content:center;flex-wrap:wrap}
+.cat-icon{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;padding:12px 24px;border-radius:16px;border:2px solid transparent;transition:.3s;min-width:100px}
+.cat-icon:hover{background:rgba(0,0,0,.03)}
+.cat-icon.active{border-color:#2c2420;background:rgba(44,36,32,.04)}
+.cat-icon.disabled{opacity:.45;cursor:default}
+.cat-icon.disabled:hover{background:transparent}
+.cat-icon .icon-circle{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;transition:.3s}
+.cat-icon .icon-label{font-family:'Jua',sans-serif;font-size:13px;color:#6b5c4e;white-space:nowrap}
+.cat-icon .icon-count{font-size:10px;color:#a09890;font-weight:300}
+.cat-icon.active .icon-label{color:#2c2420}
+.cat-all .icon-circle{background:linear-gradient(135deg,#f0e6d6,#e8d5c4);color:#8b6914}
+.cat-young .icon-circle{background:linear-gradient(135deg,#e8ddf0,#d4c4e8);color:#7c3aed}
+.cat-older .icon-circle{background:linear-gradient(135deg,#dce8f5,#c4d4e8);color:#4a6fa5}
+
+/* Grid */
+.grid-wrap{max-width:1200px;margin:0 auto;padding:8px 24px 24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+@media(max-width:640px){.grid{grid-template-columns:repeat(3,1fr);gap:8px}}
+.card{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04);transition:transform .25s,box-shadow .25s;cursor:pointer;border:1px solid rgba(0,0,0,.04);position:relative}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.card img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#f0ece6}
+.card-label{padding:6px 8px;font-family:'Jua',sans-serif;font-size:12px;color:#6b5c4e;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Placeholder message */
+.placeholder-msg{text-align:center;padding:80px 24px;max-width:480px;margin:0 auto}
+.placeholder-msg .icon{font-size:64px;margin-bottom:16px;opacity:.4}
+.placeholder-msg h3{font-family:'Jua',sans-serif;font-size:20px;color:#6b5c4e;margin-bottom:8px}
+.placeholder-msg p{font-size:13px;color:#a09890;line-height:1.7}
+
+/* Lightbox */
+.lb-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(20,18,15,.8);backdrop-filter:blur(8px);justify-content:center;align-items:center;flex-direction:column;overflow-y:auto}
+.lb-overlay.active{display:flex}
+.lb-close{position:absolute;top:16px;right:20px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:110;transition:.2s}
+.lb-close:hover{background:rgba(255,255,255,.2)}
+.lb-inner{display:flex;flex-direction:column;align-items:center;gap:16px;padding:60px 20px 120px;max-width:560px;width:100%}
+.lb-img-container{position:relative;width:100%;max-width:460px}
+.lb-img-container img{width:100%;border-radius:12px;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.3);display:block}
+.lb-title{color:#fff;font-family:'Jua',sans-serif;font-size:20px;text-align:center}
+
+/* Controls panel */
+.lb-controls{background:rgba(44,36,32,.85);backdrop-filter:blur(12px);border-radius:14px;padding:16px 20px;width:100%;max-width:460px;display:flex;flex-direction:column;gap:12px}
+.lb-ctrl-row{display:flex;align-items:center;gap:8px;max-width:100%;overflow:hidden;}
+.lb-ctrl-label{font-size:11px;color:#f8f6f3;font-weight:600;white-space:nowrap;min-width:65px;flex-shrink:0;}
+.lb-ctrl-row input[type=range]{flex:1;accent-color:#e8c170;height:4px;min-width:0;}
+.lb-ctrl-val{font-size:11px;color:#e8c170;font-weight:600;min-width:28px;text-align:right;flex-shrink:0;}
+.lb-btn-row{display:flex;gap:8px;margin-top:4px}
+.lb-btn{flex:1;padding:10px;border-radius:10px;border:none;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s}
+.lb-btn:hover{opacity:.85}
+.lb-btn-line{background:#fff;color:#2c2420}
+.lb-btn-print{background:#6b5c4e;color:#fff}
+.lb-btn-download{background:transparent;color:#f8f6f3;border:1px solid rgba(255,255,255,.2)}
+
+/* Print styles */
+@media print{
+  body *{display:none!important}
+  #print-container{display:block!important;position:fixed;inset:0;z-index:99999;background:#fff}
+  #print-container img{width:100%;height:auto;max-height:100vh;object-fit:contain}
+}
+
+/* Loading */
+.load-more{text-align:center;padding:30px}
+.spinner{display:inline-block;width:24px;height:24px;border:2px solid rgba(44,36,32,.08);border-top-color:#6b5c4e;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.end-msg{text-align:center;padding:20px;color:#a09890;font-size:14px;font-family:'Jua',sans-serif}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="window.history.back()">
+    <span class="material-symbols-outlined" style="font-size:20px;color:#7c3aed">arrow_back</span>
+  </button>
+  <div class="top-title">✂️ 종이오리기</div>
+  <div class="top-count" id="count-label"></div>
+</div>
+
+<!-- Category Bar -->
+<div class="cat-bar" id="cat-bar">
+  <div class="cat-icon cat-all active" onclick="switchCat('all')">
+    <div class="icon-circle">✨</div>
+    <div class="icon-label">전체</div>
+    <div class="icon-count" id="cnt-all"></div>
+  </div>
+  <div class="cat-icon cat-young" onclick="switchCat('4-7')">
+    <div class="icon-circle">🖍️</div>
+    <div class="icon-label">4-7세</div>
+    <div class="icon-count" id="cnt-young"></div>
+  </div>
+  <div class="cat-icon cat-older disabled">
+    <div class="icon-circle">🎨</div>
+    <div class="icon-label">8-9세</div>
+    <div class="icon-count">준비 중</div>
+  </div>
+</div>
+
+<div class="grid-wrap">
+  <div class="grid" id="grid"></div>
+  <div class="placeholder-msg" id="placeholder" style="display:none">
+    <div class="icon">🎨</div>
+    <h3>준비 중이에요!</h3>
+    <p>8-9세 색칠 도안이 곧 추가될 예정이에요.<br/>조금만 기다려 주세요!</p>
+  </div>
+  <div class="load-more" id="load-more"><div class="spinner"></div></div>
+  <div class="end-msg" id="end-msg" style="display:none">모든 종이오리기 도안을 다 불러왔어요! ✂️</div>
+</div>
+
+<!-- Lightbox -->
+<div class="lb-overlay" id="lightbox">
+  <button class="lb-close" onclick="closeLB()">
+    <span class="material-symbols-outlined" style="font-size:22px">close</span>
+  </button>
+  <div class="lb-inner">
+    <div class="lb-title" id="lb-title"></div>
+    <div class="lb-img-container">
+      <img id="lb-img" src="" alt=""/>
+    </div>
+    <div class="lb-controls">
+      <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:4px;">🎛️ 이미지 조절</div>
+      <div class="lb-ctrl-row">
+        <span class="lb-ctrl-label">✏️ 검정감소</span>
+        <input type="range" id="br-slider" min="0" max="80" value="0"/>
+        <span class="lb-ctrl-val" id="br-val">0%</span>
+      </div>
+      <div class="lb-ctrl-row">
+        <span class="lb-ctrl-label">☀️ 밝기</span>
+        <input type="range" id="bright-slider" min="-50" max="50" value="0"/>
+        <span class="lb-ctrl-val" id="bright-val">0</span>
+      </div>
+      <div class="lb-ctrl-row">
+        <span class="lb-ctrl-label">🔲 대비</span>
+        <input type="range" id="contrast-slider" min="-50" max="50" value="0"/>
+        <span class="lb-ctrl-val" id="contrast-val">0</span>
+      </div>
+      <div class="lb-ctrl-row">
+        <span class="lb-ctrl-label">📊 레벨</span>
+        <div style="position:relative;flex:1;height:24px;">
+          <div style="position:absolute;left:8px;right:8px;top:10px;height:4px;background:linear-gradient(to right,#333,#999,#eee);border-radius:2px;"></div>
+          <input type="range" id="level-shadow" min="0" max="255" value="0" style="position:absolute;left:0;right:0;width:100%;top:0;height:24px;margin:0;padding:0;background:transparent;-webkit-appearance:none;appearance:none;pointer-events:none;" title="어두운점"/>
+          <input type="range" id="level-gamma" min="0" max="255" value="128" style="position:absolute;left:0;right:0;width:100%;top:0;height:24px;margin:0;padding:0;background:transparent;-webkit-appearance:none;appearance:none;pointer-events:none;" title="감마"/>
+          <input type="range" id="level-highlight" min="0" max="255" value="255" style="position:absolute;left:0;right:0;width:100%;top:0;height:24px;margin:0;padding:0;background:transparent;-webkit-appearance:none;appearance:none;pointer-events:none;" title="밝은점"/>
+        </div>
+      </div>
+      <style>
+        #level-shadow::-webkit-slider-thumb,#level-gamma::-webkit-slider-thumb,#level-highlight::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;cursor:pointer;pointer-events:auto;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4);}
+        #level-shadow::-webkit-slider-thumb{background:#222;}
+        #level-gamma::-webkit-slider-thumb{background:#888;}
+        #level-highlight::-webkit-slider-thumb{background:#f0f0f0;}
+        #level-shadow::-webkit-slider-runnable-track,#level-gamma::-webkit-slider-runnable-track,#level-highlight::-webkit-slider-runnable-track{background:transparent;height:24px;}
+      </style>
+      <div style="text-align:right;margin-bottom:4px;">
+        <button onclick="resetAdjust()" style="font-size:9px;padding:2px 8px;border:1px solid rgba(255,255,255,.2);border-radius:5px;background:transparent;color:#ccc;cursor:pointer;">↩ 초기화</button>
+      </div>
+      <div class="lb-btn-row">
+        <button class="lb-btn lb-btn-line" id="btn-line" onclick="toggleLineArt()">
+          <span class="material-symbols-outlined" style="font-size:16px">contrast</span> LINE ART
+        </button>
+        <button class="lb-btn lb-btn-print" onclick="printImage()">
+          <span class="material-symbols-outlined" style="font-size:16px">print</span> 인쇄
+        </button>
+        <button class="lb-btn lb-btn-download" onclick="downloadImage()">
+          <span class="material-symbols-outlined" style="font-size:16px">download</span> 저장
+        </button>
+      </div>
+    </div>
+  </div>
+  <canvas id="br-canvas" style="display:none"></canvas>
+</div>
+
+<!-- Hidden print container -->
+<div id="print-container" style="display:none"></div>
+
+<script>
+const BASE = '../../images/paper-craft/';
+function getOrig(s){ return BASE + 'originals/'; }
+function getThumb(s){ return BASE + 'thumbs/'; }
+
+// Original grouped data
+const RAW_DATA = [
+{"kr": "종이공작 1", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_0173bcdf-60b2-4511-9227-0a9bfeda981a_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_0173bcdf-60b2-4511-9227-0a9bfeda981a_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_0173bcdf-60b2-4511-9227-0a9bfeda981a_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_0173bcdf-60b2-4511-9227-0a9bfeda981a_3.png"], "src": 1},
+{"kr": "종이공작 2", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_03085d03-4c9a-425b-acab-69681d71cd42_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_03085d03-4c9a-425b-acab-69681d71cd42_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_03085d03-4c9a-425b-acab-69681d71cd42_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_03085d03-4c9a-425b-acab-69681d71cd42_3.png"], "src": 1},
+{"kr": "종이공작 3", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_11f382a9-53b1-4fa1-9598-ab528424fe9c_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_11f382a9-53b1-4fa1-9598-ab528424fe9c_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_11f382a9-53b1-4fa1-9598-ab528424fe9c_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_11f382a9-53b1-4fa1-9598-ab528424fe9c_3.png"], "src": 1},
+{"kr": "종이공작 4", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_1e1634bf-38d2-41f7-9582-eb4abfc9e5d5_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_1e1634bf-38d2-41f7-9582-eb4abfc9e5d5_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_1e1634bf-38d2-41f7-9582-eb4abfc9e5d5_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_1e1634bf-38d2-41f7-9582-eb4abfc9e5d5_3.png"], "src": 1},
+{"kr": "종이공작 5", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_2e720361-edbc-42b6-925d-e4245b2cc34f_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_2e720361-edbc-42b6-925d-e4245b2cc34f_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_2e720361-edbc-42b6-925d-e4245b2cc34f_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_2e720361-edbc-42b6-925d-e4245b2cc34f_3.png"], "src": 1},
+{"kr": "종이공작 6", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_31a6c14c-d481-418b-bb93-bec847f554d6_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_31a6c14c-d481-418b-bb93-bec847f554d6_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_31a6c14c-d481-418b-bb93-bec847f554d6_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_31a6c14c-d481-418b-bb93-bec847f554d6_3.png"], "src": 1},
+{"kr": "종이공작 7", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_368b3202-3121-41a0-9f24-2a2339d4d2fa_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_368b3202-3121-41a0-9f24-2a2339d4d2fa_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_368b3202-3121-41a0-9f24-2a2339d4d2fa_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_368b3202-3121-41a0-9f24-2a2339d4d2fa_3.png"], "src": 1},
+{"kr": "종이공작 8", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_4529dd64-f952-44e2-b5bd-f9b8c59ad81e_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_4529dd64-f952-44e2-b5bd-f9b8c59ad81e_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_4529dd64-f952-44e2-b5bd-f9b8c59ad81e_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_4529dd64-f952-44e2-b5bd-f9b8c59ad81e_3.png"], "src": 1},
+{"kr": "종이공작 9", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_60eba952-e369-47d3-be7b-533bcbf273ae_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_60eba952-e369-47d3-be7b-533bcbf273ae_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_60eba952-e369-47d3-be7b-533bcbf273ae_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_60eba952-e369-47d3-be7b-533bcbf273ae_3.png"], "src": 1},
+{"kr": "종이공작 10", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_6476510c-451d-4f79-bd17-95364d0e47ce_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_6476510c-451d-4f79-bd17-95364d0e47ce_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_6476510c-451d-4f79-bd17-95364d0e47ce_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_6476510c-451d-4f79-bd17-95364d0e47ce_3.png"], "src": 1},
+{"kr": "종이공작 11", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_6c8abf99-1f64-454e-8b75-6fe3336e360c_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_6c8abf99-1f64-454e-8b75-6fe3336e360c_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_6c8abf99-1f64-454e-8b75-6fe3336e360c_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_6c8abf99-1f64-454e-8b75-6fe3336e360c_3.png"], "src": 1},
+{"kr": "종이공작 12", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_78b7c3d4-8961-4e89-a6cc-5c93c74e5fd9_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_78b7c3d4-8961-4e89-a6cc-5c93c74e5fd9_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_78b7c3d4-8961-4e89-a6cc-5c93c74e5fd9_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_78b7c3d4-8961-4e89-a6cc-5c93c74e5fd9_3.png"], "src": 1},
+{"kr": "종이공작 13", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_7c769e11-2927-4c72-8d56-1751616cbef0_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_7c769e11-2927-4c72-8d56-1751616cbef0_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_7c769e11-2927-4c72-8d56-1751616cbef0_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_7c769e11-2927-4c72-8d56-1751616cbef0_3.png"], "src": 1},
+{"kr": "종이공작 14", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_91a18275-0295-419b-a24a-55b624c225be_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_91a18275-0295-419b-a24a-55b624c225be_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_91a18275-0295-419b-a24a-55b624c225be_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_91a18275-0295-419b-a24a-55b624c225be_3.png"], "src": 1},
+{"kr": "종이공작 15", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_9d0cc738-5c22-40b7-a945-8d062718ac86_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_9d0cc738-5c22-40b7-a945-8d062718ac86_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_9d0cc738-5c22-40b7-a945-8d062718ac86_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_9d0cc738-5c22-40b7-a945-8d062718ac86_3.png"], "src": 1},
+{"kr": "종이공작 16", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_a9ed1980-a1c5-4bad-9928-8a71099dd7c3_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_a9ed1980-a1c5-4bad-9928-8a71099dd7c3_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_a9ed1980-a1c5-4bad-9928-8a71099dd7c3_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_a9ed1980-a1c5-4bad-9928-8a71099dd7c3_3.png"], "src": 1},
+{"kr": "종이공작 17", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_adb8df13-1816-4296-b9b4-c83a4e42a67c_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_adb8df13-1816-4296-b9b4-c83a4e42a67c_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_adb8df13-1816-4296-b9b4-c83a4e42a67c_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_adb8df13-1816-4296-b9b4-c83a4e42a67c_3.png"], "src": 1},
+{"kr": "종이공작 18", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_b61dcb41-d172-47dc-a671-de54e6a6da4d_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_b61dcb41-d172-47dc-a671-de54e6a6da4d_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_b61dcb41-d172-47dc-a671-de54e6a6da4d_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_b61dcb41-d172-47dc-a671-de54e6a6da4d_3.png"], "src": 1},
+{"kr": "종이공작 19", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_b779e1ac-0ce4-494f-98a0-0d69216efba0_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_b779e1ac-0ce4-494f-98a0-0d69216efba0_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_b779e1ac-0ce4-494f-98a0-0d69216efba0_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_b779e1ac-0ce4-494f-98a0-0d69216efba0_3.png"], "src": 1},
+{"kr": "종이공작 20", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_b7f149a9-18f5-4f21-a049-6211ed034ae6_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_b7f149a9-18f5-4f21-a049-6211ed034ae6_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_b7f149a9-18f5-4f21-a049-6211ed034ae6_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_b7f149a9-18f5-4f21-a049-6211ed034ae6_3.png"], "src": 1},
+{"kr": "종이공작 21", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c0a87c41-4a30-4d31-8afa-db8fce9df765_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c0a87c41-4a30-4d31-8afa-db8fce9df765_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c0a87c41-4a30-4d31-8afa-db8fce9df765_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c0a87c41-4a30-4d31-8afa-db8fce9df765_3.png"], "src": 1},
+{"kr": "종이공작 22", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c10978ce-fbd3-4d16-9d73-dda207ccb9de_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c10978ce-fbd3-4d16-9d73-dda207ccb9de_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c10978ce-fbd3-4d16-9d73-dda207ccb9de_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c10978ce-fbd3-4d16-9d73-dda207ccb9de_3.png"], "src": 1},
+{"kr": "종이공작 23", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c57b663b-6146-460a-bbaf-56fec1d440f9_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c57b663b-6146-460a-bbaf-56fec1d440f9_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c57b663b-6146-460a-bbaf-56fec1d440f9_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c57b663b-6146-460a-bbaf-56fec1d440f9_3.png"], "src": 1},
+{"kr": "종이공작 24", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c867fd45-12a4-44f3-beb0-6f74ce175c5b_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c867fd45-12a4-44f3-beb0-6f74ce175c5b_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c867fd45-12a4-44f3-beb0-6f74ce175c5b_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_c867fd45-12a4-44f3-beb0-6f74ce175c5b_3.png"], "src": 1},
+{"kr": "종이공작 25", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_cf1fb54e-a406-439b-a6a5-3269cf20966a_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_cf1fb54e-a406-439b-a6a5-3269cf20966a_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_cf1fb54e-a406-439b-a6a5-3269cf20966a_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_cf1fb54e-a406-439b-a6a5-3269cf20966a_3.png"], "src": 1},
+{"kr": "종이공작 26", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_cf7f42b8-4415-438b-b5e5-b375b4939541_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_cf7f42b8-4415-438b-b5e5-b375b4939541_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_cf7f42b8-4415-438b-b5e5-b375b4939541_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_cf7f42b8-4415-438b-b5e5-b375b4939541_3.png"], "src": 1},
+{"kr": "종이공작 27", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_d4010c90-2b46-4ed3-bf8e-9518ba6443b2_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_d4010c90-2b46-4ed3-bf8e-9518ba6443b2_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_d4010c90-2b46-4ed3-bf8e-9518ba6443b2_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_d4010c90-2b46-4ed3-bf8e-9518ba6443b2_3.png"], "src": 1},
+{"kr": "종이공작 28", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_d9391c35-d8dc-498b-bc6b-afe38d272e31_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_d9391c35-d8dc-498b-bc6b-afe38d272e31_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_d9391c35-d8dc-498b-bc6b-afe38d272e31_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_d9391c35-d8dc-498b-bc6b-afe38d272e31_3.png"], "src": 1},
+{"kr": "종이공작 29", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_da4f4b72-ecd6-45ce-af05-dbac437f120c_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_da4f4b72-ecd6-45ce-af05-dbac437f120c_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_da4f4b72-ecd6-45ce-af05-dbac437f120c_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_da4f4b72-ecd6-45ce-af05-dbac437f120c_3.png"], "src": 1},
+{"kr": "종이공작 30", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_dd2fe059-261f-44da-a43c-1cb0ceff8e44_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_dd2fe059-261f-44da-a43c-1cb0ceff8e44_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_dd2fe059-261f-44da-a43c-1cb0ceff8e44_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_dd2fe059-261f-44da-a43c-1cb0ceff8e44_3.png"], "src": 1},
+{"kr": "종이공작 31", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_df8f53be-2081-4cbc-a58f-6ec7124437f6_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_df8f53be-2081-4cbc-a58f-6ec7124437f6_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_df8f53be-2081-4cbc-a58f-6ec7124437f6_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_df8f53be-2081-4cbc-a58f-6ec7124437f6_3.png"], "src": 1},
+{"kr": "종이공작 32", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_e6d3b4ef-7a89-422f-b31d-d6f844386145_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_e6d3b4ef-7a89-422f-b31d-d6f844386145_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_e6d3b4ef-7a89-422f-b31d-d6f844386145_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_e6d3b4ef-7a89-422f-b31d-d6f844386145_3.png"], "src": 1},
+{"kr": "종이공작 33", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_ee31d3b6-dbad-4865-b9de-479f236fd62f_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_ee31d3b6-dbad-4865-b9de-479f236fd62f_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_ee31d3b6-dbad-4865-b9de-479f236fd62f_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_ee31d3b6-dbad-4865-b9de-479f236fd62f_3.png"], "src": 1},
+{"kr": "종이공작 34", "files": ["A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_f7477fe3-df61-443d-af06-5ce5fa95094d_0.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_f7477fe3-df61-443d-af06-5ce5fa95094d_1.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_f7477fe3-df61-443d-af06-5ce5fa95094d_2.png", "A_complete_printable_paper_craft_kit_sheet_A4_vertical_size_f_f7477fe3-df61-443d-af06-5ce5fa95094d_3.png"], "src": 1},
+{"kr": "종이인형 1", "files": ["A_complete_printable_paper_doll_kit_sheet_A4_vertical_size_fe_33956a63-07db-4983-b2ef-339487ba703d_0.png", "A_complete_printable_paper_doll_kit_sheet_A4_vertical_size_fe_33956a63-07db-4983-b2ef-339487ba703d_1.png", "A_complete_printable_paper_doll_kit_sheet_A4_vertical_size_fe_33956a63-07db-4983-b2ef-339487ba703d_2.png", "A_complete_printable_paper_doll_kit_sheet_A4_vertical_size_fe_33956a63-07db-4983-b2ef-339487ba703d_3.png"], "src": 1},
+{"kr": "종이인형 2", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_0177a136-896e-426d-b8d3-fe131fff9814_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_0177a136-896e-426d-b8d3-fe131fff9814_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_0177a136-896e-426d-b8d3-fe131fff9814_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_0177a136-896e-426d-b8d3-fe131fff9814_3.png"], "src": 1},
+{"kr": "종이인형 3", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_09c50ddb-7e3a-4830-9bea-c5c2a1abaf02_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_09c50ddb-7e3a-4830-9bea-c5c2a1abaf02_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_09c50ddb-7e3a-4830-9bea-c5c2a1abaf02_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_09c50ddb-7e3a-4830-9bea-c5c2a1abaf02_3.png"], "src": 1},
+{"kr": "종이인형 4", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_31d20b39-75f1-4e86-be17-71312d9619a4_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_31d20b39-75f1-4e86-be17-71312d9619a4_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_31d20b39-75f1-4e86-be17-71312d9619a4_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_31d20b39-75f1-4e86-be17-71312d9619a4_3.png"], "src": 1},
+{"kr": "종이인형 5", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_41c60453-9a90-44e6-a8c9-d6ac29334e08_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_41c60453-9a90-44e6-a8c9-d6ac29334e08_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_41c60453-9a90-44e6-a8c9-d6ac29334e08_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_41c60453-9a90-44e6-a8c9-d6ac29334e08_3.png"], "src": 1},
+{"kr": "종이인형 6", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_4c39ba86-032c-4bb9-8ddf-500373537280_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_4c39ba86-032c-4bb9-8ddf-500373537280_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_4c39ba86-032c-4bb9-8ddf-500373537280_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_4c39ba86-032c-4bb9-8ddf-500373537280_3.png"], "src": 1},
+{"kr": "종이인형 7", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_733978da-4bcc-44e1-96e7-763d4a4cedf8_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_733978da-4bcc-44e1-96e7-763d4a4cedf8_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_733978da-4bcc-44e1-96e7-763d4a4cedf8_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_733978da-4bcc-44e1-96e7-763d4a4cedf8_3.png"], "src": 1},
+{"kr": "종이인형 8", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_7f0a7613-b32d-4b6f-980b-ce22796b650e_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_7f0a7613-b32d-4b6f-980b-ce22796b650e_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_7f0a7613-b32d-4b6f-980b-ce22796b650e_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_7f0a7613-b32d-4b6f-980b-ce22796b650e_3.png"], "src": 1},
+{"kr": "종이인형 9", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_84a7cd2a-578e-48f6-9f52-9b5490a04e62_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_84a7cd2a-578e-48f6-9f52-9b5490a04e62_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_84a7cd2a-578e-48f6-9f52-9b5490a04e62_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_84a7cd2a-578e-48f6-9f52-9b5490a04e62_3.png"], "src": 1},
+{"kr": "종이인형 10", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_8a8956bb-ca89-43f9-b7e3-443d5692e8c8_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_8a8956bb-ca89-43f9-b7e3-443d5692e8c8_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_8a8956bb-ca89-43f9-b7e3-443d5692e8c8_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_8a8956bb-ca89-43f9-b7e3-443d5692e8c8_3.png"], "src": 1},
+{"kr": "종이인형 11", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_8d9c1da2-fb74-4072-8c74-84d77aa9b981_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_8d9c1da2-fb74-4072-8c74-84d77aa9b981_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_8d9c1da2-fb74-4072-8c74-84d77aa9b981_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_8d9c1da2-fb74-4072-8c74-84d77aa9b981_3.png"], "src": 1},
+{"kr": "종이인형 12", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_90b1a975-ba3d-4844-83e5-87e59ce45ddb_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_90b1a975-ba3d-4844-83e5-87e59ce45ddb_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_90b1a975-ba3d-4844-83e5-87e59ce45ddb_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_90b1a975-ba3d-4844-83e5-87e59ce45ddb_3.png"], "src": 1},
+{"kr": "종이인형 13", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_9b5f724d-9b15-4418-ad7a-fe595beac885_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_9b5f724d-9b15-4418-ad7a-fe595beac885_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_9b5f724d-9b15-4418-ad7a-fe595beac885_3.png"], "src": 1},
+{"kr": "종이인형 14", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_ca7bcfc9-490f-4a9b-870d-3530d54c285d_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_ca7bcfc9-490f-4a9b-870d-3530d54c285d_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_ca7bcfc9-490f-4a9b-870d-3530d54c285d_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_ca7bcfc9-490f-4a9b-870d-3530d54c285d_3.png"], "src": 1},
+{"kr": "종이인형 15", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_cd3fcde8-d7df-449f-8df6-e03d748b2101_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_cd3fcde8-d7df-449f-8df6-e03d748b2101_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_cd3fcde8-d7df-449f-8df6-e03d748b2101_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_cd3fcde8-d7df-449f-8df6-e03d748b2101_3.png"], "src": 1},
+{"kr": "종이인형 16", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_d36993ec-e1e5-4ed6-b05e-2b13a48fd844_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_d36993ec-e1e5-4ed6-b05e-2b13a48fd844_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_d36993ec-e1e5-4ed6-b05e-2b13a48fd844_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_d36993ec-e1e5-4ed6-b05e-2b13a48fd844_3.png"], "src": 1},
+{"kr": "종이인형 17", "files": ["a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_d3fa4a89-b9f5-40c5-97e8-e3c5a8df069a_0.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_d3fa4a89-b9f5-40c5-97e8-e3c5a8df069a_1.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_d3fa4a89-b9f5-40c5-97e8-e3c5a8df069a_2.png", "a_complete_printable_paper_doll_kit_sheet_a4_vertical_size_fe_d3fa4a89-b9f5-40c5-97e8-e3c5a8df069a_3.png"], "src": 1}
+];
+
+// Flatten: each variant becomes its own card
+const ALL_ITEMS = [];
+RAW_DATA.forEach(d => {
+  d.files.forEach((f, i) => {
+    ALL_ITEMS.push({
+      kr: d.kr,
+      file: f,
+      src: d.src,
+      age: '4-7',
+      variantIdx: i,
+      variantTotal: d.files.length
+    });
+  });
+});
+
+const PER_PAGE = 20;
+let page = 0;
+let currentCat = 'all';
+let filtered = ALL_ITEMS;
+let lineArtMode = false;
+let currentItem = null;
+
+const grid = document.getElementById('grid');
+const loadMore = document.getElementById('load-more');
+const endMsg = document.getElementById('end-msg');
+const placeholder = document.getElementById('placeholder');
+const countLabel = document.getElementById('count-label');
+
+// Update counts
+document.getElementById('cnt-all').textContent = ALL_ITEMS.length + '장';
+document.getElementById('cnt-young').textContent = ALL_ITEMS.filter(x => x.age === '4-7').length + '장';
+
+function switchCat(cat) {
+  if (cat === '8-9') return; // disabled
+  currentCat = cat;
+  // Update active state
+  document.querySelectorAll('.cat-icon').forEach(el => el.classList.remove('active'));
+  if (cat === 'all') document.querySelector('.cat-all').classList.add('active');
+  else if (cat === '4-7') document.querySelector('.cat-young').classList.add('active');
+  
+  // Filter
+  if (cat === 'all') filtered = ALL_ITEMS;
+  else if (cat === '4-7') filtered = ALL_ITEMS.filter(x => x.age === '4-7');
+  else filtered = ALL_ITEMS.filter(x => x.age === '8-9');
+  
+  // Reset grid
+  page = 0;
+  grid.innerHTML = '';
+  endMsg.style.display = 'none';
+  loadMore.style.display = '';
+  placeholder.style.display = 'none';
+  
+  if (filtered.length === 0) {
+    loadMore.style.display = 'none';
+    placeholder.style.display = '';
+  } else {
+    countLabel.textContent = filtered.length + '장';
+    renderPage();
+  }
+}
+
+function renderPage() {
+  const start = page * PER_PAGE;
+  const end = Math.min(start + PER_PAGE, filtered.length);
+  if (start >= filtered.length) {
+    loadMore.style.display = 'none';
+    endMsg.style.display = 'block';
+    return;
+  }
+  for (let i = start; i < end; i++) {
+    const d = filtered[i];
+    const card = document.createElement('div');
+    card.className = 'card';
+    const thumbSrc = getThumb(d.src) + d.file.replace('.png', '.jpg');
+    card.innerHTML = '<img src="' + thumbSrc + '" alt="' + d.kr + '" loading="lazy"/><div class="card-label">' + d.kr + '</div>';
+    card.onclick = () => openLB(i);
+    grid.appendChild(card);
+  }
+  page++;
+  if (end >= filtered.length) {
+    loadMore.style.display = 'none';
+    endMsg.style.display = 'block';
+  }
+}
+
+// Intersection Observer for infinite scroll
+const obs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) renderPage();
+}, { rootMargin: '300px' });
+obs.observe(loadMore);
+
+// Lightbox
+function openLB(idx) {
+  const d = filtered[idx];
+  currentItem = d;
+  lineArtMode = false;
+  origImgData = null;
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lb-img');
+  document.getElementById('lb-title').textContent = d.kr;
+  img.src = getOrig(d.src) + d.file;
+  img.style.filter = '';
+  // 슬라이더 전부 초기화
+  document.getElementById('br-slider').value = 0;
+  document.getElementById('br-val').textContent = '0%';
+  if (document.getElementById('bright-slider')) document.getElementById('bright-slider').value = 0;
+  if (document.getElementById('contrast-slider')) document.getElementById('contrast-slider').value = 0;
+  if (document.getElementById('level-shadow')) document.getElementById('level-shadow').value = 0;
+  if (document.getElementById('level-gamma')) document.getElementById('level-gamma').value = 100;
+  if (document.getElementById('level-highlight')) document.getElementById('level-highlight').value = 255;
+  if (document.getElementById('bright-val')) document.getElementById('bright-val').textContent = '0';
+  if (document.getElementById('contrast-val')) document.getElementById('contrast-val').textContent = '0';
+  document.getElementById('btn-line').innerHTML = '<span class="material-symbols-outlined" style="font-size:16px">contrast</span> LINE ART';
+  document.getElementById('btn-line').style.background = '#fff';
+  document.getElementById('btn-line').style.color = '#2c2420';
+  lb.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  // 원본 이미지 로드 (조절용)
+  img.onload = function() { loadOrigForAdjust(); img.onload = null; };
+}
+
+function closeLB() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+  currentItem = null;
+  lineArtMode = false;
+}
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target.id === 'lightbox' || e.target.classList.contains('lb-overlay')) closeLB();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLB(); });
+
+// Toggle line art mode
+function toggleLineArt() {
+  lineArtMode = !lineArtMode;
+  const btn = document.getElementById('btn-line');
+  const img = document.getElementById('lb-img');
+  if (lineArtMode) {
+    btn.style.background = '#2c2420';
+    btn.style.color = '#fff';
+    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px">contrast</span> LINE ART ON';
+    applyBrightness();
+  } else {
+    btn.style.background = '#fff';
+    btn.style.color = '#2c2420';
+    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px">contrast</span> LINE ART';
+    const brVal = parseInt(document.getElementById('br-slider').value);
+    if (brVal > 0) {
+      const brightness = 1 + brVal * 0.012;
+      img.style.filter = 'brightness(' + brightness + ')';
+    } else {
+      img.style.filter = '';
+    }
+  }
+}
+
+// ─── 통합 이미지 조절 (Canvas 기반) ───
+let origImgData = null;
+let adjCanvas = document.getElementById('br-canvas');
+let adjCtx = adjCanvas.getContext('2d');
+
+function loadOrigForAdjust() {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    adjCanvas.width = img.width;
+    adjCanvas.height = img.height;
+    adjCtx.drawImage(img, 0, 0);
+    origImgData = adjCtx.getImageData(0, 0, img.width, img.height);
+  };
+  img.src = document.getElementById('lb-img').src;
+}
+
+function applyAllAdjust() {
+  if (!origImgData) return;
+  const br = parseInt(document.getElementById('br-slider').value) / 100;
+  const brightness = parseInt(document.getElementById('bright-slider')?.value || 0);
+  const contrast = parseInt(document.getElementById('contrast-slider')?.value || 0);
+  const shadow = parseInt(document.getElementById('level-shadow')?.value || 0);
+  const gamma = parseInt(document.getElementById('level-gamma')?.value || 100) / 100;
+  const highlight = parseInt(document.getElementById('level-highlight')?.value || 255);
+
+  document.getElementById('br-val').textContent = Math.round(br * 100) + '%';
+  if (document.getElementById('bright-val')) document.getElementById('bright-val').textContent = brightness;
+  if (document.getElementById('contrast-val')) document.getElementById('contrast-val').textContent = contrast;
+
+  const data = new ImageData(new Uint8ClampedArray(origImgData.data), origImgData.width, origImgData.height);
+  const d = data.data;
+  const contrastF = (259 * (contrast + 255)) / (255 * (259 - contrast));
+
+  for (let i = 0; i < d.length; i += 4) {
+    let r = d[i], g = d[i+1], b = d[i+2];
+
+    // Line art mode
+    if (lineArtMode) {
+      const gray = r * 0.299 + g * 0.587 + b * 0.114;
+      r = g = b = gray;
+      r = r * 2.5 - 200; g = g * 2.5 - 200; b = b * 2.5 - 200;
+    }
+
+    // 검정 감소
+    if (br > 0) {
+      if (r < 200) r = r + (200 - r) * br;
+      if (g < 200) g = g + (200 - g) * br;
+      if (b < 200) b = b + (200 - b) * br;
+    }
+
+    // 레벨
+    r = Math.max(0, Math.min(255, ((r - shadow) / (highlight - shadow)) * 255));
+    g = Math.max(0, Math.min(255, ((g - shadow) / (highlight - shadow)) * 255));
+    b = Math.max(0, Math.min(255, ((b - shadow) / (highlight - shadow)) * 255));
+    if (gamma !== 1) {
+      r = 255 * Math.pow(r / 255, 1 / gamma);
+      g = 255 * Math.pow(g / 255, 1 / gamma);
+      b = 255 * Math.pow(b / 255, 1 / gamma);
+    }
+
+    // 밝기 + 대비
+    r = contrastF * (r + brightness - 128) + 128;
+    g = contrastF * (g + brightness - 128) + 128;
+    b = contrastF * (b + brightness - 128) + 128;
+
+    d[i] = Math.max(0, Math.min(255, r));
+    d[i+1] = Math.max(0, Math.min(255, g));
+    d[i+2] = Math.max(0, Math.min(255, b));
+  }
+
+  adjCtx.putImageData(data, 0, 0);
+  document.getElementById('lb-img').src = adjCanvas.toDataURL('image/jpeg', 0.9);
+}
+
+function applyBrightness() { applyAllAdjust(); }
+
+function resetAdjust() {
+  document.getElementById('br-slider').value = 0;
+  document.getElementById('bright-slider').value = 0;
+  document.getElementById('contrast-slider').value = 0;
+  document.getElementById('level-shadow').value = 0;
+  document.getElementById('level-gamma').value = 100;
+  document.getElementById('level-highlight').value = 255;
+  applyAllAdjust();
+}
+
+// 모든 슬라이더에 이벤트
+['br-slider','bright-slider','contrast-slider','level-shadow','level-gamma','level-highlight'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', applyAllAdjust);
+});
+
+// Print
+function printImage() {
+  if (!currentItem) return;
+  const img = document.getElementById('lb-img');
+  const printContainer = document.getElementById('print-container');
+  
+  // If line art or brightness adjusted, render via canvas
+  const brVal = parseInt(document.getElementById('br-slider').value);
+  if (lineArtMode || brVal > 0) {
+    renderToCanvas(function(dataUrl) {
+      printContainer.innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:auto;max-height:100vh;object-fit:contain"/>';
+      window.print();
+    });
+  } else {
+    printContainer.innerHTML = '<img src="' + img.src + '" style="width:100%;height:auto;max-height:100vh;object-fit:contain"/>';
+    window.print();
+  }
+}
+
+// Download
+function downloadImage() {
+  if (!currentItem) return;
+  const d = currentItem;
+  const brVal = parseInt(document.getElementById('br-slider').value);
+  
+  if (lineArtMode || brVal > 0) {
+    renderToCanvas(function(dataUrl) {
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = d.kr + (lineArtMode ? '_lineart' : '') + (brVal > 0 ? '_br' + brVal : '') + '.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    });
+  } else {
+    const a = document.createElement('a');
+    a.href = getOrig(d.src) + d.file;
+    a.download = d.kr + '.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+}
+
+// Canvas render with filters
+function renderToCanvas(callback) {
+  const d = currentItem;
+  const brVal = parseInt(document.getElementById('br-slider').value);
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    const c = document.getElementById('br-canvas');
+    const ctx = c.getContext('2d');
+    c.width = img.width; c.height = img.height;
+    
+    if (lineArtMode) {
+      const brightness = 1.6 + brVal * 0.015;
+      const contrast = 2.5;
+      ctx.filter = 'grayscale(1) brightness(' + brightness + ') contrast(' + contrast + ')';
+    } else if (brVal > 0) {
+      const brightness = 1 + brVal * 0.012;
+      ctx.filter = 'brightness(' + brightness + ')';
+    }
+    
+    ctx.drawImage(img, 0, 0);
+    callback(c.toDataURL('image/png'));
+  };
+  img.onerror = function() {
+    // Fallback: try thumb
+    img.src = getThumb(d.src) + d.file.replace('.png', '.jpg');
+  };
+  img.src = getOrig(d.src) + d.file;
+}
+
+// Initial render
+countLabel.textContent = ALL_ITEMS.length + '장';
+renderPage();
+</script>
+
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0320"></script>
+<script src="../../assets/js/voice-engine.js?v=0320"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320"></script>
+<!-- Luna Sound Effects -->
+<script src="../../assets/js/luna-sounds.js?v=0321"></script>
+</body>
+</html>

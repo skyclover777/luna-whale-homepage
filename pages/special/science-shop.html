@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Luna Whale Science Shop</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <!-- Firebase Authentication & Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../../assets/js/firebase-auth.js"></script>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#a413ec",
+                        "navy-900": "#0a1128",
+                    },
+                    fontFamily: {
+                        jua: ["Jua", "sans-serif"],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: white;
+            margin: 0;
+            overflow: hidden;
+            /* Prevent scrolling, keep it as an app-like view */
+            font-family: 'Jua', sans-serif;
+        }
+
+        .layer-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s ease;
+            will-change: transform, filter;
+        }
+
+        .jiggle {
+            transform: scale(0.97) translateY(-10px) !important;
+            filter: brightness(1.2) !important;
+        }
+
+        /* Hotspots */
+        .hotspot {
+            position: absolute;
+            cursor: pointer;
+            z-index: 20;
+            pointer-events: auto;
+            /* border: 1px solid rgba(255,0,0,0.5); /* Uncomment to debug hotspots */
+        }
+
+        .hotspot-whale {
+            top: 9.05%;
+            left: 32.22%;
+            width: 16.84%;
+            height: 17.38%;
+        }
+
+        .hotspot-flask {
+            top: 52.34%;
+            left: 35.46%;
+            width: 7.65%;
+            height: 18.23%;
+        }
+
+        .hotspot-plant {
+            top: 26.56%;
+            left: 21.83%;
+            width: 19.57%;
+            height: 33.20%;
+        }
+
+        .hotspot-globe {
+            top: 60.48%;
+            left: 68.29%;
+            width: 13.27%;
+            height: 22.46%;
+        }
+
+        .hotspot-tubes {
+            top: 60.22%;
+            left: 23.14%;
+            width: 11.92%;
+            height: 23.11%;
+        }
+
+        .hotspot-physics {
+            top: 49.48%;
+            left: 62.90%;
+            width: 4.96%;
+            height: 13.28%;
+        }
+
+        .interactive-group {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .interactive-group:has(.hotspot:hover) .layer-img {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(164, 19, 236, 0.3);
+            border-radius: 4px;
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body>
+    <!-- Top Nav -->
+    <div class="fixed top-0 left-0 w-full z-50 p-4 flex items-center justify-between pointer-events-none">
+        <button onclick="window.location.href='../../index.html'"
+            class="pointer-events-auto flex items-center justify-center w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-slate-700 hover:text-primary hover:bg-white shadow-lg transition-all active:scale-95 border border-slate-100">
+            <span class="material-symbols-outlined text-2xl">arrow_back</span>
+        </button>
+    </div>
+
+    <!-- Main Scene Container -->
+    <div class="relative w-full h-screen max-w-7xl mx-auto flex items-center justify-center overflow-hidden">
+
+        <!-- Asset Layers -->
+        <img src="../../public/assets/images/science-shop/house.png" alt="House Background" class="layer-img z-0"
+            style="pointer-events: auto;">
+
+        <div class="interactive-group z-10">
+            <img src="../../public/assets/images/science-shop/whale.png" id="img-whale" class="layer-img">
+            <div class="hotspot hotspot-whale" onclick="handleItemClick('whale', '루나 고래의 비밀')"></div>
+        </div>
+
+        <div class="interactive-group z-10">
+            <img src="../../public/assets/images/science-shop/flask.png" id="img-flask" class="layer-img">
+            <div class="hotspot hotspot-flask" onclick="handleItemClick('flask', '신비한 플라스크 실험')"></div>
+        </div>
+
+        <div class="interactive-group z-10">
+            <img src="../../public/assets/images/science-shop/plant2.png" id="img-plant" class="layer-img">
+            <div class="hotspot hotspot-plant" onclick="handleItemClick('plant', '마법의 식물 관찰')"></div>
+        </div>
+
+        <div class="interactive-group z-10">
+            <img src="../../public/assets/images/science-shop/globe.png" id="img-globe" class="layer-img">
+            <div class="hotspot hotspot-globe" onclick="handleItemClick('globe', '지구본 탐험대')"></div>
+        </div>
+
+        <div class="interactive-group z-10">
+            <img src="../../public/assets/images/science-shop/tubes.png" id="img-tubes" class="layer-img">
+            <div class="hotspot hotspot-tubes" onclick="handleItemClick('tubes', '시험관 색채 혼합')"></div>
+        </div>
+
+        <div class="interactive-group z-10">
+            <img src="../../public/assets/images/science-shop/physics.png" id="img-physics" class="layer-img">
+            <div class="hotspot hotspot-physics" onclick="handleItemClick('physics', '신비한 물리 법칙')"></div>
+        </div>
+
+    </div>
+
+    <!-- Right Sidebar -->
+    <div id="sidebar"
+        class="fixed top-0 right-0 w-full sm:w-80 h-full bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-500 ease-in-out border-l border-slate-100 flex flex-col">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+            <h2 id="sidebar-title" class="text-2xl font-jua text-primary">과학 클래스</h2>
+            <button onclick="closeSidebar()"
+                class="text-slate-400 hover:text-slate-700 transition-colors p-2 rounded-full hover:bg-slate-50 active:bg-slate-100">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 custom-scrollbar flex flex-col gap-4">
+            <p class="text-slate-500 text-sm mb-2">원하는 클래스를 선택하여 다채로운 과학의 세계로 빠져보세요!</p>
+
+            <!-- Class Cards -->
+            <button onclick="window.location.href='../../molecular-magnifier/index.html'"
+                class="w-full text-left p-4 rounded-2xl bg-slate-50 hover:bg-primary/5 hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-primary/20 group">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-blue-100 text-blue-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined">science</span>
+                    </div>
+                    <div>
+                        <h3 class="font-jua text-lg text-slate-800">분자 상태 변화 관찰</h3>
+                        <p class="text-xs text-slate-500 mt-1">#초중고교과 #상태변화 #마법실험</p>
+                    </div>
+                </div>
+            </button>
+
+            <button onclick="window.location.href='#'"
+                class="w-full text-left p-4 rounded-2xl bg-slate-50 hover:bg-primary/5 hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-primary/20 group">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-orange-100 text-orange-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined">volcano</span>
+                    </div>
+                    <div>
+                        <h3 class="font-jua text-lg text-slate-800">화산 폭발 실험</h3>
+                        <p class="text-xs text-slate-500 mt-1">#화학반응 #퍼포먼스</p>
+                    </div>
+                </div>
+            </button>
+
+            <button onclick="window.location.href='#'"
+                class="w-full text-left p-4 rounded-2xl bg-slate-50 hover:bg-primary/5 hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-primary/20 group">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined">psychiatry</span>
+                    </div>
+                    <div>
+                        <h3 class="font-jua text-lg text-slate-800">결정 키우기</h3>
+                        <p class="text-xs text-slate-500 mt-1">#관찰일기 #인내심</p>
+                    </div>
+                </div>
+            </button>
+
+            <div class="mt-8 p-4 bg-yellow-50 rounded-2xl border border-yellow-100">
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-yellow-500">info</span>
+                    <p class="text-xs text-yellow-800 leading-relaxed">
+                        더 많은 놀라운 과학 클래스가 준비 중입니다! 루나 웨일과 함께하는 과학 탐험을 기대해주세요.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay attached to Sidebar -->
+    <div id="sidebar-overlay" onclick="closeSidebar()"
+        class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-500">
+    </div>
+
+    <script>
+        function handleItemClick(itemId, titleMsg) {
+            // 1. Jiggle Animation
+            const imgEl = document.getElementById(`img-${itemId}`);
+            if (imgEl) {
+                imgEl.classList.add('jiggle');
+                setTimeout(() => {
+                    imgEl.classList.remove('jiggle');
+                }, 300);
+            }
+
+            // 2. Open Sidebar & Update Title
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const titleEl = document.getElementById('sidebar-title');
+
+            if (titleMsg) {
+                titleEl.textContent = titleMsg;
+            }
+
+            sidebar.classList.remove('translate-x-full');
+            sidebar.classList.add('translate-x-0');
+
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+            overlay.classList.add('opacity-100', 'pointer-events-auto');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            sidebar.classList.add('translate-x-full');
+            sidebar.classList.remove('translate-x-0');
+
+            overlay.classList.remove('opacity-100', 'pointer-events-auto');
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,3351 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <script>
+        // Auth Guard - Check localStorage first (fast path)
+        // Firebase Auth state is checked async after SDK loads
+        (function () {
+            const user = localStorage.getItem('lw_user');
+            if (!user) {
+                // Mark page as needing Firebase auth check
+                window.__lwNeedsAuthCheck = true;
+                // Hide body until auth resolves
+                document.documentElement.style.opacity = '0';
+            }
+        })();
+    </script>
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport" />
+    <title>Luna Whale Art Lab - Home</title>
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="images/icons/icon-180.png" />
+    <meta name="theme-color" content="#6366f1" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="assets/data/i18n.js?v=0312-2330"></script>
+    <script src="assets/data/classes-data.js?v=0312-2330"></script>
+    <script src="assets/js/admin-init-db.js?v=0312-2330"></script>
+    <script src="assets/js/app.js?v=0312-2330"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js?v=0312-2330"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js?v=0312-2330"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js?v=0312-2330"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js?v=0312-2330"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js?v=0312-2330"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js?v=0312-2330"></script>
+    <script src="assets/js/firebase-auth.js?v=0312-2330"></script>
+    <script>
+        // Deferred Auth Guard: If localStorage was empty, check Firebase Auth
+        if (window.__lwNeedsAuthCheck) {
+            // Give Firebase a moment to restore auth state
+            const authTimeout = setTimeout(() => {
+                if (window.__lwNeedsAuthCheck) {
+                    console.log('Auth check timed out, redirecting...');
+                    const isFile = window.location.protocol === 'file:';
+                    window.location.href = isFile ? 'pages/auth/login.html' : '/pages/auth/login.html';
+                }
+            }, 4000);
+
+            // Listen for Firebase Auth state
+            firebase.auth().onAuthStateChanged(async (user) => {
+                if (user) {
+                    clearTimeout(authTimeout);
+                    console.log('Firebase user detected, verifying profile...');
+                    // Ensure profile is loaded into localStorage by firebase-auth.js
+                    // We wait a tiny bit for the onAuthChange in firebase-auth.js to finish
+                    setTimeout(() => {
+                        document.documentElement.style.opacity = '1';
+                        window.__lwNeedsAuthCheck = false;
+                    }, 500);
+                } else {
+                    // No Firebase user, redirect immediately if timeout hasn't fired
+                    clearTimeout(authTimeout);
+                    const isFile = window.location.protocol === 'file:';
+                    window.location.href = isFile ? 'pages/auth/login.html' : '/pages/auth/login.html';
+                }
+            });
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Jua&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <!-- Luna Core Layout System v2 -->
+    <link href="assets/css/luna-core.css" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1337ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101322",
+                        "accent-purple": "#8b5cf6"
+                    },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] },
+                    borderRadius: { DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            min-height: max(884px, 100dvh);
+        }
+
+        .masonry-grid {
+            columns: 2;
+            column-gap: 0.75rem;
+        }
+
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .masonry-item:hover .feed-card {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .feed-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        #lang-dropdown-home {
+            display: none;
+        }
+
+        #lang-dropdown-home.open {
+            display: block;
+        }
+
+        /* Masonry responsive (layout handled by luna-core.css) */
+        @media (min-width: 640px) {
+            .masonry-grid { columns: 3; }
+        }
+        @media (min-width: 1024px) {
+            .masonry-grid { columns: 4; }
+            #desktop-header { display: flex !important; }
+        }
+        @media (min-width: 1280px) {
+            .masonry-grid { columns: 5; }
+        }
+
+
+        .card-text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes staggerFadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .color-card-anim {
+            opacity: 0;
+            animation: staggerFadeInUp 0.5s ease-out forwards;
+        }
+
+        .mix-blend-overlay {
+            mix-blend-mode: overlay;
+        }
+
+        @keyframes typewriterPopIn {
+            from {
+                opacity: 0;
+                transform: scale(0.85) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes wave-scroll {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* ------------------ Luna Gallery (Premium Redesign) ------------------ */
+        .luna-gallery {
+            background: linear-gradient(135deg, #f0e6ff 0%, #e0f0ff 33%, #fce4ec 66%, #e8f5e9 100%);
+            border-radius: 1.25rem;
+            padding: 1rem 1.25rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(180,160,220,0.25), 0 0 0 1px rgba(255,255,255,0.6);
+        }
+        .luna-gallery::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(circle 180px at 15% 30%, rgba(186,147,255,0.35) 0%, transparent 70%),
+                radial-gradient(circle 200px at 85% 20%, rgba(147,200,255,0.3) 0%, transparent 70%),
+                radial-gradient(circle 160px at 50% 80%, rgba(255,182,193,0.3) 0%, transparent 70%),
+                radial-gradient(circle 140px at 75% 65%, rgba(167,230,190,0.25) 0%, transparent 70%);
+            filter: blur(40px);
+            animation: lgBlobMove 12s ease-in-out infinite alternate;
+            pointer-events: none;
+            z-index: 0;
+        }
+        @keyframes lgBlobMove {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(15px, -10px) scale(1.05); }
+            66% { transform: translate(-10px, 8px) scale(0.97); }
+            100% { transform: translate(8px, -5px) scale(1.02); }
+        }
+        .luna-gallery::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(circle 120px at 30% 60%, rgba(255,218,150,0.2) 0%, transparent 70%),
+                radial-gradient(circle 150px at 70% 40%, rgba(200,170,255,0.2) 0%, transparent 70%);
+            filter: blur(50px);
+            animation: lgBlobMove2 15s ease-in-out infinite alternate;
+            pointer-events: none;
+            z-index: 0;
+        }
+        @keyframes lgBlobMove2 {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-12px, 6px) scale(1.04); }
+            100% { transform: translate(10px, -8px) scale(0.98); }
+        }
+        .luna-gallery > * { position: relative; z-index: 1; }
+
+        /* Header */
+        .lg-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 2;
+        }
+        .lg-title {
+            font-size: 1.1rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #7c3aed, #ec4899, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .lg-title .material-symbols-outlined {
+            color: #f472b6;
+            font-size: 1.3rem;
+        }
+        .lg-counter {
+            font-size: 0.75rem;
+            color: rgba(80,60,120,0.5);
+            font-weight: 600;
+        }
+        .lg-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .lg-nav-btn {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(100,70,150,0.1);
+            border: 1px solid rgba(100,70,150,0.15);
+            color: rgba(80,60,120,0.6);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0;
+        }
+        .lg-nav-btn:hover {
+            background: rgba(100,70,150,0.2);
+            color: #5b3e9e;
+            transform: scale(1.08);
+        }
+
+        /* Main Artwork Display */
+        .lg-main-artwork {
+            position: relative;
+            z-index: 2;
+            border-radius: 1rem;
+            overflow: hidden;
+            background: linear-gradient(135deg, #ede4f7 0%, #dce8f7 50%, #f5e1ea 100%);
+            aspect-ratio: 16/10;
+            max-height: 400px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .lg-artwork-wrap {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+        }
+        .lg-main-artwork img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            background: transparent;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            display: block;
+            margin: 0 auto;
+        }
+        .lg-main-artwork img.lg-fade-out {
+            opacity: 0;
+            transform: scale(1.02);
+        }
+        /* Hover spotlight */
+        .lg-main-artwork::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: none;
+            pointer-events: none;
+        }
+
+        /* Multi-Image Slider Arrows */
+        .lg-slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .lg-main-artwork:hover .lg-slider-btn { opacity: 1; }
+        .lg-slider-btn:hover { background: rgba(0, 0, 0, 0.7); transform: translateY(-50%) scale(1.1); }
+        .lg-slider-btn.prev { left: 1rem; }
+        .lg-slider-btn.next { right: 1rem; }
+
+        .lg-img-counter {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            z-index: 10;
+        }
+
+        /* Genre Badge */
+        .lg-genre-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(139, 92, 246, 0.25);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            color: #d8b4fe;
+            padding: 5px 12px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Artwork Info */
+        .lg-info {
+            position: relative;
+            z-index: 2;
+            padding: 1rem 0.25rem;
+        }
+        .lg-artwork-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+        .lg-artwork-meta {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.45);
+        }
+
+        /* ── Compact Layout V3 ── */
+        .lg-layout-v3 {
+            display: grid;
+            grid-template-columns: 1fr 80px;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+            position: relative;
+            z-index: 2;
+        }
+        .lg-main-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            min-width: 0;
+        }
+        .lg-info-compact {
+            padding: 0.3rem 0;
+        }
+        .lg-info-compact .lg-artwork-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            font-family: 'Jua', sans-serif;
+            color: #3a2e5c;
+            margin-bottom: 0.1rem;
+        }
+        .lg-info-compact .lg-artwork-meta {
+            font-size: 0.7rem;
+            font-family: 'Jua', sans-serif;
+            color: rgba(80,60,120,0.5);
+        }
+        /* (댓글은 포스트잇으로 사진 위에 표시) */
+        /* 댓글 입력 (컴팩트) */
+        .lg-input-compact {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+        /* 아트워크 + 포스트잇 댓글 래퍼 */
+        /* lg-artwork-wrap: 위쪽에서 정의 */
+        .lg-postit-left, .lg-postit-right {
+            position: absolute;
+            top: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            z-index: 15;
+            max-height: calc(100% - 1rem);
+            overflow-y: auto;
+            scrollbar-width: none;
+            pointer-events: auto;
+        }
+        .lg-postit-left::-webkit-scrollbar,
+        .lg-postit-right::-webkit-scrollbar { display: none; }
+        .lg-postit-left { left: 0.5rem; align-items: flex-start; max-width: 40%; }
+        .lg-postit-right { right: 0.5rem; align-items: flex-end; max-width: 40%; }
+
+        /* 포스트잇 스타일 댓글 아이템 */
+        .lg-postit-left .lg-comment-item,
+        .lg-postit-right .lg-comment-item {
+            background: rgba(255, 255, 200, 0.92);
+            border: none;
+            border-radius: 3px;
+            padding: 0.25rem 0.45rem 0.2rem;
+            box-shadow: 2px 3px 8px rgba(0,0,0,0.35);
+            max-width: 220px;
+            transform: rotate(-1deg);
+            font-family: 'Jua', sans-serif;
+            word-break: keep-all;
+            overflow-wrap: break-word;
+        }
+        .lg-postit-right .lg-comment-item {
+            transform: rotate(1deg);
+            background: rgba(200, 230, 255, 0.92);
+        }
+        .lg-postit-left .lg-comment-item:nth-child(even) {
+            background: rgba(255, 220, 200, 0.92);
+            transform: rotate(0.5deg);
+        }
+        .lg-postit-right .lg-comment-item:nth-child(even) {
+            background: rgba(220, 255, 220, 0.92);
+            transform: rotate(-0.5deg);
+        }
+        .lg-postit-left .lg-comment-nick,
+        .lg-postit-right .lg-comment-nick {
+            color: #555;
+            font-size: 0.6rem;
+            margin-bottom: 0;
+        }
+        .lg-postit-left .lg-comment-text,
+        .lg-postit-right .lg-comment-text {
+            color: #222;
+            font-size: 0.72rem;
+            line-height: 1.25;
+            margin: 0;
+        }
+        .lg-postit-left .lg-comment-time,
+        .lg-postit-right .lg-comment-time {
+            color: rgba(0,0,0,0.3);
+            font-size: 0.5rem;
+            margin-top: 0;
+        }
+        .lg-postit-left .lg-comment-actions,
+        .lg-postit-right .lg-comment-actions {
+            border-top-color: rgba(0,0,0,0.1);
+        }
+        .lg-postit-left .lg-comment-action-btn,
+        .lg-postit-right .lg-comment-action-btn {
+            color: rgba(0,0,0,0.3);
+        }
+
+        /* 세로 썸네일 스트립 */
+        .lg-thumbs-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            overflow-y: auto;
+            max-height: 480px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(100,70,150,0.15) transparent;
+            padding: 0.25rem;
+        }
+        .lg-thumbs-vertical .lg-thumb {
+            width: 68px; height: 68px;
+            border-radius: 0.6rem;
+            overflow: hidden;
+            flex-shrink: 0;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.25s;
+            opacity: 0.5;
+        }
+        .lg-thumbs-vertical .lg-thumb:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+        .lg-thumbs-vertical .lg-thumb.active {
+            border-color: #8b5cf6;
+            opacity: 1;
+            box-shadow: 0 0 12px rgba(139,92,246,0.3);
+        }
+        .lg-thumbs-vertical .lg-thumb img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+        /* 모바일 대응 */
+        @media (max-width: 768px) {
+            .lg-layout-v3 {
+                grid-template-columns: 1fr;
+            }
+            .lg-thumbs-vertical {
+                flex-direction: row;
+                max-height: none;
+                overflow-x: auto;
+                overflow-y: hidden;
+            }
+            .lg-thumbs-vertical .lg-thumb {
+                width: 52px; height: 52px;
+            }
+        }
+
+        /* Comment items (compact) */
+        .lg-comment-item {
+            background: rgba(22, 33, 62, 0.7);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 0.75rem;
+            padding: 0.45rem 0.7rem;
+            position: relative;
+            transition: all 0.2s;
+            max-width: 100%;
+            animation: bubbleIn 0.3s ease both;
+        }
+        @keyframes bubbleIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .lg-comment-item:hover {
+            border-color: rgba(139,92,246,0.4);
+            background: rgba(30, 41, 75, 0.95);
+        }
+        .lg-comment-nick {
+            display: inline;
+            font-size: 0.65rem;
+            color: #a78bfa;
+            margin-right: 0.4rem;
+            font-weight: 800;
+        }
+        .lg-comment-text {
+            display: inline;
+            font-size: 0.78rem;
+            color: #fff;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        .lg-comment-time {
+            display: block;
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.35);
+            margin-top: 0.5rem;
+            text-align: right;
+        }
+        .lg-comment-actions {
+            display: flex;
+            gap: 4px;
+            margin-top: 0.6rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            justify-content: flex-end;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .lg-comment-item:hover .lg-comment-actions { opacity: 1; }
+
+        .lg-comment-action-btn.del:hover {
+            color: #ef4444;
+        }
+
+        /* Compact Filter & Search */
+        .lg-controls-compact {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+            position: relative;
+            z-index: 10;
+        }
+        .lg-filter-pills {
+            display: flex;
+            gap: 0.35rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+            flex: 1;
+        }
+        .lg-filter-pills::-webkit-scrollbar { display: none; }
+        .lg-pill {
+            white-space: nowrap;
+            padding: 0.3rem 0.7rem;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.5);
+            border: 1px solid rgba(100,70,150,0.12);
+            color: rgba(80,60,120,0.6);
+            font-size: 0.65rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.02em;
+        }
+        .lg-pill:hover { background: rgba(255,255,255,0.7); color: #5b3e9e; }
+        .lg-pill.active {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.35);
+            color: #7c3aed;
+        }
+        /* 검색 토글 아이콘 */
+        .lg-search-toggle {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            border: 1px solid rgba(100,70,150,0.12);
+            color: rgba(80,60,120,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .lg-search-toggle:hover { background: rgba(139,92,246,0.15); color: #7c3aed; }
+        /* 검색 팝업 */
+        .lg-search-popup {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            z-index: 30;
+            padding: 0.5rem;
+            animation: searchSlide 0.2s ease;
+        }
+        @keyframes searchSlide {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .lg-search-popup-inner {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(15,15,26,0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(139,92,246,0.4);
+            border-radius: 12px;
+            padding: 0.5rem 0.75rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+        .lg-search-popup-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
+            font-family: inherit;
+        }
+        .lg-search-popup-input::placeholder { color: rgba(255,255,255,0.35); }
+        .lg-search-close {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: rgba(255,255,255,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .lg-search-close:hover { background: rgba(239,68,68,0.3); color: #fca5a5; }
+
+        /* Comment input (compact) */
+        #lg-comment-list-mobile {
+            display: none;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .lg-comment-input {
+            flex: 1;
+            background: rgba(255,255,255,0.7);
+            border: 1px solid rgba(100,70,150,0.2);
+            border-radius: 999px;
+            padding: 0.45rem 0.8rem;
+            color: #3a2e5c !important;
+            font-size: 0.75rem;
+            outline: none;
+            transition: all 0.2s;
+            font-family: 'Jua', sans-serif;
+        }
+        .lg-comment-input::placeholder { color: rgba(80,60,120,0.4); }
+        .lg-comment-input:focus {
+            border-color: rgba(139,92,246,0.5);
+            background: rgba(255,255,255,0.9);
+        }
+        .lg-comment-send {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .lg-comment-action-btn:hover {
+            color: #fff;
+        }
+        .lg-comment-action-btn.del:hover {
+            color: #ef4444;
+        }
+
+        /* (Thumbnail styles moved to .lg-thumbs-vertical above) */
+
+        /* Empty State */
+        .lg-empty {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: rgba(255,255,255,0.4);
+        }
+        .lg-empty .material-symbols-outlined {
+            font-size: 3rem;
+            margin-bottom: 0.75rem;
+            color: rgba(255,255,255,0.15);
+        }
+        .lg-empty p {
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .lg-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1.2rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .lg-upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139,92,246,0.35);
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 640px) {
+            .luna-gallery { padding: 0.75rem; border-radius: 0.75rem; }
+            .lg-main-artwork { max-height: 260px; }
+        }
+        
+        /* Admin Skills */
+        .lg-admin-tools {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            position: relative;
+            z-index: 3;
+        }
+        .lg-admin-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .lg-btn-edit {
+            background: rgba(139,92,246,0.15);
+            color: #c4b5fd;
+        }
+        .lg-btn-delete {
+            background: rgba(239,68,68,0.15);
+            color: #fca5a5;
+        }
+        .lg-admin-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.2);
+        }
+
+        /* ─── Special Item: 3D Flip + Star Burst ─── */
+        .special-card {
+            perspective: 800px;
+        }
+        .special-card .icon-wrap {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .special-card:hover .icon-wrap {
+            transform: rotateY(360deg);
+        }
+        .special-card .icon-wrap::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #fbbf24, #f472b6, #818cf8, #34d399, #fbbf24);
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s;
+            filter: blur(4px);
+        }
+        .special-card:hover .icon-wrap::after {
+            opacity: 0.6;
+            animation: spin-glow 2s linear infinite;
+        }
+        @keyframes spin-glow {
+            to { transform: rotate(360deg); }
+        }
+        .star-burst {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            font-size: 16px;
+            animation: star-fly 0.7s ease-out forwards;
+        }
+        @keyframes star-fly {
+            0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0.3) rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+
+    <!-- ─── Desktop Sidebar (luna-core) ─── -->
+    <aside class="lc-sidebar">
+        <div class="lc-sidebar-header">
+            <img src="logo.png" alt="Luna Whale" class="lc-sidebar-logo" />
+            <div>
+                <div class="lc-sidebar-title" style="color:#6366f1">Luna Whale</div>
+                <div style="font-size:11px;color:var(--lc-text-muted)">Art Lab</div>
+            </div>
+        </div>
+        <nav class="lc-sidebar-nav">
+            <a href="pages/main/classes.html" class="lc-nav-item"><span class="material-symbols-outlined icon">school</span><span data-i18n="nav_classes">Classes</span></a>
+            <a href="pages/main/art-shop.html" class="lc-nav-item"><span class="material-symbols-outlined icon">palette</span><span data-i18n="nav_illustration">Illustration</span></a>
+            <a href="pages/main/art-cosmos.html" class="lc-nav-item"><span class="material-symbols-outlined icon">hub</span><span data-i18n="nav_art_cosmos">Art Cosmos</span></a>
+            <a href="pages/main/artists-eye.html" class="lc-nav-item"><span class="material-symbols-outlined icon">visibility</span><span data-i18n="cat_artists_eye">Artist's Eye</span></a>
+            <a href="pages/main/encyclopedia.html" class="lc-nav-item"><span class="material-symbols-outlined icon">book</span><span data-i18n="nav_encyclopedia">Encyclopedia</span></a>
+            <a href="pages/main/gallery.html" class="lc-nav-item"><span class="material-symbols-outlined icon">gallery_thumbnail</span><span data-i18n="nav_gallery">Student Works</span></a>
+            <a href="pages/main/my-classes.html" class="lc-nav-item"><span class="material-symbols-outlined icon">folder_special</span><span data-i18n="nav_my_classes">My Classes</span></a>
+            <div id="recent-lessons-sidebar" style="margin-left:36px;margin-top:2px;margin-bottom:4px;"></div>
+            <div class="lc-sidebar-divider"></div>
+            <a href="pages/main/profile.html" class="lc-nav-item"><span class="material-symbols-outlined icon">account_circle</span><span data-i18n="nav_profile">Profile</span></a>
+            <a href="pages/main/pricing.html" class="lc-nav-item"><span class="material-symbols-outlined icon">card_membership</span><span data-i18n="nav_membership">Membership</span></a>
+            <a href="pages/main/support.html" class="lc-nav-item"><span class="material-symbols-outlined icon">help</span><span data-i18n="nav_support">Support</span></a>
+            <a href="pages/main/notices.html" class="lc-nav-item"><span class="material-symbols-outlined icon">campaign</span><span data-i18n="nav_notice">Notice</span></a>
+            <a href="pages/main/settings.html" class="lc-nav-item"><span class="material-symbols-outlined icon">settings</span><span data-i18n="nav_settings">Settings</span></a>
+            <div class="lc-sidebar-divider"></div>
+            <a href="pages/admin/admin.html" id="admin-nav-item" class="lc-nav-item" style="display:none"><span class="material-symbols-outlined icon">admin_panel_settings</span><span data-i18n="nav_admin">Admin</span></a>
+            <a href="pages/student/playground.html" id="student-page-nav-item" class="lc-nav-item" style="display:none"><span class="material-symbols-outlined icon">sports_esports</span><span>Student Page</span></a>
+        </nav>
+    </aside>
+
+    <!-- ─── Tablet Drawer (640~1023px) ─── -->
+    <div class="lc-drawer-backdrop" id="drawer-backdrop"></div>
+    <aside class="lc-drawer" id="drawer-panel">
+        <div class="lc-sidebar-header">
+            <img src="logo.png" alt="Luna Whale" class="lc-sidebar-logo" />
+            <div>
+                <div class="lc-sidebar-title" style="color:#6366f1">Luna Whale</div>
+                <div style="font-size:11px;color:var(--lc-text-muted)">Art Lab</div>
+            </div>
+        </div>
+        <nav class="lc-sidebar-nav">
+            <a href="pages/main/classes.html" class="lc-nav-item"><span class="material-symbols-outlined icon">school</span>Classes</a>
+            <a href="pages/main/art-shop.html" class="lc-nav-item"><span class="material-symbols-outlined icon">palette</span>Illustration</a>
+            <a href="pages/main/art-cosmos.html" class="lc-nav-item"><span class="material-symbols-outlined icon">hub</span>Art Cosmos</a>
+            <a href="pages/main/artists-eye.html" class="lc-nav-item"><span class="material-symbols-outlined icon">visibility</span>Artist's Eye</a>
+            <a href="pages/main/encyclopedia.html" class="lc-nav-item"><span class="material-symbols-outlined icon">book</span>Encyclopedia</a>
+            <a href="pages/main/gallery.html" class="lc-nav-item"><span class="material-symbols-outlined icon">gallery_thumbnail</span>Student Works</a>
+            <div class="lc-sidebar-divider"></div>
+            <a href="pages/luna-math/index.html" class="lc-nav-item"><span class="icon" style="color:#f59e0b;font-weight:900">∑</span>Luna Math</a>
+            <a href="pages/luna-tech/index.html" class="lc-nav-item"><span class="icon" style="color:#06b6d4;font-weight:900">⚙</span>Luna TECH</a>
+            <a href="pages/luna-korean/index.html" class="lc-nav-item"><span class="icon" style="color:#D4A574;font-weight:900">한</span>루나 국어</a>
+            <a href="pages/luna-en/index.html" class="lc-nav-item"><span class="icon" style="color:#FF6B6B;font-weight:900">EN</span>Luna EN</a>
+            <div class="lc-sidebar-divider"></div>
+            <a href="pages/main/profile.html" class="lc-nav-item"><span class="material-symbols-outlined icon">account_circle</span>Profile</a>
+            <a href="pages/main/settings.html" class="lc-nav-item"><span class="material-symbols-outlined icon">settings</span>Settings</a>
+        </nav>
+    </aside>
+
+    <div class="lc-main">
+        <!-- ─── Tablet Header (640~1023px only) ─── -->
+        <div class="lc-header" id="tablet-header">
+            <button class="lc-hamburger" id="hamburger-btn" aria-label="메뉴">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="lc-header-logo">Luna Whale</div>
+            <div class="lc-header-actions">
+                <button onclick="lwToggleLang('lang-menu-tablet')" style="width:36px;height:36px;border-radius:8px;background:var(--lc-accent-light);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <span class="material-symbols-outlined" style="font-size:20px;color:var(--lc-accent)">language</span>
+                </button>
+                <div id="lang-menu-tablet" style="display:none;position:absolute;right:16px;top:52px;background:white;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.1);width:160px;padding:6px;z-index:60"></div>
+                <a href="pages/main/profile.html" style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;text-decoration:none">
+                    <span class="material-symbols-outlined" style="color:white;font-size:20px">person</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- ─── Desktop Header (1024px+, compact) ─── -->
+        <header class="sticky top-0 z-30 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-6 py-3 items-center justify-between border-b border-slate-200/50 dark:border-slate-800/50 hidden" style="display:none" id="desktop-header">
+            <div class="text-lg font-black text-slate-900" data-i18n="nav_home">Home</div>
+            <div class="flex items-center gap-1.5">
+                <a href="pages/luna-math/index.html" id="header-math-btn" class="w-8 h-8 flex items-center justify-center rounded-lg transition-all hover:scale-110" style="background:linear-gradient(135deg,#78350f,#92400e);border:1px solid rgba(245,158,11,0.3);" title="Luna Math"><span style="color:#f59e0b;font-size:14px;font-weight:900;">∑</span></a>
+                <a href="pages/luna-tech/index.html" id="header-tech-btn" class="w-8 h-8 flex items-center justify-center rounded-lg transition-all hover:scale-110" style="background:linear-gradient(135deg,#0a0a1a,#1a1a3a);border:1px solid rgba(6,182,212,0.3);" title="Luna TECH"><span style="color:#06b6d4;font-size:13px;font-weight:900;">⚙</span></a>
+                <a href="pages/luna-en/index.html" id="header-en-btn" class="w-8 h-8 flex items-center justify-center rounded-lg transition-all hover:scale-110" style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(255,107,107,0.3);" title="Luna EN"><span style="color:#FF6B6B;font-size:12px;font-weight:900;">EN</span></a>
+                <a href="pages/luna-korean/index.html" id="header-korean-btn" class="w-8 h-8 flex items-center justify-center rounded-lg transition-all hover:scale-110" style="background:linear-gradient(135deg,#1a1520,#2a1f30);border:1px solid rgba(212,165,116,0.3);" title="Luna 국어"><span style="color:#D4A574;font-size:14px;font-weight:900;">한</span></a>
+                <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"><span class="material-symbols-outlined text-slate-600" style="font-size:18px">search</span></button>
+                <div class="relative" id="lang-container">
+                    <button onclick="lwToggleLang('lang-menu')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors" title="Language"><span class="material-symbols-outlined text-slate-600" style="font-size:18px">language</span></button>
+                    <div id="lang-menu" class="absolute right-0 top-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl w-40 py-1.5 z-50" style="display:none"></div>
+                </div>
+                <div id="gnb-user-info" class="relative" style="min-width:36px;min-height:36px;"></div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 py-6 space-y-6 pb-24 lg:pb-8">
+            <!-- ═══ 2x3 Quick Access Grid ═══ -->
+            <section class="lc-quick-grid" style="max-width:420px">
+                <a href="pages/main/classes.html" class="lc-quick-item">
+                    <div class="lc-quick-icon" style="background:linear-gradient(135deg,#eef2ff,#e0e7ff);color:#6366f1">
+                        <span class="material-symbols-outlined">school</span>
+                    </div>
+                    <span class="lc-quick-label" data-i18n="nav_classes">수업</span>
+                </a>
+                <a href="pages/main/art-cosmos.html" class="lc-quick-item">
+                    <div class="lc-quick-icon" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#d97706">
+                        <span class="material-symbols-outlined">hub</span>
+                    </div>
+                    <span class="lc-quick-label" data-i18n="nav_art_cosmos">코스모스</span>
+                </a>
+                <a href="pages/main/artists-eye.html" class="lc-quick-item">
+                    <div class="lc-quick-icon" style="background:linear-gradient(135deg,#fce4ec,#f8bbd0);color:#e91e63">
+                        <span class="material-symbols-outlined">visibility</span>
+                    </div>
+                    <span class="lc-quick-label" data-i18n="cat_artists_eye">작가의 시선</span>
+                </a>
+                <a href="pages/main/encyclopedia.html" class="lc-quick-item">
+                    <div class="lc-quick-icon" style="background:linear-gradient(135deg,#e0f2f1,#b2dfdb);color:#00897b">
+                        <span class="material-symbols-outlined">book</span>
+                    </div>
+                    <span class="lc-quick-label" data-i18n="nav_encyclopedia">백과사전</span>
+                </a>
+                <a href="pages/design/book-covers.html" class="lc-quick-item">
+                    <div class="lc-quick-icon" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);color:#7c3aed">
+                        <span class="material-symbols-outlined">auto_stories</span>
+                    </div>
+                    <span class="lc-quick-label">북커버</span>
+                </a>
+                <a href="pages/main/gallery.html" class="lc-quick-item">
+                    <div class="lc-quick-icon" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);color:#f57c00">
+                        <span class="material-symbols-outlined">gallery_thumbnail</span>
+                    </div>
+                    <span class="lc-quick-label" data-i18n="nav_gallery">갤러리</span>
+                </a>
+            </section>
+            <!-- ✨ 루나 갤러리 (Premium Redesign) -->
+            <section class="w-full mb-8">
+                <div class="luna-gallery" id="luna-gallery">
+                    <!-- Header -->
+                    <div class="lg-header">
+                        <div class="lg-title">
+                            <span class="material-symbols-outlined">museum</span>
+                            <span data-i18n="nav_gallery">루나 갤러리</span>
+                            <span class="lg-counter" id="lg-counter">0/0</span>
+                        </div>
+                        <div class="lg-nav">
+                            <button class="lg-nav-btn" onclick="prevGallery()" aria-label="이전 작품">
+                                <span class="material-symbols-outlined" style="font-size:18px">chevron_left</span>
+                            </button>
+                            <button class="lg-nav-btn" onclick="nextGallery()" aria-label="다음 작품">
+                                <span class="material-symbols-outlined" style="font-size:18px">chevron_right</span>
+                            </button>
+                            <a href="pages/main/gallery.html" class="lg-nav-btn" style="text-decoration:none" aria-label="전체보기">
+                                <span class="material-symbols-outlined" style="font-size:18px">open_in_new</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Filter Controls (Compact) -->
+                    <div class="lg-controls-compact">
+                        <div class="lg-filter-pills" id="lg-filter-btns">
+                            <button class="lg-pill active" data-genre="all" onclick="setGenreFilter('all')">전체</button>
+                            <button class="lg-pill" data-genre="수채화" onclick="setGenreFilter('수채화')">수채화</button>
+                            <button class="lg-pill" data-genre="발상" onclick="setGenreFilter('발상')">발상</button>
+                            <button class="lg-pill" data-genre="만들기" onclick="setGenreFilter('만들기')">만들기</button>
+                            <button class="lg-pill" data-genre="프로젝트" onclick="setGenreFilter('프로젝트')">프로젝트</button>
+                        </div>
+                        <!-- 검색 아이콘 (왼쪽 구석) -->
+                        <button class="lg-search-toggle" id="lg-search-toggle" onclick="toggleSearchPopup()" aria-label="작가 검색">
+                            <span class="material-symbols-outlined" style="font-size:16px">search</span>
+                        </button>
+                    </div>
+                    <!-- 검색 팝업 -->
+                    <div class="lg-search-popup" id="lg-search-popup" style="display:none">
+                        <div class="lg-search-popup-inner">
+                            <span class="material-symbols-outlined" style="font-size:16px;color:rgba(255,255,255,0.4)">search</span>
+                            <input type="text" class="lg-search-popup-input" id="lg-search-input" placeholder="작가 이름으로 검색..." oninput="filterGallery()" autofocus>
+                            <button class="lg-search-close" onclick="toggleSearchPopup()">
+                                <span class="material-symbols-outlined" style="font-size:16px">close</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Gallery Body (Compact Layout V3) -->
+                    <div class="lg-layout-v3">
+                        <!-- 왼쪽: 메인 작품 + 정보 + 댓글 -->
+                        <div class="lg-main-col">
+                            <div class="lg-artwork-wrap">
+                                <div class="lg-main-artwork" id="lg-main-artwork">
+                                    <div class="lg-genre-badge" id="lg-genre-badge">GENRE</div>
+                                    <img id="lg-main-img" src="assets/images/LunaWhale_logo.png" alt="작품" class="no-edit" onclick="openFullscreen()">
+
+                                    <!-- Slider Navigation -->
+                                    <button class="lg-slider-btn prev" id="lg-slide-prev" onclick="changeImage(-1)">
+                                        <span class="material-symbols-outlined">chevron_left</span>
+                                    </button>
+                                    <button class="lg-slider-btn next" id="lg-slide-next" onclick="changeImage(1)">
+                                        <span class="material-symbols-outlined">chevron_right</span>
+                                    </button>
+                                    <div class="lg-img-counter" id="lg-img-counter">1/1</div>
+                                </div>
+
+                                <!-- 포스트잇 댓글: 사진 위 좌우 -->
+                                <div class="lg-postit-left" id="lg-comments-left"></div>
+                                <div class="lg-postit-right" id="lg-comments-right"></div>
+                            </div>
+
+                            <div class="lg-info-compact">
+                                <div class="lg-artwork-title" id="lg-art-title">루나 갤러리에 오신 것을 환영합니다</div>
+                                <div class="lg-artwork-meta" id="lg-art-meta">학생들의 작품이 여기에 전시됩니다</div>
+                            </div>
+                            <!-- Admin/Owner Tools -->
+                            <div id="lg-admin-tools-container" class="px-5 mb-4"></div>
+                            
+                            <div id="lg-comment-list-mobile" style="display:none"></div>
+
+                            <!-- 댓글 입력 -->
+                            <div class="lg-input-compact">
+                                <input type="text" class="lg-comment-input" id="lg-comment-input" placeholder="작품에 한마디 남겨보세요..." maxlength="100">
+                                <button class="lg-comment-send" onclick="submitComment()">
+                                    <span class="material-symbols-outlined" style="font-size:18px">send</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 오른쪽: 세로 썸네일 -->
+                        <div class="lg-thumbs-vertical" id="lg-thumbs">
+                            <!-- Thumbnails rendered dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- 리액션 숨김 (데이터 유지) -->
+                    <div id="lg-reactions" style="display:none">
+                        <span id="react-heart"></span><span id="count-heart">0</span>
+                        <span id="react-star"></span><span id="count-star">0</span>
+                        <span id="react-clap"></span><span id="count-clap">0</span>
+                        <span id="react-fire"></span><span id="count-fire">0</span>
+                    </div>
+
+                    <!-- Empty State (shown when no works) -->
+                    <div class="lg-empty" id="lg-empty" style="display:none">
+                        <span class="material-symbols-outlined">image</span>
+                        <p>아직 전시된 작품이 없습니다</p>
+                        <button class="lg-upload-btn" onclick="window.location.href='pages/main/review-submit.html'">
+                            <span class="material-symbols-outlined" style="font-size:16px">add_photo_alternate</span>
+                            작품 올리기
+                        </button>
+                    </div>
+                </div>
+
+                <script>
+                    // ── Luna Gallery State ──
+                    let allGalleryWorks = []; // Original full list
+                    let galleryWorks = [];    // Filtered list
+                    let currentGalleryIdx = 0;
+                    let currentImgIdx = 0;    // Index of image within the current work
+                    let genreFilter = 'all';
+                    let galleryTimer = null;
+                    let myReactions = {}; // Track user's reactions per work
+
+                    // ── Fetch from Firestore ──
+                    async function fetchGalleryWorks() {
+                        try {
+                            const db = window.LunaAuth ? window.LunaAuth.getDb() : (typeof firebase !== 'undefined' ? firebase.firestore() : null);
+                            if (!db) {
+                                console.warn('[Gallery] No DB available');
+                                showEmptyState();
+                                return;
+                            }
+                            console.log('[Gallery] Fetching reviews...');
+                            
+                            // Show loading state in thumbnails container
+                            const thumbsContainer = document.getElementById('lg-thumbs');
+                            if (thumbsContainer) thumbsContainer.innerHTML = '<div class="py-10 text-center w-full text-slate-400"><span class="material-symbols-outlined animate-spin">progress_activity</span></div>';
+
+                            // Added timeout to prevent infinite hang
+                            const fetchPromise = db.collection('reviews')
+                                .orderBy('createdAt', 'desc')
+                                .limit(20)
+                                .get();
+                            
+                            const timeoutPromise = new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error('Fetch timeout')), 10000)
+                            );
+
+                            const snapshot = await Promise.race([fetchPromise, timeoutPromise]);
+                            console.log('[Gallery] Got', snapshot.size, 'docs');
+
+                            if (snapshot.empty) {
+                                showEmptyState();
+                                return;
+                            }
+
+                            let fetched = [];
+                            snapshot.forEach(doc => {
+                                const d = doc.data();
+                                if (d.public === true && d.images && d.images.length > 0) {
+                                    fetched.push({
+                                        id: doc.id,
+                                        img: d.images[0],
+                                        thumb: (d.thumbnails && d.thumbnails.length > 0) ? d.thumbnails[0] : d.images[0],
+                                        allImages: d.images,
+                                        allThumbs: d.thumbnails || d.images,
+                                        title: d.artName ? `《${d.artName}》` : (d.text ? `《${d.text.split('\n')[0].substring(0, 20)}》` : '《무제》'),
+                                        artist: d.artistName || d.nickname || '익명 작가',
+                                        artName: d.artName || '',
+                                        artistName: d.artistName || '',
+                                        genre: d.classTitle || '',
+                                        date: d.createdAt?.toDate?.() ? d.createdAt.toDate().toLocaleDateString('ko-KR') : '',
+                                        reactions: d.reactions || { heart: 0, star: 0, clap: 0, fire: 0 },
+                                        createdAt: d.createdAt?.toDate?.() || new Date(0),
+                                        uid: d.uid || ''
+                                    });
+                                }
+                            });
+
+                            // Sort newest first
+                            fetched.sort((a, b) => b.createdAt - a.createdAt);
+
+                            if (fetched.length === 0) {
+                                showEmptyState();
+                                return;
+                            }
+
+                            allGalleryWorks = fetched;
+                            galleryWorks = [...allGalleryWorks];
+                            renderThumbnails();
+                            renderGallery(); 
+
+                            console.log('[Gallery] Loaded', allGalleryWorks.length, 'works');
+                        } catch (err) {
+                            console.error('[Gallery] Fetch error:', err);
+                            showEmptyState();
+                        }
+                    }
+
+                    function showEmptyState() {
+                        const layout = document.querySelector('.lg-layout-v3');
+                        if (layout) layout.style.display = 'none';
+                        document.getElementById('lg-empty').style.display = 'block';
+                    }
+
+                    // ── Render Functions ──
+                    function renderGallery() {
+                        const work = galleryWorks[currentGalleryIdx];
+                        if (!work) return;
+
+                        const img = document.getElementById('lg-main-img');
+                        const title = document.getElementById('lg-art-title');
+                        const meta = document.getElementById('lg-art-meta');
+                        const counter = document.getElementById('lg-counter');
+
+                        // 즉시 포스트잇 댓글 클리어 + 즉시 새 댓글 로드 시작
+                        const _cl = document.getElementById('lg-comments-left');
+                        const _cr = document.getElementById('lg-comments-right');
+                        const _cm = document.getElementById('lg-comment-list-mobile');
+                        if (_cl) _cl.innerHTML = '';
+                        if (_cr) _cr.innerHTML = '';
+                        if (_cm) _cm.innerHTML = '';
+                        loadComments(work.id);
+
+                        // 1. Start Fade Out
+                        img.classList.add('lg-fade-out');
+
+                        // 2. Load Content
+                        setTimeout(() => {
+                            const showImage = (src) => {
+                                const tempImg = new Image();
+                                tempImg.src = src;
+                                tempImg.onload = () => {
+                                    if (galleryWorks[currentGalleryIdx]?.id === work.id) {
+                                        img.src = src;
+                                        img.classList.remove('lg-fade-out');
+                                    }
+                                };
+                                tempImg.onerror = () => {
+                                    img.src = 'assets/images/placeholder_art.svg';
+                                    img.classList.remove('lg-fade-out');
+                                };
+                            };
+
+                            // Main Image & Multi-Image Slider Reset
+                            currentImgIdx = 0;
+                            updateSliderUI();
+                            
+                            // Trigger image loading and fade-in
+                            showImage(work.img);
+
+                            title.textContent = work.title;
+                            meta.textContent = `${work.artist} — ${work.genre} (${work.date})`;
+                            counter.textContent = `${currentGalleryIdx + 1}/${galleryWorks.length}`;
+
+                            // Genre Badge
+                            const badgeEl = document.getElementById('lg-genre-badge');
+                            badgeEl.textContent = work.genre || '작품';
+                            badgeEl.style.display = work.genre ? 'block' : 'none';
+
+                            renderAdminTools(work);
+                            updateReactionCounts(work);
+                        }, 300);
+
+                        document.querySelectorAll('.lg-thumb').forEach((t, i) => {
+                            t.classList.toggle('active', i === currentGalleryIdx);
+                        });
+                    }
+
+                    function renderThumbnails() {
+                        const container = document.getElementById('lg-thumbs');
+                        container.innerHTML = '';
+
+                        galleryWorks.forEach((work, i) => {
+                            const thumb = document.createElement('div');
+                            thumb.className = `lg-thumb ${i === 0 ? 'active' : ''}`;
+                            // Use thumb image for the strip
+                            thumb.innerHTML = `<img src="${work.thumb || work.img}" alt="${work.title}" class="no-edit">`;
+                            thumb.addEventListener('click', () => {
+                                currentGalleryIdx = i;
+                                renderGallery();
+                                resetGalleryTimer();
+                            });
+                            container.appendChild(thumb);
+                        });
+                    }
+
+                    // ── Multi-Image Slider ──
+                    function updateSliderUI() {
+                        const work = galleryWorks[currentGalleryIdx];
+                        if (!work) return;
+
+                        const img = document.getElementById('lg-main-img');
+                        const prevBtn = document.getElementById('lg-slide-prev');
+                        const nextBtn = document.getElementById('lg-slide-next');
+                        const counterEl = document.getElementById('lg-img-counter');
+
+                        const allImages = work.allImages || [work.img];
+                        const total = allImages.length;
+                        const currentSrc = allImages[currentImgIdx] || work.img;
+
+                        img.src = currentSrc;
+                        
+                        prevBtn.style.display = total > 1 ? 'flex' : 'none';
+                        nextBtn.style.display = total > 1 ? 'flex' : 'none';
+                        counterEl.style.display = total > 1 ? 'block' : 'none';
+                        counterEl.textContent = `${currentImgIdx + 1}/${total}`;
+                    }
+
+                    function changeImage(delta) {
+                        const work = galleryWorks[currentGalleryIdx];
+                        if (!work) return;
+
+                        const allImages = work.allImages || [work.img];
+                        const total = allImages.length;
+                        if (total <= 1) return;
+
+                        currentImgIdx = (currentImgIdx + delta + total) % total;
+                        
+                        const img = document.getElementById('lg-main-img');
+                        img.classList.add('lg-fade-out');
+                        
+                        setTimeout(() => {
+                            updateSliderUI();
+                            img.classList.remove('lg-fade-out');
+                        }, 200);
+                    }
+
+                    // ── Filtering Logic ──
+                    function setGenreFilter(genre) {
+                        genreFilter = genre;
+
+                        // Update UI
+                        document.querySelectorAll('.lg-pill').forEach(btn => {
+                            btn.classList.toggle('active', btn.dataset.genre === genre);
+                        });
+
+                        filterGallery();
+                    }
+
+                    // 검색 팝업 토글
+                    function toggleSearchPopup() {
+                        const popup = document.getElementById('lg-search-popup');
+                        const input = document.getElementById('lg-search-input');
+                        if (popup.style.display === 'none') {
+                            popup.style.display = 'block';
+                            input.focus();
+                        } else {
+                            popup.style.display = 'none';
+                            input.value = '';
+                            filterGallery();
+                        }
+                    }
+
+                    function filterGallery() {
+                        const searchInput = document.getElementById('lg-search-input');
+                        if (!searchInput) return;
+
+                        const searchVal = searchInput.value.toLowerCase().trim();
+                        
+                        galleryWorks = allGalleryWorks.filter(w => {
+                            const artistName = (w.artist || '').toLowerCase();
+                            const workTitle = (w.title || '').toLowerCase();
+                            const matchSearch = artistName.includes(searchVal) || workTitle.includes(searchVal);
+                            const matchGenre = (genreFilter === 'all') || (w.genre === genreFilter);
+                            return matchSearch && matchGenre;
+                        });
+
+                        currentGalleryIdx = 0;
+                        renderGallery();
+                        renderThumbnails();
+                        
+                        // Handle Empty state
+                        const emptyBox = document.getElementById('lg-empty');
+                        const lgLayout = document.querySelector('.lg-layout-v3');
+                        const lgThumbs = document.getElementById('lg-thumbs');
+
+                        if (galleryWorks.length === 0) {
+                            if (emptyBox) emptyBox.style.display = 'block';
+                            if (lgLayout) lgLayout.style.visibility = 'hidden';
+                            if (lgThumbs) lgThumbs.style.display = 'none';
+                        } else {
+                            if (emptyBox) emptyBox.style.display = 'none';
+                            if (lgLayout) lgLayout.style.visibility = 'visible';
+                            if (lgThumbs) lgThumbs.style.display = 'flex';
+                        }
+                    }
+
+                    function updateReactionCounts(work) {
+                        const r = work.reactions || {};
+                        document.getElementById('count-heart').textContent = r.heart || 0;
+                        document.getElementById('count-star').textContent = r.star || 0;
+                        document.getElementById('count-clap').textContent = r.clap || 0;
+                        document.getElementById('count-fire').textContent = r.fire || 0;
+
+                        // Reset active states
+                        ['heart', 'star', 'clap', 'fire'].forEach(type => {
+                            const btn = document.getElementById(`react-${type}`);
+                            const key = `${work.id}_${type}`;
+                            btn.classList.toggle('active', !!myReactions[key]);
+                        });
+                    }
+
+                    // ── Navigation ──
+                    function nextGallery() {
+                        if (galleryWorks.length === 0) return;
+                        currentGalleryIdx = (currentGalleryIdx + 1) % galleryWorks.length;
+                        renderGallery();
+                        resetGalleryTimer();
+                    }
+
+                    function prevGallery() {
+                        if (galleryWorks.length === 0) return;
+                        currentGalleryIdx = (currentGalleryIdx - 1 + galleryWorks.length) % galleryWorks.length;
+                        renderGallery();
+                        resetGalleryTimer();
+                    }
+
+                    let galleryHovered = false;
+
+                    function resetGalleryTimer() {
+                        if (galleryTimer) clearInterval(galleryTimer);
+                        if (!galleryHovered) {
+                            galleryTimer = setInterval(nextGallery, 8000);
+                        }
+                    }
+
+                    // 마우스가 갤러리 위에 있으면 자동 슬라이드 정지
+                    (function() {
+                        const gEl = document.getElementById('luna-gallery');
+                        if (!gEl) return;
+                        gEl.addEventListener('mouseenter', () => {
+                            galleryHovered = true;
+                            if (galleryTimer) { clearInterval(galleryTimer); galleryTimer = null; }
+                        });
+                        gEl.addEventListener('mouseleave', () => {
+                            galleryHovered = false;
+                            resetGalleryTimer();
+                        });
+                        // 모바일: 터치 중에도 정지
+                        gEl.addEventListener('touchstart', () => {
+                            galleryHovered = true;
+                            if (galleryTimer) { clearInterval(galleryTimer); galleryTimer = null; }
+                        }, { passive: true });
+                        gEl.addEventListener('touchend', () => {
+                            setTimeout(() => { galleryHovered = false; resetGalleryTimer(); }, 3000);
+                        }, { passive: true });
+                    })();
+
+                    // ── Reactions ──
+                    async function toggleReaction(type) {
+                        const work = galleryWorks[currentGalleryIdx];
+                        if (!work) return;
+
+                        const key = `${work.id}_${type}`;
+                        const btn = document.getElementById(`react-${type}`);
+                        const countEl = document.getElementById(`count-${type}`);
+                        let currentCount = parseInt(countEl.textContent) || 0;
+
+                        if (myReactions[key]) {
+                            // Remove reaction
+                            delete myReactions[key];
+                            btn.classList.remove('active');
+                            currentCount = Math.max(0, currentCount - 1);
+                        } else {
+                            // Add reaction
+                            myReactions[key] = true;
+                            btn.classList.add('active');
+                            currentCount++;
+
+                            // Bounce animation
+                            btn.style.transform = 'scale(1.2)';
+                            setTimeout(() => btn.style.transform = '', 200);
+                        }
+
+                        countEl.textContent = currentCount;
+                        work.reactions[type] = currentCount;
+
+                        // Save to localStorage
+                        localStorage.setItem('lg_reactions', JSON.stringify(myReactions));
+
+                        // Try to persist to Firestore
+                        try {
+                            const db = window.LunaAuth ? window.LunaAuth.getDb() : firebase.firestore();
+                            await db.collection('reviews').doc(work.id).update({
+                                [`reactions.${type}`]: currentCount
+                            });
+                        } catch (e) {
+                            console.log('[Gallery] Reaction save skipped:', e.message);
+                        }
+                    }
+
+                    // ── Comments ──
+                    async function loadComments(reviewId, retryCount) {
+                        retryCount = retryCount || 0;
+                        const leftStack = document.getElementById('lg-comments-left');
+                        const rightStack = document.getElementById('lg-comments-right');
+                        const mobileList = document.getElementById('lg-comment-list-mobile');
+
+                        if (!leftStack || !rightStack) return;
+
+                        // Clear all
+                        leftStack.innerHTML = '';
+                        rightStack.innerHTML = '';
+                        if (mobileList) mobileList.innerHTML = '';
+
+                        try {
+                            const db = window.LunaAuth ? window.LunaAuth.getDb() : firebase.firestore();
+                            const currentUser = window.LunaAuth && window.LunaAuth.user ? window.LunaAuth.user : null;
+                            const isAdmin = (currentUser && currentUser.role === 'admin') || (typeof LunaApp !== 'undefined' && LunaApp.isAdmin);
+
+                            const snap = await db.collection('reviews').doc(reviewId)
+                                .collection('comments')
+                                .orderBy('createdAt', 'desc')
+                                .limit(20)
+                                .get();
+
+                            if (snap.empty) {
+                                mobileList.innerHTML = '<div style="font-size:0.75rem; color:rgba(255,255,255,0.2); text-align:center; padding:1.5rem">첫 번째 댓글을 남겨보세요! 💬</div>';
+                                return;
+                            }
+
+                            snap.docs.forEach((doc, idx) => {
+                                const c = doc.data();
+                                const commentId = doc.id;
+                                const timeStr = c.createdAt?.toDate?.() ? timeAgo(c.createdAt.toDate()) : '방금';
+                                const isMine = currentUser && (c.uid === currentUser.uid);
+                                const canManage = isMine || isAdmin;
+
+                                const itemHtml = `
+                                    <div class="lg-comment-item" id="comm-${commentId}">
+                                        <span class="lg-comment-nick">${escapeHtml(c.nickname || '익명')}</span>
+                                        <div class="lg-comment-text" id="comm-text-${commentId}">${escapeHtml(c.text)}</div>
+                                        <span class="lg-comment-time">${timeStr}</span>
+                                        ${canManage ? `
+                                            <div class="lg-comment-actions">
+                                                ${isMine ? `
+                                                    <button class="lg-comment-action-btn" onclick="editComment('${reviewId}', '${commentId}')" title="수정">
+                                                        <span class="material-symbols-outlined" style="font-size:14px">edit</span>
+                                                    </button>
+                                                ` : ''}
+                                                <button class="lg-comment-action-btn del" onclick="deleteComment('${reviewId}', '${commentId}')" title="${isMine ? '삭제' : '관리자 삭제'}">
+                                                    <span class="material-symbols-outlined" style="font-size:14px">delete</span>
+                                                </button>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `;
+
+                                // 좌우 포스트잇 교대 배치
+                                const div = document.createElement('div');
+                                div.innerHTML = itemHtml;
+                                const itemNode = div.firstElementChild;
+                                if (idx % 2 === 0) leftStack.appendChild(itemNode);
+                                else rightStack.appendChild(itemNode);
+                            });
+                        } catch (e) {
+                            console.log('[Gallery] Comments load error:', e.message, 'retry:', retryCount);
+                            // auth 준비 안 됐으면 재시도 (최대 3회)
+                            if (retryCount < 3) {
+                                setTimeout(() => loadComments(reviewId, retryCount + 1), 1500);
+                            }
+                        }
+                    }
+
+                    async function deleteComment(reviewId, commentId) {
+                        if (!confirm('댓글을 삭제하시겠습니까?')) return;
+                        try {
+                            const db = window.LunaAuth ? window.LunaAuth.getDb() : firebase.firestore();
+                            await db.collection('reviews').doc(reviewId).collection('comments').doc(commentId).delete();
+                            LunaApp.toast('✅ 댓글이 삭제되었습니다');
+                            loadComments(reviewId);
+                        } catch (e) {
+                            LunaApp.toast('❌ 삭제 실패: ' + e.message);
+                        }
+                    }
+
+                    async function editComment(reviewId, commentId) {
+                        const textEl = document.getElementById(`comm-text-${commentId}`);
+                        const originalText = textEl.textContent;
+                        const newText = prompt('댓글 수정한 내용을 입력해주세요:', originalText);
+                        
+                        if (newText === null || newText.trim() === '' || newText === originalText) return;
+
+                        try {
+                            const db = window.LunaAuth ? window.LunaAuth.getDb() : firebase.firestore();
+                            await db.collection('reviews').doc(reviewId).collection('comments').doc(commentId).update({
+                                text: newText.trim(),
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            LunaApp.toast('✅ 댓글이 수정되었습니다');
+                            loadComments(reviewId);
+                        } catch (e) {
+                            LunaApp.toast('❌ 수정 실패: ' + e.message);
+                        }
+                    }
+
+                    async function submitComment() {
+                        const input = document.getElementById('lg-comment-input');
+                        const text = input.value.trim();
+                        if (!text) return;
+
+                        const work = galleryWorks[currentGalleryIdx];
+                        if (!work) return;
+
+                        // Get user info
+                        let nickname = '익명';
+                        let uid = '';
+                        try {
+                            const user = window.LunaAuth && window.LunaAuth.user ? window.LunaAuth.user : null;
+                            if (user) {
+                                uid = user.uid;
+                                nickname = user.displayName || user.email?.split('@')[0] || '익명';
+                            } else {
+                                const saved = localStorage.getItem('lw_user');
+                                if (saved) {
+                                    const u = JSON.parse(saved);
+                                    uid = u.uid || '';
+                                    nickname = u.displayName || u.email?.split('@')[0] || '익명';
+                                }
+                            }
+                        } catch(e) {}
+
+                        if (!uid) {
+                            if (typeof LunaApp !== 'undefined') LunaApp.toast('로그인이 필요합니다');
+                            return;
+                        }
+
+                        // Optimistic UI
+                        input.value = '';
+                        const div = document.createElement('div');
+                        div.className = 'lg-comment-item';
+                        div.innerHTML = `
+                            <span class="lg-comment-nick">${escapeHtml(nickname)}</span>
+                            <div class="lg-comment-text">${escapeHtml(text)}</div>
+                            <span class="lg-comment-time">방금</span>
+                        `;
+                        
+                        const mobileList = document.getElementById('lg-comment-list-mobile');
+                        const leftStack = document.getElementById('lg-comments-left');
+                        if (mobileList.querySelector('div[style*="text-align:center"]')) mobileList.innerHTML = '';
+                        mobileList.insertBefore(div, mobileList.firstChild);
+                        leftStack.insertBefore(div.cloneNode(true), leftStack.firstChild);
+
+                        try {
+                            const db = window.LunaAuth ? window.LunaAuth.getDb() : firebase.firestore();
+                            await db.collection('reviews').doc(work.id)
+                                .collection('comments')
+                                .add({
+                                    text: text,
+                                    nickname: nickname,
+                                    uid: uid,
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            loadComments(work.id);
+                        } catch (e) {
+                            console.log('[Gallery] Comment save error:', e.message);
+                            loadComments(work.id);
+                        }
+                    }
+
+                    // Comment on Enter key
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const commentInput = document.getElementById('lg-comment-input');
+                        if (commentInput) {
+                            commentInput.addEventListener('keypress', (e) => {
+                                if (e.key === 'Enter') submitComment();
+                            });
+                        }
+                    });
+
+                    // ── Admin / Owner Tools ──
+                    function renderAdminTools(work) {
+                        const container = document.getElementById('lg-admin-tools-container');
+                        if (!container) return;
+                        container.innerHTML = '';
+
+                        const user = window.LunaAuth ? window.LunaAuth.getUser() : null;
+                        // Robust Admin Check: LocalStorage role OR Master Admin Email
+                        const isAdmin = localStorage.getItem('lw_role') === 'admin' || (user && user.email === 'skyclover777@gmail.com');
+                        const isOwner = user && work.uid && work.uid === user.uid;
+
+                        if (isAdmin || isOwner) {
+                            console.log(`[Gallery] Admin/Owner access granted for work: ${work.id} (isAdmin: ${isAdmin}, isOwner: ${isOwner})`);
+                            container.innerHTML = `
+                                <div class="flex gap-2">
+                                    <button onclick="editGalleryWork('${work.id}')" class="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                                        <span class="material-symbols-outlined text-sm">edit</span>
+                                        수정하기
+                                    </button>
+                                    <button onclick="deleteGalleryWork('${work.id}')" class="flex-1 py-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-500 text-[11px] font-bold hover:bg-red-100 dark:hover:bg-red-900/30 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                                        <span class="material-symbols-outlined text-sm">delete</span>
+                                        삭제하기
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            // Optionally show nothing or a report button
+                            container.innerHTML = '';
+                        }
+                    }
+
+                    async function editGalleryWork(id) {
+                        window.location.href = `pages/main/review-submit.html?id=${id}`;
+                    }
+
+                    async function deleteGalleryWork(id) {
+                        if (!confirm('정말 이 게시물을 삭제하시겠습니까? (Are you sure you want to delete this post?)')) return;
+
+                        try {
+                            const db = window.LunaAuth ? window.LunaAuth.getDb() : firebase.firestore();
+                            await db.collection('reviews').doc(id).delete();
+                            
+                            if (typeof LunaApp !== 'undefined') LunaApp.toast('게시물이 삭제되었습니다');
+                            
+                            // Close overlay and refresh gallery
+                            const overlay = document.getElementById('gallery-overlay');
+                            if (overlay) overlay.classList.remove('active');
+                            fetchGalleryWorks();
+                        } catch (e) {
+                            console.error('[Gallery] Delete error:', e);
+                            alert('삭제 중 오류가 발생했습니다: ' + e.message);
+                        }
+                    }
+
+                    // ── Utility ──
+                    function escapeHtml(str) {
+                        const div = document.createElement('div');
+                        div.textContent = str;
+                        return div.innerHTML;
+                    }
+
+                    function timeAgo(date) {
+                        const now = new Date();
+                        const diff = Math.floor((now - date) / 1000);
+                        if (diff < 60) return '방금';
+                        if (diff < 3600) return `${Math.floor(diff/60)}분 전`;
+                        if (diff < 86400) return `${Math.floor(diff/3600)}시간 전`;
+                        if (diff < 604800) return `${Math.floor(diff/86400)}일 전`;
+                        return date.toLocaleDateString('ko-KR');
+                    }
+
+                    function openFullscreen() {
+                        const img = document.getElementById('lg-main-img');
+                        if (!img || img.src.includes('placeholder')) return;
+                        
+                        const fullOverlay = document.createElement('div');
+                        fullOverlay.className = 'fixed inset-0 z-[1000] bg-black/90 flex items-center justify-center p-4 cursor-zoom-out backdrop-blur-md';
+                        fullOverlay.innerHTML = `<img src="${img.src}" class="max-w-full max-h-full object-contain rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in duration-300">`;
+                        fullOverlay.onclick = () => fullOverlay.remove();
+                        document.body.appendChild(fullOverlay);
+                    }
+
+                    // ── Initialization ──
+                    document.addEventListener('DOMContentLoaded', () => {
+                        // Load saved reactions from localStorage
+                        try {
+                            const saved = localStorage.getItem('lg_reactions');
+                            if (saved) myReactions = JSON.parse(saved);
+                        } catch(e) {}
+
+                        resetGalleryTimer();
+
+                        // Fetch gallery when Firebase is ready
+                        if (window.LunaAuth) {
+                            window.LunaAuth.onReady(() => {
+                                console.log('[Gallery] Firebase ready');
+                                fetchGalleryWorks();
+                            });
+                        } else {
+                            setTimeout(fetchGalleryWorks, 1500);
+                        }
+                    });
+                </script>
+            </section>
+
+            <!-- ─── Quick Access Icons ─── -->
+            <section class="px-4 py-3">
+                <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+                    <!-- Mini Metaverse Gallery moved to Warehouse -->
+
+                    <!-- 수업 탐험 (Classes) - 1:1 Square Icon -->
+                    <div class="relative w-[140px] h-[140px] shrink-0 rounded-2xl bg-gradient-to-br from-primary via-blue-600 to-accent-purple overflow-hidden group cursor-pointer shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:scale-[1.03] active:scale-95 transition-all duration-300"
+                        onclick="window.location.href='pages/main/classes.html'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                        <div class="absolute top-2.5 right-2.5 opacity-20 group-hover:opacity-35 transition-opacity">
+                            <span class="material-symbols-outlined text-[48px] text-white leading-none">brush</span>
+                        </div>
+                        <div class="relative z-10 flex flex-col justify-end h-full p-3.5">
+                            <h2 id="home-hero-title" class="text-white text-sm font-black leading-snug"
+                                data-i18n="hero_title">Unleash Your Inner Artist</h2>
+                            <p id="home-hero-sub" class="text-white/70 text-[10px] mt-0.5 leading-tight"
+                                data-i18n="hero_sub">Join 1.2k students today</p>
+                            <span id="home-hero-btn"
+                                class="mt-2 inline-flex items-center justify-center bg-white/90 text-primary text-[10px] font-bold py-1 px-3 rounded-full w-fit backdrop-blur-sm"
+                                data-i18n="hero_btn">Explore Lab</span>
+                        </div>
+                    </div>
+
+                    <!-- 🎨 명화 클래스 (Masterpiece Class) - 1:1 Square Icon -->
+                    <div class="relative w-[140px] h-[140px] shrink-0 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 overflow-hidden group cursor-pointer shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/35 hover:scale-[1.03] active:scale-95 transition-all duration-300"
+                        onclick="window.location.href='pages/main/masterpiece-catalog.html'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                        <div class="absolute top-2.5 right-2.5 opacity-20 group-hover:opacity-35 transition-opacity">
+                            <span class="material-symbols-outlined text-[48px] text-white leading-none">palette</span>
+                        </div>
+                        <div class="relative z-10 flex flex-col justify-end h-full p-3.5">
+                            <h2 class="text-white text-sm font-black leading-snug">유럽 회화 여행</h2>
+                            <p class="text-white/70 text-[10px] mt-0.5 leading-tight">인상주의 명화 20강</p>
+                            <span
+                                class="mt-2 inline-flex items-center justify-center bg-white/90 text-amber-600 text-[10px] font-bold py-1 px-3 rounded-full w-fit backdrop-blur-sm">명화 클래스</span>
+                        </div>
+                    </div>
+
+                    <!-- Old 140x140 buttons removed - now in gamification card section -->
+
+                    <!-- 📚 북커버 디자인 아카이브 -->
+                    <button
+                        class="w-[140px] h-[140px] shrink-0 group cursor-pointer hover:scale-[1.05] active:scale-95 transition-all duration-300 relative overflow-hidden"
+                        style="background:linear-gradient(135deg,#12101e,#1e1830);border:2px solid rgba(120,90,220,0.3);border-radius:16px;box-shadow:0 0 18px rgba(100,70,200,0.2),inset 0 0 12px rgba(60,30,120,0.3);"
+                        onclick="window.location.href='pages/design/book-covers.html'">
+                        <!-- Floating book covers background -->
+                        <div class="absolute inset-0 overflow-hidden opacity-40 pointer-events-none">
+                            <div
+                                style="position:absolute;top:8px;left:10px;width:28px;height:42px;background:linear-gradient(135deg,#1a1a6e,#2a2a9e);border-radius:2px 5px 5px 2px;transform:rotate(-8deg);box-shadow:2px 2px 6px rgba(0,0,0,0.4);">
+                            </div>
+                            <div
+                                style="position:absolute;top:12px;left:34px;width:26px;height:38px;background:linear-gradient(135deg,#6e1a1a,#9e2a2a);border-radius:2px 5px 5px 2px;transform:rotate(-2deg);box-shadow:2px 2px 6px rgba(0,0,0,0.4);">
+                            </div>
+                            <div
+                                style="position:absolute;top:10px;left:56px;width:30px;height:44px;background:linear-gradient(135deg,#1a4e2a,#2a8e3a);border-radius:2px 5px 5px 2px;transform:rotate(4deg);box-shadow:2px 2px 6px rgba(0,0,0,0.4);">
+                            </div>
+                            <div
+                                style="position:absolute;top:14px;right:10px;width:24px;height:36px;background:linear-gradient(135deg,#3a1a6e,#5a2a9e);border-radius:2px 5px 5px 2px;transform:rotate(-5deg);box-shadow:2px 2px 6px rgba(0,0,0,0.4);">
+                            </div>
+                        </div>
+                        <!-- Main icon -->
+                        <div class="relative z-10 flex flex-col items-center justify-center h-full gap-1.5">
+                            <span class="text-3xl group-hover:scale-110 transition-transform duration-300"
+                                style="filter:drop-shadow(0 2px 8px rgba(140,100,255,0.6));">📚</span>
+                            <span
+                                style="font-family:'Plus Jakarta Sans','Lexend',sans-serif;font-size:9.5px;font-weight:700;color:#b8a8ff;text-shadow:0 0 8px rgba(140,100,255,0.6);text-align:center;line-height:1.4;letter-spacing:0.2px;">
+                                북커버<br />아카이브
+                            </span>
+                        </div>
+                    </button>
+
+                    <!-- 🎨 만들어주세요! (Post-it Board) -->
+                    <button
+                        class="w-[140px] h-[140px] shrink-0 group cursor-pointer hover:scale-[1.05] active:scale-95 transition-all duration-300 relative overflow-hidden"
+                        style="background:linear-gradient(135deg,#332211,#443322);border:2px solid rgba(200,150,100,0.3);border-radius:16px;box-shadow:0 0 18px rgba(150,100,50,0.2),inset 0 0 12px rgba(100,70,40,0.3);"
+                        onclick="window.location.href='pages/special/make-it.html'">
+                        <!-- Floating sticky notes background -->
+                        <div class="absolute inset-0 overflow-hidden opacity-40 pointer-events-none">
+                            <div style="position:absolute;top:12px;left:15px;width:30px;height:30px;background:#fff5a0;transform:rotate(-15deg);box-shadow:1px 1px 3px rgba(0,0,0,0.2);"></div>
+                            <div style="position:absolute;top:40px;right:20px;width:25px;height:25px;background:#a0f5ff;transform:rotate(10deg);box-shadow:1px 1px 3px rgba(0,0,0,0.2);"></div>
+                            <div style="position:absolute;bottom:15px;left:25px;width:20px;height:20px;background:#ffa0f5;transform:rotate(5deg);box-shadow:1px 1px 3px rgba(0,0,0,0.2);"></div>
+                        </div>
+                        <!-- Main icon -->
+                        <div class="relative z-10 flex flex-col items-center justify-center h-full gap-1.5">
+                            <span class="text-3xl group-hover:scale-110 transition-transform duration-300"
+                                style="filter:drop-shadow(0 2px 8px rgba(255,200,100,0.6));">📝</span>
+                            <span
+                                style="font-family:'Plus Jakarta Sans','Lexend',sans-serif;font-size:9.5px;font-weight:700;color:#f5d77a;text-shadow:0 0 8px rgba(255,180,30,0.6);text-align:center;line-height:1.4;letter-spacing:0.2px;">
+                                만들어<br />주세요!
+                            </span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- ─── Special Item Section ─── -->
+                <section class="mt-8 px-4">
+                    <div
+                        class="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-slate-800/50 dark:to-indigo-900/20 border border-indigo-100 dark:border-indigo-500/20 rounded-2xl p-4 md:p-5 relative overflow-hidden shadow-sm">
+                        <!-- Deco element -->
+                        <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                            <span class="material-symbols-outlined text-[100px] text-indigo-400">auto_awesome</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-4 relative z-10">
+                            <span
+                                class="material-symbols-outlined text-indigo-600 dark:text-indigo-400 text-xl">magic_button</span>
+                            <h3
+                                class="font-bold text-base text-slate-800 dark:text-slate-100 lg:text-lg tracking-tight">
+                                루나웨일 스페셜 아이템</h3>
+                        </div>
+
+                        <!-- Grid Container (2 cols mobile, 4 cols desktop) -->
+                        <div
+                            class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 relative z-10">
+
+                            <!-- Item 1: Daily Masterpiece Curator -->
+                            <div onclick="specialClick(event,'pages/main/masterpiece-curator.html')"
+                                class="special-card w-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all group">
+                                <div
+                                    class="icon-wrap w-14 h-14 rounded-full bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-100 dark:border-yellow-800 flex items-center justify-center group-hover:bg-yellow-500 group-hover:border-yellow-500 dark:group-hover:bg-yellow-500 transition-all duration-300 relative">
+                                    <span
+                                        class="material-symbols-outlined text-yellow-500 dark:text-yellow-400 group-hover:text-white text-[28px]">stars</span>
+                                </div>
+                                <div class="flex flex-col gap-1 items-center">
+                                    <span
+                                        class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">오늘의
+                                        명화 1분 큐레이팅</span>
+                                    <span
+                                        class="text-[10px] text-yellow-500 bg-yellow-50 dark:text-yellow-300 dark:bg-yellow-900/30 px-2 py-0.5 rounded-full font-bold">1-Min
+                                        Curator</span>
+                                </div>
+                            </div>
+
+                            <!-- Item 2: Slot Machine -->
+                            <div onclick="specialClick(event,'pages/main/slot-machine.html')"
+                                class="special-card w-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all group">
+                                <div
+                                    class="icon-wrap w-14 h-14 rounded-full bg-pink-50 dark:bg-pink-900/30 border border-pink-100 dark:border-pink-800 flex items-center justify-center group-hover:bg-pink-600 group-hover:border-pink-600 dark:group-hover:bg-pink-500 transition-all duration-300 relative">
+                                    <span
+                                        class="material-symbols-outlined text-pink-500 dark:text-pink-400 group-hover:text-white text-[28px]">casino</span>
+                                </div>
+                                <div class="flex flex-col gap-1 items-center">
+                                    <span
+                                        class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">상상력
+                                        슬롯머신</span>
+                                    <span
+                                        class="text-[10px] text-pink-500 bg-pink-50 dark:text-pink-300 dark:bg-pink-900/30 px-2 py-0.5 rounded-full font-bold">Drawing
+                                        Topic Spin</span>
+                                </div>
+                            </div>
+
+                            <!-- Item 3: Lunar Whale Visual Timer -->
+                            <div onclick="specialClick(event,'pages/main/visual-timer.html')"
+                                class="special-card w-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all group">
+                                <div
+                                    class="icon-wrap w-14 h-14 rounded-full bg-amber-50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 flex items-center justify-center group-hover:bg-amber-500 group-hover:border-amber-500 dark:group-hover:bg-amber-500 transition-all duration-300 relative">
+                                    <span
+                                        class="material-symbols-outlined text-amber-500 dark:text-amber-400 group-hover:text-white text-[28px]">timer</span>
+                                </div>
+                                <div class="flex flex-col gap-1 items-center">
+                                    <span
+                                        class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">초집중
+                                        시계</span>
+                                    <span
+                                        class="text-[10px] text-amber-500 bg-amber-50 dark:text-amber-300 dark:bg-amber-900/30 px-2 py-0.5 rounded-full font-bold">Visual
+                                        Timer</span>
+                                </div>
+                            </div>
+
+                            <!-- Item 4: Masterpiece Gacha -->
+                            <div onclick="specialClick(event,'pages/main/gacha.html')"
+                                class="special-card w-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 hover:border-blue-400 transition-all group relative overflow-hidden">
+                                <div
+                                    class="absolute -inset-4 bg-gradient-to-tr from-purple-500/20 via-transparent to-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                                </div>
+                                <div
+                                    class="icon-wrap w-14 h-14 rounded-full bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 flex items-center justify-center group-hover:bg-slate-900 group-hover:border-slate-900 dark:group-hover:bg-cyan-900 transition-all duration-300 relative z-10">
+                                    <span
+                                        class="material-symbols-outlined text-slate-700 dark:text-slate-300 group-hover:text-yellow-400 text-[28px] drop-shadow-md">style</span>
+                                </div>
+                                <div class="flex flex-col gap-1 items-center relative z-10">
+                                    <span
+                                        class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">명화
+                                        카드 뽑기</span>
+                                    <span
+                                        class="text-[10px] text-purple-600 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30 px-2 py-0.5 rounded-full font-bold border border-purple-200 dark:border-purple-800">Famous
+                                        Art Gacha</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ─── Gamification Section ─── -->
+                <section class="mt-4 px-4">
+                    <div
+                        class="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-800/50 dark:to-emerald-900/20 border border-emerald-100 dark:border-emerald-500/20 rounded-2xl p-4 md:p-5 relative overflow-hidden shadow-sm">
+                        <!-- Deco element -->
+                        <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                            <span class="material-symbols-outlined text-[100px] text-emerald-400">sports_esports</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-4 relative z-10">
+                            <span
+                                class="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-xl">videogame_asset</span>
+                            <h3
+                                class="font-bold text-base text-slate-800 dark:text-slate-100 lg:text-lg tracking-tight">
+                                루나웨일 게이미피케이션</h3>
+                        </div>
+
+                        <!-- Grid Container (2 cols mobile, 4 cols desktop) -->
+                        <div
+                            class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 relative z-10">
+
+                            <!-- Item 1: 루나웨일 사이언스 -->
+                            <div onclick="window.location.href='pages/special/science-shop.html'"
+                                class="w-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all group">
+                                <div
+                                    class="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-600 group-hover:border-emerald-600 dark:group-hover:bg-emerald-500 transition-all duration-300">
+                                    <span class="text-[28px]">🧪</span>
+                                </div>
+                                <div class="flex flex-col gap-1 items-center">
+                                    <span
+                                        class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">루나웨일
+                                        사이언스</span>
+                                    <span
+                                        class="text-[10px] text-emerald-500 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full font-bold">Science
+                                        Lab</span>
+                                </div>
+                            </div>
+
+                            <!-- Item 2: 루나웨일 국어 -->
+                            <div onclick="toggleKoreanPopup(event)"
+                                class="w-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all group">
+                                <div
+                                    class="w-14 h-14 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-600 group-hover:border-indigo-600 dark:group-hover:bg-indigo-500 transition-all duration-300">
+                                    <span class="text-[28px]">✍️</span>
+                                </div>
+                                <div class="flex flex-col gap-1 items-center">
+                                    <span
+                                        class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">루나웨일
+                                        국어</span>
+                                    <span
+                                        class="text-[10px] text-indigo-500 bg-indigo-50 dark:text-indigo-300 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full font-bold">Korean
+                                        Class</span>
+                                </div>
+                            </div>
+
+                            <!-- Item 3: 루나웨일 타자기 -->
+                            <div onclick="toggleTypewriterPopup(event)"
+                                class="w-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all group">
+                                <div
+                                    class="w-14 h-14 rounded-full bg-purple-50 dark:bg-purple-900/30 border border-purple-100 dark:border-purple-800 flex items-center justify-center group-hover:scale-110 group-hover:bg-purple-600 group-hover:border-purple-600 dark:group-hover:bg-purple-500 transition-all duration-300">
+                                    <span class="text-[28px]">🖊️</span>
+                                </div>
+                                <div class="flex flex-col gap-1 items-center">
+                                    <span
+                                        class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">루나웨일
+                                        타자기</span>
+                                    <span
+                                        class="text-[10px] text-purple-500 bg-purple-50 dark:text-purple-300 dark:bg-purple-900/30 px-2 py-0.5 rounded-full font-bold">Typewriter</span>
+                                </div>
+                            </div>
+
+                            <!-- Item 4: 루나웨일 역사관 -->
+                            <div onclick="toggleHistoryPopup(event)"
+                                class="w-full bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all group">
+                                <div
+                                    class="w-14 h-14 rounded-full bg-lime-50 dark:bg-lime-900/30 border border-lime-100 dark:border-lime-800 flex items-center justify-center group-hover:scale-110 group-hover:bg-lime-600 group-hover:border-lime-600 dark:group-hover:bg-lime-500 transition-all duration-300">
+                                    <span class="text-[28px]">📜</span>
+                                </div>
+                                <div class="flex flex-col gap-1 items-center">
+                                    <span
+                                        class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">루나웨일
+                                        역사관</span>
+                                    <span
+                                        class="text-[10px] text-lime-600 bg-lime-50 dark:text-lime-300 dark:bg-lime-900/30 px-2 py-0.5 rounded-full font-bold">History
+                                        Museum</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ─── Art Toolbox Section ─── -->
+                <section class="mt-4 px-4">
+                    <div
+                        class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-slate-800/50 dark:to-amber-900/20 border border-amber-100 dark:border-amber-500/20 rounded-2xl p-4 md:p-5 relative overflow-hidden shadow-sm">
+                        <!-- Deco element -->
+                        <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                            <span class="material-symbols-outlined text-[100px] text-amber-400">construction</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-4 relative z-10">
+                            <span
+                                class="material-symbols-outlined text-amber-600 dark:text-amber-400 text-xl">handyman</span>
+                            <h3
+                                class="font-bold text-base text-slate-800 dark:text-slate-100 lg:text-lg tracking-tight">
+                                미술 도구함</h3>
+                        </div>
+
+                        <!-- Art Tool Cards - Visual Preview + Description -->
+                        <style>
+                            .art-tool-card { transition: all .25s ease; }
+                            .art-tool-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,.12); }
+                            .art-tool-preview { height: 56px; position: relative; overflow: hidden; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: center; }
+                            /* 1: color swatches */
+                            .atp-colors { background: linear-gradient(135deg, #eef2ff 0%, #f0e7fe 100%); }
+                            .dark .atp-colors { background: linear-gradient(135deg, #1e1b4b 0%, #2e1065 100%); }
+                            .atp-colors .swatch-grid { display: grid; grid-template-columns: repeat(8,1fr); gap: 3px; width: 80%; height: 48px; }
+                            .atp-colors .swatch-grid span { border-radius: 3px; }
+                            /* 2: light shadow sphere */
+                            .atp-shadow { background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); }
+                            .dark .atp-shadow { background: linear-gradient(135deg, #042f2e 0%, #134e4a 100%); }
+                            .atp-shadow .sphere { width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 35% 30%, #fff 0%, #5eead4 40%, #0d9488 80%, #134e4a 100%);box-shadow:8px 8px 16px rgba(0,0,0,.2); }
+                            /* 3: color mix circles */
+                            .atp-mix { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
+                            .dark .atp-mix { background: linear-gradient(135deg, #172554 0%, #1e3a5f 100%); }
+                            .atp-mix .circles { position:relative;width:72px;height:48px; }
+                            .atp-mix .circles span { position:absolute;width:36px;height:36px;border-radius:50%;top:6px; }
+                            .atp-mix .circles .c1 { left:0;background:rgba(239,68,68,.7); }
+                            .atp-mix .circles .c2 { left:18px;background:rgba(59,130,246,.7); }
+                            .atp-mix .circles .c3 { left:36px;background:rgba(250,204,21,.7); }
+                            /* 4: perspective lines */
+                            .atp-persp { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
+                            .dark .atp-persp { background: linear-gradient(135deg, #022c22 0%, #064e3b 100%); }
+                            /* 5: sketch */
+                            .atp-sketch { background: linear-gradient(135deg, #fafaf9 0%, #f5f5f4 100%); }
+                            .dark .atp-sketch { background: linear-gradient(135deg, #1c1917 0%, #292524 100%); }
+                            /* 6: palette extract */
+                            .atp-palette { background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); }
+                            .dark .atp-palette { background: linear-gradient(135deg, #4c0519 0%, #881337 100%); }
+                            /* 7: grid divider */
+                            .atp-gdiv { background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); }
+                            .dark .atp-gdiv { background: linear-gradient(135deg, #042f2e 0%, #134e4a 100%); }
+                            .atp-gdiv .mini-grid { width:56px;height:42px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:2px; }
+                            .atp-gdiv .mini-grid span { border:1.5px dashed #0d9488;border-radius:2px;background:rgba(13,148,136,.08); }
+                            /* 8: grid overlay */
+                            .atp-govl { background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); position:relative; }
+                            .dark .atp-govl { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); }
+                            /* 9: mirror */
+                            .atp-mirror { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); }
+                            .dark .atp-mirror { background: linear-gradient(135deg, #2e1065 0%, #4c1d95 100%); }
+                            /* 10: color temp */
+                            .atp-temp { background: linear-gradient(90deg, #fed7aa 0%, #bae6fd 100%); }
+                            .dark .atp-temp { background: linear-gradient(90deg, #7c2d12 0%, #0c4a6e 100%); }
+                            /* 11: bg remove */
+                            .atp-bgrem { background: repeating-conic-gradient(#e9d5ff 0% 25%, #faf5ff 0% 50%) 0 0/16px 16px; }
+                            .dark .atp-bgrem { background: repeating-conic-gradient(#3b0764 0% 25%, #1e1b4b 0% 50%) 0 0/16px 16px; }
+                            /* 12: pixel */
+                            .atp-pixel { background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); }
+                            .dark .atp-pixel { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); }
+                            .atp-pixel .px-grid { display:grid;grid-template-columns:repeat(6,1fr);gap:2px;width:52px;height:44px; }
+                            .atp-pixel .px-grid span { border-radius:1px; }
+                            /* 13: paint mixer */
+                            .atp-pmix { background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); }
+                            .dark .atp-pmix { background: linear-gradient(135deg, #500724 0%, #831843 100%); }
+                            .atp-pmix .wheel { width:48px;height:48px;border-radius:50%;background:conic-gradient(#ef4444,#f59e0b,#22c55e,#3b82f6,#8b5cf6,#ec4899,#ef4444);position:relative; }
+                            .atp-pmix .wheel::after { content:'';position:absolute;inset:14px;border-radius:50%;background:#fdf2f8; }
+                            .dark .atp-pmix .wheel::after { background:#500724; }
+                            /* 14: photo builder */
+                            .atp-photo { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); }
+                            .dark .atp-photo { background: linear-gradient(135deg, #0c4a6e 0%, #075985 100%); }
+                            .atp-photo .frames { display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:60px;height:42px; }
+                            .atp-photo .frames span { border-radius:3px;border:1.5px solid #0284c7;background:rgba(2,132,199,.12); }
+                            .atp-photo .frames .f1 { grid-row:1/3; }
+                            /* 15: watercolor */
+                            .atp-water { background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%); overflow:hidden; }
+                            .dark .atp-water { background: linear-gradient(135deg, #083344 0%, #164e63 100%); }
+                            .atp-water .wash { position:absolute;width:100%;height:100%;top:0;left:0; }
+                            .atp-water .wash span { position:absolute;border-radius:50%;filter:blur(10px);opacity:.4; }
+                            .atp-water .wash .w1 { width:50px;height:40px;background:#06b6d4;top:8px;left:15%; }
+                            .atp-water .wash .w2 { width:40px;height:50px;background:#8b5cf6;top:4px;left:50%; }
+                            .atp-water .wash .w3 { width:45px;height:35px;background:#f472b6;top:20px;left:70%; }
+                        </style>
+
+                        <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3 relative z-10">
+
+                            <!-- 1: 오늘의 색상 조합 -->
+                            <div onclick="window.location.href='pages/main/daily-color.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-colors">
+                                    <div class="swatch-grid">
+                                        <span style="background:#ef4444"></span><span style="background:#f97316"></span>
+                                        <span style="background:#eab308"></span><span style="background:#22c55e"></span>
+                                        <span style="background:#14b8a6"></span><span style="background:#3b82f6"></span>
+                                        <span style="background:#8b5cf6"></span><span style="background:#ec4899"></span>
+                                        <span style="background:#f87171"></span><span style="background:#fb923c"></span>
+                                        <span style="background:#fbbf24"></span><span style="background:#4ade80"></span>
+                                        <span style="background:#2dd4bf"></span><span style="background:#60a5fa"></span>
+                                        <span style="background:#a78bfa"></span><span style="background:#f472b6"></span>
+                                    </div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">오늘의 색상 조합</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">매일 새로운 16가지 배색 추천</div>
+                                </div>
+                            </div>
+
+                            <!-- 2: 빛과 그림자 -->
+                            <div onclick="window.location.href='pages/main/light-shadow.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-shadow">
+                                    <div class="sphere"></div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">빛과 그림자</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">3D 오브젝트로 명암 관찰</div>
+                                </div>
+                            </div>
+
+                            <!-- 3: 물감 섞기 실험실 -->
+                            <div onclick="window.location.href='pages/main/color-mix.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-mix">
+                                    <div class="circles">
+                                        <span class="c1"></span>
+                                        <span class="c2"></span>
+                                        <span class="c3"></span>
+                                    </div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">물감 섞기 실험실</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">두 색을 섞으면? 직접 실험!</div>
+                                </div>
+                            </div>
+
+                            <!-- 4: 3D 투시 관찰기 -->
+                            <div onclick="window.location.href='pages/main/perspective-observer.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-persp">
+                                    <svg width="80" height="52" viewBox="0 0 80 52" fill="none">
+                                        <circle cx="40" cy="26" r="3" fill="#059669"/>
+                                        <line x1="40" y1="26" x2="4" y2="4" stroke="#10b981" stroke-width="1.2" stroke-dasharray="3 2"/>
+                                        <line x1="40" y1="26" x2="76" y2="4" stroke="#10b981" stroke-width="1.2" stroke-dasharray="3 2"/>
+                                        <line x1="40" y1="26" x2="4" y2="48" stroke="#10b981" stroke-width="1.2" stroke-dasharray="3 2"/>
+                                        <line x1="40" y1="26" x2="76" y2="48" stroke="#10b981" stroke-width="1.2" stroke-dasharray="3 2"/>
+                                        <rect x="18" y="12" width="44" height="28" rx="2" stroke="#059669" stroke-width="1.5" fill="rgba(16,185,129,.08)"/>
+                                    </svg>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">3D 투시 관찰기</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">1점/2점/3점 투시도법 체험</div>
+                                </div>
+                            </div>
+
+                            <!-- 5: 스케치 변환기 -->
+                            <div onclick="window.location.href='pages/main/sketch-converter.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-sketch">
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <div style="width:28px;height:36px;border-radius:4px;background:linear-gradient(135deg,#f97316,#ec4899,#8b5cf6);"></div>
+                                        <span class="material-symbols-outlined text-stone-400" style="font-size:18px;">arrow_forward</span>
+                                        <div style="width:28px;height:36px;border-radius:4px;background:#f5f5f4;border:1.5px solid #a8a29e;position:relative;">
+                                            <svg width="24" height="32" viewBox="0 0 24 32" style="position:absolute;top:2px;left:2px;">
+                                                <line x1="4" y1="6" x2="20" y2="6" stroke="#78716c" stroke-width=".8"/>
+                                                <line x1="4" y1="10" x2="18" y2="10" stroke="#a8a29e" stroke-width=".6"/>
+                                                <line x1="4" y1="14" x2="20" y2="14" stroke="#78716c" stroke-width=".8"/>
+                                                <line x1="4" y1="18" x2="16" y2="18" stroke="#a8a29e" stroke-width=".6"/>
+                                                <line x1="4" y1="22" x2="19" y2="22" stroke="#78716c" stroke-width=".8"/>
+                                                <line x1="4" y1="26" x2="14" y2="26" stroke="#a8a29e" stroke-width=".6"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">스케치 변환기</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">사진을 연필 스케치로 변환</div>
+                                </div>
+                            </div>
+
+                            <!-- 6: 컬러 팔레트 추출기 -->
+                            <div onclick="window.location.href='pages/main/palette.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-palette">
+                                    <div style="display:flex;gap:4px;align-items:flex-end;height:48px;">
+                                        <div style="width:14px;height:48px;border-radius:4px;background:#e11d48;"></div>
+                                        <div style="width:14px;height:38px;border-radius:4px;background:#f97316;"></div>
+                                        <div style="width:14px;height:44px;border-radius:4px;background:#eab308;"></div>
+                                        <div style="width:14px;height:32px;border-radius:4px;background:#22c55e;"></div>
+                                        <div style="width:14px;height:42px;border-radius:4px;background:#3b82f6;"></div>
+                                    </div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">팔레트 추출기</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">사진에서 주요 색상 추출</div>
+                                </div>
+                            </div>
+
+                            <!-- 7: 격자 분할기 -->
+                            <div onclick="window.location.href='pages/main/grid-divider.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-gdiv">
+                                    <div class="mini-grid">
+                                        <span></span><span></span><span></span>
+                                        <span></span><span></span><span></span>
+                                    </div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">격자 분할기</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">그림을 격자로 나눠 비율 확인</div>
+                                </div>
+                            </div>
+
+                            <!-- 8: 격자 오버레이 -->
+                            <div onclick="window.location.href='pages/main/grid-overlay.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-govl">
+                                    <div style="width:60px;height:45px;border-radius:4px;background:linear-gradient(135deg,#c7d2fe,#a5b4fc);position:relative;">
+                                        <div style="position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr 1fr;">
+                                            <span style="border-right:1px solid rgba(99,102,241,.5);border-bottom:1px solid rgba(99,102,241,.5);"></span>
+                                            <span style="border-right:1px solid rgba(99,102,241,.5);border-bottom:1px solid rgba(99,102,241,.5);"></span>
+                                            <span style="border-bottom:1px solid rgba(99,102,241,.5);"></span>
+                                            <span style="border-right:1px solid rgba(99,102,241,.5);border-bottom:1px solid rgba(99,102,241,.5);"></span>
+                                            <span style="border-right:1px solid rgba(99,102,241,.5);border-bottom:1px solid rgba(99,102,241,.5);"></span>
+                                            <span style="border-bottom:1px solid rgba(99,102,241,.5);"></span>
+                                            <span style="border-right:1px solid rgba(99,102,241,.5);"></span>
+                                            <span style="border-right:1px solid rgba(99,102,241,.5);"></span>
+                                            <span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">격자 오버레이</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">사진 위에 구도 격자선 표시</div>
+                                </div>
+                            </div>
+
+                            <!-- 9: 좌우반전 거울 -->
+                            <div onclick="window.location.href='pages/main/mirror.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-mirror">
+                                    <div style="display:flex;align-items:center;gap:0;">
+                                        <div style="width:28px;height:40px;border-radius:4px 0 0 4px;background:linear-gradient(135deg,#8b5cf6,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;">A</div>
+                                        <div style="width:1.5px;height:48px;background:linear-gradient(to bottom,transparent,#7c3aed,transparent);"></div>
+                                        <div style="width:28px;height:40px;border-radius:0 4px 4px 0;background:linear-gradient(225deg,#8b5cf6,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;transform:scaleX(-1);">A</div>
+                                    </div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">좌우반전 거울</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">그림 뒤집어서 균형 체크</div>
+                                </div>
+                            </div>
+
+                            <!-- 10: 색온도 필터 -->
+                            <div onclick="window.location.href='pages/main/color-temp.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-temp">
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span style="font-size:22px;">🔥</span>
+                                        <div style="width:40px;height:6px;border-radius:3px;background:linear-gradient(90deg,#f97316,#94a3b8,#0ea5e9);"></div>
+                                        <span style="font-size:22px;">❄️</span>
+                                    </div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">색온도 필터</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">따뜻한/차가운 색감 조절</div>
+                                </div>
+                            </div>
+
+                            <!-- 11: 배경 제거 -->
+                            <div onclick="window.location.href='pages/main/bg-remover.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-bgrem">
+                                    <div style="position:relative;width:36px;height:44px;">
+                                        <svg width="36" height="44" viewBox="0 0 36 44">
+                                            <path d="M18 4 C10 4, 6 10, 6 18 C6 28, 10 36, 18 40 C26 36, 30 28, 30 18 C30 10, 26 4, 18 4Z" fill="#7c3aed" opacity=".7"/>
+                                            <circle cx="14" cy="16" r="2" fill="#fff"/>
+                                            <circle cx="22" cy="16" r="2" fill="#fff"/>
+                                            <path d="M13 26 Q18 30 23 26" stroke="#fff" fill="none" stroke-width="1.5" stroke-linecap="round"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">배경 제거</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">사진 배경 자동 투명 처리</div>
+                                </div>
+                            </div>
+
+                            <!-- 12: 픽셀 변환 -->
+                            <div onclick="window.location.href='pages/main/pixel-converter.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-pixel">
+                                    <div class="px-grid">
+                                        <span style="background:#818cf8"></span><span style="background:#818cf8"></span>
+                                        <span style="background:#6366f1"></span><span style="background:#6366f1"></span>
+                                        <span style="background:#818cf8"></span><span style="background:#818cf8"></span>
+                                        <span style="background:#a5b4fc"></span><span style="background:#6366f1"></span>
+                                        <span style="background:#c7d2fe"></span><span style="background:#c7d2fe"></span>
+                                        <span style="background:#6366f1"></span><span style="background:#a5b4fc"></span>
+                                        <span style="background:#6366f1"></span><span style="background:#818cf8"></span>
+                                        <span style="background:#a5b4fc"></span><span style="background:#818cf8"></span>
+                                        <span style="background:#c7d2fe"></span><span style="background:#6366f1"></span>
+                                        <span style="background:#818cf8"></span><span style="background:#c7d2fe"></span>
+                                        <span style="background:#6366f1"></span><span style="background:#a5b4fc"></span>
+                                        <span style="background:#a5b4fc"></span><span style="background:#818cf8"></span>
+                                    </div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">픽셀 변환</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">사진을 레트로 픽셀아트로</div>
+                                </div>
+                            </div>
+
+                            <!-- 13: 물감 혼합기 -->
+                            <div onclick="window.location.href='pages/main/color-mixer.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-pmix">
+                                    <div class="wheel"></div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">물감 혼합기</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">색상환 기반 배합 시뮬레이터</div>
+                                </div>
+                            </div>
+
+                            <!-- 14: 포토 빌더 -->
+                            <div onclick="window.location.href='pages/main/photo-builder.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-photo">
+                                    <div class="frames">
+                                        <span class="f1"></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">포토 빌더</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">사진 콜라주 & 프레임 제작</div>
+                                </div>
+                            </div>
+
+                            <!-- 15: AI 수채화 -->
+                            <div onclick="window.location.href='pages/main/watercolor.html'"
+                                class="art-tool-card bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer overflow-hidden group">
+                                <div class="art-tool-preview atp-water">
+                                    <div class="wash">
+                                        <span class="w1"></span>
+                                        <span class="w2"></span>
+                                        <span class="w3"></span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-white relative z-10" style="font-size:28px;text-shadow:0 2px 8px rgba(0,0,0,.2);">brush</span>
+                                </div>
+                                <div class="p-1.5 md:p-2 text-center">
+                                    <div class="text-[10px] md:text-xs font-extrabold text-slate-700 dark:text-slate-200 leading-tight">AI 수채화</div>
+                                    <div class="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-tight">흑백 스케치 자동 채색</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ─── 1분 명화 ─── -->
+                <section class="mt-6 px-4">
+                    <div
+                        class="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200/60 dark:border-amber-800/40 rounded-2xl p-4 md:p-6 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="material-symbols-outlined text-amber-600 dark:text-amber-400 text-xl">palette</span>
+                                <h3 class="font-bold text-base text-slate-800 dark:text-slate-100">1분 명화</h3>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button id="prev-masterpiece"
+                                    class="w-8 h-8 rounded-full bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 flex items-center justify-center hover:bg-amber-50 dark:hover:bg-amber-900/50 transition-colors">
+                                    <span class="material-symbols-outlined text-amber-600 text-lg">chevron_left</span>
+                                </button>
+                                <button id="next-masterpiece"
+                                    class="w-8 h-8 rounded-full bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 flex items-center justify-center hover:bg-amber-50 dark:hover:bg-amber-900/50 transition-colors">
+                                    <span class="material-symbols-outlined text-amber-600 text-lg">chevron_right</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div
+                            class="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 border-2 border-amber-100/50 dark:border-amber-800/30 shadow-xl shadow-amber-900/5">
+                            <div id="masterpiece-container"
+                                class="relative w-full h-[450px] md:h-[350px] lg:h-[380px] flex transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]">
+                                <!-- Masterpiece items will be loaded here via JS -->
+                            </div>
+
+                            <!-- Navigation Overlay -->
+                            <div
+                                class="absolute top-1/2 -translate-y-1/2 left-4 right-4 flex justify-between pointer-events-none z-10">
+                                <button id="prev-masterpiece-float"
+                                    class="w-10 h-10 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur shadow-lg border border-white/20 flex items-center justify-center hover:bg-white dark:hover:bg-slate-900 transition-all pointer-events-auto active:scale-90 group">
+                                    <span
+                                        class="material-symbols-outlined text-amber-600 group-hover:-translate-x-0.5 transition-transform">chevron_left</span>
+                                </button>
+                                <button id="next-masterpiece-float"
+                                    class="w-10 h-10 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur shadow-lg border border-white/20 flex items-center justify-center hover:bg-white dark:hover:bg-slate-900 transition-all pointer-events-auto active:scale-90 group">
+                                    <span
+                                        class="material-symbols-outlined text-amber-600 group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+                                </button>
+                            </div>
+
+                            <!-- Loading placeholder -->
+                            <div id="masterpiece-loading"
+                                class="absolute inset-0 flex items-center justify-center bg-amber-50 dark:bg-amber-900/20 z-20">
+                                <div class="text-center">
+                                    <div
+                                        class="w-12 h-12 border-4 border-amber-200 border-t-amber-600 rounded-full animate-spin mx-auto mb-3">
+                                    </div>
+                                    <p class="text-amber-700 dark:text-amber-300 text-sm font-medium">명화 갤러리 연결 중...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+
+
+                <!-- ─── 이달의 수업 미니 앨범 ─── -->
+                <section class="mt-6">
+                    <div class="flex items-center justify-between px-4 mb-3">
+                        <h3 class="font-bold text-base">이달의 수업</h3>
+                        <a href="pages/main/classes.html" class="text-primary text-xs font-semibold">전체 보기</a>
+                    </div>
+                    <div class="flex gap-4 px-4 overflow-x-auto hide-scrollbar pb-2" id="mini-album-shelf">
+                        <!-- JS로 랜덤 6개 렌더 -->
+                    </div>
+                </section>
+                <style>
+                    .mini-album {
+                        flex: 0 0 auto;
+                        width: 120px;
+                        cursor: pointer;
+                        perspective: 600px;
+                    }
+                    .mini-album-inner {
+                        position: relative;
+                        height: 150px;
+                        border-radius: 6px;
+                        overflow: hidden;
+                        box-shadow: 3px 4px 12px rgba(0,0,0,0.25), -1px 0 3px rgba(0,0,0,0.1);
+                        transform: rotateY(-8deg) scale(0.97);
+                        transform-origin: left center;
+                        transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s ease;
+                        background: #222;
+                    }
+                    .mini-album:hover .mini-album-inner {
+                        transform: rotateY(0deg) scale(1);
+                        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                    }
+                    .mini-album-inner::before {
+                        content: '';
+                        position: absolute;
+                        left: 0; top: 0; bottom: 0;
+                        width: 4px;
+                        background: linear-gradient(to right, rgba(0,0,0,0.3), rgba(255,255,255,0.08));
+                        z-index: 5;
+                    }
+                    .mini-album-inner img {
+                        width: 100%; height: 100%;
+                        object-fit: cover;
+                        display: block;
+                    }
+                    .mini-album-overlay {
+                        position: absolute;
+                        inset: 0;
+                        background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 50%, transparent 100%);
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: flex-end;
+                        padding: 8px;
+                    }
+                    .mini-album-title {
+                        font-size: 0.68rem;
+                        font-weight: 800;
+                        color: #fff;
+                        line-height: 1.25;
+                        text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                        overflow: hidden;
+                    }
+                    .mini-album-month {
+                        font-size: 0.55rem;
+                        color: rgba(255,255,255,0.55);
+                        margin-top: 2px;
+                        font-weight: 600;
+                    }
+                </style>
+                <script>
+                    (function renderMiniAlbums() {
+                        if (typeof CLASSES_DATA === 'undefined') return;
+                        const shelf = document.getElementById('mini-album-shelf');
+                        if (!shelf) return;
+                        const monthly = CLASSES_DATA.filter(c => c.subCategory === 'Monthly' && c.thumbnail);
+                        if (monthly.length === 0) return;
+                        const shuffled = [...monthly].sort(() => Math.random() - 0.5);
+                        const picks = shuffled.slice(0, 9);
+                        const mn = {'01':'1월','02':'2월','03':'3월','04':'4월','05':'5월','06':'6월','07':'7월','08':'8월','09':'9월','10':'10월','11':'11월','12':'12월'};
+                        picks.forEach(function(l) {
+                            var mm = l.month ? l.month.split('-')[1] : '';
+                            var yr = l.month ? l.month.split('-')[0] : '';
+                            var label = yr + '년 ' + (mn[mm] || mm);
+                            var d = document.createElement('div');
+                            d.className = 'mini-album';
+                            d.onclick = function() { window.location.href = 'pages/lessons/' + l.link; };
+                            d.innerHTML = '<div class="mini-album-inner"><img src="' + l.thumbnail + '" alt="' + l.title + '" loading="lazy"><div class="mini-album-overlay"><div class="mini-album-title">' + l.title + '</div><div class="mini-album-month">' + label + '</div></div></div>';
+                            shelf.appendChild(d);
+                        });
+                    })();
+                </script>
+
+                <!-- ─── Inspiration Feed (Masonry) ─── -->
+                <section class="mt-6 px-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 id="home-sec-inspiration" class="font-bold text-base" data-i18n="sec_inspiration">
+                            Inspiration
+                            Feed</h3>
+                        <button class="text-primary text-xs font-semibold" data-i18n="com_filter">Filter</button>
+                    </div>
+                    <div class="masonry-grid" id="inspiration-grid">
+                        <!-- Dynamic content injected via JS -->
+                    </div>
+                </section>
+                <!-- Content Sections end -->
+        </main>
+    </div>
+
+    <!-- ─── Bottom Navigation (Mobile <640px) ─── -->
+    <nav class="lc-bottom-nav">
+        <a href="index.html" class="lc-bottom-item active">
+            <span class="material-symbols-outlined icon">home</span>
+            <span data-i18n="nav_home">Home</span>
+        </a>
+        <a href="pages/main/classes.html" class="lc-bottom-item">
+            <span class="material-symbols-outlined icon">school</span>
+            <span data-i18n="nav_classes">Classes</span>
+        </a>
+        <button class="lc-fab" onclick="window.location.href='pages/main/classes.html'">
+            <span class="material-symbols-outlined">add</span>
+        </button>
+        <a href="pages/main/gallery.html" class="lc-bottom-item">
+            <span class="material-symbols-outlined icon">gallery_thumbnail</span>
+            <span data-i18n="nav_gallery">Gallery</span>
+        </a>
+        <a href="pages/main/profile.html" class="lc-bottom-item">
+            <span class="material-symbols-outlined icon">person</span>
+            <span data-i18n="nav_profile">Profile</span>
+        </a>
+    </nav>
+
+    <script>
+        function toggleLangHome() {
+            document.getElementById('lang-dropdown-home').classList.toggle('open');
+        }
+
+        document.addEventListener('click', function (e) {
+            var c = document.getElementById('lang-home-container');
+            if (c && !c.contains(e.target)) {
+                var d = document.getElementById('lang-dropdown-home');
+                if (d) d.classList.remove('open');
+            }
+        });
+
+        // --- Shared popup helper: position popup below the clicked element ---
+        function positionPopupBelow(popup, clickedEl) {
+            var rect = clickedEl.getBoundingClientRect();
+            var popupWidth = popup.offsetWidth || 260;
+            var popupHeight = popup.offsetHeight || 200;
+            // body transform breaks position:fixed, so add scroll offset
+            var scrollY = window.scrollY || window.pageYOffset;
+            var scrollX = window.scrollX || window.pageXOffset;
+            var leftPos = rect.left + scrollX + rect.width / 2 - popupWidth / 2;
+            // Clamp to viewport edges (horizontal)
+            var vpLeft = scrollX + 8;
+            var vpRight = scrollX + window.innerWidth - 8;
+            if (leftPos < vpLeft) leftPos = vpLeft;
+            if (leftPos + popupWidth > vpRight) leftPos = vpRight - popupWidth;
+            // Check if popup fits below, otherwise show above
+            var topPos;
+            var arrow = popup.querySelector('[id$="-popup-arrow"]');
+            if (rect.bottom + 12 + popupHeight > window.innerHeight - 8) {
+                // Show above the clicked element
+                topPos = rect.top + scrollY - popupHeight - 12;
+                if (topPos < scrollY + 8) topPos = scrollY + 8;
+                if (arrow) {
+                    arrow.style.top = '';
+                    arrow.style.bottom = '-8px';
+                    arrow.style.transform = 'translateX(-50%) rotate(225deg)';
+                }
+            } else {
+                // Show below the clicked element
+                topPos = rect.bottom + scrollY + 12;
+                if (arrow) {
+                    arrow.style.bottom = '';
+                    arrow.style.top = '-8px';
+                    arrow.style.transform = 'translateX(-50%) rotate(45deg)';
+                }
+            }
+            popup.style.top = topPos + 'px';
+            popup.style.left = leftPos + 'px';
+            popup.style.transform = 'none';
+        }
+
+        // Korean Popup
+        function toggleKoreanPopup(e) {
+            if (e) e.stopPropagation();
+            var popup = document.getElementById('korean-popup');
+            var isHidden = popup.style.display === 'none' || popup.style.display === '';
+            // Close others
+            if (document.getElementById('history-popup')) document.getElementById('history-popup').style.display = 'none';
+            if (document.getElementById('typewriter-popup')) document.getElementById('typewriter-popup').style.display = 'none';
+            if (isHidden) {
+                var clicked = e.currentTarget;
+                popup.style.display = 'block';
+                positionPopupBelow(popup, clicked);
+            } else {
+                popup.style.display = 'none';
+            }
+        }
+        function closeKoreanPopup() {
+            document.getElementById('korean-popup').style.display = 'none';
+        }
+
+        // --- Window Click to Close Popups ---
+        window.addEventListener('click', () => {
+            if (document.getElementById('typewriter-popup')) document.getElementById('typewriter-popup').style.display = 'none';
+            if (document.getElementById('history-popup')) document.getElementById('history-popup').style.display = 'none';
+            if (document.getElementById('korean-popup')) document.getElementById('korean-popup').style.display = 'none';
+        });
+
+        function toggleTypewriterPopup(e) {
+            if (e) e.stopPropagation();
+            var popup = document.getElementById('typewriter-popup');
+            var isHidden = popup.style.display === 'none' || popup.style.display === '';
+            // Close others
+            if (document.getElementById('history-popup')) document.getElementById('history-popup').style.display = 'none';
+            if (document.getElementById('korean-popup')) document.getElementById('korean-popup').style.display = 'none';
+            if (isHidden) {
+                var clicked = e.currentTarget;
+                popup.style.display = 'block';
+                positionPopupBelow(popup, clicked);
+            } else {
+                popup.style.display = 'none';
+            }
+        }
+
+        function closeTypewriterPopup(e) {
+            document.getElementById('typewriter-popup').style.display = 'none';
+        }
+
+        // Close popup when clicking outside
+        document.addEventListener('click', function (e) {
+            var popups = ['typewriter-popup', 'history-popup', 'korean-popup'];
+            popups.forEach(function(id) {
+                var popup = document.getElementById(id);
+                if (popup && popup.style.display === 'block' && !popup.contains(e.target)) {
+                    popup.style.display = 'none';
+                }
+            });
+        });
+
+        function toggleHistoryPopup(e) {
+            if (e) e.stopPropagation();
+            var popup = document.getElementById('history-popup');
+            var isHidden = popup.style.display === 'none' || popup.style.display === '';
+            // Close others
+            if (document.getElementById('typewriter-popup')) document.getElementById('typewriter-popup').style.display = 'none';
+            if (document.getElementById('korean-popup')) document.getElementById('korean-popup').style.display = 'none';
+            if (isHidden) {
+                var clicked = e.currentTarget;
+                popup.style.display = 'block';
+                positionPopupBelow(popup, clicked);
+            } else {
+                popup.style.display = 'none';
+            }
+        }
+
+        function closeHistoryPopup() {
+            document.getElementById('history-popup').style.display = 'none';
+        }
+
+        function renderInspirationFeed() {
+            const grid = document.getElementById('inspiration-grid');
+            if (!grid || typeof LESSON_MAP === 'undefined') return;
+
+            let allImgs = [];
+            Object.entries(LESSON_MAP).forEach(([title, data]) => {
+                if (data.imgs) {
+                    data.imgs.slice(0, 3).forEach(img => { // Take up to 3 per lesson for variety
+                        allImgs.push({
+                            src: img,
+                            title: title,
+                            page: data.page,
+                            tag: CLASSES_DATA.find(c => c.id === data.page.replace('.html', '').replace('lesson-', ''))?.tagKey || 'Monthly Lab'
+                        });
+                    });
+                }
+            });
+
+            // Shuffle and pick 16 for better masonry coverage
+            allImgs = allImgs.sort(() => 0.5 - Math.random()).slice(0, 16);
+
+            grid.innerHTML = allImgs.map(img => {
+                let finalLink = img.page;
+                // If it's a static lesson page, point to pages/lessons/
+                if (finalLink.startsWith('lesson-') && !finalLink.includes('lesson-viewer.html')) {
+                    finalLink = `pages/lessons/${finalLink}`;
+                } else {
+                    // Otherwise it's likely a dynamic link or other page
+                    finalLink = finalLink;
+                }
+
+                return `
+                <div class="masonry-item cursor-pointer group" onclick="window.location.href='${finalLink}'">
+                    <div class="feed-card bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700/50">
+                        <img src="${img.src}" class="w-full object-cover group-hover:scale-105 transition-transform duration-500" style="max-height:300px" onerror="this.src='assets/images/placeholder_art.svg'">
+                        <div class="p-3">
+                            <p class="text-[10px] font-bold text-slate-500 mb-1 truncate">${img.title}</p>
+                            <div class="flex items-center justify-between">
+                                 <span class="text-[9px] bg-primary/5 text-primary px-2 py-0.5 rounded-full font-semibold" data-i18n="${img.tag}">${img.tag}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            if (window.lwApplyLang) window.lwApplyLang(grid);
+        }
+
+        // ─── 1분 명화 기능 ───
+        let currentMasterpieceIndex = 0;
+        let masterpieces = [];
+
+        // 큐레이터 페이지가 있는 4대 명화 (항상 상단 고정)
+        const FEATURED_CURATORS = [
+            {
+                title_ko: "별이 빛나는 밤", title_en: "The Starry Night",
+                artist_ko: "빈센트 반 고흐, 1889",
+                desc_ko: "소용돌이치는 밤하늘과 빛나는 별들. 반 고흐가 정신병원 창밖의 풍경을 기억으로 그린, 인류 역사상 가장 사랑받는 걸작입니다.",
+                era_ko: "후기 인상주의", rarity: "Legendary",
+                img_large: "images/masterpiece/medium/impr_025.jpg",
+                curator_url: "pages/main/masterpiece-curator.html"
+            },
+            {
+                title_ko: "인상, 해돋이", title_en: "Impression, Sunrise",
+                artist_ko: "클로드 모네, 1872",
+                desc_ko: "안개 낀 항구의 새벽 빛을 포착한 이 작은 그림이 '인상주의'라는 이름의 기원이 되었습니다. 짧은 붓터치 하나하나가 빛 그 자체입니다.",
+                era_ko: "인상주의", rarity: "Legendary",
+                img_large: "images/masterpiece/medium/impr_001.jpg",
+                curator_url: "pages/main/curator-monet-impression.html"
+            },
+            {
+                title_ko: "폴리베르제르의 술집", title_en: "A Bar at the Folies-Bergère",
+                artist_ko: "에두아르 마네, 1882",
+                desc_ko: "파리 유흥 세계 속 바텐더의 공허한 눈빛, 그리고 현실과 다른 거울 속 반사. 마네가 남긴 마지막 대작이자 가장 신비로운 수수께끼입니다.",
+                era_ko: "인상주의", rarity: "Legendary",
+                img_large: "images/masterpiece/medium/impr_002.jpg",
+                curator_url: "pages/main/curator-manet-folies.html"
+            },
+            {
+                title_ko: "물랭 드 라 갈레트의 무도회", title_en: "Dance at Le Moulin de la Galette",
+                artist_ko: "피에르-오귀스트 르누아르, 1876",
+                desc_ko: "파리 몽마르트르의 야외 파티, 나무 사이로 쏟아지는 햇빛과 웃음. 기쁨과 빛으로 가득한 인상주의의 정수입니다.",
+                era_ko: "인상주의", rarity: "Legendary",
+                img_large: "images/masterpiece/medium/impr_003.jpg",
+                curator_url: "pages/main/curator-renoir-moulin.html"
+            }
+        ];
+
+        async function loadMasterpieces() {
+            try {
+                const response = await fetch('data/cards/100_artists.json');
+                const data = await response.json();
+
+                // Extract all masterpieces from artists
+                masterpieces = [];
+                data.forEach(artist => {
+                    if (artist.masterpieces && artist.masterpieces.length > 0) {
+                        artist.masterpieces.forEach(mp => {
+                            masterpieces.push({
+                                title_ko: mp.title,
+                                title_en: mp.title_en,
+                                artist_ko: artist.title_ko,
+                                desc_ko: artist.desc_ko, // Fallback to artist desc if mp desc missing
+                                era_ko: artist.era_ko,
+                                rarity: artist.rarity,
+                                // Fix relative path for index.html (root)
+                                img_large: mp.url ? mp.url.replace('../../', '') : null
+                            });
+                        });
+                    }
+                });
+
+                // Shuffling logic
+                masterpieces = masterpieces.sort(() => 0.5 - Math.random()).slice(0, 6);
+                masterpieces = [...FEATURED_CURATORS, ...masterpieces];
+
+                renderMasterpieces();
+                updateMasterpieceInfo();
+                updateCarousel();
+            } catch (error) {
+                console.error('Failed to load masterpieces:', error);
+                masterpieces = [...FEATURED_CURATORS];
+                renderMasterpieces();
+            } finally {
+                // Ensure loading is hidden regardless of success or failure
+                const loadingEl = document.getElementById('masterpiece-loading');
+                if (loadingEl) loadingEl.style.display = 'none';
+            }
+        }
+
+        function renderMasterpieces() {
+            const container = document.getElementById('masterpiece-container');
+            container.innerHTML = masterpieces.map((mp, index) => `
+                <div class="flex-none w-full h-full flex-shrink-0 flex flex-col md:flex-row overflow-hidden">
+                    <!-- Left: Masterpiece Portrait -->
+                    <div class="w-full md:w-[45%] lg:w-[42%] h-[240px] md:h-full relative group bg-slate-50 dark:bg-slate-900/50">
+                        <img src="${mp.img_large || 'https://via.placeholder.com/400x300?text=Masterpiece'}"
+                             alt="${mp.title_ko}"
+                             class="w-full h-full object-contain object-top pt-4 pb-2 px-2 md:p-4 transition-transform duration-1000 group-hover:scale-[1.02]"
+                             onerror="this.src='assets/images/placeholder_art.svg'">
+                        <div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent pointer-events-none md:hidden"></div>
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-white/90 dark:bg-black/60 backdrop-blur px-2 py-0.5 rounded text-[9px] font-bold text-amber-700 dark:text-amber-300 border border-amber-200/50 uppercase">AUTHENTIC</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Info Section -->
+                    <div class="flex-1 p-6 md:p-10 flex flex-col justify-center bg-gradient-to-br from-white to-amber-50/50 dark:from-[#0f172a] dark:to-[#1e293b]">
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-display font-black text-slate-900 dark:text-white text-2xl md:text-3xl tracking-tight leading-tight">
+                                    ${mp.title_ko}
+                                </h4>
+                                <p class="text-amber-600 dark:text-amber-400 text-sm md:text-base font-medium mt-1 font-mono">
+                                    ${mp.artist_ko} <span class="text-slate-400 dark:text-slate-500 text-xs ml-2 font-normal">| ${mp.title_en}</span>
+                                </p>
+                            </div>
+                            
+                            <div class="w-12 h-1 bg-amber-400/30 rounded-full"></div>
+                            
+                            <p class="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed line-clamp-4 md:line-clamp-none break-keep">
+                                ${mp.desc_ko}
+                            </p>
+                            
+                            <div class="pt-4 flex items-center gap-6">
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Era</span>
+                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-200">${mp.era_ko || 'Classic Art'}</span>
+                                </div>
+                                <div class="w-px h-6 bg-slate-200 dark:bg-slate-700"></div>
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Movement</span>
+                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-200">${mp.rarity || 'Masterpiece'}</span>
+                                </div>
+                            </div>
+                            ${mp.curator_url ? `
+                            <div class="pt-2">
+                                <a href="${mp.curator_url}"
+                                   class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold px-4 py-2 rounded-full transition-all hover:scale-105 active:scale-95 shadow-md">
+                                    <span class="material-symbols-outlined text-[14px]">auto_stories</span>
+                                    1분 큐레이팅 시작 →
+                                </a>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateMasterpieceInfo() {
+            // Info is now part of the carousel slides, but we could add indicator update here
+        }
+
+        function nextMasterpiece() {
+            currentMasterpieceIndex = (currentMasterpieceIndex + 1) % masterpieces.length;
+            updateCarousel();
+            updateMasterpieceInfo();
+        }
+
+        function prevMasterpiece() {
+            currentMasterpieceIndex = (currentMasterpieceIndex - 1 + masterpieces.length) % masterpieces.length;
+            updateCarousel();
+            updateMasterpieceInfo();
+        }
+
+        function updateCarousel() {
+            const container = document.getElementById('masterpiece-container');
+            container.style.transform = `translateX(-${currentMasterpieceIndex * 100}%)`;
+        }
+
+        // 네비게이션 버튼 이벤트 리스너
+        document.getElementById('next-masterpiece')?.addEventListener('click', nextMasterpiece);
+        document.getElementById('prev-masterpiece')?.addEventListener('click', prevMasterpiece);
+        document.getElementById('next-masterpiece-float')?.addEventListener('click', nextMasterpiece);
+        document.getElementById('prev-masterpiece-float')?.addEventListener('click', prevMasterpiece);
+
+        document.addEventListener('DOMContentLoaded', function () {
+            lwRenderLangPicker('lang-dropdown-home');
+            renderInspirationFeed();
+            loadMasterpieces(); // Load 1분 명화
+
+            // Inject Purchase FAB if no classes bought
+            if (window.LunaApp && LunaApp.purchasedClasses.length === 0) {
+                const fab = document.createElement('button');
+                fab.className = 'fixed bottom-24 right-6 z-[60] flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent-purple text-white font-black rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all animate-bounce';
+                fab.innerHTML = `
+                    <span class="material-symbols-outlined">shopping_cart</span>
+                    <span class="text-xs uppercase tracking-widest">Buy Classes</span>
+                `;
+                fab.onclick = () => LunaApp.navigate('payment');
+                document.body.appendChild(fab);
+            }
+
+            // Landing page preview FAB
+            const landingFab = document.createElement('a');
+            landingFab.href = 'pages/main/landing.html';
+            landingFab.className = 'fixed bottom-24 left-6 z-[60] flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all';
+            landingFab.style.cssText = 'animation: pulse-ring 2s ease-in-out infinite;';
+            landingFab.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px">rocket_launch</span> 랜딩페이지 제작중';
+            document.body.appendChild(landingFab);
+        });
+    </script>
+
+    <!-- Welcome Setup Modal -->
+    <div id="welcome-setup-modal"
+        style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);">
+        <div
+            class="bg-white dark:bg-slate-900 p-8 rounded-[2rem] w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-800">
+            <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 mx-auto">
+                <span class="material-symbols-outlined text-primary text-3xl">celebration</span>
+            </div>
+            <h2 class="text-2xl font-black text-center mb-2 text-slate-900 dark:text-white" data-i18n="setup_title">
+                환영합니다!</h2>
+            <p class="text-sm text-center text-slate-500 mb-8 font-medium" data-i18n="setup_desc">활동에 사용할 닉네임을 설정해주세요.
+            </p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2"
+                        data-i18n="setup_nickname">닉네임</label>
+                    <input id="setup-nickname-input" type="text" placeholder="예: 루나토끼"
+                        class="w-full h-12 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-4 font-medium focus:border-primary outline-none transition-colors text-slate-900 dark:text-white">
+                </div>
+
+                <button onclick="saveInitialSetup()"
+                    class="w-full h-12 bg-primary hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95"
+                    data-i18n="setup_save">시작하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(() => {
+                const user = LunaApp.user;
+                if (user && user.nicknameSet === false) {
+                    document.getElementById("welcome-setup-modal").style.display = "flex";
+                    // Pre-fill if name exists
+                    if (user.name && user.name !== "User" && !user.name.includes("@")) {
+                        document.getElementById("setup-nickname-input").value = user.name;
+                    }
+                }
+            }, 800);
+        });
+
+        async function saveInitialSetup() {
+            const nickname = document.getElementById("setup-nickname-input").value.trim();
+            if (!nickname) {
+                LunaApp.toast("⚠️ 닉네임을 입력해주세요.");
+                return;
+            }
+
+            const btn = document.querySelector("#welcome-setup-modal button");
+            const originalText = btn.textContent;
+            btn.textContent = "저장 중...";
+            btn.disabled = true;
+
+            const res = await LunaAuth.updateProfile(LunaApp.user.uid, {
+                displayName: nickname,
+                nicknameSet: true
+            });
+
+            if (res.success) {
+                // Update local auth current user profile as well if possible, or just reload
+                if (window._auth && _auth.currentUser) {
+                    await _auth.currentUser.updateProfile({ displayName: nickname });
+                }
+                LunaApp.toast("✅ 설정이 완료되었습니다!");
+                setTimeout(() => location.reload(), 800);
+            } else {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                LunaApp.toast("❌ 오류가 발생했습니다.");
+            }
+        }
+    </script>
+
+    <!-- ─── Avatar Editor Modal ─── -->
+    <div id="avatar-editor-modal" class="fixed inset-0 z-[2000] bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto" style="height: 100dvh;">
+        <div class="bg-slate-800 border border-slate-600 rounded-2xl p-6 shadow-2xl max-w-md w-full relative m-auto h-fit">
+            <button id="btn-close-editor" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            <h2 class="text-xl font-bold text-white mb-2 text-center">나의 도트 캐릭터 만들기</h2>
+            <p class="text-xs text-slate-400 text-center mb-6">여기에 그린 캐릭터가 갤러리에서 돌아다닙니다!</p>
+            
+            <div class="flex flex-col items-center gap-4">
+                <!-- Draw Grid -->
+                <div class="bg-black border-4 border-slate-700 rounded-lg overflow-hidden flex" style="width:256px; height:256px;" id="avatar-grid-wrapper">
+                    <canvas id="avatarGridCanvas" width="256" height="256" style="image-rendering:pixelated; cursor:crosshair;"></canvas>
+                </div>
+                
+                <div class="w-full">
+                    <p class="text-[10px] text-slate-500 mb-1 uppercase tracking-wider font-bold">Palette</p>
+                    <div id="avatar-palette" class="grid grid-cols-8 gap-1 mb-4">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="btn-avatar-pencil" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded font-bold text-sm border-2 border-white">✏️ 툴</button>
+                        <button id="btn-avatar-eraser" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded font-bold text-sm border-2 border-transparent">🧽 지우개</button>
+                        <button id="btn-avatar-clear" class="px-3 py-2 bg-red-900/50 hover:bg-red-800 text-red-200 rounded font-bold text-sm" title="모두 지우기">🗑️</button>
+                    </div>
+                </div>
+                
+                <!-- Custom Name Input -->
+                <div class="w-full mt-2">
+                    <input type="text" id="avatar-name-input" placeholder="갤러리에서 사용할 닉네임" maxlength="10" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-purple-500">
+                </div>
+
+                <button id="btn-avatar-save" class="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold rounded-xl mt-2 shadow-lg hover:shadow-purple-500/25 transition-all active:scale-[0.98]">
+                    저장하고 입장하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+// ─── Special Item: Star Burst on Click ───
+function specialClick(e, url) {
+    const stars = ['⭐','✨','🌟','💫','⚡','🔮','💎','🎨'];
+    const rect = e.currentTarget.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    for (let i = 0; i < 12; i++) {
+        const s = document.createElement('span');
+        s.className = 'star-burst';
+        s.textContent = stars[Math.floor(Math.random() * stars.length)];
+        const angle = (Math.PI * 2 / 12) * i + (Math.random() - 0.5) * 0.5;
+        const dist = 60 + Math.random() * 80;
+        s.style.left = cx + 'px';
+        s.style.top = cy + 'px';
+        s.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+        s.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+        s.style.fontSize = (14 + Math.random() * 10) + 'px';
+        document.body.appendChild(s);
+        s.addEventListener('animationend', () => s.remove());
+    }
+    setTimeout(() => { window.location.href = url; }, 500);
+}
+</script>
+<!-- Global Popup Containers (moved from old scroll buttons) -->
+
+<!-- Korean Popup -->
+<div id="korean-popup" style="display:none;position:fixed;z-index:99990;min-width:240px;"
+    onclick="event.stopPropagation()">
+    <div style="background:linear-gradient(160deg,#0a152e,#1a2a4e);border:1px solid rgba(100,160,255,0.3);border-radius:20px;padding:18px;box-shadow:0 16px 48px rgba(0,0,0,0.5),0 0 30px rgba(50,100,200,0.15);animation:typewriterPopIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;position:relative">
+        <!-- Arrow -->
+        <div id="korean-popup-arrow" style="position:absolute;top:-8px;left:50%;transform:translateX(-50%) rotate(45deg);width:14px;height:14px;background:linear-gradient(135deg,#0a152e,#1a2a4e);border-left:1px solid rgba(100,160,255,0.3);border-top:1px solid rgba(100,160,255,0.3)"></div>
+        <!-- Close -->
+        <button onclick="closeKoreanPopup()" style="position:absolute;top:10px;right:10px;width:26px;height:26px;background:rgba(255,255,255,0.06);border:none;border-radius:50%;color:#80aaff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+        <!-- Title -->
+        <div style="text-align:center;margin-bottom:14px">
+            <div style="font-size:22px;margin-bottom:4px">🖌️</div>
+            <div style="font-size:12px;font-weight:800;color:#c0d6ff;letter-spacing:1px">루나웨일 국어</div>
+            <div style="font-size:10px;color:#7a9dff;margin-top:2px">재미있는 어휘 학습</div>
+        </div>
+        <!-- Game list -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+            <!-- 고사성어 런 -->
+            <a href="pages/games/korean-run.html"
+                style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(100,180,255,0.2);border-radius:14px;padding:12px 14px;text-decoration:none;transition:all .2s;cursor:pointer"
+                onmouseover="this.style.background='rgba(100,180,255,0.1)';this.style.borderColor='rgba(100,180,255,0.5)'"
+                onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(100,180,255,0.2)'">
+                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#0a152e,#1a2e4e);border:2px solid rgba(100,180,255,0.3);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🏃</div>
+                <div>
+                    <div style="font-size:12px;font-weight:800;color:#aaccff">고사성어 런!</div>
+                    <div style="font-size:10px;color:#7a9dff;margin-top:2px">뜻을 보고 고사성어를 맞혀보세요</div>
+                    <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+                        <span style="background:rgba(80,160,255,0.15);border:1px solid rgba(80,160,255,0.3);border-radius:6px;padding:1px 7px;font-size:9px;color:#80aaff">📚 국어</span>
+                        <span style="background:rgba(255,100,100,0.12);border:1px solid rgba(255,100,100,0.3);border-radius:6px;padding:1px 7px;font-size:9px;color:#ff8080">🕹️ 런닝게임</span>
+                    </div>
+                </div>
+                <span style="color:#6080ff;font-size:16px;margin-left:auto">›</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Typewriter Popup -->
+<div id="typewriter-popup" style="display:none; position:fixed; z-index:99990; min-width:260px;"
+    onclick="event.stopPropagation()">
+    <div class="bg-white dark:bg-slate-900 rounded-[1.5rem] p-5 shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-slate-100 dark:border-slate-800 relative transition-all duration-300"
+        style="animation: typewriterPopIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;">
+        <!-- Arrow pointer (Top) -->
+        <div id="typewriter-popup-arrow"
+            class="absolute top-[-8px] left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-l border-t border-slate-100 dark:border-slate-800 rotate-45">
+        </div>
+
+        <!-- Close button -->
+        <button onclick="closeTypewriterPopup()"
+            class="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center transition-colors">
+            <span class="material-symbols-outlined text-slate-400 text-base">close</span>
+        </button>
+        <!-- Title -->
+        <div class="text-center mb-4">
+            <h3 class="font-black text-sm text-slate-800 dark:text-white">타자기를 선택하세요</h3>
+            <p class="text-[10px] text-slate-400 mt-0.5">Choose your typewriter</p>
+        </div>
+        <!-- Two typewriter options -->
+        <div class="flex flex-col gap-2.5">
+            <!-- 용사 타자기 (Hero Typewriter) -->
+            <a href="pages/typewriter/hero-typewriter.html"
+                class="flex items-center gap-3 p-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-100/60 dark:border-amber-800/40 hover:shadow-md hover:-translate-y-0.5 transition-all group cursor-pointer">
+                <img src="assets/images/typewriter/hero-typewriter.jpg" alt="용사 타자기"
+                    class="w-12 h-12 rounded-lg object-cover shadow-sm group-hover:scale-105 transition-transform" />
+                <div>
+                    <span class="font-extrabold text-[13px] text-slate-800 dark:text-white">용사
+                        타자기</span>
+                    <p class="text-[9px] text-slate-400">Hero Typewriter</p>
+                </div>
+                <span
+                    class="material-symbols-outlined text-slate-300 ml-auto text-base">chevron_right</span>
+            </a>
+            <!-- 감성 타자기 (Emotion Typewriter) -->
+            <a href="pages/typewriter/emotion-typewriter.html"
+                class="flex items-center gap-3 p-2.5 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border border-indigo-200/60 dark:border-indigo-800/40 hover:shadow-md hover:-translate-y-0.5 transition-all group cursor-pointer">
+                <img src="assets/images/typewriter/emotion-typewriter.jpg" alt="감성 타자기"
+                    class="w-12 h-12 rounded-lg object-cover shadow-sm group-hover:scale-105 transition-transform" />
+                <div>
+                    <span class="font-extrabold text-[13px] text-slate-800 dark:text-white">감성
+                        타자기</span>
+                    <p class="text-[9px] text-slate-400">Emotion Typewriter</p>
+                </div>
+                <span
+                    class="material-symbols-outlined text-slate-300 ml-auto text-base">chevron_right</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- History Popup -->
+<div id="history-popup" style="display:none;position:fixed;z-index:99990;min-width:240px;"
+    onclick="event.stopPropagation()">
+    <div style="background:linear-gradient(160deg,#0e1a06,#1a2e0a);border:1px solid rgba(120,200,60,0.35);border-radius:20px;padding:18px;box-shadow:0 16px 48px rgba(0,0,0,0.5),0 0 30px rgba(80,160,30,0.15);animation:typewriterPopIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;position:relative">
+        <!-- Arrow -->
+        <div id="history-popup-arrow" style="position:absolute;top:-8px;left:50%;transform:translateX(-50%) rotate(45deg);width:14px;height:14px;background:linear-gradient(135deg,#0e1a06,#1a2e0a);border-left:1px solid rgba(120,200,60,0.3);border-top:1px solid rgba(120,200,60,0.3)"></div>
+        <!-- Close -->
+        <button onclick="closeHistoryPopup()" style="position:absolute;top:10px;right:10px;width:26px;height:26px;background:rgba(255,255,255,0.06);border:none;border-radius:50%;color:#6a9840;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+        <!-- Title -->
+        <div style="text-align:center;margin-bottom:14px">
+            <div style="font-size:22px;margin-bottom:4px">📜</div>
+            <div style="font-size:12px;font-weight:800;color:#c8e890;letter-spacing:1px">루나웨일 역사관</div>
+            <div style="font-size:10px;color:#5a7830;margin-top:2px">미니 역사 게임 모음</div>
+        </div>
+        <!-- Game list -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+            <!-- 조선왕 게임 -->
+            <a href="pages/games/joseon-king.html"
+                style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,200,80,0.2);border-radius:14px;padding:12px 14px;text-decoration:none;transition:all .2s;cursor:pointer"
+                onmouseover="this.style.background='rgba(255,200,80,0.1)';this.style.borderColor='rgba(255,200,80,0.5)'"
+                onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,200,80,0.2)'">
+                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#1a1208,#2e2410);border:2px solid rgba(255,200,80,0.3);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">👑</div>
+                <div>
+                    <div style="font-size:12px;font-weight:800;color:#f5d77a">나는 조선왕!</div>
+                    <div style="font-size:10px;color:#7a6030;margin-top:2px">27명의 조선 왕을 만나보세요</div>
+                    <div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap">
+                        <span style="background:rgba(255,180,30,0.15);border:1px solid rgba(255,180,30,0.3);border-radius:6px;padding:1px 7px;font-size:9px;color:#c8a040">📚 역사</span>
+                        <span style="background:rgba(80,160,255,0.12);border:1px solid rgba(80,160,255,0.3);border-radius:6px;padding:1px 7px;font-size:9px;color:#80b4ff">🕹️ 미니게임</span>
+                    </div>
+                </div>
+                <span style="color:#5a7030;font-size:16px;margin-left:auto">›</span>
+            </a>
+            <!-- Coming soon -->
+            <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.08);border-radius:14px;padding:12px 14px;opacity:0.5">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🎨</div>
+                <div>
+                    <div style="font-size:12px;font-weight:800;color:#a0a0a0">세계 미술사 퀴즈</div>
+                    <div style="font-size:10px;color:#505050;margin-top:2px">Coming Soon...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Art Cosmos Widget -->
+<script src="assets/data/art-archive.js?v=0319"></script>
+<script src="assets/js/voice-engine.js?v=0319"></script>
+<script src="assets/js/art-cosmos-widget.js?v=0320b"></script>
+<!-- Luna TECH Flip Button -->
+<script src="assets/js/luna-tech-flip.js?v=0321c"></script>
+<script src="assets/js/luna-math-btn.js?v=0321"></script>
+<!-- Recent Lessons -->
+<script src="assets/js/recent-lessons.js?v=0321"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof RecentLessons !== 'undefined') {
+    RecentLessons.renderSidebar('recent-lessons-sidebar', 'pages/main/my-classes.html');
+  }
+});
+</script>
+<!-- Luna Sound Effects -->
+<script src="assets/js/luna-sounds.js?v=0321"></script>
+<!-- Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+<!-- Drawer toggle for tablet -->
+<script>
+(function() {
+    const hamburger = document.getElementById('hamburger-btn');
+    const drawer = document.getElementById('drawer-panel');
+    const backdrop = document.getElementById('drawer-backdrop');
+    if (!hamburger || !drawer || !backdrop) return;
+
+    function toggleDrawer() {
+        const isOpen = drawer.classList.contains('open');
+        drawer.classList.toggle('open', !isOpen);
+        backdrop.classList.toggle('open', !isOpen);
+        backdrop.style.display = isOpen ? 'none' : 'block';
+    }
+
+    hamburger.addEventListener('click', toggleDrawer);
+    backdrop.addEventListener('click', toggleDrawer);
+
+    // Close drawer on nav item click
+    drawer.querySelectorAll('.lc-nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            drawer.classList.remove('open');
+            backdrop.classList.remove('open');
+            backdrop.style.display = 'none';
+        });
+    });
+})();
+</script>
+</body>
+
+</html>

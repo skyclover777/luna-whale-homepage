@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 동화책 만들기 - Luna Korean</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Gaegu:wght@400;700&family=Pretendard+Variable:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+}
+
+:root {
+    --book-bg: #FFF8F0;
+    --book-bg2: #FDF3E7;
+    --book-border: #D4A574;
+    --book-text: #4A3728;
+    --book-text2: #7A6455;
+    --book-accent: #E8965A;
+    --book-gold: #C4935A;
+    --book-cream: #FAF0E2;
+    --book-shadow: rgba(74,55,40,0.15);
+
+    --who: #E74C3C;
+    --when: #F39C12;
+    --where: #27AE60;
+    --what: #3498DB;
+    --how: #9B59B6;
+    --why: #F1C40F;
+}
+
+body {
+    font-family: 'Pretendard Variable', sans-serif;
+    background: var(--book-bg);
+    color: var(--book-text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+}
+
+/* ═══════════════ SCREEN: INTRO ═══════════════ */
+#screen-intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 40px 20px;
+    background: linear-gradient(160deg, #FFF8F0 0%, #FDF3E7 40%, #F8E8D4 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.intro-deco {
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+    pointer-events: none;
+}
+.intro-deco-1 { background: var(--book-accent); top: -80px; left: -60px; }
+.intro-deco-2 { background: var(--what); bottom: -60px; right: -80px; }
+
+.intro-book {
+    position: relative;
+    background: var(--book-cream);
+    border: 3px solid var(--book-border);
+    border-radius: 8px 24px 24px 8px;
+    padding: 48px 40px;
+    max-width: 520px;
+    width: 100%;
+    box-shadow: -4px 0 0 var(--book-border), 6px 8px 24px var(--book-shadow);
+    text-align: center;
+}
+.intro-book::before {
+    content: '';
+    position: absolute;
+    left: 16px; top: 20px; bottom: 20px;
+    width: 2px;
+    background: var(--book-border);
+    opacity: 0.3;
+}
+
+.intro-emoji { font-size: 64px; margin-bottom: 16px; }
+.intro-title {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 900;
+    font-size: 32px;
+    color: var(--book-text);
+    margin-bottom: 8px;
+}
+.intro-sub {
+    color: var(--book-text2);
+    font-size: 15px;
+    margin-bottom: 32px;
+    line-height: 1.6;
+}
+
+.genre-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.genre-btn {
+    background: white;
+    border: 2px solid #E8DDD0;
+    border-radius: 14px;
+    padding: 14px 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+.genre-btn:hover { border-color: var(--book-accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(232,150,90,0.15); }
+.genre-btn.selected { border-color: var(--book-accent); background: #FFF5EC; box-shadow: 0 0 0 3px rgba(232,150,90,0.15); }
+.genre-emoji { font-size: 32px; display: block; margin-bottom: 6px; }
+.genre-label { font-size: 13px; font-weight: 600; color: var(--book-text); }
+
+.hero-input-wrap {
+    margin-bottom: 28px;
+}
+.hero-input-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--book-text2);
+    margin-bottom: 8px;
+    display: block;
+}
+.hero-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #E8DDD0;
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: 'Gaegu', cursive;
+    font-weight: 700;
+    background: white;
+    color: var(--book-text);
+    text-align: center;
+    transition: border-color 0.2s;
+}
+.hero-input:focus { outline: none; border-color: var(--book-accent); }
+.hero-input::placeholder { color: #C4B5A5; }
+
+.start-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--book-accent), #D4793A);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Pretendard Variable', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(232,150,90,0.3);
+}
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(232,150,90,0.4); }
+.start-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.draft-notice {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #FFF5EC;
+    border: 1px solid #F0D9C0;
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--book-accent);
+    cursor: pointer;
+}
+.draft-notice:hover { background: #FFEFE0; }
+
+/* ═══════════════ SCREEN: BUILDER ═══════════════ */
+#screen-builder { display: none; min-height: 100dvh; }
+
+.builder-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,248,240,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #E8DDD0;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.builder-back {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--book-text2);
+    padding: 4px;
+}
+.builder-title-area { flex: 1; }
+.builder-title {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 700;
+    font-size: 18px;
+}
+.builder-page-indicator {
+    font-size: 13px;
+    color: var(--book-text2);
+}
+
+.progress-bar {
+    height: 4px;
+    background: #E8DDD0;
+    border-radius: 2px;
+    overflow: hidden;
+    width: 120px;
+}
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--book-accent), var(--book-gold));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+}
+
+.builder-body {
+    display: flex;
+    gap: 0;
+    max-width: 1280px;
+    margin: 0 auto;
+    height: calc(100dvh - 57px);
+    overflow: hidden;
+}
+
+/* Mini book sidebar */
+.mini-book {
+    width: 100px;
+    padding: 16px 10px;
+    border-right: 1px solid #E8DDD0;
+    background: var(--book-bg2);
+    flex-shrink: 0;
+    overflow-y: auto;
+    height: 100%;
+}
+.mini-page {
+    width: 72px;
+    height: 96px;
+    margin: 0 auto 10px;
+    background: white;
+    border: 2px solid #E8DDD0;
+    border-radius: 4px 8px 8px 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #C4B5A5;
+}
+.mini-page.active { border-color: var(--book-accent); box-shadow: 0 2px 8px rgba(232,150,90,0.2); }
+.mini-page.done { border-color: var(--where); }
+.mini-page.done::after {
+    content: '\2713';
+    position: absolute;
+    top: 2px; right: 4px;
+    font-size: 10px;
+    color: var(--where);
+    font-weight: 700;
+}
+.mini-page img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 2px 6px 6px 2px;
+}
+.mini-page-num {
+    position: absolute;
+    bottom: 2px; left: 0; right: 0;
+    text-align: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--book-text2);
+    background: rgba(255,255,255,0.8);
+}
+
+/* Main workspace */
+.workspace {
+    flex: 1;
+    padding: 24px 32px;
+    overflow-y: auto;
+    max-width: 800px;
+    height: 100%;
+}
+
+/* Step sections */
+.step-section {
+    margin-bottom: 24px;
+    animation: fadeSlideUp 0.4s ease;
+}
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.step-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--book-accent);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.step-label .material-symbols-outlined { font-size: 16px; }
+
+/* AI Line display */
+.ai-line-box {
+    background: linear-gradient(135deg, #FFF9F2, #FFF5EC);
+    border: 2px solid #F0D9C0;
+    border-radius: 16px;
+    padding: 20px 24px;
+    position: relative;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 18px;
+    line-height: 1.7;
+    color: var(--book-text);
+}
+.ai-line-box::before {
+    content: '\201C';
+    position: absolute;
+    top: 8px; left: 12px;
+    font-size: 36px;
+    color: var(--book-border);
+    opacity: 0.3;
+    font-family: Georgia, serif;
+}
+.ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    background: var(--book-accent);
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    font-family: 'Pretendard Variable', sans-serif;
+}
+
+/* 6하원칙 Icons */
+.icons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+@media (min-width: 640px) {
+    .icons-grid { grid-template-columns: repeat(6, 1fr); }
+}
+.icon-card {
+    background: white;
+    border: 2px solid #E8DDD0;
+    border-radius: 16px;
+    padding: 16px 8px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.icon-card:hover { transform: translateY(-4px) scale(1.03); }
+.icon-card.selected { transform: translateY(-4px) scale(1.05); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+.icon-card[data-type="who"] { --ic: var(--who); }
+.icon-card[data-type="when"] { --ic: var(--when); }
+.icon-card[data-type="where"] { --ic: var(--where); }
+.icon-card[data-type="what"] { --ic: var(--what); }
+.icon-card[data-type="how"] { --ic: var(--how); }
+.icon-card[data-type="why"] { --ic: var(--why); }
+.icon-card.selected { border-color: var(--ic); background: color-mix(in srgb, var(--ic) 6%, white); }
+.icon-emoji { font-size: 28px; margin-bottom: 6px; }
+.icon-type {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ic);
+    margin-bottom: 4px;
+}
+.icon-hint {
+    font-size: 12px;
+    color: var(--book-text2);
+    line-height: 1.4;
+    word-break: keep-all;
+}
+
+/* Text input */
+.kid-input-area {
+    position: relative;
+}
+.kid-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 18px 20px;
+    border: 2px solid #E8DDD0;
+    border-radius: 14px;
+    font-family: 'Gaegu', cursive;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--book-text);
+    background: white;
+    resize: vertical;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+}
+.kid-textarea:focus { outline: none; border-color: var(--book-accent); }
+.kid-textarea::placeholder { color: #C4B5A5; font-weight: 400; }
+.char-count {
+    position: absolute;
+    bottom: 10px; right: 14px;
+    font-size: 12px;
+    color: #C4B5A5;
+}
+
+/* Action buttons */
+.action-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.action-btn {
+    flex: 1;
+    min-width: 200px;
+    padding: 14px 20px;
+    border: 2px solid #E8DDD0;
+    border-radius: 14px;
+    background: white;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Pretendard Variable', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.action-btn:hover { border-color: var(--book-accent); background: #FFF9F2; transform: translateY(-1px); }
+.action-btn.primary {
+    background: linear-gradient(135deg, var(--book-accent), #D4793A);
+    color: white;
+    border-color: transparent;
+}
+.action-btn.primary:hover { box-shadow: 0 4px 16px rgba(232,150,90,0.3); }
+.action-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.action-btn .material-symbols-outlined { font-size: 20px; }
+
+/* Polish comparison */
+.polish-box {
+    background: white;
+    border: 2px solid #E8DDD0;
+    border-radius: 16px;
+    overflow: hidden;
+}
+.polish-row {
+    padding: 16px 20px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+.polish-row + .polish-row { border-top: 1px solid #F0E8DD; }
+.polish-tag {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+.polish-tag.before { background: #FEE2E2; color: #B91C1C; }
+.polish-tag.after { background: #DCFCE7; color: #166534; }
+.polish-tag.explain { background: #DBEAFE; color: #1E40AF; }
+.polish-text {
+    font-size: 16px;
+    line-height: 1.6;
+    word-break: keep-all;
+}
+.polish-text.before-text {
+    text-decoration: line-through;
+    color: var(--book-text2);
+    font-family: 'Gaegu', cursive;
+    font-weight: 700;
+}
+.polish-text.after-text {
+    font-family: 'Noto Serif KR', serif;
+    color: var(--book-text);
+}
+.polish-text.explain-text {
+    font-size: 14px;
+    color: var(--book-text2);
+}
+
+/* Canvas area */
+.canvas-area {
+    position: relative;
+    background: #F5EDE3;
+    border: 2px solid #E0D4C4;
+    border-radius: 16px;
+    overflow: hidden;
+}
+.canvas-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3/4;
+    max-height: 600px;
+    overflow: hidden;
+}
+#pageCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: move;
+}
+.canvas-text-overlay {
+    position: absolute;
+    bottom: 10%;
+    left: 5%; right: 5%;
+    padding: 12px 18px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border-radius: 10px;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: center;
+    cursor: move;
+    user-select: none;
+    word-break: keep-all;
+    backdrop-filter: blur(4px);
+    transition: background 0.2s;
+}
+.canvas-text-overlay:hover { background: rgba(0,0,0,0.6); }
+.canvas-text-overlay.dragging { background: rgba(0,0,0,0.7); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+
+.canvas-tools {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(255,248,240,0.9);
+    border-top: 1px solid #E0D4C4;
+    flex-wrap: wrap;
+}
+.canvas-tool-btn {
+    padding: 8px 14px;
+    border: 1px solid #E0D4C4;
+    border-radius: 8px;
+    background: white;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.canvas-tool-btn:hover { border-color: var(--book-accent); background: #FFF9F2; }
+.canvas-tool-btn.active { background: var(--book-accent); color: white; border-color: var(--book-accent); }
+
+.text-style-options {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.text-color-dot {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 2px solid #E0D4C4;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.text-color-dot:hover { transform: scale(1.15); }
+.text-color-dot.active { border-color: var(--book-accent); box-shadow: 0 0 0 2px rgba(232,150,90,0.3); }
+
+/* Page complete button */
+.page-complete-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--where), #1F8A4D);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 700;
+    font-family: 'Pretendard Variable', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.page-complete-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(39,174,96,0.3); }
+.page-complete-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Flow guide */
+.flow-guide {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+.flow-step {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #F0EBE3;
+    color: #A89580;
+    white-space: nowrap;
+}
+.flow-step.active {
+    background: var(--book-accent);
+    color: white;
+}
+.flow-step.done {
+    background: #D1FAE5;
+    color: #065F46;
+}
+.flow-arrow {
+    font-size: 12px;
+    color: #C4B5A5;
+    flex-shrink: 0;
+}
+
+/* Explain banner */
+.ai-explain-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #FFF9F2, #FFF5EC);
+    border: 1.5px solid #F0D9C0;
+    border-radius: 14px;
+    margin-bottom: 14px;
+    font-size: 14px;
+    color: var(--book-text);
+    line-height: 1.5;
+}
+.ai-explain-banner strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 2px;
+}
+
+/* Action explain */
+.action-explain {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+.action-explain-item {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    background: #FAF5EF;
+    border: 1px solid #E8DDD0;
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--book-text2);
+    line-height: 1.5;
+}
+.action-explain-item strong {
+    display: block;
+    color: var(--book-text);
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+/* Loading spinner */
+.loading-dots {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+}
+.loading-dots span {
+    width: 6px; height: 6px;
+    background: currentColor;
+    border-radius: 50%;
+    animation: dotBounce 1s infinite;
+}
+.loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes dotBounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+}
+
+/* ═══════════════ SCREEN: VIEWER ═══════════════ */
+#screen-viewer { display: none; min-height: 100dvh; background: #2C2018; }
+
+.viewer-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(44,32,24,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.viewer-title {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: #FAF0E2;
+}
+.viewer-btns { display: flex; gap: 8px; }
+.viewer-btn {
+    padding: 8px 16px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    color: #E8DDD0;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.viewer-btn:hover { background: rgba(255,255,255,0.12); }
+
+.viewer-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100dvh - 60px);
+    padding: 40px 20px;
+}
+
+.book-display {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 3/4;
+    background: var(--book-cream);
+    border-radius: 4px 16px 16px 4px;
+    box-shadow: -4px 0 0 var(--book-border), 8px 12px 40px rgba(0,0,0,0.4);
+    overflow: hidden;
+}
+.book-display img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.book-text-layer {
+    position: absolute;
+    left: 5%; right: 5%;
+    padding: 14px 20px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border-radius: 10px;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 18px;
+    line-height: 1.7;
+    text-align: center;
+    word-break: keep-all;
+    backdrop-filter: blur(4px);
+}
+.book-page-num {
+    position: absolute;
+    bottom: 12px; left: 0; right: 0;
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+}
+
+.viewer-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+.viewer-nav-btn {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06);
+    color: #E8DDD0;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.viewer-nav-btn:hover { background: rgba(255,255,255,0.12); }
+.viewer-nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+.viewer-page-label {
+    font-size: 14px;
+    color: #E8DDD0;
+    font-weight: 600;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* ═══════════════ UTILS ═══════════════ */
+.hidden { display: none !important; }
+
+.toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--book-text);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 9999;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* API key modal */
+.api-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 5000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.api-modal-overlay.show { display: flex; }
+.api-modal {
+    background: var(--book-cream);
+    border: 2px solid var(--book-border);
+    border-radius: 20px;
+    padding: 32px;
+    max-width: 420px;
+    width: 100%;
+}
+.api-modal h3 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+.api-modal p {
+    font-size: 13px;
+    color: var(--book-text2);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+.api-modal input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #E8DDD0;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    background: white;
+}
+.api-modal input:focus { outline: none; border-color: var(--book-accent); }
+.api-modal-btns { display: flex; gap: 8px; }
+.api-modal-btns button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: 'Pretendard Variable', sans-serif;
+}
+.api-modal-btns .cancel { background: #E8DDD0; color: var(--book-text); }
+.api-modal-btns .confirm { background: var(--book-accent); color: white; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .mini-book { width: 70px; padding: 10px 6px; }
+    .mini-page { width: 52px; height: 70px; }
+    .workspace { padding: 16px; }
+    .intro-book { padding: 32px 24px; }
+    .intro-title { font-size: 26px; }
+    .icons-grid { grid-template-columns: repeat(3, 1fr); }
+    .genre-grid { grid-template-columns: repeat(2, 1fr); }
+    .action-row { flex-direction: column; }
+    .action-btn { min-width: auto; }
+}
+@media (max-width: 480px) {
+    .mini-book { display: none; }
+    .builder-body { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ SCREEN: INTRO ═══════════════ -->
+<div id="screen-intro">
+    <div class="intro-deco intro-deco-1"></div>
+    <div class="intro-deco intro-deco-2"></div>
+
+    <div class="intro-book">
+        <div class="intro-emoji">📖</div>
+        <h1 class="intro-title">AI 동화책 만들기</h1>
+        <p class="intro-sub">
+            AI와 함께 6하원칙으로<br>
+            나만의 10페이지 동화책을 만들어요!
+        </p>
+
+        <div class="genre-grid" id="genreGrid">
+            <button class="genre-btn" data-genre="fantasy" onclick="selectGenre(this)">
+                <span class="genre-emoji">🏰</span>
+                <span class="genre-label">판타지</span>
+            </button>
+            <button class="genre-btn" data-genre="adventure" onclick="selectGenre(this)">
+                <span class="genre-emoji">🗺</span>
+                <span class="genre-label">모험</span>
+            </button>
+            <button class="genre-btn" data-genre="animal" onclick="selectGenre(this)">
+                <span class="genre-emoji">🐾</span>
+                <span class="genre-label">동물</span>
+            </button>
+            <button class="genre-btn" data-genre="space" onclick="selectGenre(this)">
+                <span class="genre-emoji">🚀</span>
+                <span class="genre-label">우주</span>
+            </button>
+            <button class="genre-btn" data-genre="daily" onclick="selectGenre(this)">
+                <span class="genre-emoji">🌈</span>
+                <span class="genre-label">일상</span>
+            </button>
+            <button class="genre-btn" data-genre="mystery" onclick="selectGenre(this)">
+                <span class="genre-emoji">🔮</span>
+                <span class="genre-label">미스터리</span>
+            </button>
+        </div>
+
+        <div class="hero-input-wrap">
+            <label class="hero-input-label">주인공 이름을 지어주세요</label>
+            <input type="text" class="hero-input" id="heroNameInput" placeholder="예: 별이, 용감한 토끼, 하늘이..." maxlength="20" oninput="checkIntroReady()">
+        </div>
+
+        <button class="start-btn" id="startBtn" disabled onclick="startStorybook()">
+            동화책 만들기 시작! ✨
+        </button>
+
+        <div class="draft-notice hidden" id="draftNotice" onclick="loadDraft()">
+            📄 이전에 만들던 동화책이 있어요. 이어서 만들까요?
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ SCREEN: BUILDER ═══════════════ -->
+<div id="screen-builder">
+    <div class="builder-header">
+        <button class="builder-back" onclick="goBackToIntro()">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div class="builder-title-area">
+            <div class="builder-title" id="builderTitle">AI 동화책 만들기</div>
+            <div class="builder-page-indicator" id="pageIndicator">페이지 1 / 10</div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 10%"></div>
+        </div>
+    </div>
+
+    <div class="builder-body">
+        <div class="mini-book" id="miniBook"></div>
+
+        <div class="workspace" id="workspace">
+            <!-- Step 1: AI Line -->
+            <div class="step-section" id="step-aiLine">
+                <div class="flow-guide">
+                    <span class="flow-step active">1 AI 작성</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">2 방향 선택</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">3 내가 쓰기</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">4 그림 완성</span>
+                </div>
+                <div class="ai-explain-banner">
+                    <span style="font-size:20px;">🤖</span>
+                    <div>
+                        <strong>AI 작가가 이야기를 한 줄 썼어요!</strong>
+                        <div style="font-size:13px; opacity:0.85; margin-top:2px;">이 문장에 이어서 내 이야기를 써볼 거예요.</div>
+                    </div>
+                </div>
+                <div class="ai-line-box">
+                    <div class="ai-badge">AI 작가</div>
+                    <div id="aiLineText">
+                        <span class="loading-dots"><span></span><span></span><span></span></span>
+                        AI가 이야기를 준비하고 있어요...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: 6하원칙 Icons -->
+            <div class="step-section hidden" id="step-icons">
+                <div class="flow-guide">
+                    <span class="flow-step done">1 AI 작성 ✓</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step active">2 방향 선택</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">3 내가 쓰기</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">4 그림 완성</span>
+                </div>
+                <div class="ai-explain-banner" style="background:linear-gradient(135deg,#EEF6FF,#E8F4FF); border-color:#B3D4F5;">
+                    <span style="font-size:20px;">👇</span>
+                    <div>
+                        <strong>아래 6가지 중 하나를 골라 클릭하세요!</strong>
+                        <div style="font-size:13px; opacity:0.85; margin-top:2px;">누가/언제/어디서/무엇을/어떻게/왜 — 이야기가 어떤 방향으로 흘러갈지 정하는 거예요.</div>
+                    </div>
+                </div>
+                <div class="icons-grid" id="iconsGrid"></div>
+            </div>
+
+            <!-- Step 3: Kid's Input -->
+            <div class="step-section hidden" id="step-input">
+                <div class="flow-guide">
+                    <span class="flow-step done">1 AI 작성 ✓</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step done">2 방향 선택 ✓</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step active">3 내가 쓰기</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step">4 그림 완성</span>
+                </div>
+                <div class="ai-explain-banner" style="background:linear-gradient(135deg,#FFF5EC,#FFF0E2); border-color:#F0D9C0;">
+                    <span style="font-size:20px;">✏️</span>
+                    <div>
+                        <strong>이제 내 차례! AI 문장에 이어서 한 줄을 써보세요.</strong>
+                        <div style="font-size:13px; opacity:0.85; margin-top:2px;">선택한 방향을 참고해서 자유롭게 써도 좋아요!</div>
+                    </div>
+                </div>
+                <div id="selectedHint" style="padding:10px 16px; background:#FFF5EC; border:1px solid #F0D9C0; border-radius:10px; margin-bottom:12px; font-size:14px; color:var(--book-text2); display:flex; gap:8px; align-items:center;"></div>
+                <div class="kid-input-area">
+                    <textarea class="kid-textarea" id="kidTextarea" placeholder="여기에 이야기를 써보세요..." oninput="updateCharCount()"></textarea>
+                    <div class="char-count" id="charCount">0자</div>
+                </div>
+            </div>
+
+            <!-- Step 4: Polish + Image Gen buttons -->
+            <div class="step-section hidden" id="step-actions">
+                <div class="action-explain">
+                    <div class="action-explain-item">
+                        <span style="font-size:22px;">✨</span>
+                        <div>
+                            <strong>AI 문장 다듬기</strong>
+                            <div>내가 쓴 문장을 AI가 더 자연스럽게 고쳐줘요. 원본과 다듬어진 버전을 비교해볼 수 있어요.</div>
+                        </div>
+                    </div>
+                    <div class="action-explain-item">
+                        <span style="font-size:22px;">🎨</span>
+                        <div>
+                            <strong>동화책 페이지 생성</strong>
+                            <div>다듬기 후 활성화돼요. AI가 이 페이지의 그림을 그려줘요!</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="action-row">
+                    <button class="action-btn" id="polishBtn" onclick="polishSentence()">
+                        <span class="material-symbols-outlined">auto_fix_high</span>
+                        AI 문장 다듬기
+                    </button>
+                    <button class="action-btn primary" id="generateBtn" onclick="generatePageImage()" disabled>
+                        <span class="material-symbols-outlined">palette</span>
+                        동화책 페이지 생성
+                    </button>
+                </div>
+            </div>
+
+            <!-- Polish result -->
+            <div class="step-section hidden" id="step-polish">
+                <div class="ai-explain-banner" style="background:linear-gradient(135deg,#F0FDF4,#ECFDF5); border-color:#A7F3D0;">
+                    <span style="font-size:20px;">📝</span>
+                    <div>
+                        <strong>AI가 문장을 다듬었어요!</strong>
+                        <div style="font-size:13px; opacity:0.85; margin-top:2px;">원본과 비교해보고, 마음에 들면 그림 생성으로 넘어가세요.</div>
+                    </div>
+                </div>
+                <div class="polish-box" id="polishBox"></div>
+            </div>
+
+            <!-- Step 5: Canvas -->
+            <div class="step-section hidden" id="step-canvas">
+                <div class="flow-guide">
+                    <span class="flow-step done">1 AI 작성 ✓</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step done">2 방향 선택 ✓</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step done">3 내가 쓰기 ✓</span>
+                    <span class="flow-arrow">→</span>
+                    <span class="flow-step active">4 그림 완성</span>
+                </div>
+                <div class="ai-explain-banner" style="background:linear-gradient(135deg,#FDF4FF,#FAF0FF); border-color:#DDD6FE;">
+                    <span style="font-size:20px;">🖼</span>
+                    <div>
+                        <strong>AI가 그림을 그렸어요!</strong>
+                        <div style="font-size:13px; opacity:0.85; margin-top:2px;">글자를 <strong>드래그</strong>해서 원하는 위치에 놓고, 페이지를 완성하세요.</div>
+                    </div>
+                </div>
+                <div class="canvas-area">
+                    <div class="canvas-wrap" id="canvasWrap">
+                        <canvas id="pageCanvas"></canvas>
+                        <div class="canvas-text-overlay" id="canvasTextOverlay"></div>
+                    </div>
+                    <div class="canvas-tools">
+                        <div class="text-style-options">
+                            <span style="font-size:12px; font-weight:600; color:var(--book-text2);">글자색:</span>
+                            <div class="text-color-dot active" style="background:#000;color:#fff;" data-style="dark" onclick="setTextStyle('dark',this)"></div>
+                            <div class="text-color-dot" style="background:#fff;border-color:#ccc;" data-style="white" onclick="setTextStyle('white',this)"></div>
+                            <div class="text-color-dot" style="background:rgba(0,0,0,0.5);" data-style="glass" onclick="setTextStyle('glass',this)"></div>
+                        </div>
+                        <div style="flex:1;"></div>
+                        <button class="canvas-tool-btn" onclick="downloadCurrentPage()">
+                            <span class="material-symbols-outlined" style="font-size:16px;">download</span>
+                            저장
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top:16px;">
+                    <button class="page-complete-btn" id="pageCompleteBtn" onclick="completePage()">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        <span id="completeLabel">페이지 1 완성! 다음 페이지로</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ SCREEN: VIEWER ═══════════════ -->
+<div id="screen-viewer">
+    <div class="viewer-header">
+        <div class="viewer-title" id="viewerTitle">나의 동화책</div>
+        <div class="viewer-btns">
+            <button class="viewer-btn" onclick="downloadAllPages()">
+                <span class="material-symbols-outlined" style="font-size:16px;">download</span>
+                전체 저장
+            </button>
+            <button class="viewer-btn" onclick="goBackToBuilder()">
+                <span class="material-symbols-outlined" style="font-size:16px;">edit</span>
+                수정
+            </button>
+        </div>
+    </div>
+
+    <div class="viewer-body">
+        <div style="width:100%; max-width:640px;">
+            <div class="book-display" id="bookDisplay">
+                <img id="viewerImage" src="" alt="">
+                <div class="book-text-layer" id="viewerText"></div>
+                <div class="book-page-num" id="viewerPageNum"></div>
+            </div>
+            <div class="viewer-nav">
+                <button class="viewer-nav-btn" id="viewerPrev" onclick="viewerGo(-1)">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <span class="viewer-page-label" id="viewerLabel">1 / 10</span>
+                <button class="viewer-nav-btn" id="viewerNext" onclick="viewerGo(1)">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Key Modal -->
+<div class="api-modal-overlay" id="apiModal">
+    <div class="api-modal">
+        <h3>Gemini API 키 입력</h3>
+        <p>AI 기능을 사용하려면 Google Gemini API 키가 필요해요.<br>
+        <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--book-accent);">여기서 무료로 발급</a>받을 수 있어요.</p>
+        <input type="password" id="apiKeyInput" placeholder="API 키를 입력하세요">
+        <div class="api-modal-btns">
+            <button class="cancel" onclick="closeApiModal()">취소</button>
+            <button class="confirm" onclick="saveApiKey()">저장</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<!-- luna-nav.js 제거: global-nav.js가 대체 -->
+<script src="../../assets/js/global-nav.js?v=20260329f" defer></script>
+<script src="../../assets/js/luna-sounds.js" defer></script>
+
+<script>
+/* ═══════════════ CONSTANTS ═══════════════ */
+const GEMINI_STORAGE_KEY = 'luna_gemini_api_key';
+const DRAFT_KEY = 'storybook_draft';
+const GEMINI_TEXT_MODEL = 'gemini-2.0-flash';
+const GEMINI_IMAGE_MODELS = [
+    'gemini-2.5-flash-preview-image-generation',
+    'gemini-2.5-flash-image',
+    'gemini-3.1-flash-image-preview'
+];
+const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+const TOTAL_PAGES = 10;
+
+const W5H1 = [
+    { type: 'who',   label: '누가',   emoji: '👤', color: 'var(--who)' },
+    { type: 'when',  label: '언제',   emoji: '⏰', color: 'var(--when)' },
+    { type: 'where', label: '어디서', emoji: '📍', color: 'var(--where)' },
+    { type: 'what',  label: '무엇을', emoji: '💎', color: 'var(--what)' },
+    { type: 'how',   label: '어떻게', emoji: '🔧', color: 'var(--how)' },
+    { type: 'why',   label: '왜',     emoji: '❓', color: 'var(--why)' },
+];
+
+const GENRE_MAP = {
+    fantasy: '판타지 (마법, 성, 드래곤)',
+    adventure: '모험 (탐험, 보물, 여행)',
+    animal: '동물 (숲속 친구들)',
+    space: '우주 (별, 행성, 우주선)',
+    daily: '일상 (학교, 가족, 친구)',
+    mystery: '미스터리 (수수께끼, 비밀)'
+};
+
+/* ═══════════════ STATE ═══════════════ */
+let state = {
+    screen: 'intro',
+    genre: '',
+    heroName: '',
+    currentPage: 0,
+    pages: []
+};
+
+function initPages() {
+    state.pages = Array.from({ length: TOTAL_PAGES }, () => ({
+        aiLine: '',
+        icons: [],
+        selectedIcon: -1,
+        kidLine: '',
+        polishedLine: '',
+        polishExplanation: '',
+        imageData: null,
+        textPosition: { x: 0.5, y: 0.85 },
+        textStyle: 'dark',
+        complete: false
+    }));
+}
+
+/* ═══════════════ INTRO SCREEN ═══════════════ */
+function selectGenre(btn) {
+    document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.genre = btn.dataset.genre;
+    playSound('click');
+    checkIntroReady();
+}
+
+function checkIntroReady() {
+    const name = document.getElementById('heroNameInput').value.trim();
+    state.heroName = name;
+    document.getElementById('startBtn').disabled = !(state.genre && name.length >= 1);
+}
+
+function startStorybook() {
+    if (!state.genre || !state.heroName) return;
+    initPages();
+    showScreen('builder');
+    startPageFlow();
+}
+
+// Draft
+function checkDraft() {
+    try {
+        const d = localStorage.getItem(DRAFT_KEY);
+        if (d) {
+            const parsed = JSON.parse(d);
+            if (parsed.pages && parsed.pages.some(p => p.aiLine)) {
+                document.getElementById('draftNotice').classList.remove('hidden');
+            }
+        }
+    } catch(e) {}
+}
+
+function loadDraft() {
+    try {
+        const d = JSON.parse(localStorage.getItem(DRAFT_KEY));
+        state = { ...state, ...d };
+        showScreen('builder');
+        renderMiniBook();
+        goToPage(state.currentPage);
+    } catch(e) {
+        showToast('이전 기록을 불러올 수 없어요');
+    }
+}
+
+function saveDraft() {
+    try {
+        const toSave = { ...state };
+        // Don't save image data in localStorage (too big) - just save text state
+        toSave.pages = state.pages.map(p => ({ ...p, imageData: null }));
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(toSave));
+    } catch(e) {}
+    // Save images to IndexedDB
+    saveImagesToIDB();
+}
+
+/* ═══════════════ IndexedDB for images ═══════════════ */
+function openIDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open('storybook-images', 1);
+        req.onupgradeneeded = e => e.target.result.createObjectStore('pages', { keyPath: 'id' });
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+    });
+}
+
+async function saveImagesToIDB() {
+    try {
+        const db = await openIDB();
+        const tx = db.transaction('pages', 'readwrite');
+        const store = tx.objectStore('pages');
+        state.pages.forEach((p, i) => {
+            if (p.imageData) store.put({ id: i, data: p.imageData });
+        });
+    } catch(e) {}
+}
+
+async function loadImagesFromIDB() {
+    try {
+        const db = await openIDB();
+        const tx = db.transaction('pages', 'readonly');
+        const store = tx.objectStore('pages');
+        return new Promise(resolve => {
+            const req = store.getAll();
+            req.onsuccess = () => {
+                const imgs = req.result || [];
+                imgs.forEach(item => {
+                    if (state.pages[item.id]) state.pages[item.id].imageData = item.data;
+                });
+                resolve();
+            };
+            req.onerror = () => resolve();
+        });
+    } catch(e) {}
+}
+
+/* ═══════════════ SCREEN MANAGEMENT ═══════════════ */
+function showScreen(name) {
+    state.screen = name;
+    document.getElementById('screen-intro').style.display = name === 'intro' ? 'flex' : 'none';
+    document.getElementById('screen-builder').style.display = name === 'builder' ? 'block' : 'none';
+    document.getElementById('screen-viewer').style.display = name === 'viewer' ? 'block' : 'none';
+}
+
+function goBackToIntro() {
+    saveDraft();
+    showScreen('intro');
+}
+
+function goBackToBuilder() {
+    showScreen('builder');
+    goToPage(state.currentPage);
+}
+
+/* ═══════════════ BUILDER ═══════════════ */
+function renderMiniBook() {
+    const cont = document.getElementById('miniBook');
+    cont.innerHTML = '';
+    for (let i = 0; i < TOTAL_PAGES; i++) {
+        const p = state.pages[i];
+        const div = document.createElement('div');
+        div.className = 'mini-page' + (i === state.currentPage ? ' active' : '') + (p.complete ? ' done' : '');
+        div.onclick = () => goToPage(i);
+        if (p.imageData) {
+            const img = document.createElement('img');
+            img.src = p.imageData;
+            div.appendChild(img);
+        } else {
+            div.textContent = (i + 1) + '페이지';
+        }
+        const num = document.createElement('div');
+        num.className = 'mini-page-num';
+        num.textContent = i + 1;
+        div.appendChild(num);
+        cont.appendChild(div);
+    }
+}
+
+function updateHeader() {
+    document.getElementById('pageIndicator').textContent = `페이지 ${state.currentPage + 1} / ${TOTAL_PAGES}`;
+    const done = state.pages.filter(p => p.complete).length;
+    document.getElementById('progressFill').style.width = (done / TOTAL_PAGES * 100) + '%';
+}
+
+function goToPage(idx) {
+    state.currentPage = idx;
+    renderMiniBook();
+    updateHeader();
+    restorePageState();
+}
+
+function startPageFlow() {
+    renderMiniBook();
+    updateHeader();
+    const pg = state.pages[state.currentPage];
+    if (pg.aiLine) {
+        restorePageState();
+    } else {
+        showSteps(['step-aiLine']);
+        hideSteps(['step-icons', 'step-input', 'step-actions', 'step-polish', 'step-canvas']);
+        generateAILine();
+    }
+}
+
+function restorePageState() {
+    const pg = state.pages[state.currentPage];
+    if (!pg.aiLine) {
+        showSteps(['step-aiLine']);
+        hideSteps(['step-icons', 'step-input', 'step-actions', 'step-polish', 'step-canvas']);
+        generateAILine();
+        return;
+    }
+    // Show AI line
+    document.getElementById('aiLineText').innerHTML = pg.aiLine;
+    showSteps(['step-aiLine']);
+
+    if (pg.icons.length > 0) {
+        renderIcons(pg.icons);
+        showSteps(['step-icons']);
+    } else {
+        hideSteps(['step-icons']);
+    }
+
+    if (pg.selectedIcon >= 0) {
+        highlightSelectedIcon(pg.selectedIcon);
+        showSteps(['step-input']);
+        document.getElementById('kidTextarea').value = pg.kidLine;
+        updateCharCount();
+
+        const icon = pg.icons[pg.selectedIcon];
+        if (icon) {
+            document.getElementById('selectedHint').innerHTML = `<span style="font-size:20px;">${W5H1.find(w => w.type === icon.type)?.emoji || '📝'}</span> <strong>${W5H1.find(w => w.type === icon.type)?.label || ''}</strong>: ${icon.hint}`;
+        }
+    } else {
+        hideSteps(['step-input']);
+    }
+
+    if (pg.kidLine) {
+        showSteps(['step-actions']);
+        document.getElementById('generateBtn').disabled = !pg.polishedLine;
+    } else {
+        hideSteps(['step-actions']);
+    }
+
+    if (pg.polishedLine) {
+        showSteps(['step-polish']);
+        renderPolishResult(pg.kidLine, pg.polishedLine, pg.polishExplanation);
+    } else {
+        hideSteps(['step-polish']);
+    }
+
+    if (pg.imageData) {
+        showSteps(['step-canvas']);
+        renderCanvas(pg);
+    } else {
+        hideSteps(['step-canvas']);
+    }
+
+    updateCompleteBtn();
+}
+
+function showSteps(ids) { ids.forEach(id => document.getElementById(id)?.classList.remove('hidden')); }
+function hideSteps(ids) { ids.forEach(id => document.getElementById(id)?.classList.add('hidden')); }
+
+function updateCompleteBtn() {
+    const pg = state.pages[state.currentPage];
+    const btn = document.getElementById('pageCompleteBtn');
+    const label = document.getElementById('completeLabel');
+    btn.disabled = !pg.imageData;
+    if (state.currentPage === TOTAL_PAGES - 1) {
+        label.textContent = '동화책 완성! 📖';
+    } else {
+        label.textContent = `페이지 ${state.currentPage + 1} 완성! 다음 페이지로`;
+    }
+}
+
+/* ═══════════════ GEMINI API ═══════════════ */
+function getApiKey() {
+    return localStorage.getItem(GEMINI_STORAGE_KEY);
+}
+
+function ensureApiKey() {
+    return new Promise((resolve) => {
+        const key = getApiKey();
+        if (key) return resolve(key);
+        const modal = document.getElementById('apiModal');
+        modal.classList.add('show');
+        modal._resolve = resolve;
+    });
+}
+
+function saveApiKey() {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (!key) return;
+    localStorage.setItem(GEMINI_STORAGE_KEY, key);
+    const modal = document.getElementById('apiModal');
+    modal.classList.remove('show');
+    if (modal._resolve) modal._resolve(key);
+}
+
+function closeApiModal() {
+    document.getElementById('apiModal').classList.remove('show');
+}
+
+async function callGeminiText(prompt, systemPrompt) {
+    const key = await ensureApiKey();
+    const body = {
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.9, maxOutputTokens: 1024 }
+    };
+    if (systemPrompt) {
+        body.systemInstruction = { parts: [{ text: systemPrompt }] };
+    }
+
+    const res = await fetch(`${API_BASE}/${GEMINI_TEXT_MODEL}:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
+
+    if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem(GEMINI_STORAGE_KEY);
+        throw new Error('API 키가 유효하지 않아요. 다시 입력해주세요.');
+    }
+    if (!res.ok) throw new Error(`API 오류 (${res.status})`);
+
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    return text;
+}
+
+async function callGeminiImage(prompt) {
+    const key = await ensureApiKey();
+
+    for (const model of GEMINI_IMAGE_MODELS) {
+        try {
+            const res = await fetch(`${API_BASE}/${model}:generateContent?key=${key}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseModalities: ['IMAGE', 'TEXT'],
+                        temperature: 0.8
+                    }
+                })
+            });
+
+            if (res.status === 401 || res.status === 403) {
+                localStorage.removeItem(GEMINI_STORAGE_KEY);
+                throw new Error('API 키가 유효하지 않아요.');
+            }
+            if (res.status === 404) continue;
+            if (!res.ok) {
+                const errText = await res.text();
+                if (errText.includes('not found') || errText.includes('not supported')) continue;
+                throw new Error(`이미지 생성 오류 (${res.status})`);
+            }
+
+            const data = await res.json();
+            const parts = data.candidates?.[0]?.content?.parts || [];
+            for (const part of parts) {
+                if (part.inlineData) {
+                    return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                }
+            }
+        } catch(e) {
+            if (e.message.includes('API 키')) throw e;
+            continue;
+        }
+    }
+    throw new Error('이미지를 생성할 수 없어요. 다시 시도해주세요.');
+}
+
+/* ═══════════════ STEP 1: AI LINE + ICONS ═══════════════ */
+async function generateAILine() {
+    const pg = state.pages[state.currentPage];
+    const aiLineEl = document.getElementById('aiLineText');
+    aiLineEl.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span> AI가 이야기를 준비하고 있어요...';
+
+    const previousLines = [];
+    for (let i = 0; i < state.currentPage; i++) {
+        const p = state.pages[i];
+        if (p.aiLine) previousLines.push(p.aiLine);
+        if (p.polishedLine) previousLines.push(p.polishedLine);
+    }
+
+    const isFirst = state.currentPage === 0;
+    const isLast = state.currentPage === TOTAL_PAGES - 1;
+
+    const systemPrompt = `너는 어린이 동화 작가야. 6~10세 아이와 함께 동화를 만들고 있어. 반드시 한국어로만 답해.
+규칙:
+- 문장은 짧고 쉽게 (15~25자)
+- 아이가 상상력을 발휘할 수 있게 여지를 남겨
+- 6하원칙(누가/언제/어디서/무엇을/어떻게/왜) 힌트는 이야기 맥락에 자연스럽게 이어지게
+- 각 힌트는 구체적이고 재미있게 (10~20자)
+- 반드시 아래 JSON 형식으로만 응답해`;
+
+    let pageNote = '';
+    if (isFirst) pageNote = '이야기의 시작이야. 흥미로운 첫 문장을 써줘.';
+    else if (isLast) pageNote = '마지막 페이지야. 이야기를 멋지게 마무리하는 문장을 써줘.';
+    else pageNote = `${state.currentPage + 1}번째 페이지야. 이야기가 점점 재미있어지게 해줘.`;
+
+    const prompt = `장르: ${GENRE_MAP[state.genre] || state.genre}
+주인공: ${state.heroName}
+페이지: ${state.currentPage + 1}/${TOTAL_PAGES} (${pageNote})
+${previousLines.length > 0 ? '지금까지 이야기:\n' + previousLines.map((l, i) => `${i + 1}. ${l}`).join('\n') : '(이야기 시작)'}
+
+다음 JSON으로 응답해:
+{"aiLine": "AI가 쓴 한 줄", "icons": [{"type": "who", "hint": "힌트"}, {"type": "when", "hint": "힌트"}, {"type": "where", "hint": "힌트"}, {"type": "what", "hint": "힌트"}, {"type": "how", "hint": "힌트"}, {"type": "why", "hint": "힌트"}]}`;
+
+    try {
+        const raw = await callGeminiText(prompt, systemPrompt);
+        const json = parseJSON(raw);
+
+        pg.aiLine = json.aiLine;
+        pg.icons = json.icons || [];
+
+        aiLineEl.textContent = pg.aiLine;
+        renderIcons(pg.icons);
+        showSteps(['step-icons']);
+        saveDraft();
+        playSound('pop');
+    } catch(e) {
+        aiLineEl.innerHTML = `<span style="color:#E74C3C;">오류: ${e.message}</span><br><button onclick="generateAILine()" style="margin-top:8px; padding:8px 16px; border:1px solid #E8DDD0; border-radius:8px; background:white; cursor:pointer;">다시 시도</button>`;
+    }
+}
+
+function parseJSON(raw) {
+    // Extract JSON from markdown code blocks or raw text
+    let text = raw.trim();
+    const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (jsonMatch) text = jsonMatch[1].trim();
+    // Try direct parse
+    try { return JSON.parse(text); } catch(e) {}
+    // Find first { to last }
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    if (start >= 0 && end > start) {
+        try { return JSON.parse(text.slice(start, end + 1)); } catch(e) {}
+    }
+    throw new Error('AI 응답을 이해할 수 없어요. 다시 시도해주세요.');
+}
+
+/* ═══════════════ STEP 2: ICONS ═══════════════ */
+function renderIcons(icons) {
+    const grid = document.getElementById('iconsGrid');
+    grid.innerHTML = '';
+    icons.forEach((icon, idx) => {
+        const w = W5H1.find(w => w.type === icon.type) || W5H1[idx];
+        const card = document.createElement('div');
+        card.className = 'icon-card';
+        card.dataset.type = w.type;
+        card.dataset.idx = idx;
+        card.onclick = () => selectIcon(idx);
+        card.innerHTML = `
+            <div class="icon-emoji">${w.emoji}</div>
+            <div class="icon-type">${w.label}</div>
+            <div class="icon-hint">${icon.hint}</div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function selectIcon(idx) {
+    const pg = state.pages[state.currentPage];
+    pg.selectedIcon = idx;
+    highlightSelectedIcon(idx);
+
+    const icon = pg.icons[idx];
+    const w = W5H1.find(w => w.type === icon.type) || W5H1[idx];
+    document.getElementById('selectedHint').innerHTML = `<span style="font-size:20px;">${w.emoji}</span> <strong>${w.label}</strong>: ${icon.hint}`;
+
+    showSteps(['step-input']);
+    document.getElementById('kidTextarea').focus();
+    playSound('click');
+    saveDraft();
+}
+
+function highlightSelectedIcon(idx) {
+    document.querySelectorAll('.icon-card').forEach((c, i) => {
+        c.classList.toggle('selected', i === idx);
+    });
+}
+
+/* ═══════════════ STEP 3: KID INPUT ═══════════════ */
+function updateCharCount() {
+    const val = document.getElementById('kidTextarea').value;
+    document.getElementById('charCount').textContent = val.length + '자';
+    const pg = state.pages[state.currentPage];
+    pg.kidLine = val;
+
+    if (val.trim().length >= 3) {
+        showSteps(['step-actions']);
+        document.getElementById('polishBtn').disabled = false;
+    }
+}
+
+/* ═══════════════ STEP 4: POLISH ═══════════════ */
+async function polishSentence() {
+    const pg = state.pages[state.currentPage];
+    if (!pg.kidLine.trim()) return;
+
+    const btn = document.getElementById('polishBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span> 다듬는 중...';
+
+    const previousLines = [];
+    for (let i = 0; i <= state.currentPage; i++) {
+        const p = state.pages[i];
+        if (p.aiLine) previousLines.push(p.aiLine);
+        if (i < state.currentPage && p.polishedLine) previousLines.push(p.polishedLine);
+    }
+
+    const systemPrompt = `너는 어린이 글쓰기 선생님이야. 아이가 쓴 문장을 자연스럽게 다듬어주고 무엇을 바꿨는지 친절하게 설명해줘.
+규칙:
+- 원래 의미를 절대 바꾸지 마
+- 맞춤법, 띄어쓰기, 어순을 자연스럽게 교정
+- 아이 수준에 맞게 쉬운 말로
+- 설명은 2~3줄, 친절한 말투로
+- 반드시 JSON으로 응답`;
+
+    const prompt = `이야기 맥락: ${previousLines.join(' / ')}
+
+아이가 쓴 문장: "${pg.kidLine}"
+
+JSON으로 응답: {"polished": "다듬어진 문장", "explanation": "어떻게 바뀌었는지 설명"}`;
+
+    try {
+        const raw = await callGeminiText(prompt, systemPrompt);
+        const json = parseJSON(raw);
+
+        pg.polishedLine = json.polished || pg.kidLine;
+        pg.polishExplanation = json.explanation || '';
+
+        showSteps(['step-polish']);
+        renderPolishResult(pg.kidLine, pg.polishedLine, pg.polishExplanation);
+        document.getElementById('generateBtn').disabled = false;
+        saveDraft();
+        playSound('success');
+    } catch(e) {
+        showToast('다듬기 실패: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined">auto_fix_high</span> AI 문장 다듬기';
+    }
+}
+
+function renderPolishResult(before, after, explanation) {
+    document.getElementById('polishBox').innerHTML = `
+        <div class="polish-row">
+            <span class="polish-tag before">원본</span>
+            <div class="polish-text before-text">${escHtml(before)}</div>
+        </div>
+        <div class="polish-row">
+            <span class="polish-tag after">다듬기</span>
+            <div class="polish-text after-text">${escHtml(after)}</div>
+        </div>
+        ${explanation ? `<div class="polish-row">
+            <span class="polish-tag explain">설명</span>
+            <div class="polish-text explain-text">${escHtml(explanation)}</div>
+        </div>` : ''}
+    `;
+}
+
+/* ═══════════════ STEP 5: IMAGE GENERATION ═══════════════ */
+async function generatePageImage() {
+    const pg = state.pages[state.currentPage];
+    if (!pg.polishedLine) return;
+
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-dots"><span></span><span></span><span></span></span> 그림을 그리는 중...';
+
+    const storyText = pg.aiLine + ' ' + pg.polishedLine;
+    const pageNum = state.currentPage + 1;
+
+    const prompt = `동화책 일러스트를 그려줘. 텍스트는 절대 포함하지 마.
+
+장르: ${GENRE_MAP[state.genre] || state.genre}
+주인공: ${state.heroName}
+페이지 ${pageNum}/${TOTAL_PAGES}의 내용: "${storyText}"
+
+스타일: 따뜻하고 밝은 수채화 동화책 일러스트. 아이들이 좋아하는 부드러운 색감. 배경을 풍성하게 그려줘. 글자나 텍스트는 절대 넣지 마.`;
+
+    try {
+        const imageData = await callGeminiImage(prompt);
+        pg.imageData = imageData;
+
+        showSteps(['step-canvas']);
+        renderCanvas(pg);
+        updateCompleteBtn();
+        saveDraft();
+        playSound('success');
+    } catch(e) {
+        showToast('이미지 생성 실패: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined">palette</span> 동화책 페이지 생성';
+    }
+}
+
+/* ═══════════════ CANVAS + TEXT PLACEMENT ═══════════════ */
+function renderCanvas(pg) {
+    const canvas = document.getElementById('pageCanvas');
+    const wrap = document.getElementById('canvasWrap');
+    const overlay = document.getElementById('canvasTextOverlay');
+
+    if (pg.imageData) {
+        const img = new Image();
+        img.onload = () => {
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+        };
+        img.src = pg.imageData;
+    }
+
+    // Text overlay
+    const displayText = pg.polishedLine || pg.kidLine || '';
+    overlay.textContent = displayText;
+    applyTextStyle(overlay, pg.textStyle);
+    positionTextOverlay(overlay, pg.textPosition);
+    setupTextDrag(overlay, pg);
+}
+
+function applyTextStyle(el, style) {
+    switch(style) {
+        case 'dark':
+            el.style.background = 'rgba(0,0,0,0.55)';
+            el.style.color = 'white';
+            break;
+        case 'white':
+            el.style.background = 'rgba(255,255,255,0.8)';
+            el.style.color = '#4A3728';
+            break;
+        case 'glass':
+            el.style.background = 'rgba(255,255,255,0.25)';
+            el.style.color = 'white';
+            el.style.textShadow = '0 1px 4px rgba(0,0,0,0.5)';
+            break;
+    }
+}
+
+function positionTextOverlay(el, pos) {
+    el.style.top = (pos.y * 100) + '%';
+    el.style.transform = 'translateY(-50%)';
+}
+
+function setTextStyle(style, dot) {
+    const pg = state.pages[state.currentPage];
+    pg.textStyle = style;
+    document.querySelectorAll('.text-color-dot').forEach(d => d.classList.remove('active'));
+    dot.classList.add('active');
+    const overlay = document.getElementById('canvasTextOverlay');
+    applyTextStyle(overlay, style);
+    saveDraft();
+}
+
+function setupTextDrag(el, pg) {
+    let dragging = false, startY, startTop;
+
+    const onStart = (e) => {
+        dragging = true;
+        el.classList.add('dragging');
+        const touch = e.touches ? e.touches[0] : e;
+        startY = touch.clientY;
+        startTop = pg.textPosition.y;
+        e.preventDefault();
+    };
+    const onMove = (e) => {
+        if (!dragging) return;
+        const touch = e.touches ? e.touches[0] : e;
+        const wrap = document.getElementById('canvasWrap');
+        const dy = (touch.clientY - startY) / wrap.clientHeight;
+        pg.textPosition.y = Math.max(0.05, Math.min(0.95, startTop + dy));
+        positionTextOverlay(el, pg.textPosition);
+        e.preventDefault();
+    };
+    const onEnd = () => {
+        if (!dragging) return;
+        dragging = false;
+        el.classList.remove('dragging');
+        saveDraft();
+    };
+
+    el.onmousedown = onStart;
+    el.ontouchstart = onStart;
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('mouseup', onEnd);
+    document.addEventListener('touchend', onEnd);
+}
+
+/* ═══════════════ PAGE COMPLETE ═══════════════ */
+function completePage() {
+    const pg = state.pages[state.currentPage];
+    if (!pg.imageData) return;
+    pg.complete = true;
+    saveDraft();
+    playSound('success');
+
+    if (state.currentPage < TOTAL_PAGES - 1) {
+        state.currentPage++;
+        renderMiniBook();
+        updateHeader();
+        // Scroll to top
+        document.getElementById('workspace').scrollTo({ top: 0, behavior: 'smooth' });
+        startPageFlow();
+    } else {
+        // All done!
+        showViewer();
+    }
+}
+
+/* ═══════════════ VIEWER ═══════════════ */
+let viewerPage = 0;
+
+function showViewer() {
+    viewerPage = 0;
+    showScreen('viewer');
+    document.getElementById('viewerTitle').textContent = `${state.heroName}의 동화책`;
+    renderViewerPage();
+}
+
+function renderViewerPage() {
+    const pg = state.pages[viewerPage];
+    const img = document.getElementById('viewerImage');
+    const text = document.getElementById('viewerText');
+    const num = document.getElementById('viewerPageNum');
+    const label = document.getElementById('viewerLabel');
+
+    if (pg.imageData) {
+        img.src = pg.imageData;
+        img.style.display = 'block';
+    } else {
+        img.style.display = 'none';
+    }
+
+    const displayText = [pg.aiLine, pg.polishedLine || pg.kidLine].filter(Boolean).join('\n');
+    text.textContent = displayText;
+    text.style.top = (pg.textPosition.y * 100) + '%';
+    text.style.transform = 'translateY(-50%)';
+    applyTextStyle(text, pg.textStyle || 'dark');
+
+    num.textContent = viewerPage + 1;
+    label.textContent = `${viewerPage + 1} / ${TOTAL_PAGES}`;
+
+    document.getElementById('viewerPrev').disabled = viewerPage === 0;
+    document.getElementById('viewerNext').disabled = viewerPage === TOTAL_PAGES - 1;
+}
+
+function viewerGo(delta) {
+    viewerPage = Math.max(0, Math.min(TOTAL_PAGES - 1, viewerPage + delta));
+    renderViewerPage();
+    playSound('click');
+}
+
+/* ═══════════════ DOWNLOAD ═══════════════ */
+function downloadCurrentPage() {
+    const pg = state.pages[state.currentPage];
+    if (!pg.imageData) return;
+    compositeAndDownload(pg, `storybook-page-${state.currentPage + 1}.png`);
+}
+
+function downloadAllPages() {
+    state.pages.forEach((pg, i) => {
+        if (pg.imageData) {
+            setTimeout(() => compositeAndDownload(pg, `storybook-page-${i + 1}.png`), i * 500);
+        }
+    });
+}
+
+function compositeAndDownload(pg, filename) {
+    const canvas = document.createElement('canvas');
+    const img = new Image();
+    img.onload = () => {
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        // Draw text
+        const text = [pg.aiLine, pg.polishedLine || pg.kidLine].filter(Boolean).join('  ');
+        const fontSize = Math.round(canvas.width * 0.035);
+        ctx.font = `bold ${fontSize}px 'Noto Serif KR', serif`;
+
+        const textY = pg.textPosition.y * canvas.height;
+        const textX = canvas.width / 2;
+        const maxWidth = canvas.width * 0.85;
+
+        // Background box
+        const metrics = ctx.measureText(text);
+        const textW = Math.min(metrics.width, maxWidth);
+        const pad = fontSize * 0.6;
+
+        if (pg.textStyle === 'dark' || pg.textStyle === 'glass') {
+            ctx.fillStyle = pg.textStyle === 'dark' ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.25)';
+            roundRect(ctx, textX - textW / 2 - pad, textY - fontSize - pad / 2, textW + pad * 2, fontSize * 1.8 + pad, fontSize * 0.4);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+        } else {
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            roundRect(ctx, textX - textW / 2 - pad, textY - fontSize - pad / 2, textW + pad * 2, fontSize * 1.8 + pad, fontSize * 0.4);
+            ctx.fill();
+            ctx.fillStyle = '#4A3728';
+        }
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, textX, textY, maxWidth);
+
+        // Download
+        const a = document.createElement('a');
+        a.download = filename;
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+    };
+    img.src = pg.imageData;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+/* ═══════════════ UTILS ═══════════════ */
+function escHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function showToast(msg, duration = 2500) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), duration);
+}
+
+function playSound(name) {
+    try { if (window.LunaSound) window.LunaSound.play(name); } catch(e) {}
+}
+
+/* ═══════════════ INIT ═══════════════ */
+checkDraft();
+</script>
+</body>
+</html>

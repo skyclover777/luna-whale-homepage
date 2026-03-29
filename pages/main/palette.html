@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>컬러 팔레트 추출기 - Luna Whale</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lexend:wght@300;400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lexend',sans-serif;background:#f8f6f3;min-height:100vh;color:#2c2420}
+
+.top-bar{position:sticky;top:0;z-index:50;background:rgba(248,246,243,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,0,0,.04);padding:14px 24px;display:flex;align-items:center;gap:14px}
+.back-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.back-btn:hover{background:rgba(0,0,0,.04)}
+.top-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#2c2420;flex:1;letter-spacing:-.5px}
+
+.container{max-width:1100px;margin:0 auto;padding:24px}
+.subtitle{text-align:center;font-family:'Cormorant Garamond',serif;font-size:14px;color:#a09890;margin-bottom:28px;letter-spacing:-.2px}
+
+/* Controls */
+.controls{display:flex;justify-content:center;gap:20px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+.control-group{display:flex;align-items:center;gap:8px}
+.control-group label{font-size:12px;color:#6b5c4e;font-weight:400}
+.control-group input[type=range]{width:100px;accent-color:#8b7355}
+.control-group .val{font-size:11px;color:#a09890;min-width:20px;text-align:center}
+
+/* Main layout */
+.main-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:768px){.main-grid{grid-template-columns:1fr;gap:16px}}
+
+.panel{background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,.06);overflow:hidden;display:flex;flex-direction:column}
+.panel-header{padding:14px 20px;border-bottom:1px solid rgba(0,0,0,.04);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:13px;font-weight:600;color:#2c2420}
+.panel-badge{font-size:10px;color:#a09890;background:rgba(0,0,0,.04);padding:3px 10px;border-radius:20px}
+.panel-body{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;min-height:350px}
+
+/* Drop zone */
+.drop-zone{width:100%;height:100%;min-height:300px;border:2px dashed rgba(0,0,0,.12);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:.3s;position:relative}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#8b7355;background:rgba(139,115,85,.04)}
+.drop-zone .material-symbols-outlined{font-size:48px;color:#c4b8a8}
+.drop-zone p{font-size:13px;color:#a09890}
+.drop-zone small{font-size:11px;color:#c4b8a8}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.drop-zone.has-image{border:none}
+.drop-zone.has-image .placeholder{display:none}
+.preview-img{max-width:100%;max-height:500px;border-radius:8px;object-fit:contain;display:none}
+.preview-img.visible{display:block}
+
+/* Palette result */
+.palette-area{width:100%;min-height:300px;display:flex;flex-direction:column;gap:16px}
+.palette-empty{text-align:center;color:#c4b8a8;margin:auto}
+.palette-empty .material-symbols-outlined{font-size:48px;display:block;margin-bottom:8px}
+.palette-empty p{font-size:13px}
+
+/* Swatches */
+.swatches{display:flex;flex-direction:column;gap:6px}
+.swatch-row{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:12px;cursor:pointer;transition:.2s;position:relative}
+.swatch-row:hover{background:rgba(0,0,0,.03)}
+.swatch-color{width:52px;height:52px;border-radius:10px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.1);transition:transform .2s}
+.swatch-row:hover .swatch-color{transform:scale(1.08)}
+.swatch-info{flex:1;display:flex;flex-direction:column;gap:2px}
+.swatch-hex{font-size:15px;font-weight:600;color:#2c2420;font-family:'Lexend',sans-serif;letter-spacing:.5px}
+.swatch-rgb{font-size:11px;color:#a09890;font-weight:300}
+.swatch-pct{font-size:10px;color:#c4b8a8;font-weight:300}
+.swatch-copy{font-size:10px;color:#c4b8a8;opacity:0;transition:.2s}
+.swatch-row:hover .swatch-copy{opacity:1}
+.swatch-copied{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:#8b7355;font-weight:600;opacity:0;transition:.3s}
+.swatch-copied.show{opacity:1}
+
+/* Color strip */
+.color-strip{display:flex;height:40px;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.strip-segment{transition:flex .4s ease}
+
+/* Harmony section */
+.harmony-section{margin-top:24px}
+.harmony-section .panel-body{padding:16px 20px;min-height:auto;flex-direction:column;align-items:stretch;gap:16px}
+.harmony-group{display:flex;flex-direction:column;gap:6px}
+.harmony-label{font-size:11px;font-weight:600;color:#6b5c4e;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.harmony-label .material-symbols-outlined{font-size:14px}
+.harmony-colors{display:flex;gap:6px;flex-wrap:wrap}
+.harmony-chip{width:40px;height:40px;border-radius:8px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.1);transition:transform .2s;position:relative}
+.harmony-chip:hover{transform:scale(1.12)}
+.harmony-chip .tip{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-size:9px;color:#a09890;white-space:nowrap;opacity:0;transition:.2s;pointer-events:none}
+.harmony-chip:hover .tip{opacity:1}
+
+/* Processing */
+.processing{display:none;flex-direction:column;align-items:center;gap:12px;margin:auto}
+.processing.active{display:flex}
+.processing .spinner{width:36px;height:36px;border:3px solid rgba(0,0,0,.08);border-top-color:#8b7355;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing p{font-size:12px;color:#a09890}
+
+/* Buttons */
+.btn-row{display:flex;justify-content:center;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:10px 24px;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:#fff;font-family:'Lexend',sans-serif;font-size:13px;font-weight:400;color:#2c2420;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
+.btn:hover{background:rgba(0,0,0,.03)}
+.btn:disabled{opacity:.35;cursor:default}
+.btn-primary{background:#2c2420;color:#fff;border-color:#2c2420}
+.btn-primary:hover{background:#3d3530}
+.btn .material-symbols-outlined{font-size:18px}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:#2c2420;color:#fff;padding:10px 24px;border-radius:10px;font-size:12px;opacity:0;transition:.3s;pointer-events:none;z-index:100}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">
+    <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+  </button>
+  <div class="top-title">Color Palette Extractor</div>
+</div>
+
+<div class="container">
+  <div class="subtitle">이미지에서 주요 색상을 자동으로 추출합니다</div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>색상 수</label>
+      <input type="range" id="color-count" min="3" max="10" value="6"/>
+      <span class="val" id="count-val">6</span>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Left: Image -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">원본 이미지</span>
+        <span class="panel-badge" id="img-size"></span>
+      </div>
+      <div class="panel-body">
+        <div class="drop-zone" id="drop-zone">
+          <div class="placeholder">
+            <span class="material-symbols-outlined">palette</span>
+            <p>이미지를 드래그하거나 클릭하세요</p>
+            <small>PNG, JPG, WEBP</small>
+          </div>
+          <img class="preview-img" id="preview"/>
+          <input type="file" accept="image/*" id="file-input"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Palette -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">추출된 팔레트</span>
+        <span class="panel-badge" id="palette-badge"></span>
+      </div>
+      <div class="panel-body" style="flex-direction:column;align-items:stretch">
+        <div class="palette-area" id="palette-area">
+          <div class="palette-empty" id="palette-empty">
+            <span class="material-symbols-outlined">auto_awesome</span>
+            <p>팔레트가 여기에 표시됩니다</p>
+          </div>
+          <div class="processing" id="processing">
+            <div class="spinner"></div>
+            <p>색상 분석 중...</p>
+          </div>
+          <div class="color-strip" id="color-strip" style="display:none"></div>
+          <div class="swatches" id="swatches"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Harmony -->
+  <div class="harmony-section" id="harmony-section" style="display:none">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">색상 조화 추천</span>
+        <span class="panel-badge">선택한 색상 기준</span>
+      </div>
+      <div class="panel-body">
+        <div class="harmony-group">
+          <div class="harmony-label"><span class="material-symbols-outlined">contrast</span> 보색 (Complementary)</div>
+          <div class="harmony-colors" id="harmony-comp"></div>
+        </div>
+        <div class="harmony-group">
+          <div class="harmony-label"><span class="material-symbols-outlined">blur_linear</span> 유사색 (Analogous)</div>
+          <div class="harmony-colors" id="harmony-analog"></div>
+        </div>
+        <div class="harmony-group">
+          <div class="harmony-label"><span class="material-symbols-outlined">change_history</span> 삼각 배색 (Triadic)</div>
+          <div class="harmony-colors" id="harmony-triad"></div>
+        </div>
+        <div class="harmony-group">
+          <div class="harmony-label"><span class="material-symbols-outlined">thermostat</span> 밝기 변형 (Tints & Shades)</div>
+          <div class="harmony-colors" id="harmony-tints"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" id="btn-reset" disabled onclick="resetAll()">
+      <span class="material-symbols-outlined">restart_alt</span> 초기화
+    </button>
+    <button class="btn btn-primary" id="btn-export" disabled onclick="exportPalette()">
+      <span class="material-symbols-outlined">download</span> 팔레트 저장
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const preview = document.getElementById('preview');
+const countSlider = document.getElementById('color-count');
+const countVal = document.getElementById('count-val');
+const paletteEmpty = document.getElementById('palette-empty');
+const processingEl = document.getElementById('processing');
+const swatchesEl = document.getElementById('swatches');
+const stripEl = document.getElementById('color-strip');
+const harmonySection = document.getElementById('harmony-section');
+
+let currentImage = null;
+let extractedColors = [];
+
+countSlider.oninput = () => {
+  countVal.textContent = countSlider.value;
+  if(currentImage) extractColors(currentImage);
+};
+
+// Drag & Drop
+['dragenter','dragover'].forEach(e => {
+  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag-over'); });
+});
+['dragleave','drop'].forEach(e => {
+  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('drag-over'); });
+});
+dropZone.addEventListener('drop', ev => {
+  const file = ev.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) loadImage(file);
+});
+fileInput.addEventListener('change', ev => {
+  if(ev.target.files[0]) loadImage(ev.target.files[0]);
+});
+
+function loadImage(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      currentImage = img;
+      preview.src = e.target.result;
+      preview.classList.add('visible');
+      dropZone.classList.add('has-image');
+      document.getElementById('img-size').textContent = img.width + ' × ' + img.height;
+      document.getElementById('btn-reset').disabled = false;
+      extractColors(img);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function extractColors(img) {
+  const k = parseInt(countSlider.value);
+  paletteEmpty.style.display = 'none';
+  processingEl.classList.add('active');
+  swatchesEl.innerHTML = '';
+  stripEl.style.display = 'none';
+  harmonySection.style.display = 'none';
+
+  setTimeout(() => {
+    // Sample pixels
+    const maxDim = 150;
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const sw = Math.round(img.width * scale);
+    const sh = Math.round(img.height * scale);
+    const c = document.createElement('canvas');
+    c.width = sw; c.height = sh;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, sw, sh);
+    const data = ctx.getImageData(0, 0, sw, sh).data;
+
+    const pixels = [];
+    for(let i = 0; i < data.length; i += 4) {
+      // Skip near-white and near-black (noise)
+      const r = data[i], g = data[i+1], b = data[i+2];
+      if(r + g + b > 30 && r + g + b < 730) {
+        pixels.push([r, g, b]);
+      }
+    }
+
+    // K-means clustering
+    const result = kMeans(pixels, k, 20);
+    extractedColors = result.sort((a, b) => b.count - a.count);
+
+    processingEl.classList.remove('active');
+    renderPalette();
+    document.getElementById('btn-export').disabled = false;
+    document.getElementById('palette-badge').textContent = k + '색 추출';
+  }, 80);
+}
+
+function kMeans(pixels, k, maxIter) {
+  // Initialize centroids using k-means++
+  const centroids = [pixels[Math.floor(Math.random() * pixels.length)].slice()];
+
+  for(let c = 1; c < k; c++) {
+    const dists = pixels.map(p => {
+      let minD = Infinity;
+      for(const cent of centroids) {
+        const d = colorDist(p, cent);
+        if(d < minD) minD = d;
+      }
+      return minD;
+    });
+    const total = dists.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    for(let i = 0; i < dists.length; i++) {
+      r -= dists[i];
+      if(r <= 0) { centroids.push(pixels[i].slice()); break; }
+    }
+    if(centroids.length <= c) centroids.push(pixels[Math.floor(Math.random() * pixels.length)].slice());
+  }
+
+  let assignments = new Int32Array(pixels.length);
+
+  for(let iter = 0; iter < maxIter; iter++) {
+    // Assign
+    let changed = false;
+    for(let i = 0; i < pixels.length; i++) {
+      let minD = Infinity, minC = 0;
+      for(let c = 0; c < k; c++) {
+        const d = colorDist(pixels[i], centroids[c]);
+        if(d < minD) { minD = d; minC = c; }
+      }
+      if(assignments[i] !== minC) { assignments[i] = minC; changed = true; }
+    }
+    if(!changed) break;
+
+    // Update centroids
+    const sums = Array.from({length: k}, () => [0, 0, 0, 0]); // r, g, b, count
+    for(let i = 0; i < pixels.length; i++) {
+      const c = assignments[i];
+      sums[c][0] += pixels[i][0];
+      sums[c][1] += pixels[i][1];
+      sums[c][2] += pixels[i][2];
+      sums[c][3]++;
+    }
+    for(let c = 0; c < k; c++) {
+      if(sums[c][3] > 0) {
+        centroids[c] = [
+          Math.round(sums[c][0] / sums[c][3]),
+          Math.round(sums[c][1] / sums[c][3]),
+          Math.round(sums[c][2] / sums[c][3])
+        ];
+      }
+    }
+  }
+
+  // Count per cluster
+  const counts = new Array(k).fill(0);
+  for(let i = 0; i < assignments.length; i++) counts[assignments[i]]++;
+  const total = pixels.length;
+
+  return centroids.map((c, i) => ({
+    r: c[0], g: c[1], b: c[2],
+    hex: rgbToHex(c[0], c[1], c[2]),
+    count: counts[i],
+    pct: Math.round(counts[i] / total * 100)
+  }));
+}
+
+function colorDist(a, b) {
+  const dr = a[0] - b[0], dg = a[1] - b[1], db = a[2] - b[2];
+  return dr * dr + dg * dg + db * db;
+}
+
+function rgbToHex(r, g, b) {
+  return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+function hexToRgb(hex) {
+  const m = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+  return m ? [parseInt(m[1],16), parseInt(m[2],16), parseInt(m[3],16)] : [0,0,0];
+}
+
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+  if(max === min) { h = s = 0; }
+  else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch(max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return [h * 360, s * 100, l * 100];
+}
+
+function hslToRgb(h, s, l) {
+  h /= 360; s /= 100; l /= 100;
+  let r, g, b;
+  if(s === 0) { r = g = b = l; }
+  else {
+    const hue2rgb = (p, q, t) => {
+      if(t < 0) t += 1; if(t > 1) t -= 1;
+      if(t < 1/6) return p + (q - p) * 6 * t;
+      if(t < 1/2) return q;
+      if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
+
+function renderPalette() {
+  // Color strip
+  stripEl.innerHTML = '';
+  stripEl.style.display = 'flex';
+  const total = extractedColors.reduce((a, c) => a + c.count, 0);
+  extractedColors.forEach((c, i) => {
+    const seg = document.createElement('div');
+    seg.className = 'strip-segment';
+    seg.style.flex = c.count;
+    seg.style.background = c.hex;
+    seg.style.cursor = 'pointer';
+    seg.onclick = () => showHarmony(c);
+    stripEl.appendChild(seg);
+  });
+
+  // Swatches
+  swatchesEl.innerHTML = '';
+  extractedColors.forEach((c, i) => {
+    const row = document.createElement('div');
+    row.className = 'swatch-row';
+    row.onclick = () => { copyColor(c.hex, row); showHarmony(c); };
+    row.innerHTML = `
+      <div class="swatch-color" style="background:${c.hex}"></div>
+      <div class="swatch-info">
+        <div class="swatch-hex">${c.hex.toUpperCase()}</div>
+        <div class="swatch-rgb">RGB(${c.r}, ${c.g}, ${c.b})</div>
+        <div class="swatch-pct">${c.pct}% 비율</div>
+      </div>
+      <div class="swatch-copy">클릭하여 복사</div>
+      <div class="swatch-copied" id="copied-${i}">복사됨 ✓</div>
+    `;
+    swatchesEl.appendChild(row);
+  });
+}
+
+function copyColor(hex, row) {
+  navigator.clipboard.writeText(hex.toUpperCase()).then(() => {
+    showToast(hex.toUpperCase() + ' 복사됨');
+  });
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1500);
+}
+
+function showHarmony(color) {
+  harmonySection.style.display = 'block';
+  const [h, s, l] = rgbToHsl(color.r, color.g, color.b);
+
+  // Complementary
+  const compEl = document.getElementById('harmony-comp');
+  compEl.innerHTML = '';
+  [0, 180].forEach(offset => {
+    const nh = (h + offset) % 360;
+    const rgb = hslToRgb(nh, s, l);
+    const hex = rgbToHex(...rgb);
+    addHarmonyChip(compEl, hex);
+  });
+
+  // Analogous
+  const analogEl = document.getElementById('harmony-analog');
+  analogEl.innerHTML = '';
+  [-30, -15, 0, 15, 30].forEach(offset => {
+    const nh = (h + offset + 360) % 360;
+    const rgb = hslToRgb(nh, s, l);
+    const hex = rgbToHex(...rgb);
+    addHarmonyChip(analogEl, hex);
+  });
+
+  // Triadic
+  const triadEl = document.getElementById('harmony-triad');
+  triadEl.innerHTML = '';
+  [0, 120, 240].forEach(offset => {
+    const nh = (h + offset) % 360;
+    const rgb = hslToRgb(nh, s, l);
+    const hex = rgbToHex(...rgb);
+    addHarmonyChip(triadEl, hex);
+  });
+
+  // Tints & Shades
+  const tintsEl = document.getElementById('harmony-tints');
+  tintsEl.innerHTML = '';
+  [90, 75, 60, 45, 30, 20, 10].forEach(nl => {
+    const rgb = hslToRgb(h, s, nl);
+    const hex = rgbToHex(...rgb);
+    addHarmonyChip(tintsEl, hex);
+  });
+
+  // Scroll to harmony
+  harmonySection.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+function addHarmonyChip(container, hex) {
+  const chip = document.createElement('div');
+  chip.className = 'harmony-chip';
+  chip.style.background = hex;
+  chip.innerHTML = `<span class="tip">${hex.toUpperCase()}</span>`;
+  chip.onclick = (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(hex.toUpperCase());
+    showToast(hex.toUpperCase() + ' 복사됨');
+  };
+  container.appendChild(chip);
+}
+
+function resetAll() {
+  currentImage = null;
+  extractedColors = [];
+  preview.classList.remove('visible');
+  preview.src = '';
+  dropZone.classList.remove('has-image');
+  paletteEmpty.style.display = '';
+  swatchesEl.innerHTML = '';
+  stripEl.style.display = 'none';
+  stripEl.innerHTML = '';
+  harmonySection.style.display = 'none';
+  document.getElementById('img-size').textContent = '';
+  document.getElementById('palette-badge').textContent = '';
+  document.getElementById('btn-reset').disabled = true;
+  document.getElementById('btn-export').disabled = true;
+  fileInput.value = '';
+}
+
+function exportPalette() {
+  // Create a palette image
+  const w = 800, swH = 100, infoH = 40;
+  const h = swH + infoH;
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#f8f6f3';
+  ctx.fillRect(0, 0, w, h);
+
+  const segW = w / extractedColors.length;
+  extractedColors.forEach((color, i) => {
+    const x = Math.round(i * segW);
+    const sw = Math.round(segW);
+    // Color block
+    ctx.fillStyle = color.hex;
+    ctx.fillRect(x, 0, sw, swH);
+    // Label
+    ctx.fillStyle = '#2c2420';
+    ctx.font = '600 13px Lexend, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(color.hex.toUpperCase(), x + sw/2, swH + 22);
+    ctx.fillStyle = '#a09890';
+    ctx.font = '300 10px Lexend, sans-serif';
+    ctx.fillText(color.pct + '%', x + sw/2, swH + 36);
+  });
+
+  c.toBlob(blob => {
+    const link = document.createElement('a');
+    link.download = 'palette.png';
+    link.href = URL.createObjectURL(blob);
+    link.click();
+  });
+}
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

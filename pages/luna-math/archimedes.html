@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아르키메데스 원리 - Luna Math</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1729;--card:#1a2640;--accent:#06b6d4;--accent2:#0891b2;--text:#e2e8f0;--dim:#64748b;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--orange:#f59e0b;--radius:16px}
+body{font-family:'Pretendard Variable',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+
+.header{padding:16px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.back-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.back-btn:hover{background:rgba(255,255,255,0.14)}
+.header-title{font-size:18px;font-weight:700;color:var(--accent)}
+
+.intro-wrap{max-width:900px;margin:0 auto;padding:24px 24px 0}
+.intro-card{background:linear-gradient(135deg,rgba(6,182,212,0.1),rgba(8,145,178,0.04));border:1px solid rgba(6,182,212,0.18);border-radius:var(--radius);padding:28px 32px;text-align:center;line-height:2;color:var(--dim);font-size:15px}
+.intro-card .intro-emoji{font-size:48px;margin-bottom:8px}
+.intro-card .intro-title{font-size:22px;font-weight:800;color:var(--accent);margin-bottom:12px}
+.intro-card b{color:var(--text)}
+.intro-card .formula{font-size:16px;color:var(--accent);font-weight:700;margin:8px 0;letter-spacing:1px}
+
+.grid-wrap{max-width:900px;margin:0 auto;padding:20px 24px}
+.grid-label{font-size:13px;color:var(--dim);letter-spacing:2px;margin-bottom:10px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+.sc-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:20px 16px;text-align:center;cursor:pointer;transition:all .25s}
+.sc-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px rgba(6,182,212,0.15)}
+.sc-card.active{border-color:var(--accent);background:rgba(6,182,212,0.08);box-shadow:0 0 20px rgba(6,182,212,0.1)}
+.sc-emoji{font-size:36px;margin-bottom:8px}
+.sc-name{font-size:15px;font-weight:700;margin-bottom:4px}
+.sc-desc{font-size:12px;color:var(--dim)}
+
+.game-area{max-width:900px;margin:0 auto;padding:0 24px 40px;display:none}
+.game-area.visible{display:block}
+.canvas-wrap{background:#000;border-radius:var(--radius);overflow:hidden;border:1px solid rgba(255,255,255,0.08);margin-bottom:16px;position:relative}
+canvas{width:100%;display:block;cursor:default}
+
+.info-panel{background:var(--card);border-radius:var(--radius);padding:20px 24px;border:1px solid rgba(255,255,255,0.08)}
+.info-row{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;margin-bottom:10px;font-size:14px}
+.info-row:last-child{margin-bottom:0}
+.info-label{color:var(--dim);font-weight:600}
+.info-val{color:var(--text);font-weight:700}
+.info-val.accent{color:var(--accent)}
+.info-formula{color:var(--accent);font-size:14px;font-weight:600;font-family:'Pretendard Variable',monospace;display:block;text-align:center;background:rgba(6,182,212,0.08);padding:8px 12px;border-radius:10px;margin:6px 0;line-height:1.6;word-break:keep-all}
+
+.capacity-bar-wrap{width:100%;height:20px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)}
+.capacity-bar{height:100%;border-radius:10px;transition:width .3s,background .3s;min-width:2px}
+.capacity-bar.green{background:linear-gradient(90deg,#22c55e,#4ade80)}
+.capacity-bar.yellow{background:linear-gradient(90deg,#eab308,#facc15)}
+.capacity-bar.red{background:linear-gradient(90deg,#ef4444,#f87171)}
+
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.action-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;font-weight:700;font-size:14px;padding:10px 22px;border:none;border-radius:12px;cursor:pointer;transition:all .2s;font-family:inherit}
+.action-btn:hover{transform:scale(1.03);box-shadow:0 4px 16px rgba(6,182,212,0.3)}
+.action-btn:active{transform:scale(0.97)}
+.action-btn.secondary{background:rgba(255,255,255,0.1);color:var(--text);border:1px solid rgba(255,255,255,0.15)}
+.action-btn.secondary:hover{background:rgba(255,255,255,0.18);box-shadow:none}
+.action-btn.danger{background:linear-gradient(135deg,var(--red),#dc2626)}
+.action-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+
+.result-msg{margin-top:10px;padding:12px 16px;border-radius:10px;font-weight:700;font-size:15px;text-align:center;display:none}
+.result-msg.success{display:block;background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.result-msg.fail{display:block;background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.result-msg.warn{display:block;background:rgba(234,179,8,0.12);color:var(--orange);border:1px solid rgba(234,179,8,0.2)}
+
+.obj-selector{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.obj-btn{background:var(--card);border:2px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 14px;cursor:pointer;transition:all .2s;text-align:center;min-width:70px}
+.obj-btn:hover{border-color:var(--accent);transform:translateY(-2px)}
+.obj-btn.active{border-color:var(--accent);background:rgba(6,182,212,0.1)}
+.obj-btn.used{opacity:0.4;pointer-events:none}
+.obj-btn .obj-icon{font-size:24px}
+.obj-btn .obj-name{font-size:11px;color:var(--dim);margin-top:2px}
+
+.quiz-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(15,23,41,0.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:10;border-radius:var(--radius)}
+.quiz-overlay.show{display:flex}
+.quiz-q{font-size:20px;font-weight:800;text-align:center;padding:0 20px}
+.quiz-btns{display:flex;gap:12px}
+.quiz-btn{padding:14px 32px;border-radius:14px;font-size:16px;font-weight:700;border:2px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:var(--text);cursor:pointer;transition:all .2s;font-family:inherit}
+.quiz-btn:hover{border-color:var(--accent);background:rgba(6,182,212,0.1)}
+
+@media(max-width:600px){
+  .info-row{font-size:12px}
+  .intro-card{padding:20px 16px;font-size:13px}
+  .intro-card .intro-title{font-size:18px}
+  .btn-row{flex-direction:column}
+  .action-btn{width:100%;text-align:center}
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+<div class="header">
+  <a href="index.html" class="back-btn">← Luna Math</a>
+  <div class="header-title">🛁 아르키메데스 원리</div>
+</div>
+
+<div class="intro-wrap">
+  <div class="intro-card">
+    <div class="intro-emoji">🛁</div>
+    <div class="intro-title">아르키메데스의 발견</div>
+    기원전 287년, <b>아르키메데스</b>는 목욕탕에서 발견합니다.<br>
+    <b>"물에 잠긴 물체는 밀어낸 물의 무게만큼 위로 뜨는 힘을 받는다!"</b><br>
+    <div class="formula">F = ρ × V × g &nbsp;(부력 = 밀도 × 부피 × 중력가속도)</div>
+    아래 3가지 체험으로 직접 느껴보세요! 👇
+  </div>
+</div>
+
+<div class="grid-wrap">
+  <div class="grid-label">체험 선택</div>
+  <div class="grid">
+    <div class="sc-card" onclick="selectScenario(0)">
+      <div class="sc-emoji">🚢</div>
+      <div class="sc-name">배에 짐 싣기</div>
+      <div class="sc-desc">가라앉지 않게 최대한 실어라!</div>
+    </div>
+    <div class="sc-card" onclick="selectScenario(1)">
+      <div class="sc-emoji">🫧</div>
+      <div class="sc-name">잠수함 구출</div>
+      <div class="sc-desc">풍선을 달아 수면까지 띄워라!</div>
+    </div>
+    <div class="sc-card" onclick="selectScenario(2)">
+      <div class="sc-emoji">🛁</div>
+      <div class="sc-name">목욕탕 실험</div>
+      <div class="sc-desc">유레카! 넘친 물의 비밀!</div>
+    </div>
+  </div>
+</div>
+
+<div class="game-area" id="gameArea">
+  <div class="canvas-wrap" id="canvasWrap">
+    <canvas id="gameCanvas" width="880" height="500"></canvas>
+    <div class="quiz-overlay" id="quizOverlay">
+      <div class="quiz-q" id="quizQ"></div>
+      <div class="quiz-btns">
+        <button class="quiz-btn" onclick="answerQuiz(true)">⬆️ 뜬다!</button>
+        <button class="quiz-btn" onclick="answerQuiz(false)">⬇️ 가라앉는다!</button>
+      </div>
+    </div>
+  </div>
+  <div class="info-panel" id="infoPanel"></div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = 880, H = 500;
+let currentScenario = -1;
+let animId = null;
+let time = 0;
+
+// ── Sound Effects (Web Audio API) ──
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playTone(freq, dur, type='sine', vol=0.15) {
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(); o.stop(audioCtx.currentTime + dur);
+}
+function sndSplash(){ playTone(200,0.3,'sine',0.12); setTimeout(()=>playTone(150,0.2,'sine',0.08),100); }
+function sndWarning(){ playTone(600,0.15,'square',0.1); setTimeout(()=>playTone(800,0.15,'square',0.1),180); }
+function sndSink(){ playTone(120,0.6,'sawtooth',0.15); }
+function sndSuccess(){ playTone(523,0.15,'sine',0.12); setTimeout(()=>playTone(659,0.15,'sine',0.12),150); setTimeout(()=>playTone(784,0.3,'sine',0.12),300); }
+function sndDrip(){ playTone(800,0.1,'sine',0.08); }
+
+// ── Particles ──
+let particles = [];
+function addBubble(x,y,count=3){
+  for(let i=0;i<count;i++){
+    particles.push({x:x+(Math.random()-0.5)*20, y, vx:(Math.random()-0.5)*1, vy:-1-Math.random()*2, r:2+Math.random()*4, life:1, type:'bubble'});
+  }
+}
+function addSplash(x,y,count=8){
+  for(let i=0;i<count;i++){
+    const ang = -Math.PI/2 + (Math.random()-0.5)*Math.PI*0.8;
+    const spd = 2+Math.random()*5;
+    particles.push({x, y, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, r:2+Math.random()*3, life:1, type:'splash'});
+  }
+}
+function updateParticles(){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx; p.y+=p.vy; p.life-=0.02;
+    if(p.type==='splash') p.vy+=0.15;
+    if(p.life<=0) particles.splice(i,1);
+  }
+}
+function drawParticles(){
+  particles.forEach(p=>{
+    ctx.globalAlpha=p.life*0.7;
+    if(p.type==='bubble'){
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.strokeStyle='rgba(150,220,255,0.6)';ctx.lineWidth=1.5;ctx.stroke();
+    } else {
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(150,210,255,0.8)';ctx.fill();
+    }
+    ctx.globalAlpha=1;
+  });
+}
+
+// ── Water Surface ──
+function drawWaterSurface(y, x0=0, x1=W, color='rgba(30,120,200,0.5)'){
+  ctx.beginPath();
+  ctx.moveTo(x0, y);
+  for(let x=x0;x<=x1;x+=4){
+    const wave = Math.sin(x*0.03 + time*2)*3 + Math.sin(x*0.07 + time*3)*1.5;
+    ctx.lineTo(x, y+wave);
+  }
+  ctx.lineTo(x1, H); ctx.lineTo(x0, H); ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
+// ══════════════════════════════════════
+// SCENARIO 1: Ship Loading
+// ══════════════════════════════════════
+const ship = {
+  hullVolume: 0, maxBuoyancy: 0, shipWeight: 0,
+  cargoWeight: 0, cargoItems: [], availableCargo: [],
+  sinkPhase: 0, // 0=normal, 1=sinking, 2=sunk
+  sinkAnim: 0, tiltAngle: 0,
+  shakeTimer: 0,
+  bestScore: parseInt(localStorage.getItem('archi_ship_best')||'0'),
+  dragging: null, dragX: 0, dragY: 0,
+};
+
+function initShip(){
+  ship.hullVolume = 100 + Math.floor(Math.random()*401); // 100-500
+  ship.maxBuoyancy = 1000 * ship.hullVolume * 10;
+  ship.shipWeight = Math.round(ship.maxBuoyancy * 0.4);
+  ship.cargoWeight = 0;
+  ship.cargoItems = [];
+  ship.sinkPhase = 0; ship.sinkAnim = 0; ship.tiltAngle = 0; ship.shakeTimer = 0;
+  ship.dragging = null;
+  // Generate cargo items
+  const weights = [10,15,20,25,30,40,50,60,80,100];
+  const icons = ['📦','📦','📦','🛢️','🛢️','🪨','🪨','📦','🛢️','🪨'];
+  ship.availableCargo = [];
+  for(let i=0;i<8;i++){
+    const wi = Math.floor(Math.random()*weights.length);
+    ship.availableCargo.push({
+      icon: icons[wi], weight: weights[wi],
+      x: 60 + i*100, y: H-55, w:70, h:45, onShip: false
+    });
+  }
+  particles = [];
+  updateShipInfo();
+}
+
+function getShipLoadRatio(){
+  return (ship.shipWeight + ship.cargoWeight) / ship.maxBuoyancy;
+}
+
+function drawShipScene(){
+  // Sky
+  const skyGrad = ctx.createLinearGradient(0,0,0,H*0.5);
+  skyGrad.addColorStop(0,'#1a3a5c');skyGrad.addColorStop(1,'#2d6a9f');
+  ctx.fillStyle=skyGrad;ctx.fillRect(0,0,W,H);
+  // Clouds
+  ctx.fillStyle='rgba(255,255,255,0.08)';
+  [[100,40,60],[350,25,45],[650,50,55],[800,30,40]].forEach(([cx,cy,r])=>{
+    ctx.beginPath();ctx.arc(cx+Math.sin(time*0.3+cx)*5,cy,r,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx+r*0.6+Math.sin(time*0.3+cx)*5,cy+5,r*0.7,0,Math.PI*2);ctx.fill();
+  });
+
+  const waterY = 230;
+  const ratio = getShipLoadRatio();
+  const sinkDepth = Math.min(ratio, 1.1) * 120; // how deep the ship sits
+
+  // Ship position
+  const shipCX = 300;
+  const shipW = 200, shipH = 100;
+  let shipY = waterY - shipH + sinkDepth;
+  let shake = 0;
+  if(ship.shakeTimer > 0){ shake = Math.sin(ship.shakeTimer*20)*3; ship.shakeTimer-=0.016; }
+
+  ctx.save();
+  if(ship.sinkPhase===1){
+    ship.sinkAnim = Math.min(ship.sinkAnim+0.008, 1);
+    ship.tiltAngle = ship.sinkAnim * 0.4;
+    shipY += ship.sinkAnim * 200;
+    if(ship.sinkAnim>=1) ship.sinkPhase=2;
+    addBubble(shipCX + Math.random()*100, waterY+20, 2);
+  }
+
+  ctx.translate(shipCX + shake, shipY);
+  if(ship.tiltAngle) ctx.rotate(ship.tiltAngle);
+
+  // Hull
+  ctx.beginPath();
+  ctx.moveTo(-shipW/2, 0);
+  ctx.lineTo(-shipW/2+15, shipH);
+  ctx.lineTo(shipW/2-15, shipH);
+  ctx.lineTo(shipW/2, 0);
+  ctx.closePath();
+  ctx.fillStyle='#5c4033';ctx.fill();
+  ctx.strokeStyle='#3e2723';ctx.lineWidth=2;ctx.stroke();
+
+  // Deck
+  ctx.fillStyle='#8d6e63';
+  ctx.fillRect(-shipW/2+5, -5, shipW-10, 12);
+
+  // Cabin
+  ctx.fillStyle='#6d4c41';
+  ctx.fillRect(-shipW/2+20, -35, 40, 30);
+  ctx.fillStyle='rgba(255,220,100,0.5)';
+  ctx.fillRect(-shipW/2+28, -28, 10, 10);
+  ctx.fillRect(-shipW/2+42, -28, 10, 10);
+
+  // Cargo on ship
+  ship.cargoItems.forEach((c,i)=>{
+    const col = i % 4;
+    const row = Math.floor(i / 4);
+    const cx = -30 + col*30;
+    const cy = -10 - row*25;
+    ctx.fillStyle = '#a0855a';
+    ctx.fillRect(cx-12, cy-12, 24, 24);
+    ctx.strokeStyle='#7a6540';ctx.lineWidth=1;ctx.strokeRect(cx-12,cy-12,24,24);
+    ctx.fillStyle='#5a4020';ctx.font='12px sans-serif';ctx.textAlign='center';
+    ctx.fillText(c.weight+'t', cx, cy+4);
+  });
+
+  ctx.restore();
+
+  // Water (over ship bottom)
+  drawWaterSurface(waterY, 0, W, 'rgba(20,90,180,0.55)');
+  // Deeper water
+  const deepGrad = ctx.createLinearGradient(0,waterY+20,0,H);
+  deepGrad.addColorStop(0,'rgba(10,60,140,0.3)');deepGrad.addColorStop(1,'rgba(5,20,60,0.6)');
+  ctx.fillStyle=deepGrad;ctx.fillRect(0,waterY+20,W,H-waterY-20);
+
+  // Ocean floor
+  ctx.fillStyle='#2a1f14';
+  ctx.fillRect(0,H-30,W,30);
+  ctx.fillStyle='#3d2e1e';
+  for(let x=0;x<W;x+=40){
+    ctx.beginPath();ctx.arc(x+Math.sin(x)*10, H-30, 8+Math.sin(x*0.7)*4, Math.PI, 0);ctx.fill();
+  }
+
+  // Available cargo at bottom
+  if(ship.sinkPhase===0){
+    ship.availableCargo.forEach((c,i)=>{
+      if(c.onShip) return;
+      const dx = ship.dragging===i ? ship.dragX : c.x;
+      const dy = ship.dragging===i ? ship.dragY : c.y;
+      ctx.fillStyle='rgba(160,133,90,0.9)';
+      ctx.fillRect(dx-c.w/2, dy-c.h/2, c.w, c.h);
+      ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1.5;
+      ctx.strokeRect(dx-c.w/2, dy-c.h/2, c.w, c.h);
+      ctx.fillStyle='#fff';ctx.font='bold 16px Pretendard Variable,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(c.icon+' '+c.weight+'t', dx, dy);
+    });
+  }
+
+  // Warning at 80%+
+  if(ratio >= 0.8 && ratio < 1.0 && ship.sinkPhase===0){
+    ctx.fillStyle=`rgba(234,179,8,${0.3+Math.sin(time*6)*0.2})`;
+    ctx.font='bold 18px Pretendard Variable,sans-serif';ctx.textAlign='center';
+    ctx.fillText('⚠️ 위험! 무게 주의!', W/2, 30);
+  }
+  if(ratio >= 0.9 && ratio < 1.0 && ship.sinkPhase===0){
+    ctx.fillStyle=`rgba(239,68,68,${0.5+Math.sin(time*8)*0.3})`;
+    ctx.font='bold 22px Pretendard Variable,sans-serif';ctx.textAlign='center';
+    ctx.fillText('🚨 거의 한계! 🚨', W/2, 60);
+  }
+  if(ship.sinkPhase===2){
+    ctx.fillStyle='rgba(239,68,68,0.9)';
+    ctx.font='bold 36px Pretendard Variable,sans-serif';ctx.textAlign='center';
+    ctx.fillText('💥 침몰! 💥', W/2, H/2-40);
+    ctx.font='16px Pretendard Variable,sans-serif';ctx.fillStyle='var(--dim)';
+    ctx.fillText('리셋 버튼으로 다시 도전하세요', W/2, H/2);
+  }
+
+  drawParticles();
+}
+
+function updateShipInfo(){
+  const ratio = getShipLoadRatio();
+  const remaining = ship.maxBuoyancy - ship.shipWeight - ship.cargoWeight;
+  const barClass = ratio < 0.7 ? 'green' : ratio < 0.9 ? 'yellow' : 'red';
+  const pct = Math.min(ratio*100,100).toFixed(0);
+  const cargoN = (ship.cargoWeight * 1000).toLocaleString(); // weight in N (tons * 1000 * 10)
+  const remN = Math.max(0,remaining).toLocaleString();
+  const maxN = ship.maxBuoyancy.toLocaleString();
+  const shipN = ship.shipWeight.toLocaleString();
+
+  document.getElementById('infoPanel').innerHTML = `
+    <div class="info-row">
+      <span class="info-label">선체 부피:</span><span class="info-val accent">${ship.hullVolume} m³</span>
+      <span class="info-label" style="margin-left:12px">최대 부력:</span><span class="info-val">${maxN} N</span>
+    </div>
+    <div class="info-row">
+      <span class="info-formula">F(부력) = ρ(물 밀도) × V(선체 부피) × g(중력) = 1000 × ${ship.hullVolume} × 10 = ${maxN} N</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">선체 무게:</span><span class="info-val">${shipN} N</span>
+      <span class="info-label" style="margin-left:12px">화물 무게:</span><span class="info-val accent">${(ship.cargoWeight*10000).toLocaleString()} N</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">남은 여유:</span><span class="info-val" style="color:${ratio>=0.9?'var(--red)':ratio>=0.7?'var(--orange)':'var(--green)'}">${Math.max(0,remaining).toLocaleString()} N</span>
+    </div>
+    <div class="info-row">
+      <div class="capacity-bar-wrap">
+        <div class="capacity-bar ${barClass}" style="width:${pct}%"></div>
+      </div>
+    </div>
+    <div class="info-row" style="font-size:12px;color:var(--dim)">
+      적재율: ${pct}% | 적재 화물: ${ship.cargoItems.length}개
+      ${ship.bestScore>0?'&nbsp;|&nbsp;최고 기록: '+ship.bestScore+'개':''}
+    </div>
+    <div class="btn-row">
+      <button class="action-btn secondary" onclick="initShip();updateShipInfo()">🔄 리셋</button>
+    </div>
+  `;
+}
+
+// Ship pointer events
+function shipPointerDown(x,y){
+  if(ship.sinkPhase!==0) return;
+  ship.availableCargo.forEach((c,i)=>{
+    if(c.onShip) return;
+    if(x>=c.x-c.w/2 && x<=c.x+c.w/2 && y>=c.y-c.h/2 && y<=c.y+c.h/2){
+      ship.dragging = i;
+      ship.dragX = x; ship.dragY = y;
+    }
+  });
+}
+function shipPointerMove(x,y){
+  if(ship.dragging===null) return;
+  ship.dragX = x; ship.dragY = y;
+  canvas.style.cursor='grabbing';
+}
+function shipPointerUp(x,y){
+  if(ship.dragging===null) return;
+  const c = ship.availableCargo[ship.dragging];
+  // Check if dropped on ship area (roughly 200-400 x, above water)
+  if(x > 150 && x < 450 && y < 350){
+    c.onShip = true;
+    ship.cargoItems.push(c);
+    ship.cargoWeight += c.weight * 1000; // tons to kg*g → weight in N is tons*1000*10 = tons*10000
+    // Actually let's use N directly: weight in N = mass(kg)*g = tons*1000*10
+    // Recalc: cargoWeight stored in N
+    ship.cargoWeight = 0;
+    ship.cargoItems.forEach(it => ship.cargoWeight += it.weight * 10000);
+    sndSplash();
+
+    const ratio = getShipLoadRatio();
+    if(ratio >= 0.8 && ratio < 1.0) { ship.shakeTimer = 0.5; sndWarning(); }
+    if(ratio >= 1.0){
+      ship.sinkPhase = 1; ship.sinkAnim = 0;
+      sndSink();
+    } else {
+      // Update best score
+      if(ship.cargoItems.length > ship.bestScore){
+        ship.bestScore = ship.cargoItems.length;
+        localStorage.setItem('archi_ship_best', ship.bestScore);
+      }
+    }
+    updateShipInfo();
+  }
+  ship.dragging = null;
+  canvas.style.cursor='default';
+}
+
+// ══════════════════════════════════════
+// SCENARIO 2: Submarine Rescue
+// ══════════════════════════════════════
+const sub = {
+  weight: 0, subVolume: 0, subBuoyancy: 0,
+  balloons: 0, balloonVolume: 0.5,
+  phase: 0, // 0=idle, 1=rising, 2=success, 3=toofast, 4=fail
+  subY: 0, targetY: 0, animSpeed: 0,
+  bestBalloons: parseInt(localStorage.getItem('archi_sub_best')||'0'),
+};
+
+function initSub(){
+  sub.weight = (40000 + Math.floor(Math.random()*30001)); // 40000-70000 N
+  sub.subVolume = Math.floor(sub.weight / 10000 * 0.6); // gives ~60% buoyancy
+  sub.subBuoyancy = 1000 * sub.subVolume * 10;
+  sub.balloons = 0;
+  sub.phase = 0;
+  sub.subY = 380;
+  sub.animSpeed = 0;
+  particles = [];
+  updateSubInfo();
+}
+
+function getTotalBuoyancy(){
+  return sub.subBuoyancy + 1000 * sub.balloons * sub.balloonVolume * 10;
+}
+
+function drawSubScene(){
+  // Deep ocean background
+  const bgGrad = ctx.createLinearGradient(0,0,0,H);
+  bgGrad.addColorStop(0,'#0a2a4a');bgGrad.addColorStop(0.15,'#0d3d6b');
+  bgGrad.addColorStop(0.5,'#082040');bgGrad.addColorStop(1,'#041020');
+  ctx.fillStyle=bgGrad;ctx.fillRect(0,0,W,H);
+
+  // Water surface at top
+  const surfY = 40;
+  drawWaterSurface(0, 0, W, 'rgba(40,140,220,0.15)');
+
+  // Surface shimmer
+  ctx.fillStyle='rgba(100,200,255,0.08)';
+  for(let x=0;x<W;x+=30){
+    const shimmer = Math.sin(x*0.05+time*2)*2;
+    ctx.fillRect(x, surfY+shimmer-2, 15, 4);
+  }
+
+  // Depth markers
+  ctx.fillStyle='rgba(255,255,255,0.15)';ctx.font='11px Pretendard Variable,sans-serif';ctx.textAlign='left';
+  for(let d=0;d<=50;d+=10){
+    const dy = surfY + (d/50)*(H-surfY-60);
+    ctx.fillText(d+'m', 10, dy+4);
+    ctx.fillRect(35, dy, 15, 1);
+  }
+
+  // Coral reef at bottom
+  const coralColors = ['#e06060','#e08050','#d04080','#c06070'];
+  for(let i=0;i<12;i++){
+    const cx = 80+i*70+Math.sin(i*3)*20;
+    ctx.fillStyle=coralColors[i%coralColors.length];
+    ctx.beginPath();
+    ctx.moveTo(cx-15, H);
+    ctx.quadraticCurveTo(cx-5, H-25-Math.sin(i)*10, cx, H-30-i%3*8);
+    ctx.quadraticCurveTo(cx+5, H-25-Math.sin(i)*10, cx+15, H);
+    ctx.fill();
+  }
+  // Sand
+  ctx.fillStyle='#2a2015';ctx.fillRect(0,H-15,W,15);
+
+  // Submarine
+  const subX = W/2;
+  let subY = sub.subY;
+  const bob = Math.sin(time*2)*2;
+
+  ctx.save();
+  ctx.translate(subX, subY+bob);
+
+  // Balloons and ropes
+  for(let i=0;i<sub.balloons;i++){
+    const bx = -sub.balloons*12/2 + i*12 + 6;
+    const by = -60 - Math.sin(time*3+i)*5;
+    // Rope
+    ctx.beginPath();ctx.moveTo(bx, by+15);ctx.lineTo(bx*0.3, -25);
+    ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=1;ctx.stroke();
+    // Balloon
+    ctx.beginPath();ctx.ellipse(bx, by, 10, 14, 0, 0, Math.PI*2);
+    const bColors = ['#ef4444','#f59e0b','#22c55e','#3b82f6','#a855f7','#ec4899'];
+    ctx.fillStyle=bColors[i%bColors.length];ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.2)';ctx.lineWidth=1;ctx.stroke();
+    // Shine
+    ctx.beginPath();ctx.ellipse(bx-3, by-5, 3, 4, -0.3, 0, Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.25)';ctx.fill();
+  }
+
+  // Sub body
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 70, 28, 0, 0, Math.PI*2);
+  ctx.fillStyle='#4a6a50';ctx.fill();
+  ctx.strokeStyle='#3a5a40';ctx.lineWidth=2;ctx.stroke();
+
+  // Conning tower
+  ctx.fillStyle='#3a5a40';
+  ctx.fillRect(-15, -38, 30, 15);
+  ctx.beginPath();ctx.arc(0,-38,15,Math.PI,0);ctx.fill();
+
+  // Periscope
+  ctx.fillStyle='#2a4a30';
+  ctx.fillRect(-2,-55,4,20);
+  ctx.fillRect(-6,-55,12,4);
+
+  // Windows
+  ctx.fillStyle='rgba(100,200,255,0.4)';
+  ctx.beginPath();ctx.arc(-30, 0, 8, 0, Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(0, 0, 8, 0, Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(30, 0, 8, 0, Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#3a5a40';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(-30, 0, 8, 0, Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.arc(0, 0, 8, 0, Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.arc(30, 0, 8, 0, Math.PI*2);ctx.stroke();
+
+  // Propeller
+  ctx.fillStyle='#5a5a5a';
+  const propAngle = time * 5;
+  for(let i=0;i<3;i++){
+    ctx.save();ctx.translate(70,0);ctx.rotate(propAngle+i*Math.PI*2/3);
+    ctx.fillRect(-2,-12,4,24);
+    ctx.restore();
+  }
+
+  ctx.restore();
+
+  // Phase-specific animations
+  if(sub.phase===1){
+    sub.subY -= sub.animSpeed;
+    sub.animSpeed = Math.min(sub.animSpeed + 0.03, 2.5);
+    addBubble(subX + (Math.random()-0.5)*60, subY + 30, 1);
+    if(sub.subY <= surfY + 40){
+      sub.phase = 2;
+      addSplash(subX, surfY+10, 15);
+      sndSuccess();
+      if(sub.bestBalloons===0 || sub.balloons < sub.bestBalloons){
+        sub.bestBalloons = sub.balloons;
+        localStorage.setItem('archi_sub_best', sub.bestBalloons);
+      }
+      updateSubInfo();
+    }
+  }
+  if(sub.phase===3){ // too fast
+    sub.subY -= sub.animSpeed;
+    sub.animSpeed = Math.min(sub.animSpeed + 0.1, 6);
+    addBubble(subX + (Math.random()-0.5)*60, subY + 30, 2);
+    if(sub.subY <= surfY - 30){
+      sub.subY = surfY - 30;
+      updateSubInfo();
+    }
+  }
+
+  // Messages
+  if(sub.phase===2){
+    ctx.fillStyle='rgba(34,197,94,0.9)';ctx.font='bold 28px Pretendard Variable,sans-serif';ctx.textAlign='center';
+    ctx.fillText('🎉 구출 성공! 🎉', W/2, H/2);
+  }
+  if(sub.phase===3){
+    ctx.fillStyle=`rgba(234,179,8,${0.7+Math.sin(time*6)*0.3})`;ctx.font='bold 22px Pretendard Variable,sans-serif';ctx.textAlign='center';
+    ctx.fillText('😱 너무 빨라요! 풍선을 줄여보세요!', W/2, H/2);
+  }
+  if(sub.phase===4){
+    ctx.fillStyle='rgba(239,68,68,0.9)';ctx.font='bold 22px Pretendard Variable,sans-serif';ctx.textAlign='center';
+    ctx.fillText('부력이 부족해요! 풍선을 더 달아주세요!', W/2, H/2);
+    // Sub shudder
+    sub.subY = 380 + Math.sin(time*20)*2;
+  }
+
+  drawParticles();
+}
+
+function updateSubInfo(){
+  const totalB = getTotalBuoyancy();
+  const balloonB = 1000 * sub.balloons * sub.balloonVolume * 10;
+  const needed = sub.weight - sub.subBuoyancy;
+  const neededBalloons = Math.ceil(needed / (1000 * sub.balloonVolume * 10));
+
+  document.getElementById('infoPanel').innerHTML = `
+    <div class="info-row">
+      <span class="info-label">잠수함 무게:</span><span class="info-val">${sub.weight.toLocaleString()} N</span>
+      <span class="info-label" style="margin-left:12px">잠수함 부피:</span><span class="info-val">${sub.subVolume} m³</span>
+    </div>
+    <div class="info-row">
+      <span class="info-formula">잠수함 부력 = ρ(바닷물 밀도) × V(잠수함 부피) × g(중력) = 1000 × ${sub.subVolume} × 10 = ${sub.subBuoyancy.toLocaleString()} N</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">풍선:</span><span class="info-val accent">${sub.balloons}개</span>
+      <span class="info-label" style="margin-left:8px">(추가 부피: ${sub.balloons * sub.balloonVolume} m³)</span>
+    </div>
+    <div class="info-row">
+      <span class="info-formula">풍선 부력 = ρ(물 밀도) × V(풍선 부피) × g(중력) = 1000 × ${sub.balloons * sub.balloonVolume} × 10 = ${balloonB.toLocaleString()} N</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">총 부력:</span><span class="info-val" style="color:${totalB>=sub.weight?'var(--green)':'var(--red)'}">${totalB.toLocaleString()} N</span>
+      <span class="info-label" style="margin-left:12px">필요:</span><span class="info-val">${sub.weight.toLocaleString()} N 이상</span>
+    </div>
+    <div class="info-row">
+      <div class="capacity-bar-wrap">
+        <div class="capacity-bar ${totalB>=sub.weight?'green':totalB>=sub.weight*0.7?'yellow':'red'}" style="width:${Math.min(100,totalB/sub.weight*100).toFixed(0)}%"></div>
+      </div>
+    </div>
+    ${sub.phase===2?'<div class="result-msg success">🎉 잠수함을 구출했습니다! 풍선 '+sub.balloons+'개 사용</div>':''}
+    ${sub.phase===3?'<div class="result-msg warn">😱 너무 빨라요! 풍선을 줄여보세요!</div>':''}
+    ${sub.phase===4?'<div class="result-msg fail">부력이 부족합니다! 풍선을 더 달아주세요.</div>':''}
+    <div class="btn-row">
+      <button class="action-btn secondary" onclick="sub.balloons=Math.max(0,sub.balloons-1);sub.phase=0;sub.subY=380;updateSubInfo()" ${sub.phase>0&&sub.phase<4?'disabled':''}>-🎈 풍선 제거</button>
+      <button class="action-btn secondary" onclick="sub.balloons++;sub.phase=0;sub.subY=380;updateSubInfo()" ${sub.phase>0&&sub.phase<4?'disabled':''}>+🎈 풍선 추가</button>
+      <button class="action-btn" onclick="launchSub()" ${sub.phase>0&&sub.phase<4?'disabled':''}>🚀 발사!</button>
+      <button class="action-btn secondary" onclick="initSub()">🔄 리셋</button>
+    </div>
+    ${sub.bestBalloons>0?'<div class="info-row" style="font-size:12px;color:var(--dim);margin-top:4px">최고 기록: 풍선 '+sub.bestBalloons+'개</div>':''}
+  `;
+}
+
+function launchSub(){
+  const totalB = getTotalBuoyancy();
+  if(totalB < sub.weight){
+    sub.phase = 4;
+    sndWarning();
+    // Shudder for a bit then reset
+    setTimeout(()=>{ if(sub.phase===4){ sub.phase=0; sub.subY=380; updateSubInfo(); }}, 2000);
+  } else if(totalB > sub.weight * 1.5){
+    sub.phase = 3;
+    sub.animSpeed = 0;
+    sndWarning();
+    setTimeout(()=>{ if(sub.phase===3){ sub.phase=0; sub.subY=380; updateSubInfo(); }}, 3000);
+  } else {
+    sub.phase = 1;
+    sub.animSpeed = 0;
+    sndSplash();
+  }
+  updateSubInfo();
+}
+
+// ══════════════════════════════════════
+// SCENARIO 3: Bathtub Experiment
+// ══════════════════════════════════════
+const bath = {
+  objects: [
+    {icon:'🧸', name:'곰인형', volume:3, mass:0.5, density:167, floats:true},
+    {icon:'🪨', name:'돌',     volume:0.5, mass:1.3, density:2600, floats:false},
+    {icon:'🏀', name:'농구공', volume:7, mass:0.6, density:86, floats:true},
+    {icon:'🧊', name:'얼음',   volume:1, mass:0.917, density:917, floats:true},
+    {icon:'🔧', name:'렌치',   volume:0.1, mass:0.78, density:7800, floats:false},
+  ],
+  currentObj: -1,
+  phase: 0, // 0=select, 1=quiz, 2=dropping, 3=result
+  dropAnim: 0,
+  waterLevel: 0, // overflow amount in L
+  spillAnim: 0,
+  usedObjects: [],
+  quizAnswer: null,
+  quizCorrect: false,
+  objY: 0, objTargetY: 0,
+};
+
+function initBath(){
+  bath.currentObj = -1;
+  bath.phase = 0;
+  bath.dropAnim = 0;
+  bath.waterLevel = 0;
+  bath.spillAnim = 0;
+  bath.usedObjects = [];
+  bath.quizAnswer = null;
+  particles = [];
+  document.getElementById('quizOverlay').classList.remove('show');
+  updateBathInfo();
+}
+
+function drawBathScene(){
+  // Bathroom background
+  ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,W,H);
+
+  // Tiles
+  ctx.strokeStyle='rgba(255,255,255,0.03)';ctx.lineWidth=1;
+  for(let x=0;x<W;x+=40) { ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
+  for(let y=0;y<H;y+=40) { ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
+
+  // Bathtub
+  const tubX = W/2 - 120, tubY = 100, tubW = 240, tubH = 180;
+  // Tub body
+  ctx.fillStyle='#ddd8d0';
+  ctx.beginPath();
+  ctx.moveTo(tubX, tubY);
+  ctx.lineTo(tubX-10, tubY+tubH);
+  ctx.quadraticCurveTo(tubX+tubW/2, tubY+tubH+20, tubX+tubW+10, tubY+tubH);
+  ctx.lineTo(tubX+tubW, tubY);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle='#bbb5a8';ctx.lineWidth=3;ctx.stroke();
+
+  // Tub rim
+  ctx.fillStyle='#e8e2d8';
+  ctx.fillRect(tubX-15, tubY-8, tubW+30, 16);
+  ctx.strokeStyle='#ccc5b8';ctx.strokeRect(tubX-15, tubY-8, tubW+30, 16);
+
+  // Water in tub
+  const waterTop = tubY + 15;
+  const waterBot = tubY + tubH - 5;
+  const waterH = waterBot - waterTop;
+
+  // Water surface animation
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(tubX+5, waterTop);
+  for(let x=tubX+5;x<=tubX+tubW-5;x+=3){
+    const wave = Math.sin(x*0.04+time*3)*2;
+    ctx.lineTo(x, waterTop+wave);
+  }
+  ctx.lineTo(tubX+tubW-5, waterBot);
+  ctx.lineTo(tubX+5, waterBot);
+  ctx.closePath();
+  ctx.fillStyle='rgba(60,160,230,0.5)';ctx.fill();
+  ctx.restore();
+
+  // Object in tub
+  if(bath.phase>=2 && bath.currentObj>=0){
+    const obj = bath.objects[bath.currentObj];
+    const objSize = Math.max(20, Math.min(60, obj.volume*12));
+    let oy = bath.objY;
+
+    if(bath.phase===2){
+      bath.dropAnim += 0.03;
+      if(bath.dropAnim >= 1){
+        bath.dropAnim = 1;
+        bath.phase = 3;
+        sndSplash();
+        addSplash(tubX+tubW/2, waterTop, 8);
+        // Overflow animation
+        bath.waterLevel = obj.volume;
+        bath.spillAnim = 0;
+        updateBathInfo();
+      }
+      oy = tubY - 60 + bath.dropAnim * (obj.floats ? (waterTop+20-(tubY-60)) : (waterBot-30-(tubY-60)));
+      bath.objY = oy;
+    }
+
+    ctx.font = objSize+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(obj.icon, tubX+tubW/2, oy);
+  }
+
+  // Overflow spill
+  if(bath.phase===3 && bath.waterLevel > 0){
+    bath.spillAnim = Math.min(bath.spillAnim + 0.02, 1);
+    // Water spilling over right side
+    const spillX = tubX + tubW + 5;
+    const spillH = bath.spillAnim * 80;
+    ctx.fillStyle='rgba(60,160,230,0.4)';
+    ctx.beginPath();
+    ctx.moveTo(spillX, tubY);
+    ctx.quadraticCurveTo(spillX+15, tubY+spillH/2, spillX+10, tubY+spillH);
+    ctx.lineTo(spillX+20, tubY+spillH);
+    ctx.quadraticCurveTo(spillX+25, tubY+spillH/2, spillX+8, tubY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Drips
+    if(Math.random() < 0.1) addSplash(spillX+15, tubY+spillH, 1);
+
+    // Measuring cup
+    const cupX = spillX + 30, cupY = tubY + tubH - 70, cupW = 60, cupH = 70;
+    ctx.fillStyle='rgba(200,200,200,0.15)';
+    ctx.strokeStyle='rgba(200,200,200,0.5)';ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(cupX, cupY);ctx.lineTo(cupX-5, cupY+cupH);ctx.lineTo(cupX+cupW+5, cupY+cupH);ctx.lineTo(cupX+cupW, cupY);
+    ctx.closePath();ctx.fill();ctx.stroke();
+
+    // Water in cup
+    const cupFill = bath.spillAnim * cupH * 0.8;
+    ctx.fillStyle='rgba(60,160,230,0.5)';
+    ctx.fillRect(cupX, cupY+cupH-cupFill, cupW, cupFill);
+
+    // Cup label
+    ctx.fillStyle='rgba(255,255,255,0.7)';ctx.font='bold 14px Pretendard Variable,sans-serif';ctx.textAlign='center';
+    ctx.fillText(bath.waterLevel.toFixed(1)+'L', cupX+cupW/2, cupY+cupH+18);
+
+    // Markings on cup
+    for(let i=1;i<=5;i++){
+      const my = cupY+cupH - (i/5)*cupH*0.8;
+      ctx.fillStyle='rgba(255,255,255,0.2)';
+      ctx.fillRect(cupX+cupW-12, my, 10, 1);
+    }
+  }
+
+  // Floor
+  ctx.fillStyle='#1f1f30';ctx.fillRect(0,H-40,W,40);
+
+  // Object selector at bottom
+  if(bath.phase===0 || bath.phase===3){
+    const startX = W/2 - bath.objects.length*45;
+    bath.objects.forEach((obj,i)=>{
+      const bx = startX + i*90;
+      const used = bath.usedObjects.includes(i);
+      ctx.globalAlpha = used ? 0.3 : 1;
+      ctx.fillStyle = bath.currentObj===i && !used ? 'rgba(6,182,212,0.2)' : 'rgba(255,255,255,0.05)';
+      ctx.strokeStyle = bath.currentObj===i && !used ? 'rgba(6,182,212,0.5)' : 'rgba(255,255,255,0.1)';
+      ctx.lineWidth=2;
+      ctx.beginPath();ctx.roundRect(bx-40, H-110, 80, 75, 12);ctx.fill();ctx.stroke();
+      ctx.font='40px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(obj.icon, bx, H-80);
+      ctx.fillStyle='rgba(255,255,255,0.7)';ctx.font='bold 12px Pretendard Variable,sans-serif';
+      ctx.fillText(obj.name, bx, H-50);
+      ctx.globalAlpha=1;
+    });
+  }
+
+  drawParticles();
+}
+
+function updateBathInfo(){
+  const obj = bath.currentObj >= 0 ? bath.objects[bath.currentObj] : null;
+  let html = '';
+  if(!obj || bath.phase < 3){
+    html = `
+      <div class="info-row"><span class="info-label">물건을 선택하고 욕조에 넣어보세요!</span></div>
+      <div class="info-row"><span class="info-formula">부력(뜨는 힘) = ρ(물 밀도: 1000) × V(잠긴 부피) × g(중력: 10)</span></div>
+      <div class="info-row"><span class="info-label" style="font-size:13px">넘치는 물의 무게 = 부력의 크기 (아르키메데스 원리!)</span></div>
+    `;
+  } else {
+    const buoyancy = 1000 * (obj.volume/1000) * 10;
+    const weight = obj.mass * 10;
+    const floatsText = buoyancy > weight ? '부력 > 무게이므로 뜹니다! 🎉' : buoyancy < weight ? '부력 < 무게이므로 가라앉습니다! 💧' : '부력 = 무게! 중립입니다!';
+    const resultClass = obj.floats ? 'success' : 'fail';
+    html = `
+      <div class="info-row">
+        <span class="info-label">넣은 물건:</span><span class="info-val">${obj.icon} ${obj.name} (부피: ${obj.volume}L, 무게: ${obj.mass}kg)</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">넘친 물:</span><span class="info-val accent">${obj.volume}L = ${(obj.volume/1000).toFixed(4)} m³</span>
+      </div>
+      <div class="info-row">
+        <span class="info-formula">부력(뜨는 힘) = ρ(물 밀도) × V(잠긴 부피) × g(중력) = 1000 × ${(obj.volume/1000).toFixed(4)} × 10 = ${buoyancy.toFixed(1)} N</span>
+      </div>
+      <div class="info-row">
+        <span class="info-formula">무게 = ${obj.mass} × 10 = ${weight.toFixed(1)} N</span>
+      </div>
+      <div class="result-msg ${resultClass}">→ ${floatsText}</div>
+      ${bath.quizAnswer !== null ? (bath.quizCorrect ? '<div class="info-row" style="color:var(--green);font-weight:700">정답! 잘 맞혔어요! 🎉</div>' : '<div class="info-row" style="color:var(--red);font-weight:700">아쉽지만 틀렸어요! 다음엔 맞혀보세요!</div>') : ''}
+    `;
+  }
+  html += `
+    <div class="btn-row">
+      <button class="action-btn secondary" onclick="initBath()">🔄 리셋</button>
+      ${bath.phase===3?'<button class="action-btn" onclick="nextBathObject()">다음 물건 →</button>':''}
+      ${bath.phase===0 && bath.currentObj>=0?'<button class="action-btn" onclick="dropInBath()">🛁 욕조에 넣기!</button>':''}
+    </div>
+  `;
+  document.getElementById('infoPanel').innerHTML = html;
+}
+
+function bathPointerDown(x,y){
+  if(bath.phase !== 0 && bath.phase !== 3) return;
+  // Check if clicking on object selector
+  const startX = W/2 - bath.objects.length*45;
+  bath.objects.forEach((obj,i)=>{
+    if(bath.usedObjects.includes(i)) return;
+    const bx = startX + i*90;
+    if(x>=bx-40 && x<=bx+40 && y>=H-110 && y<=H-35){
+      bath.currentObj = i;
+      bath.phase = 0;
+      bath.waterLevel = 0;
+      bath.spillAnim = 0;
+      bath.quizAnswer = null;
+      sndDrip();
+      updateBathInfo();
+    }
+  });
+}
+
+function dropInBath(){
+  if(bath.currentObj < 0 || bath.phase !== 0) return;
+  // Show quiz first
+  bath.phase = 1;
+  const obj = bath.objects[bath.currentObj];
+  document.getElementById('quizQ').textContent = `${obj.icon} ${obj.name}은(는) 뜰까요, 가라앉을까요?`;
+  document.getElementById('quizOverlay').classList.add('show');
+}
+
+function answerQuiz(guessFloat){
+  const obj = bath.objects[bath.currentObj];
+  bath.quizCorrect = (guessFloat === obj.floats);
+  bath.quizAnswer = guessFloat;
+  document.getElementById('quizOverlay').classList.remove('show');
+  // Start drop animation
+  bath.phase = 2;
+  bath.dropAnim = 0;
+  bath.objY = 40; // start from top
+  if(bath.quizCorrect) sndSuccess(); else sndWarning();
+}
+
+function nextBathObject(){
+  if(bath.currentObj >= 0) bath.usedObjects.push(bath.currentObj);
+  bath.currentObj = -1;
+  bath.phase = 0;
+  bath.waterLevel = 0;
+  bath.spillAnim = 0;
+  bath.quizAnswer = null;
+  updateBathInfo();
+}
+
+// ══════════════════════════════════════
+// Main Loop & Scenario Management
+// ══════════════════════════════════════
+function selectScenario(idx){
+  document.querySelectorAll('.sc-card').forEach((c,i)=>{
+    c.classList.toggle('active', i===idx);
+  });
+  currentScenario = idx;
+  document.getElementById('gameArea').classList.add('visible');
+  particles = [];
+
+  if(idx===0) initShip();
+  else if(idx===1) initSub();
+  else if(idx===2) initBath();
+
+  // Scroll to game
+  document.getElementById('gameArea').scrollIntoView({behavior:'smooth', block:'start'});
+
+  if(!animId) animate();
+}
+
+function animate(){
+  time += 0.016;
+  updateParticles();
+
+  ctx.clearRect(0,0,W,H);
+  if(currentScenario===0) drawShipScene();
+  else if(currentScenario===1) drawSubScene();
+  else if(currentScenario===2) drawBathScene();
+
+  animId = requestAnimationFrame(animate);
+}
+
+// ── Pointer Events ──
+function getCanvasPos(e){
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = W / rect.width;
+  const scaleY = H / rect.height;
+  const touch = e.touches ? e.touches[0] || e.changedTouches[0] : e;
+  return {
+    x: (touch.clientX - rect.left) * scaleX,
+    y: (touch.clientY - rect.top) * scaleY
+  };
+}
+
+canvas.addEventListener('pointerdown', e=>{
+  e.preventDefault();
+  const {x,y} = getCanvasPos(e);
+  if(currentScenario===0) shipPointerDown(x,y);
+  else if(currentScenario===2) bathPointerDown(x,y);
+});
+canvas.addEventListener('pointermove', e=>{
+  e.preventDefault();
+  const {x,y} = getCanvasPos(e);
+  if(currentScenario===0) shipPointerMove(x,y);
+});
+canvas.addEventListener('pointerup', e=>{
+  e.preventDefault();
+  const {x,y} = getCanvasPos(e);
+  if(currentScenario===0) shipPointerUp(x,y);
+});
+canvas.addEventListener('pointercancel', e=>{
+  if(currentScenario===0){ ship.dragging=null; canvas.style.cursor='default'; }
+});
+// Prevent scrolling on touch
+canvas.addEventListener('touchstart', e=>e.preventDefault(), {passive:false});
+canvas.addEventListener('touchmove', e=>e.preventDefault(), {passive:false});
+</script>
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Luna Whale - 상점</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+    <script src="/public/auth.js"></script>
+
+    <!-- PayPal -->
+    <script src="https://www.paypal.com/sdk/js?client-id=ARuHNQ1oqCCnwtDr6WvfwhhXRhsGbVH4DVLmjTiuciOywW_MbGe77aGUHQ7AQXY6pdwp_WQxiPojuzsr&currency=USD&components=buttons"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                colors: {
+                    primary: '#1337ec',
+                    coin: { 50:'#FFFBEB',100:'#FEF3C7',200:'#FDE68A',300:'#FCD34D',400:'#FBBF24',500:'#F59E0B',600:'#D97706',700:'#B45309',800:'#92400E',900:'#78350F' }
+                },
+                fontFamily: { display: ['Lexend','sans-serif'] }
+            }}
+        }
+    </script>
+    <style>
+        body { font-family: 'Lexend', sans-serif; }
+        .tab-btn { transition: all .2s; }
+        .tab-btn.active { color: #1337ec; border-color: #1337ec; font-weight: 800; }
+        .tab-btn:not(.active) { color: #94a3b8; border-color: transparent; }
+        .tab-btn:not(.active):hover { color: #64748b; }
+        .pack-card { transition: all .3s cubic-bezier(.34,1.56,.64,1); cursor: pointer; }
+        .pack-card:hover { transform: translateY(-4px) scale(1.01); }
+        .pack-card:active { transform: scale(.97); }
+        .pack-card.selected { box-shadow: 0 0 0 3px rgba(245,158,11,.5), 0 16px 32px rgba(245,158,11,.12); }
+        .shimmer {
+            background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.15) 45%, transparent 55%);
+            background-size: 200% 100%; animation: shimmer 2.5s infinite linear;
+        }
+        @keyframes shimmer { to { background-position: -200% 0; } }
+        .coin-bounce { animation: cb 3s ease-in-out infinite; }
+        @keyframes cb { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+        .toast-anim { animation: ta .4s cubic-bezier(.34,1.56,.64,1); }
+        @keyframes ta { from{opacity:0;transform:translateY(16px) scale(.9)} to{opacity:1;transform:translateY(0) scale(1)} }
+        .feature-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    </style>
+    <script src="../../assets/js/luna-nav.js?v=0329c"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+
+    <!-- ══════ Header ══════ -->
+    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-100">
+        <div class="max-w-5xl mx-auto flex items-center justify-between px-6 h-14">
+            <div class="flex items-center gap-3">
+                <button onclick="history.back()" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+                    <span class="material-symbols-outlined text-slate-400 text-xl">arrow_back</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white text-sm">water</span>
+                    </div>
+                    <span class="font-black text-sm text-primary tracking-tight">Luna Whale Shop</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5 bg-coin-100 px-3 py-1.5 rounded-full">
+                <span class="text-sm">&#x1FA99;</span>
+                <span id="headerCoin" class="font-black text-coin-800 text-sm">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ══════ Tabs ══════ -->
+    <div class="sticky top-14 z-30 bg-white border-b border-slate-100">
+        <div class="max-w-5xl mx-auto flex px-6">
+            <button onclick="switchTab('pkg')" id="tab-pkg" class="tab-btn active flex-1 py-3 text-sm text-center border-b-2">
+                <span class="material-symbols-outlined text-base align-middle mr-1">school</span>수업 패키지
+            </button>
+            <button onclick="switchTab('coin')" id="tab-coin" class="tab-btn flex-1 py-3 text-sm text-center border-b-2">
+                <span class="text-base align-middle mr-1">&#x1FA99;</span>코인 충전
+            </button>
+        </div>
+    </div>
+
+    <main class="max-w-5xl mx-auto px-6 pb-24 pt-6">
+
+        <!-- ══════ 환영 배너 ══════ -->
+        <div id="banner" class="mb-6 bg-gradient-to-r from-primary/5 via-purple-50 to-coin-50 rounded-2xl p-4 md:p-5 border border-primary/10 relative">
+            <button onclick="this.parentElement.remove()" class="absolute top-3 right-3 w-6 h-6 rounded-full bg-white/80 flex items-center justify-center text-slate-400 hover:text-slate-600 text-xs shadow-sm">&times;</button>
+            <div class="flex items-center gap-3">
+                <span class="text-3xl md:text-4xl">&#x1F389;</span>
+                <div>
+                    <p class="font-black text-sm md:text-base text-slate-800">가입하면 300코인 즉시 지급!</p>
+                    <p class="text-[11px] md:text-xs text-slate-500 mt-0.5">코인으로 게임을 해금하고, 카드를 뽑아보세요</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- 탭1: 수업 패키지                                -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <section id="panel-pkg">
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+                <!-- 좌측: 상품 카드 (3칸) -->
+                <div class="lg:col-span-3">
+                    <p class="text-center lg:text-left text-sm text-slate-500 mb-5">매달 새 수업 20개. <span class="text-slate-800 font-bold">한 번 사면 영원히 내 것</span></p>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <!-- 패키지 헤더 -->
+                        <div class="bg-gradient-to-r from-primary to-indigo-600 p-6 md:p-8 text-white relative overflow-hidden">
+                            <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full"></div>
+                            <div class="absolute bottom-0 right-8 w-20 h-20 bg-white/5 rounded-full"></div>
+                            <div class="relative">
+                                <div class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mb-3">
+                                    <span class="material-symbols-outlined text-xs">local_fire_department</span>이달의 패키지
+                                </div>
+                                <h2 class="text-2xl md:text-3xl font-black mb-1">이달의 수업 패키지</h2>
+                                <p class="text-white/70 text-sm">2026년 3월 수업 전체 (약 20강)</p>
+                                <div class="flex items-baseline gap-2 mt-4">
+                                    <span class="text-4xl md:text-5xl font-black">$79</span>
+                                    <span class="text-white/60 text-sm">USD / 평생 소장</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 혜택 목록 -->
+                        <div class="p-6 md:p-8">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">포함 혜택</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="feature-icon bg-blue-50"><span class="material-symbols-outlined text-blue-500 text-lg">palette</span></div>
+                                    <div><p class="text-sm font-bold text-slate-700">수업 약 20개</p><p class="text-[11px] text-slate-400">이번달 전체 수업</p></div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="feature-icon bg-green-50"><span class="material-symbols-outlined text-green-500 text-lg">all_inclusive</span></div>
+                                    <div><p class="text-sm font-bold text-slate-700">평생 소장</p><p class="text-[11px] text-slate-400">언제든지 다시 수강</p></div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="feature-icon bg-purple-50"><span class="material-symbols-outlined text-purple-500 text-lg">photo_library</span></div>
+                                    <div><p class="text-sm font-bold text-slate-700">갤러리 작품 예시</p><p class="text-[11px] text-slate-400">강별 12장 이상</p></div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="feature-icon bg-amber-50"><span class="material-symbols-outlined text-amber-500 text-lg">smart_toy</span></div>
+                                    <div><p class="text-sm font-bold text-slate-700">AI 리포트</p><p class="text-[11px] text-slate-400">레퍼런스 자료 포함</p></div>
+                                </div>
+                            </div>
+
+                            <!-- 가격 비교 -->
+                            <div class="mt-6 p-4 bg-slate-50 rounded-xl">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-500">개별 구매 시</span>
+                                    <span class="text-slate-400 line-through">$200 (20강 &times; $10)</span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm mt-1">
+                                    <span class="text-primary font-bold">패키지 가격</span>
+                                    <span class="text-primary font-black text-lg">$79 <span class="text-xs font-bold text-red-500 ml-1">60% OFF</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 프리미엄 구독 (준비중) -->
+                    <div class="mt-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 p-4 opacity-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-slate-300 text-xl">stars</span>
+                                <div>
+                                    <span class="font-bold text-sm text-slate-400">프리미엄 구독</span>
+                                    <span class="text-[10px] text-slate-300 ml-2">선생님 / 학부모 구독</span>
+                                </div>
+                            </div>
+                            <span class="bg-slate-200 text-slate-500 text-[9px] font-bold px-2.5 py-1 rounded-full">준비중</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 우측: 결제 패널 (2칸) -->
+                <div class="lg:col-span-2">
+                    <div class="lg:sticky lg:top-32 bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                        <h3 class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-5">안전 결제</h3>
+                        <div class="text-center mb-5">
+                            <div class="text-3xl font-black text-primary">$79</div>
+                            <div class="text-xs text-slate-400 mt-1">이달의 수업 패키지 · 평생 소장</div>
+                        </div>
+                        <div class="flex items-center gap-2 justify-center mb-4 text-slate-300">
+                            <span class="material-symbols-outlined text-sm">lock</span>
+                            <span class="text-[10px] font-bold tracking-widest">암호화 결제</span>
+                        </div>
+                        <div id="paypal-pkg-container" class="w-full"></div>
+                        <div class="mt-4 p-3 bg-slate-50 rounded-lg text-center">
+                            <span class="material-symbols-outlined text-xs text-slate-400 align-middle">verified_user</span>
+                            <span class="text-[10px] text-slate-400 font-bold ml-1">24시간 이내 환불 가능</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- 탭2: 코인 충전                                  -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <section id="panel-coin" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+                <!-- 좌측: 코인 패키지 (3칸) -->
+                <div class="lg:col-span-3">
+                    <p class="text-center lg:text-left text-sm text-slate-500 mb-5">게임 해금 100코인, 카드뽑기 30코인. <span class="text-coin-700 font-bold">지금 충전하면 10개 이상 해금 가능!</span></p>
+
+                    <!-- 잔액 -->
+                    <div class="flex items-center justify-center lg:justify-start gap-3 mb-5">
+                        <span class="text-3xl coin-bounce">&#x1FA99;</span>
+                        <div class="bg-coin-100 px-5 py-2 rounded-2xl">
+                            <span class="font-black text-2xl text-coin-800" id="balanceCount">0</span>
+                            <span class="text-xs text-coin-600 font-bold ml-1">보유 코인</span>
+                        </div>
+                    </div>
+
+                    <!-- 패키지 카드들 -->
+                    <div class="space-y-3">
+                        <!-- 500 -->
+                        <div class="pack-card rounded-2xl p-5 bg-white border-2 border-slate-100 shadow-sm relative overflow-hidden"
+                             data-coins="500" data-price="5.00" onclick="selectCoinPack(this)">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-[52px] h-[52px] rounded-xl bg-gradient-to-br from-coin-100 to-coin-200 flex items-center justify-center text-2xl">&#x1FA99;</div>
+                                    <div>
+                                        <div class="font-black text-lg text-slate-800">500 코인</div>
+                                        <div class="text-xs text-slate-400">입문 · 게임 5개 해금</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-black text-xl text-coin-600">$5</div>
+                                    <div class="text-[10px] text-slate-300 font-bold">USD</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 1000 -->
+                        <div class="pack-card rounded-2xl p-5 bg-white border-2 border-coin-300 shadow-md relative overflow-hidden"
+                             data-coins="1000" data-price="10.00" onclick="selectCoinPack(this)">
+                            <div class="absolute top-0 right-0 bg-coin-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl">인기</div>
+                            <div class="shimmer absolute inset-0 pointer-events-none"></div>
+                            <div class="flex items-center justify-between relative">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-[52px] h-[52px] rounded-xl bg-gradient-to-br from-coin-200 to-coin-400 flex items-center justify-center text-2xl">&#x1F4B0;</div>
+                                    <div>
+                                        <div class="font-black text-lg text-slate-800">1,000 코인</div>
+                                        <div class="text-xs text-slate-400">게임 10개 + 카드뽑기 33회</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-black text-xl text-coin-600">$10</div>
+                                    <div class="text-[10px] text-slate-300 font-bold">USD</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2500 -->
+                        <div class="pack-card rounded-2xl p-5 bg-gradient-to-r from-coin-800 to-coin-900 border-2 border-coin-600 shadow-lg relative overflow-hidden"
+                             data-coins="2500" data-price="20.00" onclick="selectCoinPack(this)">
+                            <div class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl">최고 가성비</div>
+                            <div class="shimmer absolute inset-0 pointer-events-none"></div>
+                            <div class="flex items-center justify-between relative">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-[52px] h-[52px] rounded-xl bg-gradient-to-br from-coin-400 to-coin-600 flex items-center justify-center text-2xl">&#x1F451;</div>
+                                    <div>
+                                        <div class="font-black text-lg text-white">2,500 코인</div>
+                                        <div class="text-xs text-coin-300">모든 게임 해금 + 카드 83회</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-black text-xl text-coin-300">$20</div>
+                                    <div class="text-[10px] text-coin-400 font-bold">20% 할인</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 코인 사용처 -->
+                    <div class="mt-5 bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                        <h3 class="font-bold text-sm text-slate-500 mb-3">코인 사용처</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">&#x1F513;</span>
+                                <span class="text-slate-600">게임 해금 <span class="text-coin-600 font-bold">100코인</span></span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">&#x1F3B4;</span>
+                                <span class="text-slate-600">카드 뽑기 <span class="text-coin-600 font-bold">30코인</span></span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">&#x1F0CF;</span>
+                                <span class="text-slate-600">10연뽑 <span class="text-coin-600 font-bold">250코인</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 우측: 코인 결제 패널 (2칸) -->
+                <div class="lg:col-span-2">
+                    <div id="coin-checkout-wrap" class="lg:sticky lg:top-32">
+                        <!-- 선택 전 안내 -->
+                        <div id="coin-placeholder" class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 text-center">
+                            <span class="text-4xl">&#x1F447;</span>
+                            <p class="text-sm text-slate-400 mt-3 font-medium">왼쪽에서 패키지를 선택하세요</p>
+                        </div>
+                        <!-- 선택 후 결제 -->
+                        <div id="coin-checkout" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                            <h3 class="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">코인 충전</h3>
+                            <div class="text-center mb-4">
+                                <div class="text-2xl font-black text-coin-700" id="coinCheckoutTitle">1,000 코인</div>
+                                <div class="text-sm text-slate-400 mt-1" id="coinCheckoutPrice">$10.00 USD</div>
+                            </div>
+                            <div id="paypal-coin-container" class="w-full"></div>
+                            <p class="text-center text-[10px] text-slate-300 mt-4">PayPal로 안전하게 결제됩니다</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ═══════ 수업 결제 성공 오버레이 ═══════ -->
+    <div id="pkgSuccessOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div id="pkgSuccessBox" class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl text-center transform scale-95 transition-transform duration-300">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                <span class="material-symbols-outlined text-green-500 text-5xl">check_circle</span>
+            </div>
+            <h2 class="text-2xl font-black mb-2">결제 완료!</h2>
+            <p class="text-slate-400 mb-6">이달의 수업 패키지가 해금되었습니다!</p>
+            <button onclick="location.href='/'" class="w-full h-14 bg-primary text-white rounded-2xl font-black text-lg shadow-xl shadow-primary/20">홈으로 이동</button>
+            <p class="mt-4 text-[10px] text-slate-300">Order ID: <span id="pkgOrderId">#</span></p>
+        </div>
+    </div>
+
+    <!-- ═══════ 코인 충전 성공 오버레이 ═══════ -->
+    <div id="coinSuccessOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div id="coinSuccessBox" class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl text-center transform scale-95 transition-transform duration-300">
+            <div class="text-6xl mb-4 coin-bounce">&#x1F389;</div>
+            <h2 class="text-2xl font-black mb-2">충전 완료!</h2>
+            <p class="text-slate-400 text-sm mb-2" id="coinSuccessMsg"></p>
+            <p class="text-[10px] text-slate-300 mb-4">Order ID: <span id="coinOrderId">#</span></p>
+            <div class="bg-coin-50 rounded-2xl p-4 mb-6">
+                <div class="text-xs text-coin-600 font-bold mb-1">현재 보유 코인</div>
+                <div class="font-black text-3xl text-coin-700" id="coinSuccessBalance">0</div>
+            </div>
+            <button onclick="closeCoinSuccess()" class="w-full py-3.5 bg-gradient-to-r from-coin-400 to-coin-500 text-white font-black rounded-2xl shadow-lg">확인</button>
+        </div>
+    </div>
+
+    <!-- ═══════ 로그인 필요 ═══════ -->
+    <div id="loginOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+            <div class="text-5xl mb-4">&#x1F510;</div>
+            <h2 class="font-black text-xl mb-2">로그인이 필요합니다</h2>
+            <p class="text-slate-400 text-sm mb-6">결제를 진행하려면 먼저 로그인해 주세요</p>
+            <a href="../../public/login.html" class="block w-full py-3.5 bg-slate-800 text-white font-bold rounded-2xl hover:bg-slate-700 transition-colors">로그인하기</a>
+            <button onclick="document.getElementById('loginOverlay').classList.add('hidden')" class="mt-3 text-sm text-slate-400 hover:text-slate-600">닫기</button>
+        </div>
+    </div>
+
+    <script>
+    // ══════════════════════════════════════
+    // 공통
+    // ══════════════════════════════════════
+    const PKG_PRICE = '79.00';
+
+    function requireLogin() {
+        if (!firebase.auth().currentUser) {
+            document.getElementById('loginOverlay').classList.remove('hidden');
+            return true;
+        }
+        return false;
+    }
+
+    function showToast(msg, type) {
+        const t = document.createElement('div');
+        t.className = 'fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-2xl shadow-2xl font-bold text-sm toast-anim max-w-xs text-center ' +
+            (type === 'error' ? 'bg-red-500 text-white' : 'bg-coin-500 text-white');
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 4000);
+    }
+
+    // 코인 잔액
+    function updateCoinDisplay() {
+        const c = parseInt(localStorage.getItem('luna_coins') || '0');
+        document.getElementById('headerCoin').textContent = c.toLocaleString();
+        document.getElementById('balanceCount').textContent = c.toLocaleString();
+    }
+    function syncCoins() {
+        const u = firebase.auth().currentUser;
+        if (!u) return;
+        firebase.firestore().collection('users').doc(u.uid).get().then(d => {
+            if (d.exists && typeof d.data().coins === 'number') {
+                localStorage.setItem('luna_coins', String(d.data().coins));
+                updateCoinDisplay();
+            }
+        }).catch(() => {});
+    }
+
+    // ══════════════════════════════════════
+    // 탭 전환
+    // ══════════════════════════════════════
+    function switchTab(tab) {
+        const isPkg = tab === 'pkg';
+        document.getElementById('tab-pkg').classList.toggle('active', isPkg);
+        document.getElementById('tab-coin').classList.toggle('active', !isPkg);
+        document.getElementById('panel-pkg').classList.toggle('hidden', !isPkg);
+        document.getElementById('panel-coin').classList.toggle('hidden', isPkg);
+        history.replaceState(null, '', '?tab=' + tab);
+    }
+
+    // ══════════════════════════════════════
+    // 탭1: 수업 패키지 ($79) → verifyPayment
+    // ══════════════════════════════════════
+    function initPkgPayPal() {
+        paypal.Buttons({
+            style: { shape:'rect', color:'gold', layout:'vertical', label:'paypal' },
+            createOrder: (_, actions) => actions.order.create({
+                purchase_units: [{ amount:{ value: PKG_PRICE }, description:'Luna Whale - 이달의 수업 패키지' }]
+            }),
+            onApprove: (_, actions) => actions.order.capture().then(d => verifyPkg(d.id, d)),
+            onError: (err) => { console.error('PayPal:', err); showToast('결제 중 오류가 발생했습니다.', 'error'); }
+        }).render('#paypal-pkg-container');
+    }
+
+    async function verifyPkg(txId, details) {
+        try {
+            const fn = firebase.functions().httpsCallable('verifyPayment');
+            const r = await fn({ transactionId: txId, paymentMethod: 'paypal', classId: 'monthly-pkg-2026-03' });
+            if (r.data.success) showPkgSuccess(txId);
+        } catch(e) {
+            console.error('Pkg verify:', e);
+            if (txId) showPkgSuccess(txId);
+        }
+    }
+
+    function showPkgSuccess(txId) {
+        document.getElementById('pkgOrderId').textContent = '#' + txId;
+        const ov = document.getElementById('pkgSuccessOverlay');
+        const bx = document.getElementById('pkgSuccessBox');
+        ov.classList.remove('hidden');
+        setTimeout(() => { bx.classList.remove('scale-95'); bx.classList.add('scale-100'); }, 10);
+        showToast('이달의 수업 패키지 구매 완료!');
+    }
+
+    // ══════════════════════════════════════
+    // 탭2: 코인 충전 → verifyCoinPurchase
+    // ══════════════════════════════════════
+    const COIN_PACKS = {
+        500:  { coins:500,  price:'5.00',  label:'500 코인' },
+        1000: { coins:1000, price:'10.00', label:'1,000 코인' },
+        2500: { coins:2500, price:'20.00', label:'2,500 코인' }
+    };
+    let selectedCoinPack = null;
+
+    function selectCoinPack(el) {
+        if (requireLogin()) return;
+        const coins = parseInt(el.dataset.coins);
+        selectedCoinPack = COIN_PACKS[coins];
+        if (!selectedCoinPack) return;
+
+        document.querySelectorAll('.pack-card').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+
+        document.getElementById('coinCheckoutTitle').textContent = selectedCoinPack.label + ' 충전';
+        document.getElementById('coinCheckoutPrice').textContent = '$' + selectedCoinPack.price + ' USD';
+        document.getElementById('coin-placeholder').classList.add('hidden');
+        document.getElementById('coin-checkout').classList.remove('hidden');
+
+        // 모바일에서만 스크롤
+        if (window.innerWidth < 1024) {
+            document.getElementById('coin-checkout').scrollIntoView({ behavior:'smooth', block:'center' });
+        }
+
+        renderCoinPayPal();
+    }
+
+    function renderCoinPayPal() {
+        const c = document.getElementById('paypal-coin-container');
+        c.innerHTML = '';
+        paypal.Buttons({
+            style: { shape:'rect', color:'gold', layout:'vertical', label:'paypal' },
+            createOrder: (_, actions) => {
+                if (!selectedCoinPack) return;
+                return actions.order.create({
+                    purchase_units: [{ amount:{ value:selectedCoinPack.price }, description:'Luna Whale - ' + selectedCoinPack.label }]
+                });
+            },
+            onApprove: (_, actions) => actions.order.capture().then(d => handleCoinSuccess(d.id, d)),
+            onError: (err) => { console.error('PayPal:', err); showToast('결제 중 오류가 발생했습니다.', 'error'); }
+        }).render('#paypal-coin-container');
+    }
+
+    async function handleCoinSuccess(txId) {
+        if (!selectedCoinPack || !firebase.auth().currentUser) return;
+        const uid = firebase.auth().currentUser.uid;
+        const pkg = selectedCoinPack;
+
+        try {
+            const fn = firebase.functions().httpsCallable('verifyCoinPurchase');
+            const r = await fn({ transactionId:txId, paymentMethod:'paypal', coinPackage:pkg.coins, expectedAmount:parseFloat(pkg.price) });
+            if (r.data.success) {
+                const bal = r.data.newBalance || 0;
+                localStorage.setItem('luna_coins', String(bal));
+                updateCoinDisplay();
+                showCoinSuccess(txId, pkg.label, bal);
+            }
+        } catch(e) {
+            console.error('Coin verify:', e);
+            // Fallback
+            try {
+                const ref = firebase.firestore().collection('users').doc(uid);
+                const doc = await ref.get();
+                const cur = doc.exists ? (doc.data().coins || 0) : 0;
+                const bal = cur + pkg.coins;
+                await ref.update({ coins: bal, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                await firebase.firestore().collection('transactions').add({
+                    userId:uid, type:'coin_purchase', coinPackage:pkg.coins,
+                    transactionId:txId, paymentMethod:'paypal',
+                    amount:parseFloat(pkg.price), currency:'USD', status:'completed',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                localStorage.setItem('luna_coins', String(bal));
+                updateCoinDisplay();
+                showCoinSuccess(txId, pkg.label, bal);
+            } catch(e2) {
+                showToast('결제 완료, 코인 반영 실패. 관리자 문의 필요.', 'error');
+            }
+        }
+    }
+
+    function showCoinSuccess(txId, label, balance) {
+        document.getElementById('coinSuccessMsg').textContent = '\u{1FA99} ' + label + '이 충전되었습니다!';
+        document.getElementById('coinOrderId').textContent = '#' + txId;
+        document.getElementById('coinSuccessBalance').textContent = balance.toLocaleString();
+        const ov = document.getElementById('coinSuccessOverlay');
+        const bx = document.getElementById('coinSuccessBox');
+        ov.classList.remove('hidden');
+        setTimeout(() => { bx.classList.remove('scale-95'); bx.classList.add('scale-100'); }, 10);
+        showToast('\u{1FA99} ' + label + ' 충전 완료!');
+    }
+
+    function closeCoinSuccess() {
+        document.getElementById('coinSuccessOverlay').classList.add('hidden');
+        document.getElementById('coinSuccessBox').classList.remove('scale-100');
+        document.getElementById('coinSuccessBox').classList.add('scale-95');
+        document.getElementById('coin-checkout').classList.add('hidden');
+        document.getElementById('coin-placeholder').classList.remove('hidden');
+        document.querySelectorAll('.pack-card').forEach(c => c.classList.remove('selected'));
+        selectedCoinPack = null;
+    }
+
+    // ══════════════════════════════════════
+    // 초기화
+    // ══════════════════════════════════════
+    updateCoinDisplay();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        initPkgPayPal();
+        const tab = new URLSearchParams(location.search).get('tab');
+        if (tab === 'coin') switchTab('coin');
+    });
+
+    firebase.auth().onAuthStateChanged(u => { if (u) syncCoins(); });
+    </script>
+
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

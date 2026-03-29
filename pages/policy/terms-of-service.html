@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Luna Whale Art Lab - Terms of Service</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../../assets/data/i18n.js?v=0312-2330"></script>
+    <script src="../../assets/js/app.js?v=0312-2330"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "primary": "#1337ec", "background-light": "#f6f6f8", "background-dark": "#101322" },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+
+        @media (min-width: 1024px) {
+            .app-sidebar {
+                display: flex !important;
+            }
+
+            .bottom-nav {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+
+        .submenu-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .submenu-container.open {
+            max-height: 400px;
+        }
+
+        .submenu-item {
+            display: block;
+            padding: 0.5rem 1rem 0.5rem 3.2rem;
+            font-size: 0.75rem;
+            color: #64748b;
+            transition: all 0.2s;
+            border-radius: 0.75rem;
+            margin: 0.1rem 0;
+            font-weight: 500;
+        }
+
+        .submenu-item:hover {
+            color: #1337ec;
+            background: rgba(19, 55, 236, 0.05);
+        }
+
+        .legal-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .legal-section h3 {
+            font-size: 0.875rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .legal-section p,
+        .legal-section li {
+            font-size: 0.8rem;
+            line-height: 1.7;
+            color: #64748b;
+        }
+
+        .dark .legal-section p,
+        .dark .legal-section li {
+            color: #94a3b8;
+        }
+
+        .legal-section ul {
+            list-style: disc;
+            padding-left: 1.25rem;
+        }
+
+        .legal-section ol {
+            list-style: decimal;
+            padding-left: 1.25rem;
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+
+    <!-- ─── Desktop Sidebar ─── -->
+    <aside
+        class="app-sidebar hidden fixed left-0 top-0 h-full w-60 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-col z-40 p-4">
+        <div class="flex items-center gap-3 px-2 py-4 mb-6">
+            <img src="../../logo.png" alt="Luna Whale" class="w-10 h-10 object-contain rounded-xl" />
+            <div>
+                <div class="text-sm font-black text-primary leading-none">Luna Whale</div>
+                <div class="text-xs text-slate-500 font-medium">Art Lab</div>
+            </div>
+        </div>
+        <div class="flex items-center gap-3 px-2 py-3 rounded-xl bg-primary/5 mb-6">
+            <div
+                class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-sm">person</span>
+            </div>
+            <div>
+                <div class="text-xs font-bold">Luna Artist</div>
+                <div class="text-[10px] text-slate-500">Lvl 1 Explorer</div>
+            </div>
+        </div>
+        <nav class="flex-1 min-h-0 space-y-1 overflow-y-auto pr-2 custom-scrollbar">
+            <a href="../../index.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">home</span> <span data-i18n="nav_home">Home</span>
+            </a>
+            <a href="../main/classes.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">school</span>
+                <span data-i18n="nav_classes">Classes</span>
+            </a>
+            <a href="../../gallery.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">gallery_thumbnail</span> <span
+                    data-i18n="nav_gallery">Gallery</span>
+            </a>
+            <a href="profile.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">account_circle</span> <span
+                    data-i18n="nav_profile">Profile</span>
+            </a>
+            <a href="../../curriculum.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">map</span> <span
+                    data-i18n="nav_curriculum">Curriculum</span>
+            </a>
+            <a href="../../pricing.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">card_membership</span> <span
+                    data-i18n="nav_membership">Membership</span>
+            </a>
+            <a href="support.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">help</span> <span data-i18n="nav_support">Support</span>
+            </a>
+            <a href="notices.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">campaign</span> <span
+                    data-i18n="nav_notice">Notice</span>
+            </a>
+            <a href="settings.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary/10 text-primary font-semibold text-sm">
+                <span class="material-symbols-outlined text-xl">settings</span> <span
+                    data-i18n="nav_settings">Settings</span>
+            </a>
+            <div class="border-t border-slate-200 pt-4 mt-4 space-y-2">
+                <a href="../admin/admin.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-100 font-medium text-sm transition-colors">
+                    <span class="material-symbols-outlined text-xl">admin_panel_settings</span> <span
+                        data-i18n="nav_admin">Admin</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <div class="main-content lg:ml-60 min-h-screen">
+        <!-- Header -->
+        <header
+            class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-200/50 dark:border-slate-800/50 px-6 py-4 flex items-center gap-3">
+            <button onclick="window.location.href='privacy-settings.html'"
+                class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-colors">
+                <span class="material-symbols-outlined text-slate-600 dark:text-slate-300">arrow_back</span>
+            </button>
+            <h1 class="font-black text-xl flex-1" data-i18n="tos_title">Terms of Service</h1>
+        </header>
+
+        <main class="max-w-2xl mx-auto pb-28 lg:pb-8 px-4 pt-6">
+            <!-- Meta Info -->
+            <div class="flex items-center gap-3 mb-6 bg-primary/5 rounded-2xl p-4">
+                <span class="material-symbols-outlined text-primary text-2xl">description</span>
+                <div>
+                    <div class="text-sm font-bold" data-i18n="tos_title">Terms of Service</div>
+                    <div class="text-xs text-slate-500" data-i18n="tos_effective">Effective Date: March 1, 2025</div>
+                </div>
+            </div>
+
+            <div
+                class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-1">
+
+                <!-- 1. 총칙 -->
+                <div class="legal-section">
+                    <h3 data-i18n="tos_s1_title">Article 1. Purpose</h3>
+                    <p data-i18n="tos_s1_body">These Terms of Service ("Terms") govern the use of the Luna Whale Art Lab
+                        platform ("Service"), operated by Luna Whale Inc. ("Company"). By accessing or using the
+                        Service, you agree to be bound by these Terms. The Service provides online and offline art
+                        education content, curriculum management tools, and community features for art educators,
+                        academy owners, and individual learners.</p>
+                </div>
+
+                <!-- 2. 정의 -->
+                <div class="legal-section">
+                    <h3 data-i18n="tos_s2_title">Article 2. Definitions</h3>
+                    <ul>
+                        <li data-i18n="tos_s2_1">"Member" refers to any individual or entity that has agreed to these
+                            Terms and registered an account with the Service.</li>
+                        <li data-i18n="tos_s2_2">"Content" includes all curriculum materials, lesson plans, reference
+                            artworks, instructional videos, templates, and educational resources provided through the
+                            Service.</li>
+                        <li data-i18n="tos_s2_3">"User Content" refers to artwork, images, comments, and other materials
+                            uploaded or submitted by Members.</li>
+                        <li data-i18n="tos_s2_4">"Subscription" means a paid or free membership plan that grants access
+                            to specific tiers of Content.</li>
+                    </ul>
+                </div>
+
+                <!-- 3. 이용계약 -->
+                <div class="legal-section">
+                    <h3 data-i18n="tos_s3_title">Article 3. Membership & Registration</h3>
+                    <p data-i18n="tos_s3_body">Membership is established when a user completes the registration process
+                        and the Company approves the application. Members must provide accurate and current information.
+                        The Company may refuse or revoke membership if false information is provided, if the applicant
+                        has previously violated these Terms, or if approval would otherwise be technically or
+                        commercially impractical.</p>
+                </div>
+
+                <!-- 4. 서비스 내용 -->
+                <div class="legal-section">
+                    <h3 data-i18n="tos_s4_title">Article 4. Services Provided</h3>
+                    <p data-i18n="tos_s4_intro">The Company provides the following services:</p>
+                    <ul>
+                        <li data-i18n="tos_s4_1">Art education curriculum for children, teens, and adults (Monthly,
+                            Special, Masterpiece classes)</li>
+                        <li data-i18n="tos_s4_2">Downloadable lesson plans, reference images, and instructional guides
+                            for art academy operators</li>
+                        <li data-i18n="tos_s4_3">Student portfolio management and artwork gallery features</li>
+                        <li data-i18n="tos_s4_4">Class creation and scheduling tools for educators</li>
+                        <li data-i18n="tos_s4_5">Community features including comments, sharing, and collaborative
+                            projects</li>
+                    </ul>
+                </div>
+
+                <!-- 5. 이용요금 -->
+                <div class="legal-section">
+                    <h3 data-i18n="tos_s5_title">Article 5. Subscription Plans & Payment</h3>
+                    <p data-i18n="tos_s5_body">The Service offers free (Basic) and paid (Standard, Premium) subscription
+                        tiers. Paid subscriptions are billed monthly or annually as selected at the time of purchase.
+                        Prices are displayed on the Membership page and may be adjusted with 30 days prior notice. All
+                        payments are processed securely through our authorized payment partners. Subscriptions
+                        automatically renew unless cancelled before the renewal date.</p>
+                </div>
+
+                <!-- 6. 환불 -->
+                <div class="legal-section">
+                    <h3 data-i18n="tos_s6_title">Article 6. Cancellation & Refunds</h3>
+                    <ul>
+                        <li data-i18n="tos_s6_1">Members may cancel their subscription at any time from the Settings
+                            page. Access continues until the end of the current billing period.</li>
+                        <li data-i18n="tos_s6_2">Refunds for individual lesson purchases are available within 7 days of
+                            purchase, provided the content has not been downloaded or accessed.</li>
+                        <li data-i18n="tos_s6_3">Annual subscriptions may be refunded on a pro-rata basis within the
+                            first 14 days, minus any content already accessed.</li>
+                        <li data-i18n="tos_s6_4">Refund requests should be submitted through the Help & Support page or
+                            by emailing support@lunawhale.com.</li>
+                    </ul>
+                </div>
+
+                <!-- 7. 저작권 -->
+                <div class="legal-section">
+                    <h3 data-i18n="tos_s7_title">Article 7. Intellectual Property & Copyright</h3>
+                    <ul>
+                        <li data-i18n="tos_s7_1">All Content provided through the Service, including but not limited to
+                            lesson plans, reference artwork, instructional videos, and curriculum designs, is the
+                            intellectual property of Luna Whale Inc. and is protected under applicable copyright laws.
+                        </li>
+                        <li data-i18n="tos_s7_2">Premium subscribers are granted a non-exclusive, non-transferable
+                            license to use Content for in-person educational purposes at their licensed facility (e.g.,
+                            art academy, school, studio).</li>
+                        <li data-i18n="tos_s7_3">Commercial redistribution, resale, or unauthorized sharing of digital
+                            Content files is strictly prohibited.</li>
+                        <li data-i18n="tos_s7_4">Members retain ownership of their User Content (original artworks,
+                            photos). By uploading User Content, Members grant the Company a non-exclusive, royalty-free
+                            license to display it within the Service (e.g., Gallery, community features).</li>
+                    </ul>
+                </div>
+
+                <!-- 8. 이용자의 의무 -->
+                <div class="legal-section">
+                    <h3 data-i18n="tos_s8_title">Article 8. Member Obligations</h3>
+                    <p data-i18n="tos_s8_intro">Members shall not engage in the following activities:</p>
+                    <ul>
+                        <li data-i18n="tos_s8_1">Sharing account credentials with unauthorized individuals</li>
+                        <li data-i18n="tos_s8_2">Redistributing, copying, or commercially exploiting Content without
+                            authorization</li>
+                        <li data-i18n="tos_s8_3">Uploading content that infringes on third-party intellectual property
+                            rights</li>
+                        <li data-i18n="tos_s8_4">Using the Service for any unlawful purpose or to harm other Members
+                        </li>
+                        <li data-i18n="tos_s8_5">Attempting to circumvent security measures, access restrictions, or
+                            payment systems</li>
+                    </ul>
+                </div>
+
+                <!-- 9. 서비스 중단 -->
+                <div class="legal-section">
+                    <h3 data-i18n="tos_s9_title">Article 9. Service Modifications & Interruptions</h3>
+                    <p data-i18n="tos_s9_body">The Company may temporarily suspend the Service for maintenance, system
+                        upgrades, or force majeure events. The Company will provide reasonable notice of planned
+                        interruptions when possible. The Company reserves the right to modify, add, or discontinue
+                        specific features or content with prior notice.</p>
+                </div>
+
+                <!-- 10. 면책 -->
+                <div class="legal-section">
+                    <h3 data-i18n="tos_s10_title">Article 10. Limitation of Liability</h3>
+                    <p data-i18n="tos_s10_body">The Company shall not be liable for damages arising from: (a) service
+                        interruptions caused by circumstances beyond reasonable control; (b) loss of data due to Member
+                        negligence; (c) disputes between Members; or (d) the accuracy or completeness of educational
+                        content, which is provided for instructional purposes only. The total liability of the Company
+                        shall not exceed the fees paid by the Member during the 12 months preceding the claim.</p>
+                </div>
+
+                <!-- 11. 분쟁 -->
+                <div class="legal-section">
+                    <h3 data-i18n="tos_s11_title">Article 11. Governing Law & Disputes</h3>
+                    <p data-i18n="tos_s11_body">These Terms shall be governed by and construed in accordance with the
+                        laws of the Republic of Korea. Any disputes arising from these Terms shall be resolved in the
+                        competent court of Seoul, Republic of Korea. Before initiating legal proceedings, both parties
+                        agree to attempt resolution through good-faith negotiation.</p>
+                </div>
+
+                <!-- 12. 기타 -->
+                <div class="legal-section">
+                    <h3 data-i18n="tos_s12_title">Article 12. Miscellaneous</h3>
+                    <ul>
+                        <li data-i18n="tos_s12_1">The Company may update these Terms at any time. Significant changes
+                            will be communicated at least 7 days in advance via in-app announcement or email.</li>
+                        <li data-i18n="tos_s12_2">If any provision of these Terms is found to be unenforceable, the
+                            remaining provisions shall continue in full force and effect.</li>
+                        <li data-i18n="tos_s12_3">For matters not covered by these Terms, applicable laws and customary
+                            practices shall apply.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div
+                class="mt-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4 border border-blue-100 dark:border-blue-800">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-primary text-lg">contact_support</span>
+                    <span class="text-xs font-bold text-primary" data-i18n="tos_contact_title">Questions about these
+                        Terms?</span>
+                </div>
+                <p class="text-xs text-slate-500" data-i18n="tos_contact_body">If you have any questions regarding these
+                    Terms of Service, please contact us at support@lunawhale.com or visit the Help & Support page.</p>
+            </div>
+
+            <p class="text-center text-[10px] text-slate-400 py-4">© 2025 Luna Whale Art Lab. All rights reserved.</p>
+        </main>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav
+        class="bottom-nav lg:hidden fixed bottom-0 left-0 right-0 flex border-t border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl px-4 pb-5 pt-2 z-50">
+        <a href="../../index.html"
+            class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-xl">home</span>
+            <span class="text-[10px] font-bold uppercase" data-i18n="nav_home">Home</span>
+        </a>
+        <a href="../../classes.html"
+            class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-xl">school</span>
+            <span class="text-[10px] font-bold uppercase" data-i18n="nav_classes">Classes</span>
+        </a>
+        <div class="flex-1 flex flex-col items-center relative -top-5 gap-1">
+            <button onclick="window.location.href='create-class.html'"
+                class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-xl shadow-primary/40 border-4 border-background-light">
+                <span class="material-symbols-outlined text-2xl">add</span>
+            </button>
+            <span class="text-[10px] font-bold uppercase text-slate-400" data-i18n="nav_create">Create</span>
+        </div>
+        <a href="../../gallery.html"
+            class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-xl">gallery_thumbnail</span>
+            <span class="text-[10px] font-bold uppercase" data-i18n="nav_gallery">Gallery</span>
+        </a>
+        <a href="settings.html" class="flex flex-1 flex-col items-center gap-1 text-primary">
+            <span class="material-symbols-outlined text-xl">settings</span>
+            <span class="text-[10px] font-bold uppercase" data-i18n="nav_settings">Settings</span>
+        </a>
+    </nav>
+
+    <script>
+        if (localStorage.getItem('lw_dark') === '1') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+</body>
+
+</html>

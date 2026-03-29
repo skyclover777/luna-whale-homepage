@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>세잔의 풍경 구조와 색의 조화 — 인상주의 4강 | Luna Whale</title>
+<style>
+:root{
+  --g0:#0a0d07;--g1:#121810;--g2:#1a2216;
+  --glow:#7dad5a;--pale:#a3c47e;--acc:#4a7a2e;
+  --cream:#f0f5e8;--glass:rgba(255,255,255,.04);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Apple SD Gothic Neo','Noto Sans KR',system-ui,sans-serif;background:var(--g0);color:var(--cream);user-select:none;font-size:17px;line-height:1.8;-webkit-font-smoothing:antialiased;}
+#sw{width:100%;height:100%;position:relative;overflow:hidden;}
+
+/* ── slides ── */
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .8s cubic-bezier(.4,0,.2,1),transform .8s cubic-bezier(.4,0,.2,1);pointer-events:none;display:flex;flex-direction:column;overflow:hidden;min-height:0;transform:scale(.98) translateY(8px);}
+.slide.active{opacity:1;transform:scale(1) translateY(0);pointer-events:auto;z-index:10;}
+.slide.exit-left{opacity:0;transform:scale(1.02) translateY(-8px);z-index:5;}
+.bg{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(125,173,90,.03) 0%,transparent 50%),radial-gradient(ellipse at 80% 50%,rgba(74,122,46,.02) 0%,transparent 50%),linear-gradient(160deg,var(--g0) 0%,var(--g1) 40%,var(--g2) 100%);}
+
+/* ── topbar ── */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:rgba(10,13,7,.75);backdrop-filter:blur(30px) saturate(1.4);border-bottom:1px solid rgba(125,173,90,.06);transition:transform .4s;}
+.topbar.hidden{transform:translateY(-100%);}
+.tlogo{font-size:13px;font-weight:700;color:var(--glow);cursor:pointer;transition:.2s;text-decoration:none;letter-spacing:.5px;}.tlogo:hover{opacity:.7;}
+.tsc{font-size:12px;color:rgba(255,255,255,.3);font-variant-numeric:tabular-nums;}.tsc strong{color:rgba(255,255,255,.8);font-weight:700;}
+.tbadges{display:flex;gap:8px;}
+.badge{padding:3px 12px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.bl{background:rgba(125,173,90,.1);color:var(--glow);border:1px solid rgba(125,173,90,.2);}
+.ba{background:rgba(163,196,126,.08);color:var(--pale);border:1px solid rgba(163,196,126,.15);}
+
+/* ── progress bar ── */
+.progress-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--acc),var(--glow),var(--pale));z-index:250;transition:width .6s cubic-bezier(.4,0,.2,1);box-shadow:0 0 12px rgba(125,173,90,.4);}
+
+/* ── nav ── */
+.dots{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:200;display:flex;gap:6px;align-items:center;background:rgba(10,13,7,.6);backdrop-filter:blur(20px);padding:8px 16px;border-radius:30px;border:1px solid rgba(255,255,255,.06);}
+.dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.15);cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);}
+.dot:hover{background:rgba(255,255,255,.3);}
+.dot.active{width:28px;background:var(--glow);box-shadow:0 0 8px rgba(125,173,90,.4);}
+.arr{position:fixed;top:50%;z-index:200;transform:translateY(-50%);background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;transition:all .3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(12px);}
+.arr:hover{background:rgba(125,173,90,.15);color:var(--glow);border-color:rgba(125,173,90,.3);transform:translateY(-50%) scale(1.08);box-shadow:0 4px 24px rgba(125,173,90,.15);}
+.arr:disabled{opacity:0;cursor:default;pointer-events:none;}
+#bp{left:20px;}#bn{right:20px;}
+@media(max-width:768px){.arr{display:none;}.tsc{display:none;}.topbar{padding:12px 20px;}.dots{bottom:16px;padding:6px 12px;}}
+
+/* ── slide content ── */
+.sc{position:relative;z-index:2;flex:1;min-height:0;display:flex;flex-direction:column;padding:72px 80px 80px;overflow:hidden;}
+@media(max-width:900px){.sc{padding:66px 28px 70px;}}
+@media(max-width:768px){.sc{padding:60px 20px 70px;}}
+.sc-scroll{flex:1;min-height:0;overflow-y:auto;padding-right:8px;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;}
+.sc-scroll::-webkit-scrollbar{width:3px;}.sc-scroll::-webkit-scrollbar-track{background:transparent;}.sc-scroll::-webkit-scrollbar-thumb{background:rgba(125,173,90,.2);border-radius:4px;}
+
+/* ── typography ── */
+.ew{font-size:10px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:rgba(125,173,90,.6);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.ew::before{content:'';display:block;width:24px;height:1px;background:linear-gradient(90deg,var(--glow),transparent);}
+.stitle{font-size:clamp(28px,4vw,56px);font-weight:900;line-height:1.1;letter-spacing:-1.5px;margin-bottom:16px;background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,.9) 30%,var(--glow) 70%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ssub{font-size:clamp(15px,1.6vw,20px);color:rgba(255,255,255,.4);font-style:italic;margin-bottom:28px;font-weight:300;}
+
+/* ── reveal animations ── */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1);}
+.reveal.show{opacity:1;transform:translateY(0);}
+.reveal:nth-child(1){transition-delay:.05s;}
+.reveal:nth-child(2){transition-delay:.12s;}
+.reveal:nth-child(3){transition-delay:.19s;}
+.reveal:nth-child(4){transition-delay:.26s;}
+.reveal:nth-child(5){transition-delay:.33s;}
+.reveal:nth-child(6){transition-delay:.40s;}
+.reveal:nth-child(7){transition-delay:.47s;}
+.reveal:nth-child(8){transition-delay:.54s;}
+.reveal:nth-child(9){transition-delay:.61s;}
+.reveal:nth-child(10){transition-delay:.68s;}
+.reveal:nth-child(11){transition-delay:.75s;}
+.reveal:nth-child(12){transition-delay:.82s;}
+.reveal:nth-child(13){transition-delay:.89s;}
+
+/* ── S0 Gallery Marquee ── */
+.gal-marquee{position:absolute;inset:0;overflow:hidden;z-index:1;}
+.gal-row{display:flex;gap:8px;margin-bottom:8px;width:max-content;will-change:transform;}
+.gal-row-wrap{overflow:hidden;position:relative;}
+.gal-row-wrap::before,.gal-row-wrap::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none;}
+.gal-row-wrap::before{left:0;background:linear-gradient(90deg,var(--g0),transparent);}
+.gal-row-wrap::after{right:0;background:linear-gradient(270deg,var(--g0),transparent);}
+.gal-row.row-left{animation:scrollLeft 480s linear infinite;}
+.gal-row.row-right{animation:scrollRight 480s linear infinite;}
+@keyframes scrollLeft{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+@keyframes scrollRight{0%{transform:translateX(-50%);}100%{transform:translateX(0);}}
+.gal-item{flex-shrink:0;width:220px;height:160px;border-radius:8px;overflow:hidden;cursor:pointer;position:relative;transition:transform .4s,box-shadow .4s;}
+.gal-row-wrap:hover .gal-row{animation-play-state:paused;}
+.gal-item:hover{transform:scale(1.08);box-shadow:0 8px 32px rgba(125,173,90,.3);z-index:10;}
+.gal-item img{width:100%;height:100%;object-fit:cover;object-position:top;transition:filter .4s;}
+.gal-item:hover img{filter:brightness(1.1);}
+.gal-item .gal-title-bar{position:absolute;bottom:0;left:0;right:0;padding:6px 10px;background:linear-gradient(transparent,rgba(0,0,0,.8));font-size:11px;color:rgba(255,255,255,.85);opacity:0;transition:opacity .3s;line-height:1.3;white-space:normal;}
+.gal-item:hover .gal-title-bar{opacity:1;}
+@media(max-width:768px){.gal-item{width:160px;height:115px;}.gal-item .gal-title-bar{font-size:10px;}}
+
+/* ── Painting Info Popup ── */
+.paint-popup{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .5s ease;}
+.paint-popup.open{opacity:1;pointer-events:auto;}
+.paint-popup-bg{position:absolute;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);}
+.paint-popup-inner{position:relative;z-index:1;max-width:800px;width:100%;display:flex;flex-direction:column;align-items:center;gap:20px;transform:scale(.95) translateY(12px);transition:transform .5s cubic-bezier(.2,.8,.3,1),opacity .5s ease;opacity:0;}
+.paint-popup.open .paint-popup-inner{transform:scale(1) translateY(0);opacity:1;}
+.paint-popup-img{max-width:100%;max-height:55vh;border-radius:12px;box-shadow:0 16px 64px rgba(0,0,0,.5);}
+.paint-popup-info{text-align:center;max-width:600px;}
+.paint-popup-title{font-size:clamp(20px,3vw,32px);font-weight:900;color:#fff;margin-bottom:4px;}
+.paint-popup-sub{font-size:14px;color:var(--glow);margin-bottom:8px;font-weight:600;}
+.paint-popup-desc{font-size:15px;color:rgba(255,255,255,.6);line-height:1.7;}
+.paint-popup-loc{font-size:12px;color:rgba(255,255,255,.3);margin-top:6px;font-style:italic;}
+.paint-popup-close{position:absolute;top:-40px;right:0;background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.3s;}
+.paint-popup-close:hover{color:#fff;border-color:var(--glow);}
+
+/* ── cover (S0) Gallery ── */
+#s0 .hov{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,13,7,.97) 0%,rgba(10,13,7,.7) 25%,rgba(10,13,7,.3) 50%,rgba(10,13,7,.5) 100%);z-index:2;pointer-events:none;}
+#s0 .sc{justify-content:flex-end;padding-bottom:120px;}
+#s0 .typewriter{display:inline-block;overflow:hidden;white-space:nowrap;border-right:2px solid var(--glow);animation:typewriterBlink .6s infinite;font-size:clamp(32px,5vw,64px);font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,#fff 0%,var(--glow) 60%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;width:0;}
+#s0 .typewriter.animate{animation:typewriterExpand 2s 1s cubic-bezier(.25,.46,.45,.94) forwards,typewriterBlink .6s 1s 5;}
+@keyframes typewriterExpand{0%{width:0;}100%{width:100%;border-right-color:transparent;}}
+@keyframes typewriterBlink{0%,100%{border-right-color:var(--glow);}50%{border-right-color:transparent;}}
+#s0 .cover-meta{display:flex;gap:16px;flex-wrap:wrap;opacity:0;animation:fadeUp .8s 2.8s forwards;}
+.cover-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:30px;padding:8px 18px;font-size:13px;color:rgba(255,255,255,.6);backdrop-filter:blur(8px);transition:.3s;}
+.cover-chip:hover{border-color:rgba(125,173,90,.3);color:rgba(255,255,255,.8);}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(30px);}100%{opacity:1;transform:translateY(0);}}
+
+/* ── crossfade gallery ── */
+.slide-split{display:flex;gap:24px;flex:1;min-height:0;}
+.slide-split-left{width:45%;flex-shrink:0;display:flex;}
+.slide-split-right{width:55%;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;}
+.slide-split-right::-webkit-scrollbar{width:3px;}.slide-split-right::-webkit-scrollbar-track{background:transparent;}.slide-split-right::-webkit-scrollbar-thumb{background:rgba(125,173,90,.2);border-radius:4px;}
+.crossfade-gallery{position:relative;width:100%;height:100%;border-radius:16px;overflow:hidden;border:1px solid rgba(125,173,90,0.15);box-shadow:0 0 20px rgba(125,173,90,0.05);}
+.crossfade-gallery img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--g0);opacity:0;transition:opacity 2s ease-in-out;}
+.crossfade-gallery img.cf-active{opacity:1;}
+@media(max-width:768px){
+.slide-split{flex-direction:column;gap:16px;}
+.slide-split-left{width:100%;height:200px;flex-shrink:0;}
+.slide-split-right{width:100%;flex:1;min-height:0;}
+}
+
+/* ── interactive cards ── */
+.card-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:12px;}
+.info-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;cursor:pointer;transition:all .5s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;}
+.info-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--glow),transparent);opacity:0;transition:opacity .4s;}
+.info-card:hover{border-color:rgba(125,173,90,.25);background:rgba(255,255,255,.05);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.info-card:hover::before{opacity:1;}
+.info-card.expanded{background:rgba(125,173,90,.06);border-color:rgba(125,173,90,.2);transform:none;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+.info-card.expanded::before{opacity:1;}
+.card-header{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.card-num{font-size:11px;font-weight:800;color:var(--glow);letter-spacing:2px;opacity:.5;}
+.card-title{font-size:clamp(16px,1.8vw,20px);font-weight:800;color:#fff;line-height:1.3;}
+.card-chevron{color:rgba(255,255,255,.3);font-size:14px;transition:transform .4s;flex-shrink:0;}
+.info-card.expanded .card-chevron{transform:rotate(180deg);color:var(--glow);}
+.card-body{max-height:0;overflow:hidden;transition:max-height .6s cubic-bezier(.4,0,.2,1),opacity .4s,padding .4s;opacity:0;padding-top:0;}
+.info-card.expanded .card-body{max-height:500px;opacity:1;padding-top:16px;}
+.card-body p{font-size:15px;line-height:1.85;color:rgba(255,255,255,.7);}
+.card-body .artist-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.artist-tag{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.65);transition:.3s;}
+.artist-tag:hover{border-color:rgba(125,173,90,.3);color:var(--pale);}
+
+/* ── timeline ── */
+.timeline{position:relative;padding-left:40px;margin-top:8px;}
+.timeline::before{content:'';position:absolute;left:14px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,rgba(125,173,90,.3) 5%,rgba(125,173,90,.3) 95%,transparent);}
+.tl-item{position:relative;margin-bottom:4px;cursor:pointer;transition:all .3s;}
+.tl-dot{position:absolute;left:-33px;top:10px;width:12px;height:12px;border-radius:50%;background:var(--g1);border:2px solid rgba(125,173,90,.4);transition:all .4s;z-index:2;}
+.tl-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(125,173,90,.15);animation:dotPulse 3s ease-in-out infinite;}
+@keyframes dotPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(1.3);opacity:0;}}
+.tl-item:hover .tl-dot,.tl-item.expanded .tl-dot{background:var(--glow);border-color:var(--glow);box-shadow:0 0 12px rgba(125,173,90,.4);}
+.tl-year{font-size:13px;font-weight:800;color:var(--glow);margin-bottom:2px;}
+.tl-summary{font-size:14px;color:rgba(255,255,255,.5);line-height:1.6;transition:color .3s;}
+.tl-item:hover .tl-summary,.tl-item.expanded .tl-summary{color:rgba(255,255,255,.8);}
+.tl-detail{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1),opacity .3s;opacity:0;}
+.tl-item.expanded .tl-detail{max-height:200px;opacity:1;}
+.tl-detail p{font-size:14px;line-height:1.8;color:rgba(255,255,255,.65);margin-top:6px;padding:10px 14px;background:rgba(125,173,90,.04);border-radius:10px;border-left:2px solid rgba(125,173,90,.2);}
+
+/* ── masterpiece ── */
+.mp-cinema{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;flex:1;align-items:start;min-height:0;}
+@media(max-width:900px){.mp-cinema{grid-template-columns:1fr;gap:20px;}}
+.mp-img-hero{position:relative;border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 1px rgba(255,255,255,.1);transition:transform .4s,box-shadow .4s;max-height:68vh;}
+.mp-img-hero:hover{transform:scale(1.01);box-shadow:0 32px 100px rgba(0,0,0,.7),0 0 40px rgba(125,173,90,.08);}
+.mp-img-hero img{width:100%;height:100%;object-fit:contain;display:block;}
+.mp-img-hero .view-hint{position:absolute;bottom:16px;right:16px;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);color:rgba(255,255,255,.7);font-size:11px;padding:6px 14px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;border:1px solid rgba(255,255,255,.1);}
+.mp-img-hero:hover .view-hint{opacity:1;}
+.mp-analysis{overflow-y:auto;max-height:68vh;padding-right:8px;}
+.mp-analysis::-webkit-scrollbar{width:3px;}.mp-analysis::-webkit-scrollbar-thumb{background:rgba(125,173,90,.15);border-radius:3px;}
+.mp-analysis h3{font-size:clamp(22px,2.8vw,34px);font-weight:900;color:#fff;margin-bottom:4px;line-height:1.2;}
+.mp-analysis h3 em{color:var(--glow);font-style:normal;}
+.mp-analysis .mp-sub{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:18px;line-height:1.5;}
+
+/* analysis panels */
+.an-panel{margin-bottom:8px;border-radius:12px;overflow:hidden;transition:all .4s;cursor:pointer;}
+.an-panel-head{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;transition:all .3s;}
+.an-panel:hover .an-panel-head{background:rgba(255,255,255,.05);border-color:rgba(125,173,90,.15);}
+.an-panel.open .an-panel-head{background:rgba(125,173,90,.06);border-color:rgba(125,173,90,.2);border-radius:12px 12px 0 0;}
+.an-label{font-size:13px;font-weight:700;color:var(--pale);flex:1;}
+.an-icon{font-size:12px;color:rgba(255,255,255,.3);transition:transform .3s;}
+.an-panel.open .an-icon{transform:rotate(90deg);color:var(--glow);}
+.an-content{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1),opacity .3s;opacity:0;background:rgba(125,173,90,.03);border:1px solid rgba(125,173,90,.1);border-top:0;border-radius:0 0 12px 12px;}
+.an-panel.open .an-content{max-height:400px;opacity:1;}
+.an-content p{font-size:14px;line-height:1.85;color:rgba(255,255,255,.7);padding:14px 16px;}
+
+/* ── practice grid ── */
+.prac-section{margin-bottom:20px;}
+.prac-label{font-size:12px;font-weight:700;color:var(--pale);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;}
+.prac-label::before{content:'AI';display:inline-block;background:rgba(125,173,90,.9);color:#0d0a04;font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;letter-spacing:.5px;margin-right:8px;vertical-align:middle;}
+.prac-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:768px){.prac-grid{grid-template-columns:repeat(2,1fr);}}
+.prac-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);}
+.prac-grid img:hover{transform:scale(1.05);border-color:rgba(125,173,90,.3);box-shadow:0 12px 40px rgba(0,0,0,.5);}
+.prac-caption{font-size:12px;color:rgba(255,255,255,.3);text-align:center;margin-top:14px;font-style:italic;}
+
+/* ── ending slide ── */
+.end-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;flex:1;gap:20px;}
+.summary-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0;max-width:720px;width:100%;}
+@media(max-width:768px){.summary-cards{grid-template-columns:1fr;}}
+.sum-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px 20px;text-align:center;transition:all .4s;}
+.sum-card:hover{border-color:rgba(125,173,90,.25);transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.sum-card .sum-num{font-size:32px;font-weight:900;background:linear-gradient(135deg,var(--glow),var(--pale));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
+.sum-card .sum-text{font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;}
+.sum-card .sum-text strong{color:var(--glow);-webkit-text-fill-color:var(--glow);}
+.next-info{background:rgba(125,173,90,.06);border:1px solid rgba(125,173,90,.15);border-radius:14px;padding:18px 28px;max-width:600px;font-size:15px;color:rgba(255,255,255,.65);line-height:1.7;}
+.next-info strong{color:var(--glow);}
+.museum-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
+.museum-pill{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:10px;font-size:12px;font-weight:600;text-decoration:none;transition:.3s;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5);}
+.museum-pill:hover{border-color:rgba(125,173,90,.3);color:var(--pale);background:rgba(125,173,90,.08);}
+.end-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px;}
+.end-btn{display:inline-block;padding:12px 28px;background:rgba(125,173,90,.1);border:1px solid rgba(125,173,90,.25);color:var(--glow);border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.3s;text-decoration:none;}
+.end-btn:hover{background:rgba(125,173,90,.2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(125,173,90,.12);}
+
+/* ── lightbox ── */
+#lbox{display:none;position:fixed;inset:0;z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+#lbox.open{display:flex;}
+#lbox .lbox-bg{position:absolute;inset:0;background:rgba(0,0,0,.97);backdrop-filter:blur(30px);animation:lboxBgIn .3s;}
+@keyframes lboxBgIn{0%{opacity:0;}100%{opacity:1;}}
+#lbox-img{max-width:92vw;max-height:78vh;object-fit:contain;border-radius:12px;box-shadow:0 40px 120px rgba(0,0,0,.8);position:relative;z-index:1;animation:lboxZoom .5s cubic-bezier(.4,0,.2,1);}
+@keyframes lboxZoom{0%{opacity:0;transform:scale(.85);}100%{opacity:1;transform:scale(1);}}
+.lbox-cap{margin-top:14px;font-size:14px;color:rgba(255,255,255,.45);max-width:600px;text-align:center;position:relative;z-index:1;}
+.lbox-actions{display:flex;gap:12px;margin-top:16px;position:relative;z-index:1;}
+.lbox-dl{padding:10px 24px;background:var(--glow);color:#000;border-radius:10px;font-weight:700;text-decoration:none;font-size:13px;transition:.2s;border:none;cursor:pointer;font-family:inherit;}
+.lbox-dl:hover{background:#fff;}
+.lbox-cl{padding:10px 24px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit;transition:.2s;}
+.lbox-cl:hover{background:rgba(255,255,255,.15);}
+
+/* ── scroll-triggered observer ── */
+.scroll-reveal{opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s;}
+.scroll-reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ── Text Blur Dissolve ── */
+.blur-in{display:inline-block;}
+.ew.blur-in{display:flex;}
+.blur-in .char{display:inline-block;opacity:0;filter:blur(8px);transform:translateY(12px);transition:opacity 1.2s ease,filter 1.6s ease,transform 1s cubic-bezier(.25,.46,.45,.94);}
+.blur-in.animate .char{opacity:1;filter:blur(0);transform:translateY(0);}
+.blur-in .char-space{width:0.3em;}
+
+/* ── Films & Books cards ── */
+.film-card{display:flex;gap:16px;padding:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:10px;transition:all .3s;}
+.film-card:hover{background:rgba(125,173,90,.06);border-color:rgba(125,173,90,.15);}
+.film-poster{width:70px;min-width:70px;height:100px;object-fit:cover;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.4);cursor:pointer;transition:transform .3s,box-shadow .3s;}
+.film-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:2px;}
+.film-title-ko{font-size:12px;color:var(--pale);margin-bottom:4px;}
+.film-meta{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:4px;}
+.film-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;}
+
+.book-item{display:flex;gap:14px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:8px;transition:all .3s;align-items:flex-start;}
+.book-item:hover{background:rgba(125,173,90,.06);border-color:rgba(125,173,90,.15);}
+.book-icon{font-size:24px;min-width:32px;text-align:center;margin-top:2px;}
+.book-cover{width:55px;min-width:55px;height:80px;object-fit:cover;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.4);cursor:pointer;transition:transform .3s,box-shadow .3s;}
+.book-cover:hover,.film-poster:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(125,173,90,.3);}
+
+.book-title{font-size:14px;font-weight:800;color:#fff;margin-bottom:2px;}
+.book-author{font-size:11px;color:var(--pale);margin-bottom:4px;}
+.book-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;}
+
+/* ── Poems slide ── */
+.poem-bg-gallery{position:absolute;inset:0;z-index:1;}
+.poem-bg-gallery img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity 3s ease-in-out;}
+.poem-bg-gallery img.cf-active{opacity:.12;}
+.poem-overlay{position:absolute;inset:0;z-index:2;background:linear-gradient(to bottom,rgba(10,13,7,.92) 0%,rgba(10,13,7,.85) 50%,rgba(10,13,7,.95) 100%);}
+
+.poem-container{max-width:700px;margin:0 auto;}
+.poem-block{text-align:center;padding:24px 0;}
+.poem-quote{font-size:clamp(15px,1.8vw,20px);color:rgba(255,255,255,.75);font-style:italic;line-height:2.2;letter-spacing:.5px;font-weight:300;}
+.poem-quote-ko{font-size:clamp(14px,1.5vw,17px);color:var(--pale);line-height:2;margin-top:16px;font-weight:400;opacity:.7;}
+.poem-attr{font-size:12px;color:var(--glow);margin-top:14px;font-weight:700;letter-spacing:1px;}
+.poem-context{font-size:12px;color:rgba(255,255,255,.3);margin-top:6px;font-style:italic;}
+.poem-divider{width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--glow),transparent);margin:8px auto;opacity:.3;}
+
+/* ── Interactive Fullscreen Slides ── */
+.inter-full{position:absolute;inset:0;overflow:hidden;}
+.inter-full__img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;transition:filter 1s ease;}
+.inter-full__overlay{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:flex-end;pointer-events:none;}
+.inter-full__top{position:absolute;top:70px;left:0;right:0;z-index:3;padding:0 40px;pointer-events:none;}
+.inter-full__top .ew{color:rgba(255,255,255,.7);text-shadow:0 2px 12px rgba(0,0,0,.6);}
+.inter-full__top .stitle{text-shadow:0 2px 20px rgba(0,0,0,.7);}
+.inter-full__bottom{padding:0 40px 80px;pointer-events:auto;background:linear-gradient(to top,rgba(10,13,7,.85) 0%,rgba(10,13,7,.6) 50%,transparent 100%);padding-top:80px;}
+@media(max-width:768px){.inter-full__bottom{padding:60px 20px 70px;}.inter-full__top{padding:0 20px;top:60px;}}
+.toggle-btn{display:inline-flex;align-items:center;gap:10px;padding:12px 28px;background:rgba(125,173,90,.15);border:1px solid rgba(125,173,90,.4);color:var(--glow);border-radius:30px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .3s;backdrop-filter:blur(8px);}
+.toggle-btn:hover{background:rgba(125,173,90,.3);transform:translateY(-2px);}
+.toggle-btn.active{background:rgba(125,173,90,.25);box-shadow:0 0 20px rgba(125,173,90,.2);}
+.interactive-explain{margin-top:16px;padding:0;}
+.interactive-explain p{font-size:13px;line-height:1.8;color:rgba(255,255,255,.8);text-shadow:0 1px 6px rgba(0,0,0,.7);}
+.interactive-explain strong{color:var(--glow);text-shadow:0 1px 8px rgba(0,0,0,.6);}
+
+/* ── S8: Geometric Overlay ── */
+.geo-overlay{position:absolute;inset:0;opacity:0;transition:opacity .8s;pointer-events:none;z-index:1;}
+.geo-overlay.visible{opacity:.6;}
+
+/* ── S9: Color Dissection ── */
+.color-marker{position:absolute;width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.7);cursor:pointer;transition:all .3s;z-index:3;pointer-events:auto;}
+.color-marker:hover{transform:scale(1.3);}
+.color-marker.picked{border-color:var(--glow);box-shadow:0 0 12px rgba(125,173,90,.5);opacity:.5;}
+.palette-strip{display:flex;gap:6px;margin-top:12px;}
+.palette-slot{width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,.15);transition:background .5s;}
+
+/* ── S10: Broken Perspective ── */
+.persp-lines{position:absolute;inset:0;opacity:0;transition:opacity .8s;pointer-events:none;z-index:1;}
+.persp-lines.visible{opacity:1;}
+.persp-line{position:absolute;height:3px;background:repeating-linear-gradient(90deg,#e74c3c 0,#e74c3c 12px,transparent 12px,transparent 20px);box-shadow:0 0 8px rgba(231,76,60,.5);}
+.persp-label{position:absolute;background:rgba(231,76,60,.85);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;white-space:nowrap;}
+
+/* ── S11: Before/After Comparison ── */
+.compare-wrap{position:absolute;inset:0;}
+.compare-gray{position:absolute;inset:0;}
+.compare-gray img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.2);}
+.compare-color{position:absolute;inset:0;clip-path:inset(0 50% 0 0);}
+.compare-color img{width:100%;height:100%;object-fit:cover;}
+.compare-slider{-webkit-appearance:none;width:80%;max-width:500px;height:6px;border-radius:3px;background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(125,173,90,.4));outline:none;margin:12px 0;position:relative;z-index:5;}
+.compare-slider::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--glow);cursor:pointer;box-shadow:0 2px 16px rgba(125,173,90,.5);}
+.compare-labels{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.5);max-width:500px;width:80%;}
+
+/* ── print ── */
+@media print{
+  *{color:#222!important;background:white!important;box-shadow:none!important;text-shadow:none!important;border-color:#ddd!important;-webkit-text-fill-color:#222!important;}
+  html,body{overflow:visible!important;height:auto!important;}
+  .topbar,.dots,.arr,#bp,#bn,.pt,.hov,.bgimg,.gal-marquee,.paint-popup,#lbox,.lbox-actions,.progress-bar,.view-hint,.card-chevron,.an-icon{display:none!important;}
+  .slide{position:relative!important;opacity:1!important;transform:none!important;pointer-events:auto!important;page-break-inside:avoid;page-break-after:always;min-height:auto!important;height:auto!important;}
+  .bg{background:white!important;}
+  .sc{padding:20px!important;overflow:visible!important;}
+  .sc-scroll{overflow:visible!important;max-height:none!important;}
+  .stitle,.typewriter{-webkit-text-fill-color:#222!important;background:none!important;font-size:24pt!important;width:100%!important;overflow:visible!important;white-space:normal!important;border:none!important;animation:none!important;}
+  .reveal,.scroll-reveal{opacity:1!important;transform:none!important;}
+  .blur-in .char{opacity:1!important;filter:none!important;transform:none!important;}
+  .card-body,.tl-detail,.an-content{max-height:none!important;opacity:1!important;overflow:visible!important;}
+  .ew{color:#8b5e14!important;}
+  img{max-width:100%!important;break-inside:avoid;}
+  .mp-cinema{grid-template-columns:1fr!important;}
+  .mp-img-hero{max-height:none!important;}
+  .mp-analysis{max-height:none!important;overflow:visible!important;}
+  .prac-grid{grid-template-columns:repeat(4,1fr)!important;}
+  .prac-grid img{border:1px solid #ccc!important;}
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar" id="pbar" style="width:0%"></div>
+
+<!-- TOPBAR -->
+<div class="topbar" id="topbar">
+  <a class="tlogo" href="../../index.html">Luna Whale</a>
+  <div class="tsc"><strong id="cn">1</strong> / <span id="tn">26</span></div>
+  <div class="tbadges"><span class="badge bl">Impressionism</span><span class="badge ba">Lesson 04</span></div>
+</div>
+
+<!-- NAV -->
+<button class="arr" id="bp" onclick="nav(-1)">&#8249;</button>
+<button class="arr" id="bn" onclick="nav(1)">&#8250;</button>
+<div class="dots" id="db"></div>
+
+<!-- LIGHTBOX -->
+<div id="lbox" onclick="if(event.target===this||event.target.classList.contains('lbox-bg'))closeLb()">
+  <div class="lbox-bg"></div>
+  <img id="lbox-img" src="" alt="">
+  <div class="lbox-cap" id="lbox-cap"></div>
+  <div class="lbox-actions">
+    <a class="lbox-dl" id="lbox-dl" href="" download="">&#11015; &#45796;&#50868;&#47196;&#46300;</a>
+    <button class="lbox-cl" onclick="closeLb()">&#10005; &#45803;&#44592;</button>
+  </div>
+</div>
+
+<div id="sw">
+
+<!-- S0: COVER -->
+<div class="slide active" id="s0">
+  <div class="bg"></div>
+  <div class="gal-marquee">
+    <div style="position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);">
+      <div class="gal-row-wrap">
+        <div class="gal-row row-left">
+          <div class="gal-item" onclick="showPainting('cezanne_apples_oranges')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_apples_oranges.jpg" alt="사과와 오렌지" loading="lazy"><div class="gal-title-bar">사과와 오렌지 (1899)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_basket_apples')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_basket_apples.jpg" alt="사과 바구니" loading="lazy"><div class="gal-title-bar">사과 바구니 (1893)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_curtain_jug')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_curtain_jug.jpg" alt="커튼과 물병" loading="lazy"><div class="gal-title-bar">커튼, 물병, 과일 그릇 (1894)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_kitchen_table')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_kitchen_table.jpg" alt="부엌 테이블" loading="lazy"><div class="gal-title-bar">부엌 테이블 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_blue_vase')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_blue_vase.jpg" alt="파란 꽃병" loading="lazy"><div class="gal-title-bar">파란 꽃병 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_skulls')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_skulls.jpg" alt="해골" loading="lazy"><div class="gal-title-bar">해골이 있는 정물 (1900)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_apples_biscuits')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_apples_biscuits.jpg" alt="사과와 비스킷" loading="lazy"><div class="gal-title-bar">사과와 비스킷 (1895)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_card_players_5')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_card_players_5.jpg" alt="카드놀이 5인" loading="lazy"><div class="gal-title-bar">카드 놀이하는 사람들 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_card_players_2')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_card_players_2.jpg" alt="카드놀이 2인" loading="lazy"><div class="gal-title-bar">카드 놀이하는 사람들 (1893)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_boy_red_vest')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_boy_red_vest.jpg" alt="빨간 조끼" loading="lazy"><div class="gal-title-bar">빨간 조끼의 소년 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_self_portrait')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_self_portrait.jpg" alt="자화상" loading="lazy"><div class="gal-title-bar">자화상 (1885)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_vollard_portrait')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_vollard_portrait.jpg" alt="볼라르 초상" loading="lazy"><div class="gal-title-bar">볼라르 초상화 (1899)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_madame_cezanne')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_madame_cezanne.jpg" alt="세잔 부인" loading="lazy"><div class="gal-title-bar">세잔 부인의 초상 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_apples_oranges')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_apples_oranges.jpg" alt="사과와 오렌지" loading="lazy"><div class="gal-title-bar">사과와 오렌지 (1899)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_basket_apples')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_basket_apples.jpg" alt="사과 바구니" loading="lazy"><div class="gal-title-bar">사과 바구니 (1893)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_curtain_jug')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_curtain_jug.jpg" alt="커튼과 물병" loading="lazy"><div class="gal-title-bar">커튼, 물병, 과일 그릇 (1894)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_kitchen_table')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_kitchen_table.jpg" alt="부엌 테이블" loading="lazy"><div class="gal-title-bar">부엌 테이블 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_blue_vase')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_blue_vase.jpg" alt="파란 꽃병" loading="lazy"><div class="gal-title-bar">파란 꽃병 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_skulls')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_skulls.jpg" alt="해골" loading="lazy"><div class="gal-title-bar">해골이 있는 정물 (1900)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_apples_biscuits')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_apples_biscuits.jpg" alt="사과와 비스킷" loading="lazy"><div class="gal-title-bar">사과와 비스킷 (1895)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_card_players_5')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_card_players_5.jpg" alt="카드놀이 5인" loading="lazy"><div class="gal-title-bar">카드 놀이하는 사람들 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_card_players_2')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_card_players_2.jpg" alt="카드놀이 2인" loading="lazy"><div class="gal-title-bar">카드 놀이하는 사람들 (1893)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_boy_red_vest')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_boy_red_vest.jpg" alt="빨간 조끼" loading="lazy"><div class="gal-title-bar">빨간 조끼의 소년 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_self_portrait')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_self_portrait.jpg" alt="자화상" loading="lazy"><div class="gal-title-bar">자화상 (1885)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_vollard_portrait')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_vollard_portrait.jpg" alt="볼라르 초상" loading="lazy"><div class="gal-title-bar">볼라르 초상화 (1899)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_madame_cezanne')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_madame_cezanne.jpg" alt="세잔 부인" loading="lazy"><div class="gal-title-bar">세잔 부인의 초상 (1890)</div></div>
+        </div>
+      </div>
+      <div class="gal-row-wrap">
+        <div class="gal-row row-right">
+          <div class="gal-item" onclick="showPainting('cezanne_sainte_victoire_bellevue')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_sainte_victoire_bellevue.jpg" alt="생트빅투아르" loading="lazy"><div class="gal-title-bar">생트빅투아르 산 (1885)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_sainte_victoire_pine')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_sainte_victoire_pine.jpg" alt="생트빅투아르 소나무" loading="lazy"><div class="gal-title-bar">생트빅투아르 산과 소나무 (1887)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_sainte_victoire_lauves')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_sainte_victoire_lauves.jpg" alt="생트빅투아르 로브" loading="lazy"><div class="gal-title-bar">생트빅투아르 산, 로브에서 (1904)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_estaque')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_estaque.jpg" alt="에스탁" loading="lazy"><div class="gal-title-bar">에스탁의 바다 (1885)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_maison_pendu')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_maison_pendu.jpg" alt="목맨 자의 집" loading="lazy"><div class="gal-title-bar">목맨 자의 집 (1873)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_bibemus_quarry')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_bibemus_quarry.jpg" alt="비베뮈스 채석장" loading="lazy"><div class="gal-title-bar">비베뮈스 채석장 (1895)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_chateau_noir')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_chateau_noir.jpg" alt="샤토 누아르" loading="lazy"><div class="gal-title-bar">샤토 누아르 (1904)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_pont_maincy')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_pont_maincy.jpg" alt="멩시 다리" loading="lazy"><div class="gal-title-bar">멩시의 다리 (1879)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_grandes_baigneuses')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_grandes_baigneuses.jpg" alt="대수욕도" loading="lazy"><div class="gal-title-bar">대수욕도 (1906)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_bathers_rest')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_bathers_rest.jpg" alt="목욕하는 사람들" loading="lazy"><div class="gal-title-bar">목욕하는 사람들의 휴식 (1877)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_sainte_victoire_bibemus')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_sainte_victoire_bibemus.jpg" alt="생트빅투아르 비베뮈스" loading="lazy"><div class="gal-title-bar">생트빅투아르 산, 비베뮈스 (1897)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_sainte_victoire_late')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_sainte_victoire_late.jpg" alt="생트빅투아르 만년" loading="lazy"><div class="gal-title-bar">생트빅투아르 산, 만년 (1906)</div></div>
+          <div class="gal-item" onclick="showPainting('braque_estaque')"><img src="../../assets/images/paintings/cezanne/thumb/braque_estaque.jpg" alt="브라크 에스탁" loading="lazy"><div class="gal-title-bar">브라크, 에스탁의 집들 (1908)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_sainte_victoire_bellevue')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_sainte_victoire_bellevue.jpg" alt="생트빅투아르" loading="lazy"><div class="gal-title-bar">생트빅투아르 산 (1885)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_sainte_victoire_pine')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_sainte_victoire_pine.jpg" alt="생트빅투아르 소나무" loading="lazy"><div class="gal-title-bar">생트빅투아르 산과 소나무 (1887)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_sainte_victoire_lauves')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_sainte_victoire_lauves.jpg" alt="생트빅투아르 로브" loading="lazy"><div class="gal-title-bar">생트빅투아르 산, 로브에서 (1904)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_estaque')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_estaque.jpg" alt="에스탁" loading="lazy"><div class="gal-title-bar">에스탁의 바다 (1885)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_maison_pendu')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_maison_pendu.jpg" alt="목맨 자의 집" loading="lazy"><div class="gal-title-bar">목맨 자의 집 (1873)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_bibemus_quarry')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_bibemus_quarry.jpg" alt="비베뮈스 채석장" loading="lazy"><div class="gal-title-bar">비베뮈스 채석장 (1895)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_chateau_noir')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_chateau_noir.jpg" alt="샤토 누아르" loading="lazy"><div class="gal-title-bar">샤토 누아르 (1904)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_pont_maincy')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_pont_maincy.jpg" alt="멩시 다리" loading="lazy"><div class="gal-title-bar">멩시의 다리 (1879)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_grandes_baigneuses')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_grandes_baigneuses.jpg" alt="대수욕도" loading="lazy"><div class="gal-title-bar">대수욕도 (1906)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_bathers_rest')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_bathers_rest.jpg" alt="목욕하는 사람들" loading="lazy"><div class="gal-title-bar">목욕하는 사람들의 휴식 (1877)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_sainte_victoire_bibemus')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_sainte_victoire_bibemus.jpg" alt="생트빅투아르 비베뮈스" loading="lazy"><div class="gal-title-bar">생트빅투아르 산, 비베뮈스 (1897)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_sainte_victoire_late')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_sainte_victoire_late.jpg" alt="생트빅투아르 만년" loading="lazy"><div class="gal-title-bar">생트빅투아르 산, 만년 (1906)</div></div>
+          <div class="gal-item" onclick="showPainting('braque_estaque')"><img src="../../assets/images/paintings/cezanne/thumb/braque_estaque.jpg" alt="브라크 에스탁" loading="lazy"><div class="gal-title-bar">브라크, 에스탁의 집들 (1908)</div></div>
+        </div>
+      </div>
+      <div class="gal-row-wrap">
+        <div class="gal-row row-left">
+          <div class="gal-item" onclick="showPainting('cezanne_apples_oranges')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_apples_oranges.jpg" alt="사과와 오렌지" loading="lazy"><div class="gal-title-bar">사과와 오렌지 (1899)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_card_players_2')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_card_players_2.jpg" alt="카드놀이" loading="lazy"><div class="gal-title-bar">카드 놀이하는 사람들 (1893)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_boy_red_vest')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_boy_red_vest.jpg" alt="빨간 조끼" loading="lazy"><div class="gal-title-bar">빨간 조끼의 소년 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_sainte_victoire_lauves')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_sainte_victoire_lauves.jpg" alt="생트빅투아르" loading="lazy"><div class="gal-title-bar">생트빅투아르 산 (1904)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_grandes_baigneuses')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_grandes_baigneuses.jpg" alt="대수욕도" loading="lazy"><div class="gal-title-bar">대수욕도 (1906)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_curtain_jug')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_curtain_jug.jpg" alt="커튼과 물병" loading="lazy"><div class="gal-title-bar">커튼, 물병, 과일 그릇 (1894)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_skulls')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_skulls.jpg" alt="해골" loading="lazy"><div class="gal-title-bar">해골이 있는 정물 (1900)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_self_portrait')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_self_portrait.jpg" alt="자화상" loading="lazy"><div class="gal-title-bar">자화상 (1885)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_basket_apples')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_basket_apples.jpg" alt="사과 바구니" loading="lazy"><div class="gal-title-bar">사과 바구니 (1893)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_estaque')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_estaque.jpg" alt="에스탁" loading="lazy"><div class="gal-title-bar">에스탁의 바다 (1885)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_vollard_portrait')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_vollard_portrait.jpg" alt="볼라르 초상" loading="lazy"><div class="gal-title-bar">볼라르 초상화 (1899)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_bibemus_quarry')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_bibemus_quarry.jpg" alt="비베뮈스" loading="lazy"><div class="gal-title-bar">비베뮈스 채석장 (1895)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_madame_cezanne')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_madame_cezanne.jpg" alt="세잔 부인" loading="lazy"><div class="gal-title-bar">세잔 부인의 초상 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_apples_oranges')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_apples_oranges.jpg" alt="사과와 오렌지" loading="lazy"><div class="gal-title-bar">사과와 오렌지 (1899)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_card_players_2')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_card_players_2.jpg" alt="카드놀이" loading="lazy"><div class="gal-title-bar">카드 놀이하는 사람들 (1893)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_boy_red_vest')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_boy_red_vest.jpg" alt="빨간 조끼" loading="lazy"><div class="gal-title-bar">빨간 조끼의 소년 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_sainte_victoire_lauves')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_sainte_victoire_lauves.jpg" alt="생트빅투아르" loading="lazy"><div class="gal-title-bar">생트빅투아르 산 (1904)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_grandes_baigneuses')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_grandes_baigneuses.jpg" alt="대수욕도" loading="lazy"><div class="gal-title-bar">대수욕도 (1906)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_curtain_jug')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_curtain_jug.jpg" alt="커튼과 물병" loading="lazy"><div class="gal-title-bar">커튼, 물병, 과일 그릇 (1894)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_skulls')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_skulls.jpg" alt="해골" loading="lazy"><div class="gal-title-bar">해골이 있는 정물 (1900)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_self_portrait')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_self_portrait.jpg" alt="자화상" loading="lazy"><div class="gal-title-bar">자화상 (1885)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_basket_apples')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_basket_apples.jpg" alt="사과 바구니" loading="lazy"><div class="gal-title-bar">사과 바구니 (1893)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_estaque')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_estaque.jpg" alt="에스탁" loading="lazy"><div class="gal-title-bar">에스탁의 바다 (1885)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_vollard_portrait')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_vollard_portrait.jpg" alt="볼라르 초상" loading="lazy"><div class="gal-title-bar">볼라르 초상화 (1899)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_bibemus_quarry')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_bibemus_quarry.jpg" alt="비베뮈스" loading="lazy"><div class="gal-title-bar">비베뮈스 채석장 (1895)</div></div>
+          <div class="gal-item" onclick="showPainting('cezanne_madame_cezanne')"><img src="../../assets/images/paintings/cezanne/thumb/cezanne_madame_cezanne.jpg" alt="세잔 부인" loading="lazy"><div class="gal-title-bar">세잔 부인의 초상 (1890)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hov"></div>
+  <div class="sc" style="z-index:3;">
+    <div style="flex:1;"></div>
+    <div class="ew" style="opacity:0;animation:fadeUp .8s .6s forwards;">Impressionism Lesson 04</div>
+    <div style="overflow:hidden;margin-bottom:16px;">
+      <h1 class="typewriter" id="cover-title">세잔의 풍경 구조와 색의 조화</h1>
+    </div>
+    <p class="ssub" style="opacity:0;animation:fadeUp .8s 2.4s forwards;">유럽 회화 여행 &mdash; 인상주의 4강</p>
+    <div class="cover-meta">
+      <div class="cover-chip">Paul C&eacute;zanne (1839&ndash;1906)</div>
+      <div class="cover-chip">풍경 구조</div>
+      <div class="cover-chip">색의 조화</div>
+    </div>
+  </div>
+</div>
+
+<!-- S1: 풍경화의 혁명 -->
+<div class="slide" id="s1">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Revolution in Landscape</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(26px,3.5vw,46px);">풍경화의 혁명</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s1">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_sainte_victoire_lauves.jpg" alt="생트빅투아르 산">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_estaque.jpg" alt="에스탁">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_bibemus_quarry.jpg" alt="비베뮈스 채석장">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_chateau_noir.jpg" alt="샤토 누아르">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_pont_maincy.jpg" alt="멩시의 다리">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_sainte_victoire_pine.jpg" alt="생트빅투아르와 소나무">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+        <div class="card-grid">
+          <div class="info-card reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">01</div><div class="card-title">자연을 건축하다</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>세잔은 &ldquo;자연을 원통, 구, 원뿔로 다루어야 한다&rdquo;고 선언했다. 풍경을 사실적으로 베끼는 대신 구조적으로 재구성한 것이다. 산은 삼각형이 되고, 나무는 원통이 되며, 하늘은 색면의 모자이크가 된다.</p>
+            </div>
+          </div>
+          <div class="info-card reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">02</div><div class="card-title">색의 온도로 깊이를</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>원근법 대신 색의 온도차로 공간감을 표현했다. 따뜻한 색(주황, 황토)은 가까이, 차가운 색(파랑, 보라)은 멀리. &ldquo;공기 원근법(aerial perspective)&rdquo;을 색채로 재발명한 혁명적 기법이다.</p>
+            </div>
+          </div>
+          <div class="info-card reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">03</div><div class="card-title">30년의 집착</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>생트빅투아르 산을 30년간 60점 이상 그렸다. 같은 산을 수십 번 그리며 빛과 계절, 시점을 달리했다. 모네의 연작처럼 반복했지만 목적은 달랐다 &mdash; 산의 영원한 구조를 포착하려 한 것이다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S2: Timeline -->
+<div class="slide" id="s2">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Landscape Journey (1870&ndash;1906)</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(24px,3.2vw,42px);">풍경화의 여정</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s2">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_maison_pendu.jpg" alt="목맨 자의 집">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_estaque.jpg" alt="에스탁">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_sainte_victoire_pine.jpg" alt="생트빅투아르와 소나무">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_bibemus_quarry.jpg" alt="비베뮈스 채석장">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_chateau_noir.jpg" alt="샤토 누아르">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_sainte_victoire_lauves.jpg" alt="생트빅투아르 산">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+        <div class="timeline">
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1870</div><div class="tl-summary">레스타크에서 첫 풍경화</div><div class="tl-detail"><p>프로이센-프랑스 전쟁을 피해 마르세유 근처 레스타크에 은거. 지중해의 눈부신 빛 아래에서 처음으로 본격적인 풍경화를 그리기 시작했다. 이곳의 붉은 지붕과 푸른 바다가 세잔의 팔레트를 완전히 바꾸었다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1872</div><div class="tl-summary">피사로와 퐁투아즈 야외 사생</div><div class="tl-detail"><p>카미유 피사로와 함께 퐁투아즈에서 나란히 이젤을 세우고 같은 풍경을 그렸다. 피사로에게서 야외 사생법과 밝은 팔레트를 배우며 어두운 낭만주의에서 벗어나기 시작했다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1878</div><div class="tl-summary">&laquo;목맨 자의 집&raquo; &mdash; 인상주의적 풍경의 정점</div><div class="tl-detail"><p>오베르쉬르우아즈의 풍경을 그린 걸작. 인상주의의 빛과 세잔만의 구조적 붓질이 결합된 전환기 작품. 초기 풍경화의 대표작으로 인상주의 전시에서 호평을 받은 몇 안 되는 작품이다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1882</div><div class="tl-summary">레스타크 연작 &mdash; 기하학적 풍경의 시작</div><div class="tl-detail"><p>레스타크에 다시 돌아와 집, 나무, 바다를 기하학적 형태로 단순화하기 시작. &ldquo;자연을 건축물처럼 다루겠다&rdquo;는 세잔의 야심이 풍경화에서 처음 실현되었다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1885</div><div class="tl-summary">생트빅투아르 산 연작 시작</div><div class="tl-detail"><p>고향 엑상프로방스의 상징, 생트빅투아르 산을 본격적으로 그리기 시작. 이후 20년간 60점 이상의 유화와 45점의 수채화로 이 산을 기록했다. 빛, 계절, 시점을 달리하며 산의 영원한 구조를 탐구했다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1887</div><div class="tl-summary">생트빅투아르와 큰 소나무 &mdash; 프레이밍의 혁신</div><div class="tl-detail"><p>전경의 큰 소나무가 화면을 가로질러 자연의 프레임을 만든다. 소나무 가지가 산과 하늘을 감싸며 2차원 평면과 3차원 깊이가 동시에 존재하는 혁신적 구도를 완성했다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1895</div><div class="tl-summary">비베뮈스 채석장 &mdash; 색으로 건축하다</div><div class="tl-detail"><p>엑상프로방스 동쪽의 폐채석장에서 잘려나간 바위의 기하학적 형태에 매료되었다. 황토색 바위와 초록 식물, 보라색 그림자가 만드는 색채 대비는 세잔의 &ldquo;색으로 건축하기&rdquo;를 극단적으로 보여준다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1900</div><div class="tl-summary">샤토 누아르 &mdash; 숲과 건축의 융합</div><div class="tl-detail"><p>엑상프로방스 동쪽 숲 속 신고딕 건물을 반복적으로 그렸다. 울창한 초록 숲 사이로 황금빛 건물이 나타나는 구도는 자연과 인공의 경계를 허문다. 말년 풍경화의 절정.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1901</div><div class="tl-summary">레 로브 아틀리에에서 생트빅투아르를 바라보다</div><div class="tl-detail"><p>엑상프로방스 북쪽 언덕에 아틀리에를 건축. 2층 창에서 생트빅투아르 산이 정면으로 보이는 곳. 매일 아침 이 창에서 산을 바라보며 말년의 걸작들을 탄생시켰다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1904</div><div class="tl-summary">레 로브에서 본 생트빅투아르 &mdash; 색면의 교향곡</div><div class="tl-detail"><p>말년의 생트빅투아르 연작은 점점 추상에 가까워진다. 윤곽이 사라지고 색면의 패치워크만 남는다. 산과 하늘, 들판의 경계가 녹아들며 세잔이 평생 추구한 &ldquo;자연의 구조&rdquo;가 순수한 색채로 환원된다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1906</div><div class="tl-summary">마지막 풍경 &mdash; 폭우 속의 생트빅투아르</div><div class="tl-detail"><p>10월 15일, 야외에서 생트빅투아르를 그리던 중 갑작스러운 폭우에 쓰러졌다. 일주일 뒤 67세로 사망. 마지막 순간까지 풍경 앞에 이젤을 세웠던 화가, &ldquo;나는 아직 실현하지 못했다.&rdquo;</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S3: 대표작 1 — 생트빅투아르 산과 아크 강 계곡 -->
+<div class="slide" id="s3">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 01</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-01.jpg','생트빅투아르 산과 아크 강 계곡 — Mont Sainte-Victoire and the Viaduct (1882-85)')">
+        <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-01.jpg" loading="lazy" alt="생트빅투아르 산과 아크 강 계곡">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>생트빅투아르 산과 아크 강 계곡</em></h3>
+        <div class="mp-sub">Mont Sainte-Victoire and the Viaduct of the Arc River Valley | 1882&ndash;85년 | 캔버스에 유채 | 65 &times; 82 cm | The Metropolitan Museum of Art, New York</div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128269; 3단 구조</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>전경의 소나무, 중경의 평야와 수도교, 원경의 산 &mdash; 고전적인 3단 구도를 사용하면서도 선원근법 대신 색의 변조로 깊이감을 만든다. 가까운 곳의 따뜻한 녹색에서 먼 산의 차가운 보라-회색으로의 전환이 공간을 구축한다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#127912; 소나무의 프레임</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>전경의 소나무가 자연의 액자 역할을 한다. 수직의 나무 줄기가 화면의 수평적 풍경에 구조적 긴장감을 부여하며, 2차원 평면성과 3차원 깊이가 동시에 존재하게 만드는 세잔 특유의 장치.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#10024; 60점의 시작</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>생트빅투아르 연작의 초기 걸작. 이후 20년간 같은 산을 60점 이상 그리며 점점 추상에 가까워진다. 이 시기에는 아직 산의 윤곽이 명확하지만, 이미 색면으로 형태를 구축하는 방법론이 확립되어 있다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128172; MET의 보물</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>뉴욕 메트로폴리탄 미술관의 핵심 소장품. H.O. 하버마이어 부부가 인상주의 컬렉터 메리 카사트의 조언으로 구입했다. 카사트는 &ldquo;세잔은 우리 시대 최고의 화가&rdquo;라고 확신했다.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S4: 대표작 2 — 큰 소나무가 있는 생트빅투아르 산 -->
+<div class="slide" id="s4">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 02</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-02.jpg','큰 소나무가 있는 생트빅투아르 산 — Mont Sainte-Victoire with Large Pine (1887)')">
+        <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-02.jpg" loading="lazy" alt="큰 소나무가 있는 생트빅투아르 산">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>큰 소나무가 있는 생트빅투아르 산</em></h3>
+        <div class="mp-sub">Mont Sainte-Victoire with Large Pine | 1887년 | 캔버스에 유채 | 67 &times; 92 cm | The Courtauld Gallery, London</div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128269; 가지의 아라베스크</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>거대한 소나무 가지가 화면 상단을 가로질러 아라베스크 곡선을 그린다. 이 유기적 곡선이 기하학적인 산의 삼각형과 극적으로 대비되며, 자연 속의 질서와 혼돈이 공존하는 세잔만의 풍경을 만든다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#127912; 공기 원근법의 재발명</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>전경의 따뜻한 황록색 → 중경의 녹색 → 원경 산의 차가운 보라-파랑. 레오나르도의 공기 원근법을 색채 변조로 재해석했다. 선이 아닌 색의 온도 변화만으로 수 킬로미터의 깊이감을 표현한다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#10024; 일본 우키요에의 영향</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>전경의 나무가 풍경을 감싸는 구도는 히로시게의 우키요에 판화와 유사하다. 세잔 역시 자포니즘의 영향을 받았으며, 이 &ldquo;자연의 프레임&rdquo; 기법은 이후 그의 트레이드마크가 되었다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128172; 코톨드 갤러리</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>런던 코톨드 갤러리의 간판 소장품. 사업가 새뮤얼 코톨드가 1920년대에 수집한 인상주의 걸작 중 하나. 마네의 &laquo;폴리베르제르의 바&raquo;와 함께 전시되어 있다.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S5: 대표작 3 — 레스타크 -->
+<div class="slide" id="s5">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 03</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-03.jpg','레스타크의 지붕들 — L\'Estaque (1883-85)')">
+        <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-03.jpg" loading="lazy" alt="레스타크의 지붕들">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>레스타크</em></h3>
+        <div class="mp-sub">L'Estaque | 1883&ndash;85년 | 캔버스에 유채 | 71 &times; 58 cm | Private Collection</div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128269; 큐비즘의 산실</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>마르세유 근처의 작은 어촌 레스타크. 세잔은 이곳의 붉은 지붕과 푸른 바다를 반복적으로 그렸다. 20년 후 브라크가 같은 장소에서 큐비즘의 첫 걸작을 탄생시켰다 &mdash; 세잔의 기하학적 단순화를 극단까지 밀고 나간 것이다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#127912; 보색 대비의 교향곡</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>주황-빨강 지붕과 코발트블루 바다의 보색 대비가 화면을 지배한다. 초록 나무가 양쪽 색을 중재한다. 세잔은 이 세 가지 색의 관계만으로 지중해의 눈부신 빛을 구축했다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#10024; 프레임 속의 프레임</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>좌우의 나무가 자연의 프레임을 만들고, 그 안에 지붕-바다-하늘이 수평으로 층을 이룬다. 이 &ldquo;프레임 속의 프레임&rdquo; 구도는 관객의 시선을 자연스럽게 중심부의 깊은 공간으로 이끈다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128172; 르노아르의 방문</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>1882년 르노아르가 레스타크를 방문해 세잔과 함께 그렸다. 르노아르는 &ldquo;세잔 곁에서 그리면 자신이 얼마나 나태한지 깨닫게 된다&rdquo;고 고백했다. 한 터치 한 터치에 집중하는 세잔의 집요함에 감탄한 것이다.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S6: 대표작 4 — 비베뮈스 채석장 -->
+<div class="slide" id="s6">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 04</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-04.jpg','비베뮈스 채석장 — Bibémus Quarry (1895)')">
+        <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-04.jpg" loading="lazy" alt="비베뮈스 채석장">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>비베뮈스 채석장</em></h3>
+        <div class="mp-sub">Bib&eacute;mus Quarry | 1895년 | 캔버스에 유채 | 65 &times; 81 cm | Museum Folkwang, Essen</div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128269; 자연이 만든 큐비즘</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>로마 시대부터 채굴된 석회암 채석장. 인간이 잘라낸 바위가 이미 기하학적 형태를 이루고 있다. 세잔이 &ldquo;자연을 기하학으로 환원하라&rdquo;고 말한 것이 여기서는 자연 자체가 기하학이 된 것이다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#127912; 황토색의 교향곡</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>옅은 크림에서 짙은 황갈색까지 &mdash; 황토색의 무한한 변주가 화면을 지배한다. 그 사이사이에 초록 식생과 보라색 그림자가 보색 대비를 만든다. 제한된 팔레트에서 최대의 색채 다양성을 끌어내는 세잔의 기법.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#10024; 평면과 깊이의 긴장</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>바위 면이 캔버스 표면과 평행하게 배치되어 깊이감을 의도적으로 압축한다. 동시에 색의 온도 변화가 공간을 암시한다. 이 &ldquo;평면과 깊이의 긴장&rdquo;이야말로 세잔이 큐비즘에 전해준 핵심 유산이다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128172; 비밀의 아틀리에</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>세잔은 1895년부터 이 채석장에 작은 오두막을 빌려 작업실로 사용했다. 아침마다 혼자 걸어올라가 아무도 없는 채석장에서 그림을 그렸다. 그의 고독한 작업 방식을 상징하는 장소다.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S7: 대표작 5 — 샤토 누아르 -->
+<div class="slide" id="s7">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 05</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-05.jpg','샤토 누아르 — Château Noir (1900-04)')">
+        <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-05.jpg" loading="lazy" alt="샤토 누아르">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>샤토 누아르</em></h3>
+        <div class="mp-sub">Ch&acirc;teau Noir | 1900&ndash;04년 | 캔버스에 유채 | 74 &times; 94 cm | National Gallery of Art, Washington D.C.</div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128269; 자연과 건축의 융합</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>울창한 숲 사이로 황금빛 건물이 솟아오른다. 나무와 건물의 경계가 모호해지며 자연과 인공이 하나의 구조적 매스로 녹아든다. 세잔은 &ldquo;자연을 건축처럼, 건축을 자연처럼&rdquo; 다루었다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#127912; 초록의 무한 변주</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>에메랄드, 비리디안, 올리브, 사프 그린 &mdash; 수십 가지 초록이 화면을 지배한다. 각 터치가 미묘하게 다른 색온도를 가지며 나뭇잎의 두께와 빛의 투과를 동시에 표현한다. 하나의 색 안에서 무한한 변주를 끌어내는 세잔의 극치.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#10024; 추상으로의 길목</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>말년으로 갈수록 형태가 점점 해체된다. 이 그림에서 건물의 윤곽은 이미 불분명하고 색면의 집합체로 변해간다. 세잔의 풍경화가 칸딘스키의 추상으로 향하는 길목에 서 있음을 보여주는 작품.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128172; 미완의 성</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>샤토 누아르는 19세기에 건축이 중단된 신고딕 양식의 미완성 건물이다. 완성되지 못한 건물을 그리는 화가 &mdash; 세잔 자신도 &ldquo;나는 아직 실현하지 못했다&rdquo;고 말했다. 미완의 건축과 미완의 예술이 공명하는 장소.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S8: Interactive — Aerial Perspective (공기 원근법) -->
+<div class="slide" id="s8">
+  <div class="inter-full">
+    <img class="inter-full__img" src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-01.jpg" alt="생트빅투아르 산과 아크 강 계곡">
+    <div class="persp-lines" id="perspOverlay">
+      <svg width="100%" height="100%" viewBox="0 0 1000 700" preserveAspectRatio="none" style="position:absolute;inset:0;">
+        <rect x="50" y="450" width="900" height="200" rx="8" fill="rgba(232,147,40,.12)" stroke="#e89328" stroke-width="2.5" stroke-dasharray="10,6" opacity=".8"/>
+        <text x="70" y="640" fill="#e89328" font-size="15" font-weight="700">WARM ZONE &mdash; 따뜻한 황록색 (가까이)</text>
+        <rect x="50" y="250" width="900" height="200" rx="8" fill="rgba(100,180,80,.1)" stroke="#64b450" stroke-width="2.5" stroke-dasharray="10,6" opacity=".7"/>
+        <text x="70" y="440" fill="#64b450" font-size="15" font-weight="700">MID ZONE &mdash; 중간 녹색 (중경)</text>
+        <rect x="50" y="50" width="900" height="200" rx="8" fill="rgba(100,130,200,.1)" stroke="#6482c8" stroke-width="2.5" stroke-dasharray="10,6" opacity=".7"/>
+        <text x="70" y="240" fill="#6482c8" font-size="15" font-weight="700">COOL ZONE &mdash; 차가운 보라-파랑 (멀리)</text>
+      </svg>
+    </div>
+    <div class="inter-full__overlay">
+      <div class="inter-full__top">
+        <div class="ew reveal blur-in">Interactive &mdash; Aerial Perspective</div>
+        <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">공기 원근법</h2>
+      </div>
+      <div class="inter-full__bottom">
+        <button class="toggle-btn" id="perspBtn" onclick="togglePerspective()">&#128270; 색온도 영역 보기</button>
+        <div class="interactive-explain">
+          <p>세잔은 선원근법 대신 <strong>색의 온도차</strong>로 깊이를 표현했다. 가까운 곳은 <strong>따뜻한 황록색</strong>, 중경은 <strong>초록</strong>, 먼 산은 <strong>차가운 보라-파랑</strong>. 레오나르도의 공기 원근법을 색채 변조로 재발명한 것이다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S9: Interactive — Color Temperature (색온도 실험) -->
+<div class="slide" id="s9">
+  <div class="inter-full">
+    <img class="inter-full__img" id="modulationImg" src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-02.jpg" alt="큰 소나무가 있는 생트빅투아르 산">
+    <div class="inter-full__overlay">
+      <div class="inter-full__top">
+        <div class="ew reveal blur-in">Interactive &mdash; Color Temperature</div>
+        <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">색온도와 공간감</h2>
+      </div>
+      <div class="inter-full__bottom">
+        <div class="modulation-control">
+          <div class="modulation-labels">
+            <span>&#10052; 차가운 톤 (Cool)</span>
+            <span>&#9728; 따뜻한 톤 (Warm)</span>
+          </div>
+          <input type="range" class="modulation-slider" id="modulationSlider" min="0" max="360" value="0" oninput="updateModulation(this.value)">
+          <div class="modulation-value" id="modulationValue">0&deg;</div>
+        </div>
+        <div class="interactive-explain">
+          <p><strong>풍경에서의 색온도:</strong> 세잔은 전경의 소나무를 따뜻한 녹색으로, 원경의 산을 차가운 보라로 그렸다. 슬라이더를 움직여 <strong>색 온도 변화가 깊이감</strong>에 어떤 영향을 주는지 체험해보세요.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S10: Interactive — Landscape Structure (풍경의 기하학) -->
+<div class="slide" id="s10">
+  <div class="inter-full">
+    <img class="inter-full__img" src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/masterpiece-04.jpg" alt="비베뮈스 채석장">
+    <div class="geo-overlay" id="geoOverlay">
+      <svg width="100%" height="100%" viewBox="0 0 1000 700" preserveAspectRatio="none" style="position:absolute;inset:0;">
+        <polygon points="200,100 500,350 100,350" fill="none" stroke="#e74c3c" stroke-width="3" opacity=".7"/>
+        <text x="180" y="90" fill="#e74c3c" font-size="14" font-weight="700">삼각형 (바위 덩어리)</text>
+        <rect x="450" y="150" width="250" height="200" fill="none" stroke="#3498db" stroke-width="3" opacity=".7"/>
+        <text x="460" y="140" fill="#3498db" font-size="14" font-weight="700">직사각형 (잘린 암벽)</text>
+        <rect x="700" y="100" width="80" height="300" rx="40" fill="none" stroke="#2ecc71" stroke-width="3" opacity=".7"/>
+        <text x="790" y="250" fill="#2ecc71" font-size="14" font-weight="700">원기둥 (나무)</text>
+        <polygon points="350,400 550,600 150,600" fill="none" stroke="#f39c12" stroke-width="2.5" stroke-dasharray="8,5" opacity=".6"/>
+        <text x="360" y="390" fill="#f39c12" font-size="14" font-weight="700">원뿔 (바위)</text>
+        <circle cx="800" cy="500" r="50" fill="none" stroke="#2ecc71" stroke-width="2" stroke-dasharray="6,4" opacity=".5"/>
+        <text x="860" y="505" fill="#2ecc71" font-size="12" font-weight="600">구 (수관)</text>
+      </svg>
+    </div>
+    <div class="inter-full__overlay">
+      <div class="inter-full__top">
+        <div class="ew reveal blur-in">Interactive &mdash; Landscape Structure</div>
+        <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">풍경의 기하학</h2>
+      </div>
+      <div class="inter-full__bottom">
+        <button class="toggle-btn" id="geoBtn" onclick="toggleGeometry()">&#128316; 기하학 오버레이 보기</button>
+        <div class="interactive-explain">
+          <p><strong>&ldquo;자연을 원뿔, 구, 원기둥으로 다루어라&rdquo;</strong> &mdash; 비베뮈스 채석장에서 세잔의 말이 현실이 된다. 잘려나간 바위가 이미 기하학적 형태를 이루고 있다. 자연 자체가 세잔의 이론을 증명하는 장소.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S11: 풍경화의 진화 — 세잔 → 큐비즘 →  추상 -->
+<div class="slide" id="s11">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Landscape Evolution</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">풍경화의 진화</h2>
+    <div class="sc-scroll">
+      <div class="comparison-grid reveal">
+        <div class="comparison-item">
+          <div class="comparison-img" onclick="openLb('../../assets/images/paintings/cezanne/web/cezanne_estaque.jpg','세잔의 레스타크 &mdash; L\'Estaque (1885)')">
+            <img src="../../assets/images/paintings/cezanne/web/cezanne_estaque.jpg" alt="세잔의 레스타크" loading="lazy">
+          </div>
+          <div class="comparison-label">
+            <strong>C&eacute;zanne</strong><br>
+            레스타크 (1885)
+          </div>
+        </div>
+        <div class="comparison-vs reveal">&#8594;</div>
+        <div class="comparison-item">
+          <div class="comparison-img" onclick="openLb('../../assets/images/paintings/cezanne/web/braque_estaque.jpg','브라크의 레스타크 &mdash; Houses at l\'Estaque (1908)')">
+            <img src="../../assets/images/paintings/cezanne/web/braque_estaque.jpg" alt="브라크의 레스타크" loading="lazy">
+          </div>
+          <div class="comparison-label">
+            <strong>Braque</strong><br>
+            레스타크의 집들 (1908)
+          </div>
+        </div>
+      </div>
+      <div class="comparison-explain reveal scroll-reveal">
+        <p><strong>같은 장소, 20년의 간격.</strong> 세잔이 레스타크에서 시작한 기하학적 풍경은 브라크를 통해 큐비즘으로 발전했다. 세잔의 풍경화가 풍경의 &ldquo;구조&rdquo;를 드러냈다면, 브라크는 그 구조만 남기고 나머지를 모두 제거했다. &ldquo;작은 큐브&rdquo;라는 비평가의 조롱이 큐비즘의 이름이 되었다.</p>
+      </div>
+      <div class="card-grid" style="margin-top:16px;">
+        <div class="info-card reveal scroll-reveal" onclick="toggleCard(this)">
+          <div class="card-header">
+            <div><div class="card-num">01</div><div class="card-title">60점의 생트빅투아르</div></div>
+            <div class="card-chevron">&#9660;</div>
+          </div>
+          <div class="card-body">
+            <p>세잔은 한 산을 30년간 60점 이상 그렸다. 모네의 연작과 달리 빛의 변화가 아닌 <strong>구조의 본질</strong>을 추구했다. 초기의 사실적 산은 말년으로 갈수록 색면의 추상으로 변해간다.</p>
+          </div>
+        </div>
+        <div class="info-card reveal scroll-reveal" onclick="toggleCard(this)">
+          <div class="card-header">
+            <div><div class="card-num">02</div><div class="card-title">풍경에서 태어난 큐비즘</div></div>
+            <div class="card-chevron">&#9660;</div>
+          </div>
+          <div class="card-body">
+            <p>피카소: &ldquo;세잔은 우리 모두의 아버지였다.&rdquo; 큐비즘의 첫 걸작이 인물이 아닌 <strong>풍경</strong>(브라크의 레스타크)에서 탄생한 것은 우연이 아니다. 세잔의 풍경화가 형태의 해체를 가르쳤기 때문이다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S12: Art Market + Legacy (풍경화의 유산) -->
+<div class="slide" id="s12">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Landscape Legacy</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">풍경화의 유산</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s12market">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_sainte_victoire_lauves.jpg" alt="생트빅투아르 산" loading="lazy">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_estaque.jpg" alt="레스타크" loading="lazy">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_bibemus_quarry.jpg" alt="비베뮈스 채석장" loading="lazy">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_chateau_noir.jpg" alt="샤토 누아르" loading="lazy">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_pont_maincy.jpg" alt="멩시의 다리" loading="lazy">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+        <div class="card-grid">
+          <div class="info-card reveal scroll-reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">01</div><div class="card-title">300점 이상의 풍경화</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>세잔 전체 864점 유화 중 풍경화는 300점 이상. 생트빅투아르 산 60점, 레스타크 연작, 비베뮈스 채석장, 샤토 누아르 등 프로방스의 풍경을 평생에 걸쳐 기록했다.</p>
+            </div>
+          </div>
+          <div class="info-card reveal scroll-reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">02</div><div class="card-title">$20M+ &mdash; 생트빅투아르의 가치</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>생트빅투아르 연작은 경매에 나올 때마다 $20M 이상에 거래된다. 2022년 크리스티 경매에서 수채화 한 점이 $35M을 기록. 풍경 수채화 역대 최고가.</p>
+            </div>
+          </div>
+          <div class="info-card reveal scroll-reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">03</div><div class="card-title">세잔의 길 &mdash; 순례지가 된 프로방스</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>엑상프로방스에는 &ldquo;세잔의 길(Route de C&eacute;zanne)&rdquo;이 있다. 레 로브 아틀리에, 비베뮈스 채석장, 생트빅투아르 산 등 세잔이 그린 풍경을 직접 걸으며 따라가는 순례길이다.</p>
+            </div>
+          </div>
+          <div class="info-card reveal scroll-reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">04</div><div class="card-title">풍경화를 추상으로 이끈 선구자</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>세잔의 말년 풍경화는 칸딘스키, 몬드리안에게 추상의 가능성을 열어주었다. 자연의 형태를 해체하여 색면과 구조만 남기는 것 &mdash; 풍경화에서 시작된 이 실험이 추상미술의 씨앗이 되었다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S13: Films (영화) -->
+<div class="slide" id="s13">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Films &amp; Documentaries</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">세잔 &amp; 인상주의 영화</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s13films">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_sainte_victoire_lauves.jpg" alt="생트빅투아르 산" loading="lazy">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_estaque.jpg" alt="레스타크" loading="lazy">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_maison_pendu.jpg" alt="목맨 자의 집" loading="lazy">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_chateau_noir.jpg" alt="샤토 누아르" loading="lazy">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_bibemus_quarry.jpg" alt="비베뮈스 채석장" loading="lazy">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(125,173,90,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">C&eacute;zanne et moi</div>
+            <div class="film-title-ko">세잔과 나</div>
+            <div class="film-meta">2016 &middot; 감독: Dani&egrave;le Thompson &middot; 드라마</div>
+            <div class="film-desc">세잔과 에밀 졸라의 35년 우정과 결별을 그린 프랑스 영화. 두 천재의 예술관 충돌</div>
+          </div>
+        </div>
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(125,173,90,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">Loving Vincent</div>
+            <div class="film-title-ko">러빙 빈센트</div>
+            <div class="film-meta">2017 &middot; 감독: Dorota Kobiela &middot; 애니메이션</div>
+            <div class="film-desc">세계 최초 유화 애니메이션 영화. 고흐의 마지막 날들과 후기인상주의 세계</div>
+          </div>
+        </div>
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(125,173,90,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">At Eternity&rsquo;s Gate</div>
+            <div class="film-title-ko">영원의 문에서</div>
+            <div class="film-meta">2018 &middot; 감독: Julian Schnabel &middot; Willem Dafoe 주연</div>
+            <div class="film-desc">고흐의 아를 시절을 그린 영화. 세잔과 동시대 후기인상주의의 세계관</div>
+          </div>
+        </div>
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(125,173,90,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">Lust for Life</div>
+            <div class="film-title-ko">열정의 랩소디</div>
+            <div class="film-meta">1956 &middot; 감독: Vincente Minnelli &middot; Kirk Douglas 주연</div>
+            <div class="film-desc">고흐 전기 영화의 고전. 세잔, 고갱 등 후기인상주의 화가들과의 교류</div>
+          </div>
+        </div>
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(125,173,90,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">The Impressionists</div>
+            <div class="film-title-ko">인상주의자들</div>
+            <div class="film-meta">2006 &middot; BBC 미니시리즈</div>
+            <div class="film-desc">인상주의 운동의 탄생을 편지와 기록으로 재현. 세잔의 역할도 조명</div>
+          </div>
+        </div>
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(125,173,90,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">Cezanne: Portraits of a Life</div>
+            <div class="film-title-ko">세잔: 한 삶의 초상</div>
+            <div class="film-meta">2018 &middot; 감독: Phil Grabsky &middot; 다큐멘터리</div>
+            <div class="film-desc">내셔널 갤러리의 세잔 초상화 전시를 중심으로 한 심층 다큐멘터리</div>
+          </div>
+        </div>
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(125,173,90,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">The Post-Impressionists</div>
+            <div class="film-title-ko">후기 인상주의자들</div>
+            <div class="film-meta">2020 &middot; Perspective Films &middot; 다큐멘터리</div>
+            <div class="film-desc">세잔, 고흐, 고갱이 인상주의를 어떻게 넘어섰는지를 조명</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S14: Books (도서) -->
+<div class="slide" id="s14">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Books</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">세잔 관련 도서</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s14books">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_vollard_portrait.jpg" alt="볼라르 초상" loading="lazy">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_madame_cezanne.jpg" alt="세잔 부인" loading="lazy">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_bibemus_quarry.jpg" alt="비베뮈스 채석장" loading="lazy">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_pont_maincy.jpg" alt="멩시의 다리" loading="lazy">
+          <img src="../../assets/images/paintings/cezanne/web/cezanne_chateau_noir.jpg" alt="샤토 누아르" loading="lazy">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">C&eacute;zanne: A Life</div>
+            <div class="book-author">Alex Danchev &middot; 2012</div>
+            <div class="book-desc">세잔의 결정판 전기. 예술과 삶을 치밀하게 엮어낸 걸작</div>
+          </div>
+        </div>
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">The Letters of Paul C&eacute;zanne</div>
+            <div class="book-author">Alex Danchev (ed.) &middot; 2013</div>
+            <div class="book-desc">세잔의 편지 전집. &ldquo;자연을 원뿔, 구, 원기둥으로&rdquo; 편지 포함</div>
+          </div>
+        </div>
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">C&eacute;zanne (Taschen Basic Art)</div>
+            <div class="book-author">Ulrike Becks-Malorny &middot; 2001</div>
+            <div class="book-desc">주요 작품과 생애를 컬러 도판과 함께 정리한 입문서</div>
+          </div>
+        </div>
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">Conversations with C&eacute;zanne</div>
+            <div class="book-author">Michael Doran (ed.) &middot; 2001</div>
+            <div class="book-desc">세잔과 동시대 인물들의 대화, 인터뷰, 회고록 모음</div>
+          </div>
+        </div>
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">C&eacute;zanne and the Past</div>
+            <div class="book-author">Mary Tompkins Lewis &middot; 2012</div>
+            <div class="book-desc">푸생, 들라크루아 등 과거 거장과 세잔의 대화를 추적</div>
+          </div>
+        </div>
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">C&eacute;zanne&rsquo;s Composition</div>
+            <div class="book-author">Erle Loran &middot; 1943</div>
+            <div class="book-desc">세잔 구도의 기하학적 분석. 현대 미술 교육의 고전적 교재</div>
+          </div>
+        </div>
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">Joachim Gasquet&rsquo;s C&eacute;zanne</div>
+            <div class="book-author">Joachim Gasquet &middot; 1991 (reprint)</div>
+            <div class="book-desc">세잔의 젊은 친구가 기록한 세잔의 예술 철학과 대화</div>
+          </div>
+        </div>
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">The World Is an Apple</div>
+            <div class="book-author">Benedict Leca (ed.) &middot; 2014</div>
+            <div class="book-desc">세잔 정물화의 혁명적 의미를 다각도로 분석한 전시 도록</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S15: Poems (시) -->
+<div class="slide" id="s15">
+  <div class="bg"></div>
+  <div class="poem-bg-gallery crossfade-gallery" data-gallery="poems">
+    <img src="../../assets/images/paintings/cezanne/web/cezanne_sainte_victoire_lauves.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/cezanne/web/cezanne_estaque.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/cezanne/web/cezanne_bibemus_quarry.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/cezanne/web/cezanne_sainte_victoire_pine.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/cezanne/web/cezanne_pont_maincy.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/cezanne/web/cezanne_chateau_noir.jpg" alt="" loading="lazy">
+  </div>
+  <div class="poem-overlay"></div>
+  <div class="sc" style="z-index:3;">
+    <div class="ew reveal blur-in">Poetry for C&eacute;zanne</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.8vw,34px);">세잔을 위한 시</h2>
+    <div class="sc-scroll">
+      <div class="poem-container">
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">&ldquo;Looking at his paintings, one becomes<br>aware of how much laboring was necessary<br>before so much color.&rdquo;</div>
+          <div class="poem-quote-ko">&ldquo;그의 그림을 보면 깨닫게 된다,<br>이토록 많은 색채 앞에서<br>얼마나 많은 노동이 필요했는지를.&rdquo;</div>
+          <div class="poem-attr">&mdash; Rainer Maria Rilke, &laquo;Letters on C&eacute;zanne&raquo; (1907)</div>
+          <div class="poem-context">릴케는 1907년 파리 살롱 도톤에서 세잔 회고전을 보고 아내에게 보낸 편지들. 현대 미술 비평의 걸작.</div>
+        </div>
+        <div class="poem-divider reveal scroll-reveal"></div>
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">&ldquo;The apples, you can see them,<br>they will not move from there.<br>They sit dense in themselves,<br>unwilling to be eaten.&rdquo;</div>
+          <div class="poem-quote-ko">&ldquo;사과들이 보이시나요,<br>그들은 거기서 움직이지 않을 것입니다.<br>자기 자신 안에 견고히 앉아<br>먹히기를 거부합니다.&rdquo;</div>
+          <div class="poem-attr">&mdash; Rainer Maria Rilke, from Letters (Oct. 8, 1907)</div>
+          <div class="poem-context">&ldquo;세잔의 사과는 먹을 수 있는 것이 아니라 존재하는 것이다&rdquo; &mdash; 릴케의 유명한 관찰</div>
+        </div>
+        <div class="poem-divider reveal scroll-reveal"></div>
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">&ldquo;He gave us back the mountain<br>as a mountain, the sky<br>as something that recedes,<br>the apple as a world.&rdquo;</div>
+          <div class="poem-quote-ko">&ldquo;그는 산을 산으로,<br>하늘을 물러서는 무엇으로,<br>사과를 하나의 세계로<br>우리에게 돌려주었다.&rdquo;</div>
+          <div class="poem-attr">&mdash; Charles Wright, &laquo;Looking at C&eacute;zanne&raquo;</div>
+          <div class="poem-context">퓰리처상 수상 시인이 세잔의 본질 환원을 노래한 시</div>
+        </div>
+        <div class="poem-divider reveal scroll-reveal"></div>
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">&ldquo;Treat nature by the cylinder,<br>the sphere, the cone, everything<br>brought into proper perspective.&rdquo;</div>
+          <div class="poem-quote-ko">&ldquo;자연을 원기둥, 구, 원뿔로 다루어라,<br>모든 것을 올바른 원근법 안으로<br>가져오라.&rdquo;</div>
+          <div class="poem-attr">&mdash; Paul C&eacute;zanne, Letter to &Eacute;mile Bernard (1904)</div>
+          <div class="poem-context">시가 아닌 편지이지만 시보다 더 시적인 &mdash; 큐비즘의 이론적 토대가 된 한 문장</div>
+        </div>
+        <div class="poem-divider reveal scroll-reveal"></div>
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">&ldquo;For the very first time, he withdrew<br>before the fruit, and changed<br>it wholly into colors. And did not<br>wish it to return.&rdquo;</div>
+          <div class="poem-quote-ko">&ldquo;처음으로 그는 과일 앞에서<br>물러서서 그것을 완전히<br>색채 안으로 바꾸었다. 그리고<br>돌아오기를 바라지 않았다.&rdquo;</div>
+          <div class="poem-attr">&mdash; Rainer Maria Rilke, &laquo;Letters on C&eacute;zanne&raquo; (Oct. 21, 1907)</div>
+          <div class="poem-context">릴케가 세잔의 색채 혁명을 요약한 가장 아름다운 문장</div>
+        </div>
+        <div class="poem-divider reveal scroll-reveal"></div>
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">&ldquo;I am old, ill, and I have sworn<br>to die painting.&rdquo;</div>
+          <div class="poem-quote-ko">&ldquo;나는 늙고 병들었으나<br>그림을 그리다 죽겠다고 맹세했다.&rdquo;</div>
+          <div class="poem-attr">&mdash; Paul C&eacute;zanne, Letter (1906)</div>
+          <div class="poem-context">사망 직전 편지. 세잔은 야외에서 생트빅투아르를 그리다 폭우를 맞고 쓰러져 세상을 떠났다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S16: Practice Reference 01 -->
+<div class="slide" id="s16">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 01</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 01 — 생트빅투아르, 수채화풍 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-01-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-01-1.jpg','생트빅투아르, 수채화풍 1')" loading="lazy" alt="생트빅투아르, 수채화풍 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-01-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-01-2.jpg','생트빅투아르, 수채화풍 2')" loading="lazy" alt="생트빅투아르, 수채화풍 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-01-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-01-3.jpg','생트빅투아르, 수채화풍 3')" loading="lazy" alt="생트빅투아르, 수채화풍 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-01-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-01-4.jpg','생트빅투아르, 수채화풍 4')" loading="lazy" alt="생트빅투아르, 수채화풍 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 02 — 생트빅투아르, 광활한 평야 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-02-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-02-1.jpg','생트빅투아르, 광활한 평야 1')" loading="lazy" alt="생트빅투아르, 광활한 평야 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-02-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-02-2.jpg','생트빅투아르, 광활한 평야 2')" loading="lazy" alt="생트빅투아르, 광활한 평야 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-02-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-02-3.jpg','생트빅투아르, 광활한 평야 3')" loading="lazy" alt="생트빅투아르, 광활한 평야 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-02-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-02-4.jpg','생트빅투아르, 광활한 평야 4')" loading="lazy" alt="생트빅투아르, 광활한 평야 4">
+        </div>
+      </div>
+      <div class="prac-caption">생트빅투아르 산 — 수채화풍과 광활한 평야</div>
+    </div>
+  </div>
+</div>
+
+<!-- S17: Practice Reference 02 -->
+<div class="slide" id="s17">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 02</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 03 — 생트빅투아르, 기하학적 구성 ⭐⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-03-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-03-1.jpg','생트빅투아르, 기하학적 구성 1')" loading="lazy" alt="생트빅투아르, 기하학적 구성 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-03-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-03-2.jpg','생트빅투아르, 기하학적 구성 2')" loading="lazy" alt="생트빅투아르, 기하학적 구성 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-03-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-03-3.jpg','생트빅투아르, 기하학적 구성 3')" loading="lazy" alt="생트빅투아르, 기하학적 구성 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-03-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-03-4.jpg','생트빅투아르, 기하학적 구성 4')" loading="lazy" alt="생트빅투아르, 기하학적 구성 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 04 — 생트빅투아르, 숲과 산 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-04-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-04-1.jpg','생트빅투아르, 숲과 산 1')" loading="lazy" alt="생트빅투아르, 숲과 산 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-04-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-04-2.jpg','생트빅투아르, 숲과 산 2')" loading="lazy" alt="생트빅투아르, 숲과 산 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-04-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-04-3.jpg','생트빅투아르, 숲과 산 3')" loading="lazy" alt="생트빅투아르, 숲과 산 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-04-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-04-4.jpg','생트빅투아르, 숲과 산 4')" loading="lazy" alt="생트빅투아르, 숲과 산 4">
+        </div>
+      </div>
+      <div class="prac-caption">생트빅투아르 산 — 기하학적 구성과 숲</div>
+    </div>
+  </div>
+</div>
+
+<!-- S18: Practice Reference 03 -->
+<div class="slide" id="s18">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 03</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 05 — 생트빅투아르, 기하학적 바위산 ⭐⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-05-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-05-1.jpg','생트빅투아르, 기하학적 바위산 1')" loading="lazy" alt="생트빅투아르, 기하학적 바위산 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-05-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-05-2.jpg','생트빅투아르, 기하학적 바위산 2')" loading="lazy" alt="생트빅투아르, 기하학적 바위산 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-05-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-05-3.jpg','생트빅투아르, 기하학적 바위산 3')" loading="lazy" alt="생트빅투아르, 기하학적 바위산 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-05-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-05-4.jpg','생트빅투아르, 기하학적 바위산 4')" loading="lazy" alt="생트빅투아르, 기하학적 바위산 4">
+        </div>
+      </div>
+      <div class="prac-caption">생트빅투아르 산 — 기하학적 바위산</div>
+    </div>
+  </div>
+</div>
+
+<!-- S19: Practice Reference 04 -->
+<div class="slide" id="s19">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 04</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 06 — 프로방스 농가 ⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-06-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-06-1.jpg','프로방스 농가 1')" loading="lazy" alt="프로방스 농가 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-06-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-06-2.jpg','프로방스 농가 2')" loading="lazy" alt="프로방스 농가 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-06-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-06-3.jpg','프로방스 농가 3')" loading="lazy" alt="프로방스 농가 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-06-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-06-4.jpg','프로방스 농가 4')" loading="lazy" alt="프로방스 농가 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 07 — 프로방스 언덕길 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-07-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-07-1.jpg','프로방스 언덕길 1')" loading="lazy" alt="프로방스 언덕길 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-07-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-07-2.jpg','프로방스 언덕길 2')" loading="lazy" alt="프로방스 언덕길 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-07-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-07-3.jpg','프로방스 언덕길 3')" loading="lazy" alt="프로방스 언덕길 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-07-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-07-4.jpg','프로방스 언덕길 4')" loading="lazy" alt="프로방스 언덕길 4">
+        </div>
+      </div>
+      <div class="prac-caption">프로방스 농가와 언덕길</div>
+    </div>
+  </div>
+</div>
+
+<!-- S20: Practice Reference 05 -->
+<div class="slide" id="s20">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 05</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 09 — 프로방스 언덕 풍경 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-09-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-09-1.jpg','프로방스 언덕 풍경 1')" loading="lazy" alt="프로방스 언덕 풍경 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-09-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-09-2.jpg','프로방스 언덕 풍경 2')" loading="lazy" alt="프로방스 언덕 풍경 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-09-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-09-3.jpg','프로방스 언덕 풍경 3')" loading="lazy" alt="프로방스 언덕 풍경 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-09-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-09-4.jpg','프로방스 언덕 풍경 4')" loading="lazy" alt="프로방스 언덕 풍경 4">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-09-5.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-09-5.jpg','프로방스 언덕 풍경 5')" loading="lazy" alt="프로방스 언덕 풍경 5">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-09-6.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-09-6.jpg','프로방스 언덕 풍경 6')" loading="lazy" alt="프로방스 언덕 풍경 6">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-09-7.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-09-7.jpg','프로방스 언덕 풍경 7')" loading="lazy" alt="프로방스 언덕 풍경 7">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-09-8.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-09-8.jpg','프로방스 언덕 풍경 8')" loading="lazy" alt="프로방스 언덕 풍경 8">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 10 — 프로방스 마을, 부감 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-10-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-10-1.jpg','프로방스 마을, 부감 1')" loading="lazy" alt="프로방스 마을, 부감 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-10-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-10-2.jpg','프로방스 마을, 부감 2')" loading="lazy" alt="프로방스 마을, 부감 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-10-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-10-3.jpg','프로방스 마을, 부감 3')" loading="lazy" alt="프로방스 마을, 부감 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-10-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-10-4.jpg','프로방스 마을, 부감 4')" loading="lazy" alt="프로방스 마을, 부감 4">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-10-5.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-10-5.jpg','프로방스 마을, 부감 5')" loading="lazy" alt="프로방스 마을, 부감 5">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-10-6.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-10-6.jpg','프로방스 마을, 부감 6')" loading="lazy" alt="프로방스 마을, 부감 6">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-10-7.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-10-7.jpg','프로방스 마을, 부감 7')" loading="lazy" alt="프로방스 마을, 부감 7">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-10-8.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-10-8.jpg','프로방스 마을, 부감 8')" loading="lazy" alt="프로방스 마을, 부감 8">
+        </div>
+      </div>
+      <div class="prac-caption">프로방스 언덕과 마을 부감</div>
+    </div>
+  </div>
+</div>
+
+<!-- S21: Practice Reference 06 -->
+<div class="slide" id="s21">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 06</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 11 — 프로방스 마을, 근경 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-11-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-11-1.jpg','프로방스 마을, 근경 1')" loading="lazy" alt="프로방스 마을, 근경 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-11-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-11-2.jpg','프로방스 마을, 근경 2')" loading="lazy" alt="프로방스 마을, 근경 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-11-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-11-3.jpg','프로방스 마을, 근경 3')" loading="lazy" alt="프로방스 마을, 근경 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-11-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-11-4.jpg','프로방스 마을, 근경 4')" loading="lazy" alt="프로방스 마을, 근경 4">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-11-5.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-11-5.jpg','프로방스 마을, 근경 5')" loading="lazy" alt="프로방스 마을, 근경 5">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-11-6.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-11-6.jpg','프로방스 마을, 근경 6')" loading="lazy" alt="프로방스 마을, 근경 6">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-11-7.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-11-7.jpg','프로방스 마을, 근경 7')" loading="lazy" alt="프로방스 마을, 근경 7">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-11-8.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-11-8.jpg','프로방스 마을, 근경 8')" loading="lazy" alt="프로방스 마을, 근경 8">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 12 — 호수와 산 반영 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-12-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-12-1.jpg','호수와 산 반영 1')" loading="lazy" alt="호수와 산 반영 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-12-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-12-2.jpg','호수와 산 반영 2')" loading="lazy" alt="호수와 산 반영 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-12-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-12-3.jpg','호수와 산 반영 3')" loading="lazy" alt="호수와 산 반영 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-12-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-12-4.jpg','호수와 산 반영 4')" loading="lazy" alt="호수와 산 반영 4">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-12-5.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-12-5.jpg','호수와 산 반영 5')" loading="lazy" alt="호수와 산 반영 5">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-12-6.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-12-6.jpg','호수와 산 반영 6')" loading="lazy" alt="호수와 산 반영 6">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-12-7.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-12-7.jpg','호수와 산 반영 7')" loading="lazy" alt="호수와 산 반영 7">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-12-8.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-12-8.jpg','호수와 산 반영 8')" loading="lazy" alt="호수와 산 반영 8">
+        </div>
+      </div>
+      <div class="prac-caption">프로방스 마을과 호수 반영</div>
+    </div>
+  </div>
+</div>
+
+<!-- S22: Practice Reference 07 -->
+<div class="slide" id="s22">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 07</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 13 — 지중해 해안 바위 ⭐⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-13-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-13-1.jpg','지중해 해안 바위 1')" loading="lazy" alt="지중해 해안 바위 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-13-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-13-2.jpg','지중해 해안 바위 2')" loading="lazy" alt="지중해 해안 바위 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-13-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-13-3.jpg','지중해 해안 바위 3')" loading="lazy" alt="지중해 해안 바위 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-13-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-13-4.jpg','지중해 해안 바위 4')" loading="lazy" alt="지중해 해안 바위 4">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-13-5.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-13-5.jpg','지중해 해안 바위 5')" loading="lazy" alt="지중해 해안 바위 5">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-13-6.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-13-6.jpg','지중해 해안 바위 6')" loading="lazy" alt="지중해 해안 바위 6">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-13-7.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-13-7.jpg','지중해 해안 바위 7')" loading="lazy" alt="지중해 해안 바위 7">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-13-8.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-13-8.jpg','지중해 해안 바위 8')" loading="lazy" alt="지중해 해안 바위 8">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 14 — 돌다리와 시냇물 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-14-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-14-1.jpg','돌다리와 시냇물 1')" loading="lazy" alt="돌다리와 시냇물 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-14-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-14-2.jpg','돌다리와 시냇물 2')" loading="lazy" alt="돌다리와 시냇물 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-14-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-14-3.jpg','돌다리와 시냇물 3')" loading="lazy" alt="돌다리와 시냇물 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-14-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-14-4.jpg','돌다리와 시냇물 4')" loading="lazy" alt="돌다리와 시냇물 4">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-14-5.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-14-5.jpg','돌다리와 시냇물 5')" loading="lazy" alt="돌다리와 시냇물 5">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-14-6.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-14-6.jpg','돌다리와 시냇물 6')" loading="lazy" alt="돌다리와 시냇물 6">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-14-7.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-14-7.jpg','돌다리와 시냇물 7')" loading="lazy" alt="돌다리와 시냇물 7">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-14-8.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-14-8.jpg','돌다리와 시냇물 8')" loading="lazy" alt="돌다리와 시냇물 8">
+        </div>
+      </div>
+      <div class="prac-caption">해안 바위와 돌다리</div>
+    </div>
+  </div>
+</div>
+
+<!-- S23: Practice Reference 08 -->
+<div class="slide" id="s23">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 08</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 15 — 가을 가로수길 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-15-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-15-1.jpg','가을 가로수길 1')" loading="lazy" alt="가을 가로수길 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-15-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-15-2.jpg','가을 가로수길 2')" loading="lazy" alt="가을 가로수길 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-15-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-15-3.jpg','가을 가로수길 3')" loading="lazy" alt="가을 가로수길 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-15-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-15-4.jpg','가을 가로수길 4')" loading="lazy" alt="가을 가로수길 4">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-15-5.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-15-5.jpg','가을 가로수길 5')" loading="lazy" alt="가을 가로수길 5">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-15-6.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-15-6.jpg','가을 가로수길 6')" loading="lazy" alt="가을 가로수길 6">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-15-7.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-15-7.jpg','가을 가로수길 7')" loading="lazy" alt="가을 가로수길 7">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-15-8.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-15-8.jpg','가을 가로수길 8')" loading="lazy" alt="가을 가로수길 8">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 16 — 프로방스 평야 전경 ⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-16-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-16-1.jpg','프로방스 평야 전경 1')" loading="lazy" alt="프로방스 평야 전경 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-16-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-16-2.jpg','프로방스 평야 전경 2')" loading="lazy" alt="프로방스 평야 전경 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-16-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-16-3.jpg','프로방스 평야 전경 3')" loading="lazy" alt="프로방스 평야 전경 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-16-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-16-4.jpg','프로방스 평야 전경 4')" loading="lazy" alt="프로방스 평야 전경 4">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-16-5.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-16-5.jpg','프로방스 평야 전경 5')" loading="lazy" alt="프로방스 평야 전경 5">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-16-6.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-16-6.jpg','프로방스 평야 전경 6')" loading="lazy" alt="프로방스 평야 전경 6">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-16-7.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-16-7.jpg','프로방스 평야 전경 7')" loading="lazy" alt="프로방스 평야 전경 7">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-16-8.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-16-8.jpg','프로방스 평야 전경 8')" loading="lazy" alt="프로방스 평야 전경 8">
+        </div>
+      </div>
+      <div class="prac-caption">가로수길과 평야 전경</div>
+    </div>
+  </div>
+</div>
+
+<!-- S24: Practice Reference 09 -->
+<div class="slide" id="s24">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 09</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 17 — 산맥과 들판, 공기 원근법 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-17-1.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-17-1.jpg','산맥과 들판, 공기 원근법 1')" loading="lazy" alt="산맥과 들판, 공기 원근법 1">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-17-2.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-17-2.jpg','산맥과 들판, 공기 원근법 2')" loading="lazy" alt="산맥과 들판, 공기 원근법 2">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-17-3.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-17-3.jpg','산맥과 들판, 공기 원근법 3')" loading="lazy" alt="산맥과 들판, 공기 원근법 3">
+          <img src="../../images/lessons/impressionism/04-cezanne-landscape-harmony/thumbs/style-17-4.jpg" onclick="openLb('../../images/lessons/impressionism/04-cezanne-landscape-harmony/style-17-4.jpg','산맥과 들판, 공기 원근법 4')" loading="lazy" alt="산맥과 들판, 공기 원근법 4">
+        </div>
+      </div>
+      <div class="prac-caption">산맥과 들판 — 공기 원근법</div>
+    </div>
+  </div>
+</div>
+
+<!-- Total practice slides: 10 (S16-S24) -->
+
+<!-- S25: Ending Slide -->
+<div class="slide" id="s25">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="sc-scroll">
+    <div class="end-wrap">
+      <div class="ew reveal blur-in">Lesson Complete</div>
+      <h2 class="stitle reveal blur-in">오늘 배운 핵심 3가지</h2>
+      <div class="summary-cards">
+        <div class="sum-card reveal">
+          <div class="sum-num blur-in">60+</div>
+          <div class="sum-text"><strong>점의 생트빅투아르</strong><br>같은 산을 30년간 60점 이상 &mdash; 빛이 아닌 구조의 본질을 추구한 집착</div>
+        </div>
+        <div class="sum-card reveal">
+          <div class="sum-num blur-in">300+</div>
+          <div class="sum-text"><strong>점의 풍경화</strong><br>864점 유화 중 300점 이상이 풍경. 프로방스의 구조를 평생 탐구했다</div>
+        </div>
+        <div class="sum-card reveal">
+          <div class="sum-num blur-in">&#8734;</div>
+          <div class="sum-text"><strong>풍경에서 추상으로</strong><br>세잔의 풍경화가 큐비즘과 추상미술의 길을 열었다</div>
+        </div>
+      </div>
+      <div class="next-info reveal">
+        다음 강: <strong>5강 &mdash; 고흐의 감정적 색채와 터치</strong><br>
+        색과 붓터치로 감정을 폭발시킨 빈센트 반 고흐의 세계로 들어갑니다.
+      </div>
+      <div class="reveal" style="margin-top:8px;">
+        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:8px;letter-spacing:1px;">추천 감상</div>
+        <div class="museum-pills">
+          <a class="museum-pill" href="https://artsandculture.google.com/partner/musee-dorsay-paris" target="_blank" rel="noopener">Mus&eacute;e d'Orsay</a>
+          <a class="museum-pill" href="https://www.metmuseum.org/" target="_blank" rel="noopener">Metropolitan Museum</a>
+          <a class="museum-pill" href="https://courtauld.ac.uk/" target="_blank" rel="noopener">Courtauld Gallery</a>
+        </div>
+      </div>
+      <div class="end-btns reveal">
+        <button class="end-btn" onclick="location.href='../main/classes.html'">&#8592; 수업 목록</button>
+        <button class="end-btn" onclick="location.href='../../index.html'">메인 페이지</button>
+      </div>
+    </div>
+    </div><!-- /sc-scroll -->
+  </div>
+</div>
+
+</div><!-- /sw -->
+
+<!-- PAINTING INFO POPUP -->
+<div class="paint-popup" id="paintPopup" onclick="if(event.target===this||event.target.classList.contains('paint-popup-bg'))closePainting()">
+  <div class="paint-popup-bg"></div>
+  <div class="paint-popup-inner">
+    <button class="paint-popup-close" onclick="closePainting()">&#10005;</button>
+    <img class="paint-popup-img" id="ppImg" src="" alt="">
+    <div class="paint-popup-info">
+      <div class="paint-popup-title" id="ppTitle"></div>
+      <div class="paint-popup-sub" id="ppSub"></div>
+      <div class="paint-popup-desc" id="ppDesc"></div>
+      <div class="paint-popup-loc" id="ppLoc"></div>
+    </div>
+  </div>
+</div>
+
+<!-- POSTER MINI POPUP -->
+<div class="poster-popup" id="posterPopup" onclick="closePoster()">
+  <div class="poster-popup-bg"></div>
+  <img id="posterImg" src="" alt="">
+  <div class="poster-popup-title" id="posterTitle"></div>
+  <div class="poster-popup-sub" id="posterSub"></div>
+</div>
+
+<!-- ADDITIONAL STYLES -->
+<style>
+.modulation-control{max-width:500px;}
+.modulation-labels{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.5);margin-bottom:6px;}
+.modulation-slider{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:linear-gradient(90deg,#3498db,#e67e22,#e74c3c);outline:none;position:relative;z-index:5;}
+.modulation-slider::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--glow);cursor:pointer;box-shadow:0 2px 16px rgba(125,173,90,.5);}
+.modulation-value{text-align:center;font-size:13px;color:var(--pale);margin-top:6px;font-weight:700;}
+.comparison-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:center;margin-bottom:20px;}
+@media(max-width:768px){.comparison-grid{grid-template-columns:1fr;gap:12px;}}
+.comparison-item{text-align:center;}
+.comparison-img{border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .4s,box-shadow .4s;border:1px solid rgba(255,255,255,.08);}
+.comparison-img:hover{transform:scale(1.02);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.comparison-img img{width:100%;height:auto;display:block;max-height:45vh;object-fit:cover;}
+.comparison-label{margin-top:10px;font-size:14px;color:rgba(255,255,255,.6);line-height:1.5;}
+.comparison-label strong{color:var(--pale);font-size:15px;}
+.comparison-vs{font-size:32px;color:var(--glow);font-weight:900;text-align:center;}
+@media(max-width:768px){.comparison-vs{font-size:24px;}}
+.comparison-explain{background:rgba(125,173,90,.04);border:1px solid rgba(125,173,90,.12);border-radius:12px;padding:18px 20px;}
+.comparison-explain p{font-size:15px;line-height:1.85;color:rgba(255,255,255,.7);}
+.comparison-explain strong{color:var(--glow);}
+.poster-popup{position:fixed;inset:0;z-index:600;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .4s;}
+.poster-popup.open{opacity:1;pointer-events:auto;}
+.poster-popup-bg{position:absolute;inset:0;background:rgba(0,0,0,.9);backdrop-filter:blur(20px);}
+.poster-popup img{position:relative;z-index:1;max-width:320px;max-height:60vh;object-fit:contain;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.poster-popup-title{position:relative;z-index:1;margin-top:16px;font-size:18px;font-weight:800;color:#fff;}
+.poster-popup-sub{position:relative;z-index:1;margin-top:6px;font-size:13px;color:rgba(255,255,255,.5);}
+</style>
+
+<script>
+/* ── CORE ENGINE ── */
+var total=26,cur=0,isAnimating=false;
+
+function buildDots(){
+  var db=document.getElementById('db');db.innerHTML='';
+  for(var i=0;i<total;i++){
+    var d=document.createElement('div');
+    d.className='dot'+(i===0?' active':'');
+    d.onclick=(function(x){return function(){go(x);};})(i);
+    db.appendChild(d);
+  }
+}
+
+function go(n){
+  if(n===cur||n<0||n>=total||isAnimating)return;
+  isAnimating=true;
+  var slides=document.querySelectorAll('.slide');
+  var dots=document.querySelectorAll('.dot');
+  slides[cur].querySelectorAll('.blur-in').forEach(function(el){el.classList.remove('animate');});
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('exit-left');
+  slides[n].classList.remove('exit-left');
+  slides[n].classList.add('active');
+  dots[cur].classList.remove('active');
+  dots[n].classList.add('active');
+  var prev=cur;
+  cur=n;
+  document.getElementById('cn').textContent=cur+1;
+  document.getElementById('bp').disabled=cur===0;
+  document.getElementById('bn').disabled=cur===total-1;
+  document.getElementById('pbar').style.width=((cur/(total-1))*100)+'%';
+  var scr=slides[n].querySelector('.sc-scroll');
+  if(scr)scr.scrollTop=0;
+  triggerReveals(slides[n]);
+  setTimeout(function(){
+    slides[prev].classList.remove('exit-left');
+    isAnimating=false;
+  },900);
+}
+
+function nav(d){if(cur+d>=0&&cur+d<total)go(cur+d);}
+
+/* ── REVEAL SYSTEM ── */
+function triggerReveals(slide){
+  var els=slide.querySelectorAll('.reveal');
+  els.forEach(function(el){el.classList.remove('show');});
+  slide.querySelectorAll('.blur-in').forEach(function(el){el.classList.remove('animate');});
+  requestAnimationFrame(function(){
+    setTimeout(function(){
+      els.forEach(function(el){el.classList.add('show');});
+      slide.querySelectorAll('.blur-in').forEach(function(el){el.classList.add('animate');});
+    },100);
+  });
+}
+
+function setupScrollObserver(){
+  if(!('IntersectionObserver' in window))return;
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+      }
+    });
+  },{threshold:0.15,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.scroll-reveal').forEach(function(el){
+    observer.observe(el);
+  });
+}
+
+/* ── INTERACTIVE CARDS ── */
+function toggleCard(card){
+  var wasExpanded=card.classList.contains('expanded');
+  card.parentElement.querySelectorAll('.info-card').forEach(function(c){c.classList.remove('expanded');});
+  if(!wasExpanded)card.classList.add('expanded');
+}
+
+/* ── TIMELINE ── */
+function toggleTimeline(item){
+  var wasExpanded=item.classList.contains('expanded');
+  item.parentElement.querySelectorAll('.tl-item').forEach(function(t){t.classList.remove('expanded');});
+  if(!wasExpanded)item.classList.add('expanded');
+}
+
+/* ── ANALYSIS PANELS ── */
+function togglePanel(panel){
+  var wasOpen=panel.classList.contains('open');
+  panel.parentElement.querySelectorAll('.an-panel').forEach(function(p){p.classList.remove('open');});
+  if(!wasOpen)panel.classList.add('open');
+}
+
+/* ── KEYBOARD NAV ── */
+document.addEventListener('keydown',function(e){
+  if(document.getElementById('lbox').classList.contains('open')){
+    if(e.key==='Escape')closeLb();
+    return;
+  }
+  if(document.getElementById('paintPopup').classList.contains('open')){
+    if(e.key==='Escape')closePainting();
+    return;
+  }
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nav(1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();nav(-1);}
+  if(e.key==='Home'){e.preventDefault();go(0);}
+  if(e.key==='End'){e.preventDefault();go(total-1);}
+});
+
+/* ── TOUCH / SWIPE ── */
+var tx=0,ty=0,swiping=false;
+var swEl=document.getElementById('sw');
+swEl.addEventListener('touchstart',function(e){
+  tx=e.touches[0].clientX;ty=e.touches[0].clientY;swiping=true;
+},{passive:true});
+swEl.addEventListener('touchmove',function(e){},{passive:true});
+swEl.addEventListener('touchend',function(e){
+  if(!swiping)return;swiping=false;
+  var dx=e.changedTouches[0].clientX-tx;
+  var dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>60){nav(dx<0?1:-1);}
+});
+
+/* ── LIGHTBOX ── */
+function openLb(src,cap){
+  var lb=document.getElementById('lbox');
+  document.getElementById('lbox-img').src=src;
+  document.getElementById('lbox-cap').textContent=cap||'';
+  var dl=document.getElementById('lbox-dl');
+  dl.href=src;dl.download=src.split('/').pop();
+  lb.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeLb(){
+  document.getElementById('lbox').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+/* ── COVER TYPEWRITER ── */
+function initCover(){
+  var title=document.getElementById('cover-title');
+  if(title)title.classList.add('animate');
+}
+
+/* ── TOPBAR AUTO-HIDE ── */
+var lastScrollY=0;
+function setupTopbarHide(){
+  document.querySelectorAll('.sc-scroll').forEach(function(scr){
+    scr.addEventListener('scroll',function(){
+      var tb=document.getElementById('topbar');
+      if(this.scrollTop>80&&this.scrollTop>lastScrollY){tb.classList.add('hidden');}
+      else{tb.classList.remove('hidden');}
+      lastScrollY=this.scrollTop;
+    },{passive:true});
+  });
+}
+
+/* ── Blur Dissolve Text ── */
+function initBlurText(){
+  document.querySelectorAll('.blur-in').forEach(function(el){
+    if(el.dataset.processed)return;
+    el.dataset.processed='1';
+    var text=el.textContent;
+    while(el.firstChild)el.removeChild(el.firstChild);
+    var wrapper=document.createElement('span');
+    wrapper.style.display='inline';
+    for(var i=0;i<text.length;i++){
+      var span=document.createElement('span');
+      if(text[i]===' '){span.className='char char-space';span.innerHTML='&nbsp;';}
+      else{span.className='char';span.textContent=text[i];}
+      span.style.transitionDelay=(i*120)+'ms';
+      wrapper.appendChild(span);
+    }
+    el.appendChild(wrapper);
+  });
+}
+
+/* ── Painting Data ── */
+var PAINTINGS={
+  cezanne_apples_oranges:{t:'\uc0ac\uacfc\uc640 \uc624\ub80c\uc9c0',e:'Still Life with Apples and Oranges',y:1899,d:'\uc138\uc794\uc758 \uc815\ubb3c\ud654 \uac78\uc791. \ubcf5\uc218 \uc2dc\uc810, \uc0c9\ucc44 \ubcc0\uc870, \ud328\uc2dc\uc9c0 \uae30\ubc95\uc774 \uc9d1\uc57d\ub41c \uc791\ud488',l:'Mus\u00e9e d\'Orsay, Paris'},
+  cezanne_basket_apples:{t:'\uc0ac\uacfc \ubc14\uad6c\ub2c8',e:'The Basket of Apples',y:1893,d:'\uc758\ub3c4\uc801\uc73c\ub85c \uae30\uc6b8\uc5b4\uc9c4 \ud14c\uc774\ube14\uacfc \ubcd1\uc774 \ub2e4\uc2dc\uc810 \uc2e4\ud5d8\uc744 \ubcf4\uc5ec\uc8fc\ub294 \ub300\ud45c\uc801 \uc815\ubb3c\ud654',l:'Art Institute of Chicago'},
+  cezanne_curtain_jug:{t:'\ucee4\ud2bc, \ubb3c\ubcd1, \uacfc\uc77c \uadf8\ub987',e:'Still Life with a Curtain',y:1894,d:'\ucc9c\uc758 \uc8fc\ub984\uc774 \uc0b0\ub9e5\ucc98\ub7fc \uad6c\uc870\uc801 \ud615\ud0dc\ub97c \uc774\ub8e8\ub294 \uc815\ubb3c\ud654. 1999\ub144 $60.5M \uacbd\ub9e4 \uae30\ub85d',l:'The Hermitage, St. Petersburg'},
+  cezanne_kitchen_table:{t:'\ubd80\uc5cc \ud14c\uc774\ube14',e:'The Kitchen Table',y:1890,d:'\uc77c\uc0c1\uc801 \ubd80\uc5cc \ud48d\uacbd\uc744 \uae30\ud558\ud559\uc801 \uad6c\uc870\ub85c \uc7ac\uad6c\uc131\ud55c \uc791\ud488',l:'Mus\u00e9e d\'Orsay, Paris'},
+  cezanne_blue_vase:{t:'\ud30c\ub780 \uaf43\ubcd1',e:'The Blue Vase',y:1890,d:'\ud30c\ub780\uc0c9\uacfc \ub530\ub73b\ud55c \uc0c9\uc758 \ub300\ube44\ub85c \ud615\ud0dc\uac10\uc744 \ub9cc\ub4dc\ub294 \uc0c9\ucc44 \ubcc0\uc870\uc758 \uc804\ud615',l:'Mus\u00e9e d\'Orsay, Paris'},
+  cezanne_skulls:{t:'\ud574\uace8\uc774 \uc788\ub294 \uc815\ubb3c',e:'Still Life with Skull',y:1900,d:'\ubc14\ub2c8\ud0c0\uc2a4 \uc804\ud1b5\uc758 \uc138\uc794\uc2dd \uc7ac\ud574\uc11d. \ud574\uace8\uc870\ucc28 \uc0c9\uba74\uc73c\ub85c \uad6c\ucd95\ub41c\ub2e4',l:'Various museums'},
+  cezanne_apples_biscuits:{t:'\uc0ac\uacfc\uc640 \ube44\uc2a4\ud0b7',e:'Apples and Biscuits',y:1895,d:'\uc18c\ubc15\ud55c \uc18c\uc7ac\ub97c \uc0c9\ucc44\uc758 \uac74\ucd95\ubb3c\ub85c \ubcc0\ud658\ud55c \uc815\ubb3c\ud654',l:'Mus\u00e9e de l\'Orangerie, Paris'},
+  cezanne_card_players_5:{t:'\uce74\ub4dc \ub180\uc774\ud558\ub294 \uc0ac\ub78c\ub4e4 (5\uc778)',e:'The Card Players',y:1890,d:'\uce74\ub4dc\ub180\uc774 \uc5f0\uc791\uc758 \ucd08\uae30 \ubc84\uc804. 5\uba85\uc758 \uc778\ubb3c\uc774 \ub4f1\uc7a5\ud558\ub294 \uad70\uc0c1 \uad6c\ub3c4',l:'Barnes Foundation, Philadelphia'},
+  cezanne_card_players_2:{t:'\uce74\ub4dc \ub180\uc774\ud558\ub294 \uc0ac\ub78c\ub4e4',e:'The Card Players',y:1893,d:'5\uac1c \ubc84\uc804 \uc911 \uac00\uc7a5 \uc815\uc81c\ub41c 2\uc778 \uad6c\ub3c4. 2011\ub144 \uce74\ud0c0\ub974 \uc655\uc2e4\uc774 \uc57d $250M\uc5d0 \uad6c\ub9e4',l:'Mus\u00e9e d\'Orsay, Paris'},
+  cezanne_boy_red_vest:{t:'\ube68\uac04 \uc870\ub07c\uc758 \uc18c\ub144',e:'Boy in a Red Vest',y:1890,d:'\uc758\ub3c4\uc801\uc73c\ub85c \ub298\uc5b4\ub09c \ud314\uc774 \ud654\uba74\uc758 \ub9ac\ub4ec\uc744 \ub9cc\ub4dc\ub294 \ucd08\uc0c1\ud654. 2008\ub144 \ub3c4\ub09c \ud6c4 \ud68c\uc218',l:'Foundation E.G. B\u00fchrle, Zurich'},
+  cezanne_self_portrait:{t:'\uc790\ud654\uc0c1',e:'Self-Portrait',y:1885,d:'\uc138\uc794\uc758 \ub0b4\uc131\uc801\uc774\uace0 \uc644\uac15\ud55c \uc131\uaca9\uc774 \ub4dc\ub7ec\ub098\ub294 \uc790\ud654\uc0c1',l:'Mus\u00e9e d\'Orsay, Paris'},
+  cezanne_vollard_portrait:{t:'\ubcfc\ub77c\ub974 \ucd08\uc0c1\ud654',e:'Portrait of Ambroise Vollard',y:1899,d:'115\ud68c \ud3ec\uc988 \ud6c4\uc5d0\ub3c4 \uc644\uc131\ud558\uc9c0 \ubabb\ud55c \ucd08\uc0c1\ud654. \uc138\uc794\uc758 \uc644\ubcbd\uc8fc\uc758\ub97c \uc0c1\uc9d5',l:'Petit Palais, Paris'},
+  cezanne_madame_cezanne:{t:'\uc138\uc794 \ubd80\uc778\uc758 \ucd08\uc0c1',e:'Madame C\u00e9zanne',y:1890,d:'\uc544\ub0b4 \uc624\ub974\ud0d5\uc2a4\uc758 \ucd08\uc0c1. 26\uc810\uc758 \ucd08\uc0c1\ud654\ub97c \uadf8\ub838\uc9c0\ub9cc \uac10\uc815 \ud45c\ud604\uc740 \uadf9\ub3c4\ub85c \uc808\uc81c',l:'Various museums'},
+  cezanne_sainte_victoire_bellevue:{t:'\uc0dd\ud2b8\ube45\ud22c\uc544\ub974 \uc0b0',e:'Mont Sainte-Victoire from Bellevue',y:1885,d:'\uc0dd\ud2b8\ube45\ud22c\uc544\ub974 \uc5f0\uc791\uc758 \ucd08\uae30\uc791. \uad6c\uc870\uc801 \ud48d\uacbd\ud654\uc758 \uc2dc\uc791',l:'Barnes Foundation, Philadelphia'},
+  cezanne_sainte_victoire_pine:{t:'\uc0dd\ud2b8\ube45\ud22c\uc544\ub974 \uc0b0\uacfc \uc18c\ub098\ubb34',e:'Mont Sainte-Victoire with Large Pine',y:1887,d:'\uc18c\ub098\ubb34 \uac00\uc9c0\uac00 \ud504\ub808\uc784 \uc5ed\ud560\uc744 \ud558\ub294 \uc0dd\ud2b8\ube45\ud22c\uc544\ub974 \uc0b0\uc758 \ub300\ud45c\uc801 \uad6c\ub3c4',l:'Courtauld Gallery, London'},
+  cezanne_sainte_victoire_lauves:{t:'\uc0dd\ud2b8\ube45\ud22c\uc544\ub974 \uc0b0, \ub85c\ube0c\uc5d0\uc11c',e:'Mont Sainte-Victoire from Les Lauves',y:1904,d:'\ub9cc\ub144\uc758 \uc0dd\ud2b8\ube45\ud22c\uc544\ub974. \ud615\ud0dc\uac00 \uc0c9\uba74\uc73c\ub85c \ud574\uccb4\ub418\uba70 \ucd94\uc0c1\uc5d0 \uac00\uae4c\uc6cc\uc9c4\ub2e4',l:'Philadelphia Museum of Art'},
+  cezanne_estaque:{t:'\uc5d0\uc2a4\ud0c1\uc758 \ubc14\ub2e4',e:'The Sea at L\'Estaque',y:1885,d:'\uc9c0\uc911\ud574 \uc5f0\uc548 \ub9c8\uc744 \uc5d0\uc2a4\ud0c1\uc758 \ud48d\uacbd. 20\ub144 \ud6c4 \ube0c\ub77c\ud06c\uac00 \uac19\uc740 \uc7a5\uc18c\uc5d0\uc11c \ud050\ube44\uc998\uc744 \ud0c4\uc0dd\uc2dc\ud0a8\ub2e4',l:'Metropolitan Museum of Art, New York'},
+  cezanne_maison_pendu:{t:'\ubaa9\ub9e8 \uc790\uc758 \uc9d1',e:'The House of the Hanged Man',y:1873,d:'\ud53c\uc0ac\ub85c\uc640 \uad50\ub958\ud558\ub358 \uc2dc\uae30\uc758 \uc791\ud488. 1874\ub144 \uc81c1\ud68c \uc778\uc0c1\uc8fc\uc758 \uc804\uc2dc\uc5d0 \ucd9c\ud488',l:'Mus\u00e9e d\'Orsay, Paris'},
+  cezanne_bibemus_quarry:{t:'\ube44\ubca0\ubba4\uc2a4 \ucc44\uc11d\uc7a5',e:'Bibemus Quarry',y:1895,d:'\ucc44\uc11d\uc7a5\uc758 \uae30\ud558\ud559\uc801 \uc554\uc11d\uc774 \uc138\uc794\uc758 \uad6c\uc870\uc801 \uc2dc\uac01\uc744 \uadf9\uba85\ud558\uac8c \ubcf4\uc5ec\uc900\ub2e4',l:'Barnes Foundation, Philadelphia'},
+  cezanne_chateau_noir:{t:'\uc0e4\ud1a0 \ub204\uc544\ub974',e:'Ch\u00e2teau Noir',y:1904,d:'\uc575\uc0c1\ud504\ub85c\ubc29\uc2a4 \uadfc\uad50\uc758 \ubc84\ub824\uc9c4 \uc131. \uc5b4\ub450\uc6b4 \uc0c9\uc870\uc640 \uc5ed\ub3d9\uc801 \uad6c\uc870\uc758 \ub9cc\ub144 \ud48d\uacbd\ud654',l:'National Gallery of Art, Washington D.C.'},
+  cezanne_pont_maincy:{t:'\uba69\uc2dc\uc758 \ub2e4\ub9ac',e:'The Bridge at Maincy',y:1879,d:'\uc791\uc740 \ub2e4\ub9ac\uc640 \ubb3c\uc758 \ubc18\uc601\uc744 \uae30\ud558\ud559\uc801\uc73c\ub85c \ub2e8\uc21c\ud654\ud55c \ud48d\uacbd\ud654',l:'Mus\u00e9e d\'Orsay, Paris'},
+  cezanne_grandes_baigneuses:{t:'\ub300\uc218\uc695\ub3c4',e:'The Large Bathers',y:1906,d:'\uc138\uc794\uc758 \ub9c8\uc9c0\ub9c9 \ub300\uc791. \uc778\uccb4, \ub098\ubb34, \ud558\ub298\uc774 \ud558\ub098\uc758 \uac74\ucd95\uc801 \uad6c\uc870\ub85c \ud1b5\ud569\ub41c\ub2e4',l:'Philadelphia Museum of Art'},
+  cezanne_bathers_rest:{t:'\ubaa9\uc695\ud558\ub294 \uc0ac\ub78c\ub4e4\uc758 \ud734\uc2dd',e:'Bathers at Rest',y:1877,d:'\ucd08\uae30 \uc218\uc695\ub3c4 \uc911 \ud558\ub098. \uace0\uc804\uc801 \uc8fc\uc81c\ub97c \ud604\ub300\uc801 \uc2dc\uac01\uc73c\ub85c \uc7ac\ud574\uc11d',l:'Barnes Foundation, Philadelphia'},
+  cezanne_sainte_victoire_bibemus:{t:'\uc0dd\ud2b8\ube45\ud22c\uc544\ub974 \uc0b0, \ube44\ubca0\ubba4\uc2a4\uc5d0\uc11c',e:'Mont Sainte-Victoire from Bib\u00e9mus',y:1897,d:'\ucc44\uc11d\uc7a5\uc5d0\uc11c \ubc14\ub77c\ubcf8 \uc0dd\ud2b8\ube45\ud22c\uc544\ub974',l:'Baltimore Museum of Art'},
+  cezanne_sainte_victoire_late:{t:'\uc0dd\ud2b8\ube45\ud22c\uc544\ub974 \uc0b0 (\ub9cc\ub144)',e:'Mont Sainte-Victoire (Late)',y:1906,d:'\ud615\ud0dc\uac00 \uc0c9\ucc44 \uc548\uc73c\ub85c \uc6a9\ud574\ub41c \ub9cc\ub144\uc758 \uc0dd\ud2b8\ube45\ud22c\uc544\ub974. \ucd94\uc0c1\ubbf8\uc220\uc758 \ubb38\ud131',l:'Various museums'},
+  braque_estaque:{t:'\uc5d0\uc2a4\ud0c1\uc758 \uc9d1\ub4e4 (\ube0c\ub77c\ud06c)',e:'Houses at l\'Estaque',y:1908,d:'\uc870\ub974\uc8fc \ube0c\ub77c\ud06c\uac00 \uc138\uc794\uc758 \uc5d0\uc2a4\ud0c1\uc744 \uc7ac\ubc29\ubb38\ud558\uc5ec \uadf8\ub9b0 \ud050\ube44\uc998\uc758 \uc2dc\ubc1c\uc810',l:'Kunstmuseum Bern'}
+};
+
+function showPainting(id){
+  var p=PAINTINGS[id];
+  if(!p)return;
+  document.getElementById('ppImg').src='../../assets/images/paintings/cezanne/web/'+id+'.jpg';
+  document.getElementById('ppTitle').textContent=p.t;
+  document.getElementById('ppSub').textContent=p.e+' ('+p.y+')';
+  document.getElementById('ppDesc').textContent=p.d;
+  document.getElementById('ppLoc').textContent='\uD83D\uDCCD '+p.l;
+  document.getElementById('paintPopup').classList.add('open');
+}
+function closePainting(){
+  document.getElementById('paintPopup').classList.remove('open');
+}
+
+/* ── POSTER MINI POPUP ── */
+function openPoster(imgEl){
+  var card=imgEl.closest('.film-card')||imgEl.closest('.book-item');
+  if(!card)return;
+  var title='',sub='';
+  var ft=card.querySelector('.film-title');
+  var fk=card.querySelector('.film-title-ko');
+  var fm=card.querySelector('.film-meta');
+  var bt=card.querySelector('.book-title');
+  var ba=card.querySelector('.book-author');
+  if(ft){title=ft.textContent;sub=(fk?fk.textContent+' \u00b7 ':'')+((fm)?fm.textContent:'');}
+  if(bt){title=bt.textContent;sub=ba?ba.textContent:'';}
+  document.getElementById('posterImg').src=imgEl.src;
+  document.getElementById('posterTitle').textContent=title;
+  document.getElementById('posterSub').textContent=sub;
+  document.getElementById('posterPopup').classList.add('open');
+}
+function closePoster(){
+  document.getElementById('posterPopup').classList.remove('open');
+}
+document.querySelectorAll('.film-poster,.book-cover').forEach(function(img){
+  img.addEventListener('click',function(e){e.stopPropagation();openPoster(this);});
+});
+
+/* ── INTERACTIVE: S8 Perspective Toggle ── */
+function togglePerspective(){
+  var overlay=document.getElementById('perspOverlay');
+  var btn=document.getElementById('perspBtn');
+  overlay.classList.toggle('visible');
+  btn.classList.toggle('active');
+  btn.innerHTML=overlay.classList.contains('visible')?'&#128270; \uc2dc\uc810 \ubd84\uc11d \uc228\uae30\uae30':'&#128270; \uc2dc\uc810 \ubd84\uc11d \ubcf4\uae30';
+}
+
+/* ── INTERACTIVE: S9 Modulation ── */
+function updateModulation(val){
+  var img=document.getElementById('modulationImg');
+  if(img)img.style.filter='hue-rotate('+val+'deg)';
+  var disp=document.getElementById('modulationValue');
+  if(disp)disp.textContent=val+'\u00b0';
+}
+
+/* ── INTERACTIVE: S10 Geometry Toggle ── */
+function toggleGeometry(){
+  var overlay=document.getElementById('geoOverlay');
+  var btn=document.getElementById('geoBtn');
+  overlay.classList.toggle('visible');
+  btn.classList.toggle('active');
+  btn.innerHTML=overlay.classList.contains('visible')?'&#128316; \uae30\ud558\ud559 \uc624\ubc84\ub808\uc774 \uc228\uae30\uae30':'&#128316; \uae30\ud558\ud559 \uc624\ubc84\ub808\uc774 \ubcf4\uae30';
+}
+
+/* ── CROSSFADE GALLERIES ── */
+function initCrossfade(){
+  document.querySelectorAll('.crossfade-gallery').forEach(function(gal){
+    var imgs=gal.querySelectorAll('img');
+    if(imgs.length===0)return;
+    var current=0;
+    imgs[0].classList.add('cf-active');
+    setInterval(function(){
+      imgs[current].classList.remove('cf-active');
+      current=(current+1)%imgs.length;
+      imgs[current].classList.add('cf-active');
+    },5000);
+  });
+}
+
+/* ── INIT ── */
+initBlurText();
+buildDots();
+document.getElementById('tn').textContent=total;
+document.getElementById('bp').disabled=true;
+document.getElementById('pbar').style.width='0%';
+initCover();
+setupScrollObserver();
+setupTopbarHide();
+initCrossfade();
+triggerReveals(document.getElementById('s0'));
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

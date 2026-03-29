@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>창의력 100강 이미지 검증</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Pretendard', -apple-system, sans-serif; background:#f5f5f7; color:#1d1d1f; padding:16px; }
+
+  h1 { text-align:center; font-size:1.6rem; margin:8px 0 4px; }
+  .subtitle { text-align:center; color:#666; font-size:.85rem; margin-bottom:12px; }
+
+  /* ── Summary bar ── */
+  .summary-bar {
+    display:flex; gap:12px; justify-content:center; align-items:center;
+    flex-wrap:wrap; padding:10px 16px; background:#fff; border-radius:12px;
+    box-shadow:0 1px 4px rgba(0,0,0,.08); margin-bottom:14px; font-size:.9rem;
+  }
+  .summary-bar .count { font-weight:700; }
+  .summary-bar .ok   { color:#16a34a; }
+  .summary-bar .bad  { color:#dc2626; }
+  .summary-bar .none { color:#9ca3af; }
+
+  /* ── Number grid ── */
+  .grid {
+    display:grid; grid-template-columns:repeat(10,1fr); gap:4px;
+    max-width:600px; margin:0 auto 16px;
+  }
+  .grid button {
+    aspect-ratio:1; border:none; border-radius:6px; font-weight:700;
+    font-size:.85rem; cursor:pointer; transition:.15s;
+    background:#d1d5db; color:#374151;
+  }
+  .grid button:hover { filter:brightness(.92); }
+  .grid button.active { outline:3px solid #3b82f6; outline-offset:1px; }
+  .grid button.ok  { background:#86efac; color:#14532d; }
+  .grid button.bad { background:#fca5a5; color:#7f1d1d; }
+
+  /* ── Detail panel ── */
+  .detail {
+    background:#fff; border-radius:14px; box-shadow:0 2px 8px rgba(0,0,0,.08);
+    padding:20px; max-width:1100px; margin:0 auto 16px; display:none;
+  }
+  .detail.show { display:block; }
+
+  .detail-title {
+    text-align:center; font-size:1.25rem; font-weight:700; margin-bottom:14px;
+  }
+  .detail-title span { color:#6366f1; }
+
+  .detail-body { display:flex; gap:20px; flex-wrap:wrap; }
+
+  .images-col { flex:1 1 55%; display:grid; grid-template-columns:1fr 1fr; gap:8px; min-width:280px; }
+  .images-col img {
+    width:100%; border-radius:8px; cursor:pointer; background:#eee;
+    aspect-ratio:1; object-fit:cover;
+  }
+  .images-col img:hover { box-shadow:0 0 0 3px #6366f1; }
+
+  .info-col { flex:1 1 35%; min-width:220px; }
+  .expect-box {
+    background:#fef9c3; border-left:4px solid #eab308; padding:12px 14px;
+    border-radius:0 8px 8px 0; margin-bottom:14px; font-size:.9rem; line-height:1.6;
+  }
+  .expect-box strong { display:block; margin-bottom:4px; }
+
+  .art-box {
+    background:#ede9fe; border-left:4px solid #8b5cf6; padding:12px 14px;
+    border-radius:0 8px 8px 0; font-size:.85rem; line-height:1.5; margin-bottom:14px;
+  }
+  .art-box strong { display:block; margin-bottom:4px; }
+
+  /* ── Action buttons ── */
+  .actions { display:flex; gap:10px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
+  .actions button {
+    padding:10px 28px; border:none; border-radius:8px; font-size:1rem;
+    font-weight:700; cursor:pointer; transition:.15s;
+  }
+  .btn-ok  { background:#22c55e; color:#fff; }
+  .btn-ok:hover  { background:#16a34a; }
+  .btn-bad { background:#ef4444; color:#fff; }
+  .btn-bad:hover { background:#dc2626; }
+  .btn-skip { background:#e5e7eb; color:#374151; }
+  .btn-skip:hover { background:#d1d5db; }
+
+  /* ── Wrong list ── */
+  .wrong-section {
+    max-width:1100px; margin:0 auto 20px; background:#fff;
+    border-radius:14px; box-shadow:0 2px 8px rgba(0,0,0,.08); padding:16px 20px;
+    display:none;
+  }
+  .wrong-section.show { display:block; }
+  .wrong-section h3 { margin-bottom:8px; color:#dc2626; }
+  .wrong-list { list-style:none; display:flex; flex-wrap:wrap; gap:6px; }
+  .wrong-list li {
+    background:#fee2e2; padding:4px 10px; border-radius:6px; font-size:.85rem;
+    cursor:pointer; color:#991b1b;
+  }
+  .wrong-list li:hover { background:#fca5a5; }
+
+  .copy-btn {
+    margin-top:10px; padding:8px 20px; background:#374151; color:#fff;
+    border:none; border-radius:8px; cursor:pointer; font-size:.85rem;
+  }
+  .copy-btn:hover { background:#1f2937; }
+
+  /* ── Fullscreen overlay ── */
+  .overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:999;
+    display:none; align-items:center; justify-content:center; cursor:zoom-out;
+  }
+  .overlay.show { display:flex; }
+  .overlay img { max-width:92vw; max-height:92vh; border-radius:8px; }
+
+  /* ── Reset button ── */
+  .tool-bar { display:flex; gap:8px; justify-content:center; margin-bottom:14px; flex-wrap:wrap; }
+  .tool-bar button {
+    padding:6px 14px; border:1px solid #d1d5db; background:#fff;
+    border-radius:6px; font-size:.8rem; cursor:pointer; color:#374151;
+  }
+  .tool-bar button:hover { background:#f3f4f6; }
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<h1>창의력 100강 이미지 검증</h1>
+<p class="subtitle">각 수업의 활동지 이미지가 주제와 맞는지 확인하세요</p>
+
+<div class="summary-bar" id="summaryBar">
+  <span>검증: <span class="count" id="totalDone">0</span>/100</span>
+  <span class="ok">맞음: <span class="count" id="totalOk">0</span></span>
+  <span class="bad">틀림: <span class="count" id="totalBad">0</span></span>
+  <span class="none">미확인: <span class="count" id="totalNone">100</span></span>
+</div>
+
+<div class="tool-bar">
+  <button onclick="jumpToNext('none')">다음 미확인으로</button>
+  <button onclick="jumpToNext('bad')">다음 틀림으로</button>
+  <button onclick="resetAll()">전체 초기화</button>
+</div>
+
+<div class="grid" id="numGrid"></div>
+
+<div class="detail" id="detailPanel">
+  <div class="detail-title" id="detailTitle"></div>
+  <div class="detail-body">
+    <div class="images-col" id="imageGrid"></div>
+    <div class="info-col">
+      <div class="expect-box" id="expectBox"></div>
+      <div class="art-box" id="artBox"></div>
+    </div>
+  </div>
+  <!-- 메모 입력 -->
+  <div style="margin:12px 0;padding:10px;background:#fffbeb;border:1px solid #f59e0b;border-radius:10px;">
+    <label style="font-size:12px;font-weight:bold;color:#92400e;">📝 실제 보이는 이미지 내용 (메모):</label>
+    <textarea id="memoInput" rows="2" placeholder="예: 숟가락이 보임, 구름이 아닌 전화기 이미지..."
+      style="width:100%;margin-top:6px;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:vertical;"
+      oninput="saveMemo()"></textarea>
+  </div>
+  <div class="actions">
+    <button class="btn-ok"  onclick="mark(true)">✅ 맞음</button>
+    <button class="btn-bad" onclick="mark(false)">❌ 틀림</button>
+    <button class="btn-skip" onclick="advance()">건너뛰기 &rarr;</button>
+  </div>
+</div>
+
+<div class="wrong-section" id="wrongSection">
+  <h3>❌ 틀림 목록 (메모 포함)</h3>
+  <ul class="wrong-list" id="wrongList"></ul>
+  <button class="copy-btn" onclick="copyWrong()">📋 틀림 목록 + 메모 복사</button>
+</div>
+
+<!-- Fullscreen image -->
+<div class="overlay" id="overlay" onclick="this.classList.remove('show')">
+  <img id="overlayImg">
+</div>
+
+<script src="../../assets/data/creativity-data.js"></script>
+<script>
+/* ============================================================
+ *  Expected image descriptions for ALL 100 lessons
+ * ============================================================ */
+const EXPECTED = {
+  1:  "흰 배경에 검은 점 하나. 점에서 시작해 다양한 것으로 변신시키는 활동지.",
+  2:  "가위나 도구의 아래쪽 부분(실루엣)만 보이는 이미지. 네거티브 스페이스 활용.",
+  3:  "톱니바퀴 조각이나 찢어진 사진 파편이 한쪽에 있고, 나머지를 이어 그리는 활동지.",
+  4:  "정체를 알 수 없는 그림자/실루엣. 그림자의 주인을 상상해서 그리는 활동지.",
+  5:  "음파 형태의 구불구불한 선이 있는 이미지. 소리를 시각적 형태로 변환하는 활동지.",
+  6:  "알파벳이나 글자 획(스트로크)이 보이는 이미지. 글자를 몬스터로 변신시키는 활동지.",
+  7:  "구겨진 종이의 주름/능선 선이 있는 이미지. 주름에서 산맥이나 풍경을 발견하는 활동지.",
+  8:  "거꾸로 뒤집힌 사물이나 풍경 이미지. 뒤집어서 관찰하며 새롭게 그리는 활동지.",
+  9:  "미완성 도형(원, 삼각형 일부 등)이 있는 이미지. 도형을 완성하며 릴레이하는 활동지.",
+  10: "한 가지 질감(나무, 돌, 천 등)이 다른 사물에 적용된 이미지. 질감 전이/스왑 활동지.",
+  11: "얼굴의 왼쪽 반만 그려진 이미지. 나머지 반쪽을 자유롭게 완성하는 활동지.",
+  12: "세포나 미시 세계의 확대된 형태 이미지. 현미경으로 본 듯한 구조를 그리는 활동지.",
+  13: "추상적인 형태에 감정의 색을 입히는 이미지. 감정을 색과 형태로 표현하는 활동지.",
+  14: "가방이나 상자의 외곽선 이미지. 엑스레이처럼 내부를 상상해서 그리는 활동지.",
+  15: "낙서나 스크리블이 있는 이미지. 낙서를 구출해서 완성된 그림으로 만드는 활동지.",
+  16: "두 동물이 합쳐진 하이브리드 생명체 이미지. 서로 다른 생물을 합치는 활동지.",
+  17: "지도의 일부 또는 지도 형태의 이미지. 지도를 재구성/재해석하는 활동지.",
+  18: "글자 안에 풍경이 담긴 이미지. 문자 내부에 세계를 그리는 활동지.",
+  19: "미래에서 온 듯한 유물/오브젝트 이미지. 미래 유물을 발굴하고 해석하는 활동지.",
+  20: "모자, 신발, 안경만 보이고 사람은 투명한 이미지. 투명 인간의 하루를 그리는 활동지.",
+  21: "버려지거나 소외된 사물(낡은 의자, 잃어버린 장갑 등) 이미지. 사물의 일기를 그리는 활동지.",
+  22: "고대 그림 문자나 상형문자 형태 이미지. 그림 문자를 해독/재해석하는 활동지.",
+  23: "도시의 도로망이나 혈관 같은 네트워크 이미지. 도시를 혈관처럼 표현하는 활동지.",
+  24: "투명한 유리, 물, 얼음 같은 사물의 색 이미지. 투명한 것에 색을 부여하는 활동지.",
+  25: "벽이나 울타리에 구멍이 있는 이미지. 구멍 너머 세상을 상상하는 활동지.",
+  26: "소리와 색이 결합된 이미지. 색칠하면서 소리를 상상하는 활동지.",
+  27: "거인이 쓸 법한 거대한 물건 이미지. 거인의 소지품을 상상해서 그리는 활동지.",
+  28: "중력이 반전된 세상(물건이 떠오르는) 이미지. 뒤집힌 중력 세상을 그리는 활동지.",
+  29: "날씨와 감정이 결합된 이미지. 감정을 날씨로 표현하는 활동지.",
+  30: "물방울 안에 우주나 세계가 담긴 이미지. 작은 물방울 속 우주를 그리는 활동지.",
+  31: "시간의 층이 쌓인(지층처럼) 이미지. 과거-현재-미래가 겹친 활동지.",
+  32: "그림자가 괴물 형태를 이루는 이미지. 그림자로 괴물을 만드는 활동지.",
+  33: "맛(달콤, 짠맛, 신맛 등)을 시각화한 이미지. 맛을 색과 형태로 표현하는 활동지.",
+  34: "가구(의자, 테이블 등)가 밖에 나온 이미지. 가구의 외출 장면을 그리는 활동지.",
+  35: "구겨진 형태의 그림자 이미지. 구겨진 그림자를 해석하는 활동지.",
+  36: "별과 밤하늘 이미지. 나만의 별자리를 만드는 활동지.",
+  37: "사물(과일, 기계 등)의 단면/절단면 이미지. 사물의 내부를 그리는 활동지.",
+  38: "냄새가 길처럼 퍼지는 이미지. 냄새의 경로를 시각화하는 활동지.",
+  39: "숫자가 다른 형태로 변신하는 이미지. 숫자를 캐릭터나 사물로 바꾸는 활동지.",
+  40: "거울 속에 다른 세상이 비치는 이미지. 거울 너머 세계를 그리는 활동지.",
+  41: "그림자가 주인과 다른 행동을 하는 이미지. 그림자의 반란을 그리는 활동지.",
+  42: "픽셀 아트 또는 모자이크 형태 이미지. 픽셀로 세상을 표현하는 활동지.",
+  43: "사물에 말풍선이 달린 이미지. 사물의 목소리/대사를 상상하는 활동지.",
+  44: "구름이나 하늘 관련 이미지. 구름 모양에서 형상을 찾는 활동지.",
+  45: "도구(연필, 가위, 망치 등)가 변형/진화하는 이미지. 도구의 진화를 그리는 활동지.",
+  46: "다양한 질감(거친, 부드러운, 울퉁불퉁)이 오케스트라처럼 배열된 이미지.",
+  47: "배경에 숨어있는 사물/동물 이미지. 위장술/카무플라주 활동지.",
+  48: "지도 형태에 기억이 담긴 이미지. 기억의 장소를 지도로 만드는 활동지.",
+  49: "돋보기로 확대한 세계 이미지. 돋보기 여행을 하며 발견하는 활동지.",
+  50: "발명품의 절반만 보이는 이미지. 나머지 반쪽을 발명하는 활동지.",
+  51: "공중에 떠 있는 조각/오브젝트 이미지. 중력을 이기는 구조물 활동지.",
+  52: "한 화면에 사계절이 공존하는 이미지. 봄여름가을겨울이 함께 있는 활동지.",
+  53: "단추가 우주처럼 배열된 이미지. 단추로 우주를 만드는 활동지.",
+  54: "이름/글자로 건축물을 만든 이미지. 자기 이름으로 건물을 설계하는 활동지.",
+  55: "피부 아래 내부가 보이는 투명 이미지. 투명한 피부 속 세상을 그리는 활동지.",
+  56: "지문 패턴이 미로처럼 된 이미지. 지문 안에 미로/길을 만드는 활동지.",
+  57: "단단한 사물이 액체처럼 녹는 이미지. 사물이 녹아내리는 장면 활동지.",
+  58: "비밀스러운 문이 있는 이미지. 문 너머 세상을 상상하는 활동지.",
+  59: "소리의 파동이 시각적으로 표현된 이미지. 파동 형태를 그리는 활동지.",
+  60: "미완성 지도에 빈 부분이 있는 이미지. 비어있는 부분을 완성하는 활동지.",
+  61: "사물들의 그림자가 쇼를 하는 이미지. 그림자 연극을 만드는 활동지.",
+  62: "숫자 0이 다양한 형태로 변신하는 이미지. 0의 가능성을 탐구하는 활동지.",
+  63: "식물이 거꾸로(뿌리가 위로) 자라는 이미지. 뒤집힌 식물 세계 활동지.",
+  64: "투명한 기계 동물(내부 톱니바퀴가 보이는) 이미지. 기계 동물을 설계하는 활동지.",
+  65: "감정이 패턴/문양으로 된 이미지. 감정별 패턴을 설계하는 활동지.",
+  66: "도시의 특징이 지문처럼 표현된 이미지. 도시만의 고유한 무늬 활동지.",
+  67: "냄새가 색깔로 표현된 이미지. 각 냄새에 색을 부여하는 활동지.",
+  68: "계절이 조각나서 섞인 이미지. 계절 조각을 재배열하는 활동지.",
+  69: "가구가 주변 환경에 숨어있는(위장한) 이미지. 가구를 위장시키는 활동지.",
+  70: "글자/문자 안에 풍경이 펼쳐지는 이미지. 텍스트 속 세계를 그리는 활동지.",
+  71: "창문 너머로 다른 차원이 보이는 이미지. 이차원 창문을 통해 보는 활동지.",
+  72: "미래의 동전이나 지폐 디자인 이미지. 미래 화폐를 디자인하는 활동지.",
+  73: "구겨진 종이가 산맥처럼 보이는 이미지. 종이 주름에서 산을 발견하는 활동지.",
+  74: "사물 내부가 투시된(엑스레이) 이미지. 사물 내부를 상상하는 활동지.",
+  75: "무중력 상태의 식탁(음식이 떠다니는) 이미지. 중력 없는 식사 장면 활동지.",
+  76: "콜라주에서 소리가 나는 듯한 이미지. 소리를 콜라주로 표현하는 활동지.",
+  77: "일상 물건이 거인 크기로 확대된 이미지. 거대한 일상용품을 그리는 활동지.",
+  78: "시간이 화석처럼 굳어진 이미지. 시간의 흔적을 화석으로 만드는 활동지.",
+  79: "거울에 반사된 것이 원본과 다른 이미지. 반사된 진실/왜곡을 그리는 활동지.",
+  80: "미완성 선이 질주하는 이미지. 선의 움직임을 따라 완성하는 활동지.",
+  81: "폭포가 위로 흐르는 이미지. 거꾸로 흐르는 물의 세계를 그리는 활동지.",
+  82: "사물의 뒷면/이면이 보이는 이미지. 보이지 않는 뒷면을 상상하는 활동지.",
+  83: "글자들이 나무처럼 자라는 숲 이미지. 글자 숲을 탐험하는 활동지.",
+  84: "소리가 미로의 벽을 이루는 이미지. 소리로 만든 미로를 탈출하는 활동지.",
+  85: "도시 건물이 주변과 하나가 된(위장한) 이미지. 도시의 위장술을 그리는 활동지.",
+  86: "그림자로 이루어진 도시의 밤 풍경 이미지. 그림자 도시를 그리는 활동지.",
+  87: "맛(음식)이 건축물 형태가 된 이미지. 맛으로 건물을 짓는 활동지.",
+  88: "투명한 지구의 내부가 보이는 이미지. 지구 단면을 상상하는 활동지.",
+  89: "시간대별로 다른 화풍이 적용된 이미지. 시간의 흐름을 그림으로 표현하는 활동지.",
+  90: "사물의 어린 시절 모습 이미지. 물건의 유년기를 상상하는 활동지.",
+  91: "중력이 장난치는(물건이 이상하게 움직이는) 이미지. 중력 장난 세상 활동지.",
+  92: "단추 안에 초상화가 들어있는 이미지. 작은 단추 안에 인물을 그리는 활동지.",
+  93: "냄새가 선이나 궤적으로 이동하는 이미지. 냄새의 이동 경로를 그리는 활동지.",
+  94: "기호(!?@# 등)가 반란을 일으키는 이미지. 기호를 캐릭터로 만드는 활동지.",
+  95: "차원이 없는(0차원) 창문 이미지. 차원의 개념을 시각화하는 활동지.",
+  96: "감정이 지질도(지층)처럼 쌓인 이미지. 감정의 층위를 지도로 그리는 활동지.",
+  97: "가구가 휴가를 떠난(해변의 의자 등) 이미지. 가구의 휴가 장면 활동지.",
+  98: "미래 식물이 도감 형태로 정리된 이미지. 미래 식물을 발명하는 활동지.",
+  99: "투명 인간이 남긴 흔적(발자국, 물컵 자국) 이미지. 보이지 않는 존재의 흔적 활동지.",
+  100:"냉장고 안에 기억이 담긴 이미지. 기억을 냉장고 안 물건으로 표현하는 활동지."
+};
+
+/* ============================================================ */
+let current = null;
+const state = {};  // { 1: true/false/undefined }
+
+// Restore from localStorage
+for (let i = 1; i <= 100; i++) {
+  const v = localStorage.getItem('creativity-verify-' + i);
+  if (v !== null) state[i] = v === 'true';
+}
+
+/* ── Build number grid ── */
+const grid = document.getElementById('numGrid');
+for (let i = 1; i <= 100; i++) {
+  const b = document.createElement('button');
+  b.textContent = i;
+  b.dataset.n = i;
+  b.onclick = () => selectLesson(i);
+  if (state[i] === true) b.classList.add('ok');
+  else if (state[i] === false) b.classList.add('bad');
+  grid.appendChild(b);
+}
+
+updateSummary();
+
+/* ── Select lesson ── */
+function selectLesson(n) {
+  current = n;
+  const guide = CREATIVITY_GUIDES[n];
+  const lesson = CREATIVITY_LESSONS[n - 1];
+  if (!guide || !lesson) return;
+
+  // Highlight grid
+  grid.querySelectorAll('button').forEach(b => b.classList.toggle('active', +b.dataset.n === n));
+
+  // Title
+  document.getElementById('detailTitle').innerHTML =
+    `<span>${n}강.</span> ${lesson.kr} (${lesson.en})`;
+
+  // Images
+  const imgGrid = document.getElementById('imageGrid');
+  imgGrid.innerHTML = '';
+  guide.images.forEach((fname, idx) => {
+    const img = document.createElement('img');
+    // Try thumbnail first (jpg in thumbs dir), fallback to full png
+    const thumbSrc = '../../images/100Creativity/thumbs/' + fname + '.jpg';
+    const fullSrc  = guide.imgBase + fname + '.png';
+    img.src = thumbSrc;
+    img.onerror = function() { this.src = fullSrc; this.onerror = null; };
+    img.alt = `${n}강 이미지 ${idx + 1}`;
+    img.title = '클릭하면 원본 크기로 봅니다';
+    img.onclick = () => showOverlay(fullSrc);
+    imgGrid.appendChild(img);
+  });
+
+  // Expected description
+  const expectBox = document.getElementById('expectBox');
+  const desc = EXPECTED[n] || `"${lesson.kr}" 주제에 맞는 이미지가 있어야 합니다.`;
+  expectBox.innerHTML = `<strong>기대하는 이미지:</strong>${desc}`;
+
+  // Art connection
+  const artBox = document.getElementById('artBox');
+  if (guide.artConnection) {
+    artBox.innerHTML = `<strong>연결 작가: ${guide.artConnection.artist}</strong>${guide.artConnection.work}`;
+    artBox.style.display = '';
+  } else {
+    artBox.style.display = 'none';
+  }
+
+  loadMemo(n);
+  document.getElementById('detailPanel').classList.add('show');
+  document.getElementById('detailPanel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+/* ── Memo ── */
+function saveMemo() {
+  if (current === null) return;
+  const txt = document.getElementById('memoInput').value;
+  localStorage.setItem('creativity-memo-' + current, txt);
+}
+function loadMemo(n) {
+  const txt = localStorage.getItem('creativity-memo-' + n) || '';
+  document.getElementById('memoInput').value = txt;
+}
+
+/* ── Mark ── */
+function mark(ok) {
+  if (current === null) return;
+  state[current] = ok;
+  localStorage.setItem('creativity-verify-' + current, ok);
+  saveMemo();
+
+  const btn = grid.querySelector(`button[data-n="${current}"]`);
+  btn.classList.remove('ok','bad');
+  btn.classList.add(ok ? 'ok' : 'bad');
+
+  updateSummary();
+  advance();
+}
+
+/* ── Advance to next ── */
+function advance() {
+  if (current === null) return;
+  const next = current < 100 ? current + 1 : null;
+  if (next) selectLesson(next);
+}
+
+/* ── Jump to next of type ── */
+function jumpToNext(type) {
+  const start = current || 0;
+  for (let i = 1; i <= 100; i++) {
+    const n = ((start - 1 + i) % 100) + 1;
+    if (type === 'none' && state[n] === undefined) { selectLesson(n); return; }
+    if (type === 'bad'  && state[n] === false)      { selectLesson(n); return; }
+  }
+  alert(type === 'none' ? '미확인 항목이 없습니다!' : '틀림 항목이 없습니다!');
+}
+
+/* ── Summary ── */
+function updateSummary() {
+  let ok = 0, bad = 0;
+  for (let i = 1; i <= 100; i++) {
+    if (state[i] === true) ok++;
+    else if (state[i] === false) bad++;
+  }
+  document.getElementById('totalDone').textContent = ok + bad;
+  document.getElementById('totalOk').textContent = ok;
+  document.getElementById('totalBad').textContent = bad;
+  document.getElementById('totalNone').textContent = 100 - ok - bad;
+
+  // Wrong list
+  const wrongSection = document.getElementById('wrongSection');
+  const wrongList = document.getElementById('wrongList');
+  wrongList.innerHTML = '';
+  let hasBad = false;
+  for (let i = 1; i <= 100; i++) {
+    if (state[i] === false) {
+      hasBad = true;
+      const li = document.createElement('li');
+      const memo = localStorage.getItem('creativity-memo-' + i) || '';
+      li.innerHTML = `<strong>${i}강</strong> ${CREATIVITY_LESSONS[i-1].kr}` +
+        (memo ? `<br><span style="color:#b45309;font-size:11px;">📝 ${memo}</span>` : '');
+      li.onclick = () => selectLesson(i);
+      wrongList.appendChild(li);
+    }
+  }
+  wrongSection.classList.toggle('show', hasBad);
+}
+
+/* ── Copy wrong list ── */
+function copyWrong() {
+  let text = '❌ 틀림 목록:\n';
+  for (let i = 1; i <= 100; i++) {
+    if (state[i] === false) {
+      const memo = localStorage.getItem('creativity-memo-' + i) || '';
+      text += `${i}강. ${CREATIVITY_LESSONS[i-1].kr} (${CREATIVITY_LESSONS[i-1].en})`;
+      if (memo) text += ` → 실제: ${memo}`;
+      text += '\n';
+    }
+  }
+  // 미확인(건너뛰기) 메모도 포함
+  let hasSkip = false;
+  for (let i = 1; i <= 100; i++) {
+    if (state[i] === undefined) {
+      const memo = localStorage.getItem('creativity-memo-' + i) || '';
+      if (memo) {
+        if (!hasSkip) { text += '\n⬜ 미확인 (메모 있음):\n'; hasSkip = true; }
+        text += `${i}강. ${CREATIVITY_LESSONS[i-1].kr} → 메모: ${memo}\n`;
+      }
+    }
+  }
+  navigator.clipboard.writeText(text).then(() => alert('클립보드에 복사되었습니다!'));
+}
+
+/* ── Reset all ── */
+function resetAll() {
+  if (!confirm('모든 검증 상태를 초기화하시겠습니까?')) return;
+  for (let i = 1; i <= 100; i++) {
+    delete state[i];
+    localStorage.removeItem('creativity-verify-' + i);
+    localStorage.removeItem('creativity-memo-' + i);
+  }
+  grid.querySelectorAll('button').forEach(b => b.classList.remove('ok','bad','active'));
+  document.getElementById('detailPanel').classList.remove('show');
+  current = null;
+  updateSummary();
+}
+
+/* ── Fullscreen overlay ── */
+function showOverlay(src) {
+  document.getElementById('overlayImg').src = src;
+  document.getElementById('overlay').classList.add('show');
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('overlay').classList.remove('show');
+  if (current === null) return;
+  if (e.key === 'ArrowRight' || e.key === 'n') advance();
+  if (e.key === 'ArrowLeft' && current > 1) selectLesson(current - 1);
+  if (e.key === 'y' || e.key === '1') mark(true);
+  if (e.key === 'x' || e.key === '0') mark(false);
+});
+
+// Auto-select lesson 1
+selectLesson(1);
+</script>
+</body>
+</html>

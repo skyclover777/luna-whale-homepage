@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>결제 완료 - Luna Whale Art Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+    <script src="/public/auth.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <style>body { font-family: 'Lexend', sans-serif; }</style>
+</head>
+<body class="bg-white min-h-screen flex items-center justify-center p-4">
+
+    <!-- Loading State -->
+    <div id="loading-state" class="text-center">
+        <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-slate-600 font-medium">결제 확인 중...</p>
+    </div>
+
+    <!-- Success State -->
+    <div id="success-state" class="hidden text-center max-w-sm w-full">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span class="material-symbols-outlined text-green-500 text-5xl">check_circle</span>
+        </div>
+        <h2 class="text-2xl font-black mb-2">결제 완료!</h2>
+        <p class="text-slate-500 mb-8">수업이 해금되었습니다. 바로 시작해 보세요!</p>
+        <button onclick="goToClass()"
+            class="w-full h-14 bg-blue-600 text-white rounded-2xl font-black text-lg shadow-xl">
+            수업으로 가기
+        </button>
+        <p class="mt-4 text-xs text-slate-400">Order ID: <span id="order-id">-</span></p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="hidden text-center max-w-sm w-full">
+        <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span class="material-symbols-outlined text-red-500 text-5xl">error</span>
+        </div>
+        <h2 class="text-2xl font-black mb-2">결제 확인 실패</h2>
+        <p class="text-slate-500 mb-4" id="error-message">결제 확인 중 문제가 발생했습니다.</p>
+        <button onclick="location.href='payment.html'"
+            class="w-full h-14 bg-slate-200 text-slate-700 rounded-2xl font-bold">
+            돌아가기
+        </button>
+    </div>
+
+    <script>
+        // Parse URL params (PortOne redirects with imp_uid & merchant_uid)
+        const params = new URLSearchParams(window.location.search);
+        const impUid = params.get('imp_uid');
+        const merchantUid = params.get('merchant_uid');
+        const impSuccess = params.get('imp_success');
+
+        function goToClass() {
+            // Extract classId from merchant_uid (format: LW_{classId}_{timestamp})
+            if (merchantUid) {
+                const parts = merchantUid.split('_');
+                const classId = parts.slice(1, -1).join('_');
+                window.location.href = `class-detail.html?id=${classId}`;
+            } else {
+                window.location.href = 'class-detail.html';
+            }
+        }
+
+        function showSuccess(orderId) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('success-state').classList.remove('hidden');
+            document.getElementById('order-id').textContent = '#' + orderId;
+        }
+
+        function showError(msg) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('error-state').classList.remove('hidden');
+            if (msg) document.getElementById('error-message').textContent = msg;
+        }
+
+        async function verifyPayment() {
+            if (!impUid || !merchantUid) {
+                showError('결제 정보가 없습니다.');
+                return;
+            }
+
+            // imp_success=false means user cancelled or payment failed at PG
+            if (impSuccess === 'false') {
+                showError('결제가 취소되었거나 실패했습니다.');
+                return;
+            }
+
+            // Wait for Firebase auth
+            firebase.auth().onAuthStateChanged(async (user) => {
+                if (!user) {
+                    showError('로그인이 필요합니다.');
+                    return;
+                }
+
+                try {
+                    // Extract classId from merchant_uid
+                    const parts = merchantUid.split('_');
+                    const classId = parts.slice(1, -1).join('_');
+                    // Detect payment method from merchant_uid or default
+                    const paymentMethod = params.get('payment_method') || 'kakaopay';
+
+                    const verify = firebase.functions().httpsCallable('verifyPortonePayment');
+                    const result = await verify({
+                        impUid: impUid,
+                        merchantUid: merchantUid,
+                        classId: classId,
+                        paymentMethod: paymentMethod
+                    });
+
+                    if (result.data.success) {
+                        showSuccess(impUid);
+                    } else {
+                        showError('결제 검증에 실패했습니다.');
+                    }
+                } catch (err) {
+                    console.error('Verification error:', err);
+                    showError('결제 확인 중 오류: ' + err.message);
+                }
+            });
+        }
+
+        verifyPayment();
+    </script>
+</body>
+</html>

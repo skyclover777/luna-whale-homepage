@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Planner Reset</title>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+    <h1>Resetting Your Planner...</h1>
+    <script>
+        localStorage.clear();
+        sessionStorage.clear();
+        document.body.innerHTML += '<p>All cached data cleared! Redirecting to login...</p>';
+        setTimeout(() => {
+            window.location.href = '../auth/login.html';
+        }, 1500);
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

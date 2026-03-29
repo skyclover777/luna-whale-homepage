@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html class="light" lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Luna Whale - Art Encyclopedia</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../../assets/data/i18n.js?v=0312-2330"></script>
+    <script src="../../assets/data/classes-data.js?v=0312-2330"></script>
+    <script src="../../assets/data/encyclopedia-data.js?v=0312-2330"></script>
+    <script src="../../assets/js/app.js?v=0312-2330"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#6C63FF",
+                        "primary-light": "#8B83FF",
+                        "background-light": "#FFF8F0",
+                        "background-dark": "#1a1a2e",
+                        "card-light": "#FFFFFF",
+                        "card-dark": "#16213e",
+                        "accent-pink": "#FF6B9D",
+                        "accent-mint": "#4ECDC4",
+                        "accent-yellow": "#FFE66D",
+                        "accent-peach": "#FFB088",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"],
+                        "korean": ["Jua", "sans-serif"],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background: #FFF8F0;
+        }
+
+        .dark body {
+            background: #1a1a2e;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Category Sidebar */
+        .ency-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 220px;
+            z-index: 50;
+            display: none;
+        }
+
+        @media (min-width: 1024px) {
+            .ency-sidebar {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .main-content {
+                margin-left: 220px;
+            }
+
+            .bottom-nav {
+                display: none !important;
+            }
+        }
+
+        /* Pinterest Masonry - denser */
+        .masonry-grid {
+            columns: 2;
+            column-gap: 0.75rem;
+        }
+
+        @media (min-width: 640px) {
+            .masonry-grid {
+                columns: 3;
+                column-gap: 0.75rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .masonry-grid {
+                columns: 3;
+                column-gap: 1rem;
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .masonry-grid {
+                columns: 4;
+                column-gap: 1rem;
+            }
+        }
+
+        @media (min-width: 1536px) {
+            .masonry-grid {
+                columns: 5;
+                column-gap: 1rem;
+            }
+        }
+
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        /* Compact Card */
+        .ency-card {
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .ency-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -8px rgba(108, 99, 255, 0.15);
+        }
+
+        .ency-card img {
+            max-height: 150px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        /* Sidebar nav item */
+        .ency-nav-item {
+            transition: all 0.2s ease;
+        }
+
+        .ency-nav-item.active {
+            background: linear-gradient(135deg, #6C63FF 0%, #8B83FF 100%);
+            color: white;
+            box-shadow: 0 4px 12px -4px rgba(108, 99, 255, 0.4);
+        }
+
+        .ency-nav-item:not(.active) {
+            color: #64748b;
+        }
+
+        .ency-nav-item:not(.active):hover {
+            background-color: rgba(108, 99, 255, 0.08);
+            color: #6C63FF;
+        }
+
+        /* Mobile category pills */
+        .mobile-cat-pill {
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-cat-pill.active {
+            background: linear-gradient(135deg, #6C63FF 0%, #8B83FF 100%);
+            color: white;
+            box-shadow: 0 2px 8px -2px rgba(108, 99, 255, 0.4);
+        }
+
+        /* Modal */
+        #ency-modal {
+            transition: opacity 0.3s ease;
+        }
+
+        #ency-modal.hidden {
+            display: none;
+            opacity: 0;
+        }
+
+        #ency-modal-content {
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #ency-modal.hidden #ency-modal-content {
+            transform: scale(0.9) translateY(20px);
+        }
+
+        /* Tag badge colors */
+        .tag-terms { background: #E8F5E9; color: #2E7D32; }
+        .tag-artists { background: #E3F2FD; color: #1565C0; }
+        .tag-materials { background: #FFF3E0; color: #E65100; }
+        .tag-techniques { background: #F3E5F5; color: #7B1FA2; }
+        .tag-movements { background: #FFF8E1; color: #F57F17; }
+        .tag-artworks { background: #FCE4EC; color: #C62828; }
+
+        .dark .tag-terms { background: #1B5E20; color: #A5D6A7; }
+        .dark .tag-artists { background: #0D47A1; color: #90CAF9; }
+        .dark .tag-materials { background: #BF360C; color: #FFCC80; }
+        .dark .tag-techniques { background: #4A148C; color: #CE93D8; }
+        .dark .tag-movements { background: #F57F17; color: #FFF9C4; }
+        .dark .tag-artworks { background: #B71C1C; color: #EF9A9A; }
+
+        /* Count badge */
+        .count-badge {
+            font-size: 10px;
+            min-width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            padding: 0 6px;
+            background: rgba(108, 99, 255, 0.1);
+            color: #6C63FF;
+            font-weight: 700;
+        }
+
+        .ency-nav-item.active .count-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        /* Broken image fallback */
+        .img-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0e6ff 0%, #e6f0ff 100%);
+            color: #6C63FF;
+            font-size: 2rem;
+            min-height: 100px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+    </style>
+<!-- luna-nav.js 제거: global-nav.js가 대체 -->
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+
+    <!-- Desktop Sidebar -->
+    <aside class="ency-sidebar bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-r border-slate-200/60 dark:border-slate-800/60">
+        <div class="p-5">
+            <a href="../../index.html"
+                class="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors mb-4 group">
+                <span class="material-symbols-outlined text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                <span class="text-xs font-bold uppercase tracking-wider">Back</span>
+            </a>
+            <a href="../../index.html" class="flex items-center gap-3 mb-6 hover:opacity-80 transition-opacity">
+                <img src="../../logo.png" alt="Luna Whale" class="w-9 h-9 object-contain rounded-xl">
+                <div>
+                    <div class="text-sm font-black text-primary leading-none">Luna Whale</div>
+                    <div class="text-[10px] text-slate-500 font-medium">Art Encyclopedia</div>
+                </div>
+            </a>
+        </div>
+
+        <nav class="flex-1 px-3 space-y-1 overflow-y-auto hide-scrollbar" id="sidebar-nav">
+            <a href="javascript:void(0)" onclick="filterEncy('All')"
+                class="ency-nav-item active flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-bold transition-all"
+                data-tag="All">
+                <span class="material-symbols-outlined text-[18px]">apps</span>
+                <span data-i18n="ency_all">All</span>
+                <span class="count-badge ml-auto" id="count-All">0</span>
+            </a>
+            <a href="javascript:void(0)" onclick="filterEncy('Terms')"
+                class="ency-nav-item flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-bold transition-all"
+                data-tag="Terms">
+                <span class="material-symbols-outlined text-[18px]">description</span>
+                <span data-i18n="ency_tag_terms">Terms</span>
+                <span class="count-badge ml-auto" id="count-Terms">0</span>
+            </a>
+            <a href="javascript:void(0)" onclick="filterEncy('Artists')"
+                class="ency-nav-item flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-bold transition-all"
+                data-tag="Artists">
+                <span class="material-symbols-outlined text-[18px]">person</span>
+                <span data-i18n="ency_tag_artists">Artists</span>
+                <span class="count-badge ml-auto" id="count-Artists">0</span>
+            </a>
+            <a href="javascript:void(0)" onclick="filterEncy('Materials')"
+                class="ency-nav-item flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-bold transition-all"
+                data-tag="Materials">
+                <span class="material-symbols-outlined text-[18px]">palette</span>
+                <span data-i18n="ency_tag_materials">Materials</span>
+                <span class="count-badge ml-auto" id="count-Materials">0</span>
+            </a>
+            <a href="javascript:void(0)" onclick="filterEncy('Techniques')"
+                class="ency-nav-item flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-bold transition-all"
+                data-tag="Techniques">
+                <span class="material-symbols-outlined text-[18px]">brush</span>
+                <span data-i18n="ency_tag_techniques">Techniques</span>
+                <span class="count-badge ml-auto" id="count-Techniques">0</span>
+            </a>
+            <a href="javascript:void(0)" onclick="filterEncy('Movements')"
+                class="ency-nav-item flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-bold transition-all"
+                data-tag="Movements">
+                <span class="material-symbols-outlined text-[18px]">history_edu</span>
+                <span data-i18n="ency_tag_movements">Movements</span>
+                <span class="count-badge ml-auto" id="count-Movements">0</span>
+            </a>
+            <a href="javascript:void(0)" onclick="filterEncy('Artworks')"
+                class="ency-nav-item flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-bold transition-all"
+                data-tag="Artworks">
+                <span class="material-symbols-outlined text-[18px]">wallpaper</span>
+                <span data-i18n="ency_tag_artworks">Artworks</span>
+                <span class="count-badge ml-auto" id="count-Artworks">0</span>
+            </a>
+        </nav>
+
+        <!-- Bottom controls -->
+        <div class="p-3 border-t border-slate-100 dark:border-slate-800 space-y-1">
+            <div class="relative" id="sidebar-lang-container">
+                <button onclick="lwToggleLang('lang-menu-ency-sidebar')"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">language</span>
+                    <span>Language</span>
+                </button>
+                <div id="lang-menu-ency-sidebar"
+                    class="absolute bottom-full left-0 mb-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl w-full py-1 z-50"
+                    style="display:none">
+                </div>
+            </div>
+            <button onclick="toggleEncyDarkMode()"
+                class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">contrast</span>
+                <span data-i18n="set_dark_mode">Dark Mode</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Bottom Nav (Mobile) -->
+    <nav class="bottom-nav fixed bottom-0 left-0 right-0 h-14 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 flex justify-around items-center z-50 lg:hidden">
+        <a href="../../index.html" class="flex flex-col items-center gap-0.5 text-slate-400 text-[10px]">
+            <span class="material-symbols-outlined text-xl">home</span>
+            Home
+        </a>
+        <a href="javascript:void(0)" onclick="filterEncy('All')" class="flex flex-col items-center gap-0.5 text-primary text-[10px] font-bold">
+            <span class="material-symbols-outlined text-xl">book</span>
+            Encyclopedia
+        </a>
+    </nav>
+
+    <!-- Mobile Header -->
+    <header class="lg:hidden sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-4 py-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <a href="../../index.html"
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                    <span class="material-symbols-outlined text-slate-600 text-lg">arrow_back</span>
+                </a>
+                <div class="flex items-center gap-2">
+                    <img src="../../logo.png" alt="Luna Whale" class="w-7 h-7 object-contain rounded-lg" />
+                    <span class="font-black text-sm text-primary">Art Encyclopedia</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <div class="relative">
+                    <button onclick="lwToggleLang('lang-menu-ency-mobile')"
+                        class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                        <span class="material-symbols-outlined text-slate-600 text-lg">language</span>
+                    </button>
+                    <div id="lang-menu-ency-mobile"
+                        class="absolute right-0 top-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl w-40 py-1 z-50"
+                        style="display:none">
+                    </div>
+                </div>
+                <button onclick="toggleEncyDarkMode()"
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                    <span class="material-symbols-outlined text-slate-600 text-lg">contrast</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile category pills (horizontal scroll) -->
+        <div class="flex gap-1.5 mt-2 overflow-x-auto hide-scrollbar pb-1" id="mobile-cats">
+            <button onclick="filterEncy('All')" data-tag="All"
+                class="mobile-cat-pill active px-3 py-1.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800">
+                <span data-i18n="ency_all">All</span>
+            </button>
+            <button onclick="filterEncy('Terms')" data-tag="Terms"
+                class="mobile-cat-pill px-3 py-1.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <span data-i18n="ency_tag_terms">Terms</span>
+            </button>
+            <button onclick="filterEncy('Artists')" data-tag="Artists"
+                class="mobile-cat-pill px-3 py-1.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <span data-i18n="ency_tag_artists">Artists</span>
+            </button>
+            <button onclick="filterEncy('Materials')" data-tag="Materials"
+                class="mobile-cat-pill px-3 py-1.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <span data-i18n="ency_tag_materials">Materials</span>
+            </button>
+            <button onclick="filterEncy('Techniques')" data-tag="Techniques"
+                class="mobile-cat-pill px-3 py-1.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <span data-i18n="ency_tag_techniques">Techniques</span>
+            </button>
+            <button onclick="filterEncy('Movements')" data-tag="Movements"
+                class="mobile-cat-pill px-3 py-1.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <span data-i18n="ency_tag_movements">Movements</span>
+            </button>
+            <button onclick="filterEncy('Artworks')" data-tag="Artworks"
+                class="mobile-cat-pill px-3 py-1.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <span data-i18n="ency_tag_artworks">Artworks</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content min-h-screen p-4 lg:p-8 pb-20 lg:pb-8">
+        <!-- Header + Search -->
+        <header class="max-w-[1600px] mx-auto mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+                <h2 class="text-2xl lg:text-3xl font-black mb-1 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent-pink font-korean"
+                    data-i18n="page_encyclopedia">Art Encyclopedia</h2>
+                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider" id="ency-subtitle">
+                    Explore & Learn
+                </p>
+            </div>
+            <div class="relative w-full sm:w-72">
+                <input type="text" id="ency-search" onkeyup="handleSearch(this.value)" data-i18n-ph="ency_search_ph"
+                    placeholder="Search art knowledge..."
+                    class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all text-sm font-medium">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+            </div>
+        </header>
+
+        <!-- Masonry Grid -->
+        <div id="ency-grid" class="masonry-grid max-w-[1600px] mx-auto">
+            <!-- Items injected by JS -->
+        </div>
+
+        <!-- Load more trigger -->
+        <div id="load-more-trigger" class="h-10 w-full flex items-center justify-center mt-6">
+            <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+
+        <!-- Empty state -->
+        <div id="ency-empty" class="hidden text-center py-16">
+            <span class="material-symbols-outlined text-5xl text-slate-300 mb-4 block">search_off</span>
+            <p class="text-slate-400 font-medium text-sm">No results found</p>
+        </div>
+    </main>
+
+    <!-- Detail Modal -->
+    <div id="ency-modal" class="fixed inset-0 z-[100] hidden px-3 md:px-6 overflow-y-auto">
+        <div class="fixed inset-0 bg-slate-950/60 backdrop-blur-md" onclick="closeModal()"></div>
+        <div class="flex min-h-full items-start justify-center py-6 md:py-10">
+            <div id="ency-modal-content"
+                class="relative w-full max-w-4xl bg-white dark:bg-slate-900 rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-2xl">
+                <!-- Close Btn -->
+                <button onclick="closeModal()"
+                    class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-md flex items-center justify-center text-white transition-all">
+                    <span class="material-symbols-outlined text-xl">close</span>
+                </button>
+
+                <!-- Left: Image -->
+                <div class="md:w-2/5 h-48 md:h-auto overflow-hidden relative flex-shrink-0">
+                    <img id="modal-img" src="" alt="" class="w-full h-full object-cover" loading="lazy"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="img-fallback w-full h-full hidden">
+                        <span class="material-symbols-outlined text-4xl">palette</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                    <div class="absolute bottom-4 left-4 right-4 text-white">
+                        <span id="modal-tag"
+                            class="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider mb-2"></span>
+                        <h3 id="modal-title" class="text-xl md:text-2xl font-black font-korean leading-tight"></h3>
+                    </div>
+                </div>
+
+                <!-- Right: Content -->
+                <div class="md:w-3/5 flex flex-col max-h-[70vh]">
+                    <div class="flex-1 overflow-y-auto p-6 md:p-8 hide-scrollbar">
+                        <div class="prose dark:prose-invert max-w-none">
+                            <p id="modal-content"
+                                class="text-sm leading-relaxed text-slate-600 dark:text-slate-400 font-medium"></p>
+                        </div>
+
+                        <!-- Related Classes -->
+                        <div id="related-section" class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 hidden">
+                            <h4 class="text-sm font-bold mb-3 flex items-center gap-1.5 text-slate-700 dark:text-slate-300" data-i18n="ency_related_classes">
+                                <span class="material-symbols-outlined text-primary text-lg">local_library</span>
+                                Recommended Classes
+                            </h4>
+                            <div id="related-classes" class="flex gap-3 overflow-x-auto pb-2 hide-scrollbar snap-x">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Implementation -->
+    <script>
+        (function () {
+            'use strict';
+
+            const LW_LANG = (typeof lwGetLang === 'function') ? lwGetLang() : 'ko';
+            let currentTag = 'All';
+            let currentData = [];
+            let loadedCount = 0;
+            const itemsPerChunk = 24;
+            let observer = null;
+
+            // --- Dark Mode ---
+            window.toggleEncyDarkMode = function () {
+                document.documentElement.classList.toggle('dark');
+                const isDark = document.documentElement.classList.contains('dark');
+                try { localStorage.setItem('lw-dark', isDark ? '1' : '0'); } catch (e) { }
+            };
+
+            // Restore dark mode on load
+            try {
+                if (localStorage.getItem('lw-dark') === '1') {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) { }
+
+            // --- Category counts ---
+            function updateCounts() {
+                const data = window.ENCY_DATA || [];
+                const allEl = document.getElementById('count-All');
+                if (allEl) allEl.textContent = data.length;
+
+                ['Terms', 'Artists', 'Materials', 'Techniques', 'Movements', 'Artworks'].forEach(tag => {
+                    const el = document.getElementById('count-' + tag);
+                    if (el) el.textContent = data.filter(i => i.tag === tag).length;
+                });
+            }
+
+            // --- Tag class helper ---
+            function getTagClass(tag) {
+                const map = {
+                    'Terms': 'tag-terms', 'Artists': 'tag-artists', 'Materials': 'tag-materials',
+                    'Techniques': 'tag-techniques', 'Movements': 'tag-movements', 'Artworks': 'tag-artworks'
+                };
+                return map[tag] || 'tag-terms';
+            }
+
+            // --- Shuffle ---
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            // --- Translate helper ---
+            function t(key, fallback) {
+                if (window.LW_TRANSLATIONS && LW_TRANSLATIONS[LW_LANG] && LW_TRANSLATIONS[LW_LANG][key]) {
+                    return LW_TRANSLATIONS[LW_LANG][key];
+                }
+                return fallback || '';
+            }
+
+            // --- Infinite Scroll ---
+            function initInfiniteScroll() {
+                const target = document.getElementById('load-more-trigger');
+                if (!target) return;
+
+                if (observer) observer.disconnect();
+
+                observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting && loadedCount < currentData.length) {
+                        loadNextChunk();
+                    }
+                }, { threshold: 0.1 });
+
+                observer.observe(target);
+            }
+
+            function loadNextChunk() {
+                const nextChunk = currentData.slice(loadedCount, loadedCount + itemsPerChunk);
+                renderItems(nextChunk);
+                loadedCount += nextChunk.length;
+
+                const trigger = document.getElementById('load-more-trigger');
+                const empty = document.getElementById('ency-empty');
+
+                if (currentData.length === 0) {
+                    if (trigger) trigger.classList.add('hidden');
+                    if (empty) empty.classList.remove('hidden');
+                } else {
+                    if (empty) empty.classList.add('hidden');
+                    if (loadedCount >= currentData.length) {
+                        if (trigger) trigger.classList.add('hidden');
+                    } else {
+                        if (trigger) trigger.classList.remove('hidden');
+                    }
+                }
+            }
+
+            function renderItems(items) {
+                const grid = document.getElementById('ency-grid');
+                if (!grid) return;
+
+                const html = items.map(item => {
+                    const title = t(item.titleKey, item.title);
+                    const desc = t(item.shortDescKey, item.shortDesc);
+                    const imgSrc = item.imageUrl || item.image || '';
+                    const tagClass = getTagClass(item.tag);
+
+                    return `
+                    <div class="masonry-item fade-in">
+                        <div class="ency-card bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/50 group" onclick="openModal('${item.id}')">
+                            <div class="relative overflow-hidden">
+                                <img src="${imgSrc}" alt="${title}"
+                                    class="w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                    loading="lazy"
+                                    style="max-height:150px"
+                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="img-fallback w-full hidden" style="min-height:100px">
+                                    <span class="material-symbols-outlined text-3xl">palette</span>
+                                </div>
+                                <div class="absolute top-2 left-2">
+                                    <span class="${tagClass} px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider">${item.tag}</span>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <h3 class="text-xs font-black mb-1 text-slate-800 dark:text-slate-100 break-words leading-snug font-korean">${title}</h3>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed line-clamp-2">${desc}</p>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+
+                if (loadedCount === 0) {
+                    grid.innerHTML = html;
+                } else {
+                    grid.insertAdjacentHTML('beforeend', html);
+                }
+
+                if (window.lwApplyLang) lwApplyLang();
+            }
+
+            // --- Filter ---
+            window.filterEncy = function (tag) {
+                currentTag = tag;
+
+                // Update sidebar active state
+                document.querySelectorAll('.ency-nav-item').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.tag === tag);
+                });
+
+                // Update mobile pills
+                document.querySelectorAll('.mobile-cat-pill').forEach(btn => {
+                    const isActive = btn.dataset.tag === tag;
+                    btn.classList.toggle('active', isActive);
+                    if (isActive) {
+                        btn.classList.remove('text-slate-500');
+                    } else {
+                        btn.classList.add('text-slate-500');
+                    }
+                });
+
+                const dataSrc = window.ENCY_DATA || [];
+                let data = (tag === 'All') ? [...dataSrc] : dataSrc.filter(i => i.tag === tag);
+                currentData = shuffleArray(data);
+
+                // Update subtitle
+                const sub = document.getElementById('ency-subtitle');
+                if (sub) sub.textContent = `${currentData.length} entries`;
+
+                // Reset and render
+                loadedCount = 0;
+                const grid = document.getElementById('ency-grid');
+                if (grid) grid.innerHTML = '';
+                loadNextChunk();
+                initInfiniteScroll();
+
+                // Scroll to top on mobile
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            // --- Search ---
+            window.handleSearch = function (val) {
+                const query = val.toLowerCase().trim();
+                if (!query) {
+                    filterEncy(currentTag);
+                    return;
+                }
+
+                const dataSrc = window.ENCY_DATA || [];
+                const filtered = dataSrc.filter(item => {
+                    const title = t(item.titleKey, item.title);
+                    const desc = t(item.shortDescKey, item.shortDesc);
+                    const content = t(item.contentKey, item.content);
+                    return title.toLowerCase().includes(query) ||
+                        desc.toLowerCase().includes(query) ||
+                        content.toLowerCase().includes(query) ||
+                        (item.tag || '').toLowerCase().includes(query);
+                });
+
+                currentData = filtered;
+                loadedCount = 0;
+
+                const grid = document.getElementById('ency-grid');
+                if (grid) grid.innerHTML = '';
+
+                const sub = document.getElementById('ency-subtitle');
+                if (sub) sub.textContent = `${filtered.length} results for "${val}"`;
+
+                loadNextChunk();
+                initInfiniteScroll();
+            };
+
+            // --- Modal ---
+            window.openModal = function (id) {
+                const data = window.ENCY_DATA || [];
+                const item = data.find(i => i.id === id);
+                if (!item) return;
+
+                const modal = document.getElementById('ency-modal');
+                const title = t(item.titleKey, item.title);
+                const content = t(item.contentKey, item.content);
+                const imgSrc = item.imageUrl || item.image || '';
+
+                document.getElementById('modal-img').src = imgSrc;
+                document.getElementById('modal-img').alt = title;
+                document.getElementById('modal-img').style.display = '';
+                // Reset fallback
+                const fallback = document.getElementById('modal-img').nextElementSibling;
+                if (fallback) fallback.style.display = 'none';
+
+                document.getElementById('modal-title').textContent = title;
+                document.getElementById('modal-content').textContent = content;
+
+                const tagEl = document.getElementById('modal-tag');
+                tagEl.textContent = item.tag;
+                tagEl.className = `inline-block px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider mb-2 ${getTagClass(item.tag)}`;
+
+                // Related classes
+                const relSection = document.getElementById('related-section');
+                const relContainer = document.getElementById('related-classes');
+                if (item.relatedClasses && item.relatedClasses.length > 0 && window.CLASS_DATA) {
+                    const relHtml = item.relatedClasses.map(clsId => {
+                        const cls = CLASS_DATA.find(c => c.id === clsId);
+                        if (!cls) return '';
+                        const clsTitle = t(cls.titleKey, cls.title) || cls.title;
+                        return `
+                            <div class="flex-shrink-0 w-36 snap-start">
+                                <div class="bg-slate-50 dark:bg-slate-800 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700 hover:shadow-md transition-shadow">
+                                    <div class="p-3">
+                                        <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 line-clamp-2 font-korean">${clsTitle}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    if (relHtml.trim()) {
+                        relContainer.innerHTML = relHtml;
+                        relSection.classList.remove('hidden');
+                    } else {
+                        relSection.classList.add('hidden');
+                    }
+                } else {
+                    relSection.classList.add('hidden');
+                }
+
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            };
+
+            window.closeModal = function () {
+                const modal = document.getElementById('ency-modal');
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            };
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+
+            // --- Init ---
+            window.addEventListener('DOMContentLoaded', function () {
+                // Render language pickers using the existing i18n system
+                if (typeof lwRenderLangPicker === 'function') {
+                    lwRenderLangPicker('lang-menu-ency-sidebar', false);
+                    lwRenderLangPicker('lang-menu-ency-mobile', false);
+                }
+
+                updateCounts();
+
+                // Initial render using local data directly
+                filterEncy('All');
+
+                // Apply i18n
+                if (typeof lwApplyLang === 'function') lwApplyLang();
+            });
+
+            // Close lang dropdowns when clicking outside
+            document.addEventListener('click', function (e) {
+                ['lang-menu-ency-sidebar', 'lang-menu-ency-mobile'].forEach(id => {
+                    const menu = document.getElementById(id);
+                    if (menu && menu.style.display === 'block') {
+                        if (!e.target.closest('#' + id) && !e.target.closest('[onclick*="' + id + '"]')) {
+                            menu.style.display = 'none';
+                        }
+                    }
+                });
+            });
+
+        })();
+    </script>
+
+    <!-- Art Cosmos Widget -->
+    <script src="../../assets/data/art-archive.js?v=0319"></script>
+    <script src="../../assets/js/voice-engine.js?v=0319"></script>
+    <script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+<script src="../../assets/js/global-nav.js?v=20260329f"></script>
+</body>
+
+</html>

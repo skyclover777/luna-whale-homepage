@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="page-title">Lesson Viewer – Luna Whale Art Lab</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;900&family=Noto+Sans+KR:wght@400;700;900&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="../../assets/data/i18n.js?v=0312-2330"></script>
+    <script src="../../assets/data/classes-data.js?v=0312-2330"></script>
+    <script src="../../assets/js/app.js?v=0312-2330"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --blue: #1337ec;
+            --dark: #0a0a0c;
+            --mid: #18181b;
+            --light: #f6f6f8;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Lexend', 'Noto Sans KR', sans-serif;
+        }
+
+        /* Safari Bug Fix: Prevent page-fade from stucking at opacity 0 */
+        body.page-fade {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+
+        /* ============================================================
+   PC PRESENTATION VIEW
+ ============================================================ */
+        #pv {
+            display: none;
+            position: fixed;
+            inset: 0;
+            flex-direction: column;
+            background: radial-gradient(circle at center, #1a1a24 0%, #0a0a0c 100%);
+            color: var(--white);
+            overflow: hidden;
+            z-index: 9999;
+        }
+
+        /* Ambient Glows */
+        #pv::before,
+        #pv::after {
+            content: '';
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            border-radius: 50%;
+            filter: blur(150px);
+            z-index: 0;
+            opacity: 0.12;
+            pointer-events: none;
+            animation: move-glow 25s infinite alternate ease-in-out;
+        }
+
+        #pv::before {
+            background: #1337ec;
+            top: -300px;
+            left: -200px;
+        }
+
+        #pv::after {
+            background: #7013ec;
+            bottom: -300px;
+            right: -200px;
+            animation-delay: -12s;
+        }
+
+        @keyframes move-glow {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(150px, 100px) scale(1.1);
+            }
+        }
+
+        .pv-topbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 24px 64px;
+            z-index: 20;
+            background: rgba(10, 10, 12, 0.3);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .pv-back {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .1);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pv-back:hover {
+            background: rgba(255, 255, 255, .2);
+        }
+
+        .pv-logo {
+            font-size: 11px;
+            font-weight: 900;
+            color: rgba(255, 255, 255, .4);
+            letter-spacing: .15em;
+            text-transform: uppercase;
+        }
+
+        .pv-subtitle {
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, .7);
+        }
+
+        .pv-bottombar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 64px;
+            z-index: 20;
+            background: rgba(10, 10, 12, 0.3);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .pv-counter-box {
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .1);
+            padding: 6px 18px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pv-navbtns {
+            display: flex;
+            gap: 14px;
+        }
+
+        .pv-btn {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .1);
+            color: #fff;
+            cursor: pointer;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s;
+        }
+
+        .pv-btn:hover,
+        .pv-btn.next {
+            background: var(--blue);
+            border-color: var(--blue);
+        }
+
+        .slide-wrap {
+            position: absolute;
+            inset: 0;
+        }
+
+        .slide {
+            display: none;
+            position: absolute;
+            inset: 0;
+            padding: 100px 72px;
+            align-items: center;
+            justify-content: center;
+            animation: sf .45s ease;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes sf {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .pc-step {
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--blue);
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .pc-title {
+            font-size: 2.1rem;
+            font-weight: 900;
+            line-height: 1.2;
+            letter-spacing: -.02em;
+        }
+
+        .pc-desc {
+            font-size: .98rem;
+            line-height: 1.9;
+            color: rgba(255, 255, 255, .65);
+            font-weight: 500;
+            margin-top: 16px;
+        }
+
+        .pc-img {
+            border-radius: 24px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 10;
+        }
+
+        .pc-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .mat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            width: 100%;
+            max-width: 860px;
+        }
+
+        .mat-box {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 16px;
+            padding: 24px 14px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mat-icon {
+            font-size: 30px;
+            color: var(--blue);
+        }
+
+        .mat-name {
+            font-size: .82rem;
+            font-weight: 700;
+        }
+
+        .gal-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            margin: 0 auto;
+        }
+
+        .gal-item {
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .gal-item:hover {
+            transform: scale(1.05) translateY(-5px);
+            z-index: 2;
+            border-color: var(--blue);
+            box-shadow: 0 20px 40px rgba(19, 55, 236, 0.3);
+        }
+
+        .gal-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s ease;
+        }
+
+        .gal-item:hover img {
+            transform: scale(1.1);
+        }
+
+        /* Custom Scrollbar for Results */
+        .premium-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .premium-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .premium-scroll::-webkit-scrollbar-thumb {
+            background: var(--blue);
+            border-radius: 10px;
+            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .premium-scroll::-webkit-scrollbar-thumb:hover {
+            background: #2a4eff;
+        }
+
+        /* ============================================================
+   MOBILE GUIDE VIEW
+ ============================================================ */
+        #mv {
+            display: block;
+            background: var(--light);
+            min-height: 100vh;
+        }
+
+        .mv-header {
+            background: #fff;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .05);
+        }
+
+        .mv-back {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f1f1f3;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mv-header-title {
+            font-size: 17px;
+            font-weight: 900;
+        }
+
+        .mv-main {
+            padding: 16px 16px 60px;
+        }
+
+        .mv-hero {
+            background: var(--blue);
+            color: #fff;
+            border-radius: 22px;
+            padding: 26px;
+            margin-bottom: 14px;
+        }
+
+        .mv-hero h2 {
+            font-size: 1.6rem;
+            font-weight: 900;
+            margin-bottom: 4px;
+        }
+
+        .mv-hero p {
+            font-size: .82rem;
+            opacity: .7;
+            margin-bottom: 18px;
+        }
+
+        .mv-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 12px;
+        }
+
+        .mv-card h3 {
+            font-size: .95rem;
+            font-weight: 900;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mv-card h3 .mi {
+            font-size: 20px;
+            color: var(--blue);
+        }
+
+        .mv-step {
+            background: #fff;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .mv-step img {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            display: block;
+        }
+
+        .mv-step-body {
+            padding: 16px;
+        }
+
+        .mv-step-tag {
+            font-size: 10px;
+            font-weight: 900;
+            color: var(--blue);
+            text-transform: uppercase;
+            letter-spacing: .1em;
+        }
+
+        .mv-step-title {
+            font-size: 1rem;
+            font-weight: 900;
+            margin: 4px 0 7px;
+        }
+
+        .mv-step-desc {
+            font-size: .83rem;
+            color: #666;
+            line-height: 1.75;
+            font-weight: 500;
+        }
+
+        .mv-gal-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scrollbar-width: none;
+        }
+
+        .mv-gal-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .mv-gal-img {
+            width: 140px;
+            height: 140px;
+            border-radius: 12px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #eee;
+        }
+
+        /* Overlay */
+        #overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .96);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            cursor: pointer;
+        }
+
+        #overlay.open {
+            display: flex;
+        }
+
+        #ov-img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 18px;
+        }
+
+        /* Final Slide Buttons */
+        .fin-slide-btns {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 48px;
+            position: relative;
+            z-index: 100;
+        }
+
+        .fin-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .fin-btn-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .fin-btn:hover .fin-btn-icon {
+            transform: translateY(-8px) scale(1.05);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #fff;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .fin-btn-label {
+            font-size: 11px;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.25);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            transition: all 0.3s;
+        }
+
+        .fin-btn:hover .fin-btn-label {
+            color: #fff;
+            letter-spacing: 0.2em;
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body>
+
+    <!-- ===== PC PRESENTATION VIEW ===== -->
+    <div id="pv">
+        <div class="pv-topbar">
+            <button class="pv-back" onclick="location.href='classes.html'">
+                <span class="material-symbols-outlined" style="font-size:22px">arrow_back</span>
+            </button>
+            <div style="height:26px;width:1px;background:rgba(255,255,255,.12)"></div>
+            <div>
+                <div class="pv-logo">Luna Whale Art Lab</div>
+                <div class="pv-subtitle" id="pv-lesson-subtitle">수업 프레젠테이션</div>
+            </div>
+        </div>
+
+        <div class="slide-wrap" id="pc-slides">
+            <!-- JS dynamic content -->
+        </div>
+
+        <div class="pv-bottombar">
+            <div class="pv-counter-box">
+                <span id="idx">01</span> / <span id="total" style="opacity:0.4">01</span>
+            </div>
+            <div class="pv-navbtns">
+                <button class="pv-btn" onclick="prev()"><span class="material-symbols-outlined">west</span></button>
+                <button class="pv-btn next" onclick="next()"><span
+                        class="material-symbols-outlined">east</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MOBILE GUIDE VIEW ===== -->
+    <div id="mv">
+        <div class="mv-header">
+            <button class="mv-back" onclick="location.href='classes.html'">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <span class="mv-header-title">수업 가이드</span>
+        </div>
+        <div class="mv-main" id="mv-content">
+            <!-- JS dynamic content -->
+        </div>
+    </div>
+
+    <!-- ===== OVERLAY ===== -->
+    <div id="overlay" onclick="closeImg()">
+        <img id="ov-img" src="" alt="Full size">
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const lessonId = urlParams.get('id') || 'traditional-patterns';
+
+        // Translation helper
+        const t = (key) => (typeof lwT !== 'undefined') ? lwT(key) : key;
+
+        function init() {
+            console.log('init: Loading lesson', lessonId);
+            try {
+                // 0. Authorization check
+                if (window.LunaApp && !LunaApp.hasAccessToClass(lessonId)) {
+                    console.warn('init: Unauthorized access to', lessonId);
+                    alert('You do not have access to this lesson.');
+                    window.location.href = 'classes.html';
+                    return;
+                }
+
+                // 1. Data Availability Checks
+                if (typeof CLASSES_DATA === 'undefined') throw new Error('CLASSES_DATA is not defined. Check classes-data.js inclusion.');
+                if (typeof LESSON_MAP === 'undefined') throw new Error('LESSON_MAP is not defined. Check classes-data.js inclusion.');
+
+                const lessonData = CLASSES_DATA.find(c => c.id === lessonId);
+                const lessonAssets = LESSON_MAP[lessonId] || { imgs: [] };
+
+                if (!lessonData) {
+                    console.error('init: Lesson data not found for', lessonId);
+                    throw new Error('Lesson data not found: ' + lessonId);
+                }
+
+                // 2. Title and UI Setup
+                const titleRes = t(lessonData.titleKey) || lessonData.name || lessonData.id || 'Untitled Lesson';
+                document.title = titleRes + " – Luna Whale Art Lab";
+
+                const subtitleEl = document.getElementById('pv-lesson-subtitle');
+                if (subtitleEl) subtitleEl.textContent = titleRes + " – 수업 프레젠테이션";
+
+                const pcSlides = document.getElementById('pc-slides');
+                const mvContent = document.getElementById('mv-content');
+                if (!pcSlides || !mvContent) throw new Error('Required DOM elements (pc-slides or mv-content) missing.');
+
+                let slidesHtml = '';
+                let mvHtml = '';
+
+                // --- 1. TITLE SLIDE ---
+                const mainImg = lessonData.image || 'images/placeholder.png';
+                slidesHtml += `
+                <div class="slide active">
+                    <div class="pc-img" style="width:70%; max-width:900px; height:60vh; margin:0 auto; cursor:pointer;" onclick="openImg('../../${mainImg}')">
+                        <img src="../../${mainImg}" alt="title" style="width:100%; height:100%; object-fit:contain;" onerror="this.src='../../images/placeholder.png'">
+                    </div>
+                    <div style="text-align:center; margin-top: 28px;">
+                        <div class="pc-step">${lessonData.category || ''}</div>
+                        <h2 class="pc-title">${titleRes}</h2>
+                        <p class="pc-desc">${t(lessonData.descKey) || 'Creative art class for kids.'}</p>
+                    </div>
+                </div>`;
+
+                mvHtml += `
+                <div class="mv-hero">
+                    <h2>${titleRes}</h2>
+                    <p>${t(lessonData.descKey) || 'Creative art class by Luna Whale'}</p>
+                </div>`;
+
+                // --- 2. ARTIST & MASTER SLIDES (Structured Data) ---
+                if (lessonAssets.artist && lessonAssets.artist.photo) {
+                    const artist = lessonAssets.artist;
+                    slidesHtml += `
+                    <div class="slide" style="flex-direction:row;gap:64px;">
+                        <div class="pc-img" style="flex:0 0 38%;height:58vh;border-radius:24px;">
+                            <img src="../../${artist.photo}" style="object-fit:cover;" onerror="this.src='../../images/placeholder.png'">
+                        </div>
+                        <div style="display:flex;flex-direction:column;justify-content:center;max-width:500px;">
+                            <div class="pc-step">예술가 소개</div>
+                            <h2 class="pc-title">${t(artist.nameKey) || artist.nameKey || 'Unknown Artist'}</h2>
+                            <p class="pc-desc">${artist.quote || ''}<br><br>${artist.desc || ''}</p>
+                        </div>
+                    </div>`;
+
+                    mvHtml += `
+                    <div class="mv-card">
+                        <h3><span class="material-symbols-outlined mi">person</span>예술가 소개</h3>
+                        <div style="display:flex; gap:16px; align-items:center; margin-bottom:12px;">
+                            <img src="../../${artist.photo}" style="width:80px;height:80px;border-radius:12px;object-fit:cover;" onerror="this.src='../../images/placeholder.png'">
+                            <div>
+                                <div style="font-weight:900;">${t(artist.nameKey) || artist.nameKey || 'Artist'}</div>
+                                <div style="font-size:12px;opacity:0.7;">${artist.quote || ''}</div>
+                            </div>
+                        </div>
+                        <p style="font-size:13px; line-height:1.6; color:#666;">${artist.desc || ''}</p>
+                    </div>`;
+                }
+
+                if (Array.isArray(lessonAssets.masters) && lessonAssets.masters.length > 0) {
+                    slidesHtml += `
+                    <div class="slide" style="flex-direction:column;gap:32px;">
+                        <div class="pc-step">예술적 영감</div>
+                        <h2 class="pc-title">명화 컬렉션</h2>
+                        <div class="gal-grid" style="grid-template-columns:repeat(4,1fr);max-width:900px;">
+                            ${lessonAssets.masters.map(m => `<div class="gal-item" onclick="openImg('../../${m}')"><img src="../../${m}" onerror="this.src='../../images/placeholder.png'"></div>`).join('')}
+                        </div>
+                    </div>`;
+
+                    mvHtml += `
+                    <div class="mv-card">
+                        <h3><span class="material-symbols-outlined mi">palette</span>명화 감상</h3>
+                        <div class="mv-gal-scroll">
+                            ${lessonAssets.masters.map(m => `<img src="../../${m}" class="mv-gal-img" onclick="openImg('../../${m}')" onerror="this.src='../../images/placeholder.png'">`).join('')}
+                        </div>
+                    </div>`;
+                }
+
+                // --- 3. MATERIALS SLIDE ---
+                if (Array.isArray(lessonAssets.materials) && lessonAssets.materials.length > 0) {
+                    slidesHtml += `
+                    <div class="slide" style="flex-direction:column;gap:36px;">
+                        <h2 class="pc-title">필요한 준비물</h2>
+                        <div class="mat-grid">
+                            ${lessonAssets.materials.map(m => `
+                            <div class="mat-box">
+                                <span class="mat-icon material-symbols-outlined">${m.icon || 'inventory_2'}</span>
+                                <span class="mat-name">${m.name || '재료'}</span>
+                            </div>`).join('')}
+                        </div>
+                    </div>`;
+
+                    mvHtml += `
+                    <div class="mv-card">
+                        <h3><span class="material-symbols-outlined mi">inventory_2</span>준비물</h3>
+                        <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
+                            ${lessonAssets.materials.map(m => `
+                            <div style="background:#f8f9fa; padding:12px; border-radius:12px; display:flex; align-items:center; gap:8px;">
+                                <span class="material-symbols-outlined" style="font-size:18px; color:var(--blue)">${m.icon || 'inventory_2'}</span>
+                                <span style="font-size:13px; font-weight:700;">${m.name || '재료'}</span>
+                            </div>`).join('')}
+                        </div>
+                    </div>`;
+                }
+
+                // --- 4. STEP SLIDES ---
+                const steps = Array.isArray(lessonAssets.steps) ? lessonAssets.steps : [];
+                if (steps.length > 0) {
+                    steps.forEach((s, i) => {
+                        slidesHtml += `
+                        <div class="slide" style="flex-direction:row;gap:56px;">
+                            <div class="pc-img" style="flex:0 0 52%;height:58vh;"><img src="../../${s.img}" onerror="this.src='../../images/placeholder.png'"></div>
+                            <div style="display:flex;flex-direction:column;justify-content:center;max-width:350px;">
+                                <div class="pc-step">Step ${String(i + 1).padStart(2, '0')}</div>
+                                <h2 class="pc-title" style="font-size:1.8rem;">${s.title || 'Step Title'}</h2>
+                                <p class="pc-desc">${s.desc || ''}</p>
+                            </div>
+                        </div>`;
+                    });
+
+                    mvHtml += `
+                    <div class="mv-card">
+                        <h3><span class="material-symbols-outlined mi">list_alt</span>수업 과정</h3>
+                        ${steps.map((s, i) => `
+                        <div class="mv-step" style="border: 1px solid #efeff2; margin-bottom:16px;">
+                            <img src="../../${s.img}" onclick="openImg('../../${s.img}')" onerror="this.src='../../images/placeholder.png'">
+                            <div class="mv-step-body">
+                                <div class="mv-step-tag">Step ${i + 1}</div>
+                                <div class="mv-step-title">${s.title || 'Step Title'}</div>
+                                <div class="mv-step-desc">${s.desc || ''}</div>
+                            </div>
+                        </div>`).join('')}
+                    </div>`;
+                } else if (Array.isArray(lessonAssets.imgs) && lessonAssets.imgs.length > 0) {
+                    // Fallback: Group materials and then show individual steps
+                    const matImgs = lessonAssets.imgs.filter(img => img.includes('mat'));
+                    if (matImgs.length > 0) {
+                        slidesHtml += `
+                        <div class="slide" style="flex-direction:column;gap:36px;">
+                            <h2 class="pc-title">필요한 준비물</h2>
+                            <div class="mat-grid">
+                                ${matImgs.map(m => `
+                                <div class="mat-box">
+                                    <span class="mat-icon material-symbols-outlined">inventory_2</span>
+                                    <span class="mat-name">재료</span>
+                                </div>`).join('')}
+                            </div>
+                        </div>`;
+
+                        mvHtml += `
+                        <div class="mv-card">
+                            <h3><span class="material-symbols-outlined mi">inventory_2</span>준비물</h3>
+                            <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
+                                ${matImgs.map(m => `
+                                <div style="background:#f8f9fa; padding:12px; border-radius:12px; display:flex; align-items:center; gap:8px;">
+                                    <span class="material-symbols-outlined" style="font-size:18px; color:var(--blue)">inventory_2</span>
+                                    <span style="font-size:13px; font-weight:700;">재료</span>
+                                </div>`).join('')}
+                            </div>
+                        </div>`;
+                    }
+
+                    const otherImgs = lessonAssets.imgs.filter(img => !img.includes('master') && !img.includes('paul_klee') && !img.includes('result') && !img.includes('mat'));
+                    otherImgs.forEach((img, index) => {
+                        slidesHtml += `
+                        <div class="slide">
+                            <div class="pc-img" style="width:70%;max-width:900px;height:65vh;cursor:pointer;" onclick="openImg('../../${img}')">
+                                <img src="../../${img}" alt="Slide ${index + 1}" style="width:100%; height:100%; object-fit:contain;" onerror="this.src='../../images/placeholder.png'">
+                            </div>
+                            <div style="text-align:center; margin-top: 25px;">
+                                <div class="pc-step">수업 과정</div>
+                                <h2 class="pc-title" style="font-size: 1.4rem; opacity: 0.9;">Page ${index + 1}</h2>
+                            </div>
+                        </div>`;
+                    });
+                }
+
+                // --- 5. RESULTS GALLERY SLIDE ---
+                const resultImgs = Array.isArray(lessonAssets.results) ? lessonAssets.results :
+                    (Array.isArray(lessonAssets.imgs) ? lessonAssets.imgs.filter(img => img.includes('result')) : []);
+
+                if (resultImgs.length > 0) {
+                    slidesHtml += `
+                    <div class="slide" style="flex-direction:column;gap:24px;">
+                        <div class="pc-step">작품 갤러리</div>
+                        <h2 class="pc-title">친구들의 완성 작품</h2>
+                        <div class="gal-grid premium-scroll" style="height:60vh;overflow-y:auto;padding-right:15px;scrollbar-gutter: stable;">
+                            ${resultImgs.map(r => `<div class="gal-item" onclick="openImg('../../${r}')"><img src="../../${r}" onerror="this.src='../../images/placeholder.png'"></div>`).join('')}
+                        </div>
+                    </div>`;
+
+                    mvHtml += `
+                    <div class="mv-card">
+                        <h3><span class="material-symbols-outlined mi">auto_awesome_motion</span>작품 갤러리</h3>
+                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
+                            ${resultImgs.map(r => `<img src="../../${r}" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px;" onclick="openImg('../../${r}')" onerror="this.src='../../images/placeholder.png'">`).join('')}
+                        </div>
+                    </div>`;
+                }
+
+                // --- 6. FINAL SLIDE ---
+                slidesHtml += `
+                <div class="slide" style="flex-direction:column;gap:36px;text-align:center;">
+                    <div style="width: 96px; height: 96px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; animation: bounce 1s infinite alternate; background: rgba(19, 55, 236, 0.2);">
+                        <span class="material-symbols-outlined" style="font-size: 60px; color: var(--blue);">celebration</span>
+                    </div>
+                    <h2 class="pc-title" style="color:#fff; font-size: 3rem;">수업을 모두 마쳤습니다!</h2>
+                    <p class="pc-desc" style="font-size:1.2rem; max-width: 600px; margin: 0 auto 40px;">오늘 수업 정말 고생 많으셨습니다.<br>이제 학부모님께 결과를 공유하고 클래스 목록으로 이동할 수 있습니다.</p>
+                    
+                    <div class="fin-slide-btns">
+                        <button onclick="location.href='classes.html'" class="fin-btn">
+                            <div class="fin-btn-icon"><span class="material-symbols-outlined" style="font-size:32px">home</span></div>
+                            <span class="fin-btn-label">Go Home</span>
+                        </button>
+                        <button onclick="location.href='../admin/ai-messages.html'" class="fin-btn primary">
+                            <div class="fin-btn-icon"><span class="material-symbols-outlined" style="font-size:36px">smart_toy</span></div>
+                            <span class="fin-btn-label">AI Report</span>
+                        </button>
+                    </div>
+                </div>`;
+
+                pcSlides.innerHTML = slidesHtml;
+                mvContent.innerHTML = mvHtml;
+
+                // Update counter
+                window.slides = document.querySelectorAll('.slide');
+                const totalEl = document.getElementById('total');
+                if (totalEl) totalEl.textContent = String(window.slides.length).padStart(2, '0');
+
+                // Initialize Admin Photo Editor with correct selector
+                if (typeof LunaApp !== 'undefined' && LunaApp.initAdminPhotoEditor) {
+                    console.log('init: Binding Admin Photo Editor');
+                    LunaApp.initAdminPhotoEditor('#pv, #mv');
+                }
+
+                console.log('init: Successfully loaded', window.slides.length, 'slides');
+            } catch (err) {
+                console.error('init: CRITICAL ERROR', err);
+                alert('Viewer initialization failed: ' + err.message);
+            }
+        }
+
+        // Navigation logic
+        let cur = 0;
+        function goTo(n) {
+            if (!window.slides || window.slides.length === 0) return;
+            window.slides[cur].classList.remove('active');
+            cur = Math.max(0, Math.min(n, window.slides.length - 1));
+            window.slides[cur].classList.add('active');
+            document.getElementById('idx').textContent = String(cur + 1).padStart(2, '0');
+        }
+
+        function next() { goTo(cur + 1); }
+        function prev() { goTo(cur - 1); }
+
+        function openImg(src) {
+            document.getElementById('ov-img').src = src;
+            document.getElementById('overlay').classList.add('open');
+        }
+
+        function closeImg() {
+            document.getElementById('overlay').classList.remove('open');
+        }
+
+        // View handling
+        function applyView() {
+            const w = window.innerWidth;
+            const pv = document.getElementById('pv');
+            const mv = document.getElementById('mv');
+
+            if (w >= 1024) {
+                pv.style.display = 'flex';
+                mv.style.display = 'none';
+                document.body.style.overflow = 'hidden';
+            } else {
+                pv.style.display = 'none';
+                mv.style.display = 'block';
+                document.body.style.overflow = '';
+            }
+        }
+
+        window.addEventListener('resize', applyView);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            applyView();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') next();
+            if (e.key === 'ArrowLeft') prev();
+        });
+    </script>
+<!-- Recent Lessons — save on view -->
+<script src="../../assets/js/recent-lessons.js?v=0321"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof RecentLessons !== 'undefined') RecentLessons.saveFromLessonPage();
+});
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Luna Whale Art Lab - Create Class</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="../../assets/css/shared.css">
+    <script src="../../assets/data/i18n.js?v=0312-2330"></script>
+    <script src="../../assets/js/app.js?v=0312-2330"></script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getStorage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+        import { getFunctions } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
+        import { firebaseConfig } from '../../assets/js/firebase-config.js';
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        window.firebase = {
+            app: app,
+            auth: getAuth(app),
+            firestore: getFirestore(app),
+            storage: getStorage(app),
+            functions: getFunctions(app, "asia-northeast3")
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "primary": "#1337ec", "background-light": "#f6f6f8", "background-dark": "#101322", "accent-purple": "#8b5cf6" },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Step indicator */
+        .step-line {
+            height: 2px;
+            background: #e2e8f0;
+            flex: 1;
+            margin: 0 8px;
+        }
+
+        .step-line.active {
+            background: #1337ec;
+        }
+
+        /* Drop zone drag over */
+        .drop-zone.dragover {
+            border-color: #1337ec !important;
+            background: #eff2fe !important;
+        }
+
+        /* Thumbnail preview */
+        .img-thumb {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .img-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .img-thumb .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 18px;
+            height: 18px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 12px;
+        }
+
+        @media (min-width: 1024px) {
+            .app-sidebar {
+                display: flex !important;
+            }
+
+            .bottom-nav {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+
+        #lang-menu-cre {
+            display: none;
+        }
+
+        #lang-menu-cre.open {
+            display: block;
+        }
+
+        /* Mobile/PC responsive improvements */
+        @media (max-width: 768px) {
+            .step-navigation {
+                padding: 1rem;
+            }
+
+            .step-indicators {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .step-circle {
+                width: 2.5rem !important;
+                height: 2.5rem !important;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .image-container {
+                grid-template-columns: 1fr 1fr !important;
+            }
+
+            .bottom-buttons {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .publish-btn {
+                padding: 1rem !important;
+                font-size: 1rem !important;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .image-container {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        /* Enhanced touch targets for mobile */
+        @media (max-width: 768px) {
+
+            button,
+            .clickable {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            .step-circle {
+                min-width: 44px;
+                min-height: 44px;
+            }
+        }
+
+        /* Improved form elements */
+        .form-input,
+        .form-textarea,
+        .form-select,
+        textarea,
+        input[type="text"],
+        select {
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus,
+        textarea:focus,
+        input[type="text"]:focus,
+        select:focus {
+            border-color: #1337ec;
+            box-shadow: 0 0 0 3px rgba(19, 55, 236, 0.1);
+        }
+
+        /* Loading states */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Sticky publish bar */
+        #sticky-publish-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(4px);
+            border-top: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            display: none;
+            z-index: 50;
+        }
+
+        #sticky-publish-bar .btn {
+            flex: 1;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #1337ec;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+    <!-- Sticky publish bar for easy access -->
+    <div id="sticky-publish-bar" class="flex gap-3">
+        <button onclick="changeStep(Math.max(currentStep-1,1))"
+            class="btn py-3 rounded-2xl border border-slate-200 font-black text-sm">이전</button>
+        <button onclick="publishClass()" class="btn bg-primary text-white py-3 rounded-2xl font-black text-sm">등록
+            완료</button>
+    </div>
+
+    <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+        <script>
+            // Role-based Access Control: Admin or Teacher only
+            if (!LunaApp.canManage) {
+                alert("Access Denied: Teachers or Admin only.");
+                window.location.href = "index.html";
+            }
+        </script>
+
+        <!-- Sidebar (Desktop) -->
+        <aside
+            class="app-sidebar hidden fixed left-0 top-0 h-full w-60 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-col z-40 p-4">
+            <!-- Logo -->
+            <a href="admin.html" class="flex items-center gap-3 px-2 py-4 mb-6 hover:opacity-80 transition-opacity">
+                <img src="../../logo.png" alt="Luna Whale" class="w-10 h-10 object-contain rounded-xl" />
+                <div>
+                    <div class="text-sm font-black text-primary leading-none">Luna Whale</div>
+                    <div class="text-xs text-slate-500 font-medium">Art Lab</div>
+                </div>
+            </a>
+
+            <!-- User Quick Info -->
+            <div class="flex items-center gap-3 px-2 py-3 rounded-xl bg-primary/5 mb-6">
+                <div
+                    class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-sm">person</span>
+                </div>
+                <div>
+                    <div class="text-xs font-bold">Luna Artist</div>
+                    <div class="text-[10px] text-slate-500">Lvl 1 Explorer</div>
+                </div>
+            </div>
+
+            <!-- Nav Items -->
+            <nav class="flex-1 min-h-0 space-y-1 overflow-y-auto pr-2 custom-scrollbar">
+                <a href="../../index.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                    <span class="material-symbols-outlined text-xl">home</span> <span data-i18n="nav_home">Home</span>
+                </a>
+                <a href="../main/classes.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                    <span class="material-symbols-outlined text-xl">school</span> <span
+                        data-i18n="nav_classes">Classes</span>
+                </a>
+                <a href="../main/gallery.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                    <span class="material-symbols-outlined text-xl">gallery_thumbnail</span> <span
+                        data-i18n="nav_gallery">Gallery</span>
+                </a>
+                <a href="../main/profile.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                    <span class="material-symbols-outlined text-xl">account_circle</span> <span
+                        data-i18n="nav_profile">Profile</span>
+                </a>
+                <a href="../main/curriculum.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                    <span class="material-symbols-outlined text-xl">map</span> <span
+                        data-i18n="nav_curriculum">Curriculum</span>
+                </a>
+                <a href="../main/pricing.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                    <span class="material-symbols-outlined text-xl">card_membership</span> <span
+                        data-i18n="nav_membership">Membership</span>
+                </a>
+                <a href="../main/support.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                    <span class="material-symbols-outlined text-xl">help</span> <span
+                        data-i18n="nav_support">Support</span>
+                </a>
+                <a href="../main/notices.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                    <span class="material-symbols-outlined text-xl">campaign</span> <span
+                        data-i18n="nav_notice">Notice</span>
+                </a>
+                <a href="../main/settings.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                    <span class="material-symbols-outlined text-xl">settings</span> <span
+                        data-i18n="nav_settings">Settings</span>
+                </a>
+                <!-- Admin & Language Link -->
+                <div class="border-t border-slate-200 pt-4 mt-4 space-y-2">
+                    <a href="admin.html"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-100 font-medium text-sm transition-colors">
+                        <span class="material-symbols-outlined text-xl">admin_panel_settings</span> <span
+                            data-i18n="nav_admin">Admin</span>
+                    </a>
+
+                </div>
+            </nav>
+        </aside>
+
+        <div class="main-content lg:ml-60 min-h-screen">
+            <!-- Header -->
+            <header
+                class="sticky top-0 z-30 bg-white/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-slate-200/60 px-6 py-4 flex items-center gap-3">
+                <button onclick="history.back()"
+                    class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-colors">
+                    <span class="material-symbols-outlined text-slate-600 dark:text-slate-300">arrow_back</span>
+                </button>
+                <h1 class="flex-1 font-black text-xl" data-i18n="page_create">Create New Class</h1>
+                <div class="flex items-center gap-2">
+                    <!-- Language switcher -->
+                    <div class="relative" id="lang-container-cre">
+                        <button onclick="toggleLangCre()"
+                            class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+                            title="Language">
+                            <span class="material-symbols-outlined text-slate-600 text-sm">language</span>
+                        </button>
+                        <div id="lang-menu-cre"
+                            class="absolute right-0 top-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl w-44 py-1.5 z-50"
+                            style="display:none">
+                        </div>
+                    </div>
+                    <button
+                        class="text-xs text-slate-500 hover:text-primary px-3 py-1.5 rounded-full border border-slate-200 hover:border-primary transition-colors"
+                        data-i18n="cre_save_draft">Save Draft</button>
+                </div>
+            </header>
+
+            <main class="pb-32 lg:pb-12 px-4 pt-5 max-w-xl mx-auto lg:max-w-2xl">
+
+                <!-- ── Step Indicator ── -->
+                <div class="flex items-center justify-between mb-12 px-2 relative" id="step-indicator">
+                    <!-- Step 01 -->
+                    <div class="flex flex-col items-center gap-1.5 flex-1 relative group cursor-pointer"
+                        onclick="changeStep(1)">
+                        <div id="step1-circle"
+                            class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg z-10 transition-all duration-500 scale-110">
+                            <span class="text-xs font-black">01</span>
+                        </div>
+                    </div>
+                    <div class="h-[2px] bg-slate-200 flex-[0.5] -mx-2" id="line1"></div>
+
+                    <!-- Steps 02-06 (Teaching Stages) -->
+                    <div class="flex flex-col items-center gap-1.5 flex-1 relative group cursor-pointer"
+                        onclick="changeStep(2)">
+                        <div id="step2-circle"
+                            class="w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center z-10 transition-all duration-500">
+                            <span class="text-xs font-black">02</span>
+                        </div>
+                    </div>
+                    <div class="h-[2px] bg-slate-200 flex-[0.5] -mx-2" id="line2"></div>
+
+                    <div class="flex flex-col items-center gap-1.5 flex-1 relative group cursor-pointer"
+                        onclick="changeStep(3)">
+                        <div id="step3-circle"
+                            class="w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center z-10 transition-all duration-500">
+                            <span class="text-xs font-black">03</span>
+                        </div>
+                    </div>
+                    <div class="h-[2px] bg-slate-200 flex-[0.5] -mx-2" id="line3"></div>
+
+                    <div class="flex flex-col items-center gap-1.5 flex-1 relative group cursor-pointer"
+                        onclick="changeStep(4)">
+                        <div id="step4-circle"
+                            class="w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center z-10 transition-all duration-500">
+                            <span class="text-xs font-black">04</span>
+                        </div>
+                    </div>
+                    <div class="h-[2px] bg-slate-200 flex-[0.5] -mx-2" id="line4"></div>
+
+                    <div class="flex flex-col items-center gap-1.5 flex-1 relative group cursor-pointer"
+                        onclick="changeStep(5)">
+                        <div id="step5-circle"
+                            class="w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center z-10 transition-all duration-500">
+                            <span class="text-xs font-black">05</span>
+                        </div>
+                    </div>
+                    <div class="h-[2px] bg-slate-200 flex-[0.5] -mx-2" id="line5"></div>
+
+                    <div class="flex flex-col items-center gap-1.5 flex-1 relative group cursor-pointer"
+                        onclick="changeStep(6)">
+                        <div id="step6-circle"
+                            class="w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center z-10 transition-all duration-500">
+                            <span class="text-xs font-black">06</span>
+                        </div>
+                    </div>
+                    <div class="h-[2px] bg-slate-200 flex-[0.5] -mx-2" id="line6"></div>
+
+                    <!-- Step 07 -->
+                    <div class="flex flex-col items-center gap-1.5 flex-1 relative group cursor-pointer"
+                        onclick="changeStep(7)">
+                        <div id="step7-circle"
+                            class="w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center z-10 transition-all duration-500">
+                            <span class="text-xs font-black">07</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Step Label Overlay -->
+                <div class="text-center -mt-6 mb-10">
+                    <span id="current-step-name"
+                        class="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest animate-in fade-in zoom-in-95">
+                        Step 01. 기본 정보
+                    </span>
+                </div>
+
+                <!-- ══════ STEP 1: Overview ══════ -->
+                <div id="step1-content" class="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <!-- Cover Image (Primary) -->
+                    <section>
+                        <label class="block text-sm font-black mb-3 text-slate-700">수업 대표 사진 (Cover) <span
+                                class="text-red-500">*</span></label>
+                        <div onclick="triggerUpload('cover')"
+                            class="relative aspect-video rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-white hover:border-primary transition-all group overflow-hidden">
+                            <div
+                                class="flex flex-col items-center group-hover:scale-110 transition-transform duration-500">
+                                <span
+                                    class="material-symbols-outlined text-4xl text-slate-300 group-hover:text-primary">add_a_photo</span>
+                                <span
+                                    class="text-xs font-bold text-slate-400 group-hover:text-primary uppercase mt-1">Upload
+                                    Cover</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="space-y-6">
+                        <h2 class="text-lg font-black flex items-center gap-2">
+                            <span class="w-1.5 h-6 bg-primary rounded-full"></span>
+                            수업 기본 정보
+                        </h2>
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-bold mb-2">수업 제목 <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" placeholder="예: [명화 오마주] 고흐의 별이 빛나는 밤"
+                                    class="form-input w-full px-4 py-4 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-medium" />
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold mb-2">대상 (레벨)</label>
+                                    <select
+                                        class="form-select w-full px-4 py-4 rounded-2xl border border-slate-200 outline-none appearance-none bg-white font-medium">
+                                        <option>심화 (Master)</option>
+                                        <option>중급 (Active)</option>
+                                        <option>초급 (Discovery)</option>
+                                        <option>입문 (Seed)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold mb-2">참고 명화 작가</label>
+                                    <select id="artist-select"
+                                        class="form-select w-full px-4 py-4 rounded-2xl border border-slate-200 outline-none appearance-none bg-white font-medium">
+                                        <option value="">선택 안함</option>
+                                        <!-- Artists will be loaded dynamically -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold mb-2">카테고리</label>
+                                    <select id="subcat-select"
+                                        class="form-select w-full px-4 py-4 rounded-2xl border border-slate-200 outline-none appearance-none bg-white font-medium">
+                                        <option value="Free">무료수업</option>
+                                        <option value="Monthly">정기수업(월간)</option>
+                                        <option value="Special">특강</option>
+                                        <option value="Masterpiece">거장연계</option>
+                                        <option value="KidsMasterpiece">어린이거장</option>
+                                        <!-- Artists Eye is a separate flow usually but can be added if needed -->
+                                    </select>
+                                </div>
+                                <div id="month-field" class="hidden">
+                                    <label class="block text-sm font-bold mb-2">해당 월 (정기수업)</label>
+                                    <input type="month" id="month-input"
+                                        class="form-input w-full px-4 py-4 rounded-2xl border border-slate-200 outline-none font-medium text-sm text-slate-700 bg-white" />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-2">소요 시간</label>
+                                <input type="text" placeholder="예: 90분"
+                                    class="form-input w-full px-4 py-4 rounded-2xl border border-slate-200 outline-none font-medium" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-2">핵심 목표</label>
+                                <textarea rows="2" placeholder="이 수업을 통해 학생들이 꼭 배워야 할 점"
+                                    class="form-textarea w-full px-4 py-4 rounded-2xl border border-slate-200 outline-none resize-none font-medium"></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Materials Checklist -->
+                    <section>
+                        <label class="block text-sm font-bold mb-3">준비물 (재료)</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+                            <label
+                                class="flex items-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:border-primary transition-all">
+                                <input type="checkbox"
+                                    class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" checked>
+                                <span class="text-xs font-bold text-slate-600">아크릴 물감</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:border-primary transition-all">
+                                <input type="checkbox"
+                                    class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
+                                <span class="text-xs font-bold text-slate-600">수채화 물감</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:border-primary transition-all">
+                                <input type="checkbox"
+                                    class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
+                                <span class="text-xs font-bold text-slate-600">오일 파스텔</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:border-primary transition-all">
+                                <input type="checkbox"
+                                    class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
+                                <span class="text-xs font-bold text-slate-600">색연필</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:border-primary transition-all">
+                                <input type="checkbox"
+                                    class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
+                                <span class="text-xs font-bold text-slate-600">클레이</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:border-primary transition-all">
+                                <input type="checkbox"
+                                    class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
+                                <span class="text-xs font-bold text-slate-600">붓</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:border-primary transition-all">
+                                <input type="checkbox"
+                                    class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
+                                <span class="text-xs font-bold text-slate-600">캔버스</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:border-primary transition-all">
+                                <input type="checkbox"
+                                    class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
+                                <span class="text-xs font-bold text-slate-600">도화지</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:border-primary transition-all">
+                                <input type="checkbox"
+                                    class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
+                                <span class="text-xs font-bold text-slate-600">팔레트</span>
+                            </label>
+                            <label
+                                class="flex items-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:border-primary transition-all">
+                                <input type="checkbox"
+                                    class="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary">
+                                <span class="text-xs font-bold text-slate-600">접착제 / 풀</span>
+                            </label>
+                        </div>
+                        <input type="text" placeholder="기타 재료 직접 입력 (예: 재활용 박스, 할핀 등)"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none text-xs font-medium transition-all" />
+                    </section>
+
+                    <!-- References Image Upload -->
+                    <section>
+                        <label class="block text-sm font-bold mb-3 text-slate-700">참고 사진 <span
+                                class="text-slate-400 font-normal">(최대 5장)</span></label>
+                        <div class="grid grid-cols-5 gap-2" id="overview-images">
+                            <div onclick="triggerUpload('refs')"
+                                class="aspect-square rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center cursor-pointer hover:bg-white hover:border-primary transition-all group">
+                                <span
+                                    class="material-symbols-outlined text-slate-300 group-hover:text-primary">add</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <button onclick="changeStep(2)"
+                        class="w-full bg-primary text-white py-4.5 rounded-2xl font-black text-sm shadow-xl shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        다음: 도입 단계 입력 <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                    </button>
+                </div>
+
+                <!-- Steps 2-6 (Stages) -->
+                <!-- Step 2: Intro -->
+                <div id="step2-content" class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <section class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-black flex items-center gap-2">
+                                <span class="w-1.5 h-6 bg-accent-purple rounded-full"></span>
+                                STAGE 01. 도입 (Introduction)
+                            </h2>
+                            <button
+                                class="text-[10px] font-bold text-primary flex items-center gap-1 bg-primary/5 px-3 py-1.5 rounded-xl hover:bg-primary/10 transition-colors">
+                                <span class="material-symbols-outlined text-sm">auto_awesome</span> AI 이미지 생성
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <div
+                                class="aspect-video bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 cursor-pointer group hover:bg-white hover:border-primary transition-all">
+                                <span
+                                    class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors text-4xl">add_photo_alternate</span>
+                                <span
+                                    class="text-[10px] font-bold text-slate-400 group-hover:text-primary transition-colors uppercase">Upload
+                                    Stage Image</span>
+                            </div>
+                            <div class="relative group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-[11px] font-black text-slate-400 uppercase">활동 상세
+                                        설명</label>
+                                    <button
+                                        class="text-[10px] font-bold text-accent-purple flex items-center gap-1 hover:brightness-90 transition-all">
+                                        <span class="material-symbols-outlined text-xs">auto_fix_high</span> ✨ AI 문구 다듬기
+                                    </button>
+                                </div>
+                                <textarea rows="4" placeholder="학생들과 함께 나눌 도입부 활동 내용을 기입해 주세요."
+                                    class="form-textarea w-full p-4 rounded-2xl bg-slate-50 border-none text-sm outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+                            </div>
+                            <div class="relative group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-[11px] font-black text-primary uppercase">교사 유도 발문
+                                        (Prompt)</label>
+                                    <button
+                                        class="text-[10px] font-bold text-primary flex items-center gap-1 hover:brightness-90 transition-all">
+                                        <span class="material-symbols-outlined text-xs">chat_bubble</span> ✨ AI 발문 추천
+                                    </button>
+                                </div>
+                                <textarea rows="2" placeholder='예: "오늘 우리가 그릴 그림 속 주인공은 누구일까요?"'
+                                    class="w-full p-4 rounded-2xl bg-primary/5 border-none text-sm font-medium text-primary outline-none focus:ring-2 focus:ring-primary/20 italic placeholder:text-primary/40"></textarea>
+                            </div>
+                        </div>
+                    </section>
+                    <div class="flex gap-3 mt-8">
+                        <button onclick="changeStep(1)"
+                            class="flex-1 py-4.5 rounded-2xl border border-slate-200 font-black text-sm flex items-center justify-center gap-2">
+                            이전
+                        </button>
+                        <button onclick="changeStep(3)"
+                            class="flex-[2] bg-primary text-white py-4.5 rounded-2xl font-black text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2">
+                            다음: 전개 1단계 입력 <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Dev 1 -->
+                <div id="step3-content" class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <section class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-black flex items-center gap-2">
+                                <span class="w-1.5 h-6 bg-accent-orange rounded-full"></span>
+                                STAGE 02. 전개 1 (Activity 1)
+                            </h2>
+                            <button
+                                class="text-[10px] font-bold text-primary flex items-center gap-1 bg-primary/5 px-3 py-1.5 rounded-xl hover:bg-primary/10 transition-colors">
+                                <span class="material-symbols-outlined text-sm">auto_awesome</span> AI 이미지 생성
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <div
+                                class="aspect-video bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 cursor-pointer group hover:bg-white hover:border-primary transition-all">
+                                <span
+                                    class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors text-4xl">add_photo_alternate</span>
+                                <span
+                                    class="text-[10px] font-bold text-slate-400 group-hover:text-primary transition-colors uppercase">Upload
+                                    Stage Image</span>
+                            </div>
+                            <div class="relative group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-[11px] font-black text-slate-400 uppercase">활동 상세
+                                        설명</label>
+                                    <button
+                                        class="text-[10px] font-bold text-accent-purple flex items-center gap-1 hover:brightness-90 transition-all">
+                                        <span class="material-symbols-outlined text-xs">auto_fix_high</span> ✨ AI 문구 다듬기
+                                    </button>
+                                </div>
+                                <textarea rows="4" placeholder="작업 내용을 기입해 주세요."
+                                    class="w-full p-4 rounded-2xl bg-slate-50 border-none text-sm outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+                            </div>
+                            <div class="relative group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-[11px] font-black text-primary uppercase">교사 유도 발문
+                                        (Prompt)</label>
+                                    <button
+                                        class="text-[10px] font-bold text-primary flex items-center gap-1 hover:brightness-90 transition-all">
+                                        <span class="material-symbols-outlined text-xs">chat_bubble</span> ✨ AI 발문 추천
+                                    </button>
+                                </div>
+                                <textarea rows="2" placeholder='유도 발문: "이제 스케치를 마치고 밑그림을 그려볼까요?"'
+                                    class="w-full p-4 rounded-2xl bg-primary/5 border-none text-sm font-medium text-primary outline-none focus:ring-2 focus:ring-primary/20 italic placeholder:text-primary/40"></textarea>
+                            </div>
+                        </div>
+                    </section>
+                    <div class="flex gap-3 mt-8">
+                        <button onclick="changeStep(2)"
+                            class="flex-1 py-4.5 rounded-2xl border border-slate-200 font-black text-sm flex items-center justify-center gap-2">이전</button>
+                        <button onclick="changeStep(4)"
+                            class="flex-[2] bg-primary text-white py-4.5 rounded-2xl font-black text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2">
+                            다음: 전개 2단계 입력 <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Dev 2 -->
+                <div id="step4-content" class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <section class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-black flex items-center gap-2">
+                                <span class="w-1.5 h-6 bg-accent-orange rounded-full"></span>
+                                STAGE 03. 전개 2 (Activity 2)
+                            </h2>
+                            <button
+                                class="text-[10px] font-bold text-primary flex items-center gap-1 bg-primary/5 px-3 py-1.5 rounded-xl hover:bg-primary/10 transition-colors">
+                                <span class="material-symbols-outlined text-sm">auto_awesome</span> AI 이미지 생성
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <div
+                                class="aspect-video bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 cursor-pointer group hover:bg-white hover:border-primary transition-all">
+                                <span
+                                    class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors text-4xl">add_photo_alternate</span>
+                                <span
+                                    class="text-[10px] font-bold text-slate-400 group-hover:text-primary transition-colors uppercase">Upload
+                                    Stage Image</span>
+                            </div>
+                            <div class="relative group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-[11px] font-black text-slate-400 uppercase">활동 상세
+                                        설명</label>
+                                    <button
+                                        class="text-[10px] font-bold text-accent-purple flex items-center gap-1 hover:brightness-90 transition-all">
+                                        <span class="material-symbols-outlined text-xs">auto_fix_high</span> ✨ AI 문구 다듬기
+                                    </button>
+                                </div>
+                                <textarea rows="4" placeholder="작업 내용을 기입해 주세요."
+                                    class="w-full p-4 rounded-2xl bg-slate-50 border-none text-sm outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+                            </div>
+                            <div class="relative group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-[11px] font-black text-primary uppercase">교사 유도 발문
+                                        (Prompt)</label>
+                                    <button
+                                        class="text-[10px] font-bold text-primary flex items-center gap-1 hover:brightness-90 transition-all">
+                                        <span class="material-symbols-outlined text-xs">chat_bubble</span> ✨ AI 발문 추천
+                                    </button>
+                                </div>
+                                <textarea rows="2" placeholder='유도 발문: "어떤 색을 먼저 칠해보면 좋을까요?"'
+                                    class="w-full p-4 rounded-2xl bg-primary/5 border-none text-sm font-medium text-primary outline-none focus:ring-2 focus:ring-primary/20 italic placeholder:text-primary/40"></textarea>
+                            </div>
+                        </div>
+                    </section>
+                    <div class="flex gap-3 mt-8">
+                        <button onclick="changeStep(3)"
+                            class="flex-1 py-4.5 rounded-2xl border border-slate-200 font-black text-sm flex items-center justify-center gap-2">이전</button>
+                        <button onclick="changeStep(5)"
+                            class="flex-[2] bg-primary text-white py-4.5 rounded-2xl font-black text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2">
+                            다음: 전개 3단계 입력 <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 5: Dev 3 -->
+                <div id="step5-content" class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <section class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-black flex items-center gap-2">
+                                <span class="w-1.5 h-6 bg-accent-orange rounded-full"></span>
+                                STAGE 04. 전개 3 (Activity 3)
+                            </h2>
+                            <button
+                                class="text-[10px] font-bold text-primary flex items-center gap-1 bg-primary/5 px-3 py-1.5 rounded-xl hover:bg-primary/10 transition-colors">
+                                <span class="material-symbols-outlined text-sm">auto_awesome</span> AI 이미지 생성
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <div
+                                class="aspect-video bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 cursor-pointer group hover:bg-white hover:border-primary transition-all">
+                                <span
+                                    class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors text-4xl">add_photo_alternate</span>
+                                <span
+                                    class="text-[10px] font-bold text-slate-400 group-hover:text-primary transition-colors uppercase">Upload
+                                    Stage Image</span>
+                            </div>
+                            <div class="relative group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-[11px] font-black text-slate-400 uppercase">활동 상세
+                                        설명</label>
+                                    <button
+                                        class="text-[10px] font-bold text-accent-purple flex items-center gap-1 hover:brightness-90 transition-all">
+                                        <span class="material-symbols-outlined text-xs">auto_fix_high</span> ✨ AI 문구 다듬기
+                                    </button>
+                                </div>
+                                <textarea rows="4" placeholder="작업 내용을 기입해 주세요. 마무리 완성 단계입니다."
+                                    class="w-full p-4 rounded-2xl bg-slate-50 border-none text-sm outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+                            </div>
+                            <div class="relative group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-[11px] font-black text-primary uppercase">교사 유도 발문
+                                        (Prompt)</label>
+                                    <button
+                                        class="text-[10px] font-bold text-primary flex items-center gap-1 hover:brightness-90 transition-all">
+                                        <span class="material-symbols-outlined text-xs">chat_bubble</span> ✨ AI 발문 추천
+                                    </button>
+                                </div>
+                                <textarea rows="2" placeholder='유도 발문: "마지막으로 디테일을 살려볼까요?"'
+                                    class="w-full p-4 rounded-2xl bg-primary/5 border-none text-sm font-medium text-primary outline-none focus:ring-2 focus:ring-primary/20 italic placeholder:text-primary/40"></textarea>
+                            </div>
+                        </div>
+                    </section>
+                    <div class="flex gap-3 mt-8">
+                        <button onclick="changeStep(4)"
+                            class="flex-1 py-4.5 rounded-2xl border border-slate-200 font-black text-sm flex items-center justify-center gap-2">이전</button>
+                        <button onclick="changeStep(6)"
+                            class="flex-[2] bg-primary text-white py-4.5 rounded-2xl font-black text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2">
+                            다음: 정리 단계 입력 <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 6: Conclusion -->
+                <div id="step6-content" class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <section class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-black flex items-center gap-2">
+                                <span class="w-1.5 h-6 bg-slate-900 rounded-full"></span>
+                                STAGE 05. 정리 (Conclusion)
+                            </h2>
+                            <button
+                                class="text-[10px] font-bold text-primary flex items-center gap-1 bg-primary/5 px-3 py-1.5 rounded-xl hover:bg-primary/10 transition-colors">
+                                <span class="material-symbols-outlined text-sm">auto_awesome</span> AI 이미지 생성
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <div
+                                class="aspect-video bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 cursor-pointer group hover:bg-white hover:border-primary transition-all">
+                                <span
+                                    class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors text-4xl">add_photo_alternate</span>
+                                <span
+                                    class="text-[10px] font-bold text-slate-400 group-hover:text-primary transition-colors uppercase">Upload
+                                    Stage Image</span>
+                            </div>
+                            <div class="relative group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-[11px] font-black text-slate-400 uppercase">활동 상세
+                                        설명</label>
+                                    <button
+                                        class="text-[10px] font-bold text-accent-purple flex items-center gap-1 hover:brightness-90 transition-all">
+                                        <span class="material-symbols-outlined text-xs">auto_fix_high</span> ✨ AI 문구 다듬기
+                                    </button>
+                                </div>
+                                <textarea rows="4" placeholder="수업을 정리하고 학생들과 나눌 소감을 기입해 주세요."
+                                    class="w-full p-4 rounded-2xl bg-slate-50 border-none text-sm outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+                            </div>
+                            <div class="relative group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-[11px] font-black text-primary uppercase">교사 유도 발문
+                                        (Prompt)</label>
+                                    <button
+                                        class="text-[10px] font-bold text-primary flex items-center gap-1 hover:brightness-90 transition-all">
+                                        <span class="material-symbols-outlined text-xs">chat_bubble</span> ✨ AI 발문 추천
+                                    </button>
+                                </div>
+                                <textarea rows="2" placeholder='발문: "오늘 수업에서 가장 재미있었던 부분은 어디였나요?"'
+                                    class="w-full p-4 rounded-2xl bg-primary/5 border-none text-sm font-medium text-primary outline-none focus:ring-2 focus:ring-primary/20 italic placeholder:text-primary/40"></textarea>
+                            </div>
+                        </div>
+                    </section>
+                    <div class="flex gap-3 mt-8">
+                        <button onclick="changeStep(5)"
+                            class="flex-1 py-4.5 rounded-2xl border border-slate-200 font-black text-sm flex items-center justify-center gap-2">이전</button>
+                        <button onclick="changeStep(7)"
+                            class="flex-[2] bg-primary text-white py-4.5 rounded-2xl font-black text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2">
+                            다음: 완성작 갤러리 <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ══════ STEP 7: Gallery ══════ -->
+                <div id="step7-content" class="hidden space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <!-- Gallery Main View (Initial) -->
+                    <div id="gallery-main-view" class="space-y-8">
+                        <section>
+                            <h2 class="text-lg font-black mb-2 flex items-center gap-2">
+                                <span class="w-1.5 h-6 bg-success rounded-full"></span>
+                                완성 결과물 갤러리
+                            </h2>
+                            <p class="text-xs text-slate-400 mb-6">학생 작품들을 최대 12장까지 등록해 주세요.</p>
+                            <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-3xl border border-slate-100 mb-6"
+                                id="gallery-upload-grid">
+                                <div
+                                    class="aspect-square rounded-2xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-white hover:border-primary transition-all group">
+                                    <span
+                                        class="material-symbols-outlined text-slate-400 group-hover:text-primary">upload_file</span>
+                                    <span
+                                        class="text-[8px] font-black text-slate-400 uppercase tracking-tighter group-hover:text-primary">Add
+                                        More</span>
+                                </div>
+                            </div>
+
+                            <!-- AI Auto-Hashtags -->
+                            <div class="bg-primary/5 rounded-3xl p-6 border border-primary/10">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-xs font-black text-primary uppercase flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-sm">label</span> AI 연관 태그 추출
+                                    </h3>
+                                    <button
+                                        class="text-[10px] font-bold text-white bg-primary px-3 py-1.5 rounded-full hover:brightness-110 transition-all shadow-lg shadow-primary/20">
+                                        추출하기 (스캔)
+                                    </button>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <span
+                                        class="px-3 py-1.5 bg-white border border-slate-200 rounded-full text-[10px] font-bold text-slate-400">#수업
+                                        내용을 쓰면 태그가 추천됩니다</span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- AI Level Review UI (Hidden initially) -->
+                    <div id="ai-level-review-ui" class="hidden space-y-6 animate-in slide-in-from-top-4 duration-500">
+                        <div class="bg-slate-100 p-1.5 rounded-2xl flex gap-1 mb-6">
+                            <button onclick="switchReviewTab(1)" id="tab-lvl1"
+                                class="flex-1 py-3 text-[11px] font-black rounded-xl bg-white shadow-sm transition-all">원본
+                                레벨</button>
+                            <button onclick="switchReviewTab(2)" id="tab-lvl2"
+                                class="flex-1 py-3 text-[11px] font-black rounded-xl text-slate-400 hover:bg-white/50 transition-all">추천
+                                레벨 A (AI)</button>
+                            <button onclick="switchReviewTab(3)" id="tab-lvl3"
+                                class="flex-1 py-3 text-[11px] font-black rounded-xl text-slate-400 hover:bg-white/50 transition-all">추천
+                                레벨 B (AI)</button>
+                        </div>
+
+                        <!-- Level 1 Content (Read Only) -->
+                        <div id="review-content-1" class="space-y-4">
+                            <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                                <h4 class="text-[10px] font-black text-slate-400 uppercase mb-2">원본 내용 요약</h4>
+                                <div id="lvl1-summary"
+                                    class="text-sm font-medium text-slate-600 leading-relaxed italic">
+                                    작성하신 원본 데이터가 이곳에 표시됩니다. (수정 불가능)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Level 2 Content (Editable) -->
+                        <div id="review-content-2" class="hidden space-y-4">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">추천 레벨 A 요약
+                                        설명</label>
+                                    <textarea id="lvl2-desc" rows="4"
+                                        class="w-full p-4 rounded-2xl bg-white border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                                        placeholder="해당 연령대에 맞춰 조정된 내용을 확인하세요."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-primary uppercase mb-2">추천 레벨 A 전용
+                                        발문</label>
+                                    <textarea id="lvl2-prompt" rows="2"
+                                        class="w-full p-4 rounded-2xl bg-primary/5 border border-primary/10 text-sm font-medium text-primary outline-none"
+                                        placeholder="해당 레벨 전용 발문입니다."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Level 3 Content (Editable) -->
+                        <div id="review-content-3" class="hidden space-y-4">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">추천 레벨 B 요약
+                                        설명</label>
+                                    <textarea id="lvl3-desc" rows="4"
+                                        class="w-full p-4 rounded-2xl bg-white border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                                        placeholder="해당 연령대에 맞춰 조정된 내용을 확인하세요."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-primary uppercase mb-2">추천 레벨 B 전용
+                                        발문</label>
+                                    <textarea id="lvl3-prompt" rows="2"
+                                        class="w-full p-4 rounded-2xl bg-primary/5 border border-primary/10 text-sm font-medium text-primary outline-none"
+                                        placeholder="해당 레벨 전용 발문입니다."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Buttons -->
+                    <div class="flex flex-col gap-3 mt-10">
+                        <div id="standard-publish-group" class="flex gap-3">
+                            <button onclick="changeStep(6)"
+                                class="flex-1 py-4.5 rounded-2xl border border-slate-200 font-black text-sm flex items-center justify-center gap-2">이전</button>
+                            <button onclick="downloadMaterials()"
+                                class="flex-1 py-4.5 rounded-2xl border border-primary text-primary font-black text-sm flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-lg">download</span> 다운로드
+                            </button>
+                            <button id="publish-btn" onclick="publishClass()"
+                                class="flex-[2] bg-slate-900 text-white py-4.5 rounded-2xl font-black text-sm shadow-xl shadow-slate-900/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">최종
+                                등록 완료</button>
+                        </div>
+
+                        <button id="ai-derive-btn" onclick="generateAILevels()"
+                            class="w-full py-4.5 rounded-2xl bg-gradient-to-r from-accent-purple via-primary to-accent-orange text-white font-black text-sm shadow-xl shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-lg">auto_awesome</span> [AI 연령별 수업 레벨 자동 생성]
+                        </button>
+
+                        <button id="multi-publish-btn" onclick="publishClass()"
+                            class="hidden w-full bg-slate-900 text-white py-5 rounded-3xl font-black text-base shadow-2xl shadow-slate-900/40 active:scale-[0.95] transition-all flex items-center justify-center gap-3">
+                            <span class="material-symbols-outlined text-xl">verified</span> [3개 레벨 동시 게시 및 완료]
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Bottom Nav (Mobile) -->
+        <nav
+            class="bottom-nav fixed bottom-0 left-0 right-0 flex border-t border-slate-200 bg-white/90 backdrop-blur-xl px-4 pb-5 pt-2 z-50">
+            <a href="../../index.html"
+                class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">home</span>
+                <span class="text-[10px] font-bold uppercase">Home</span>
+            </a>
+            <a href="../../classes.html"
+                class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">school</span>
+                <span class="text-[10px] font-bold uppercase">Classes</span>
+            </a>
+            <div class="flex-1 flex flex-col items-center relative -top-5 gap-1">
+                <button
+                    class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-xl shadow-primary/40 border-4 border-background-light">
+                    <span class="material-symbols-outlined text-2xl">add</span>
+                </button>
+                <span class="text-[10px] font-bold uppercase text-primary">Create</span>
+            </div>
+            <a href="../../classes.html"
+                class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">gallery_thumbnail</span>
+                <span class="text-[10px] font-bold uppercase">Gallery</span>
+            </a>
+            <a href="profile.html"
+                class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">person</span>
+                <span class="text-[10px] font-bold uppercase">Profile</span>
+            </a>
+        </nav>
+
+        <script>
+            const STEP_NAMES = [
+                "Step 01. 기본 정보",
+                "Step 02. 도입 (Intro)",
+                "Step 03. 전개 1 (Activity 1)",
+                "Step 04. 전개 2 (Activity 2)",
+                "Step 05. 전개 3 (Activity 3)",
+                "Step 06. 정리 (Conclusion)",
+                "Step 07. 완성작 갤러리"
+            ];
+
+            // ── Step Navigation ──
+            function changeStep(step) {
+                // Update UI
+                document.querySelectorAll('[id$="-content"]').forEach(el => el.classList.add('hidden'));
+                document.getElementById(`step${step}-content`).classList.remove('hidden');
+
+                // Update Label
+                document.getElementById('current-step-name').innerText = STEP_NAMES[step - 1];
+
+                // Show/hide sticky publish bar if at last step
+                const stickyBar = document.getElementById('sticky-publish-bar');
+                if (stickyBar) {
+                    if (step === 7) {
+                        stickyBar.style.display = 'flex';
+                    } else {
+                        stickyBar.style.display = 'none';
+                    }
+                }
+
+                // Update Indicators
+                for (let i = 1; i <= 7; i++) {
+                    const circle = document.getElementById(`step${i}-circle`);
+                    const line = document.getElementById(`line${i}`);
+
+                    if (i < step) {
+                        circle.className = "w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg z-10 transition-all duration-300";
+                        circle.innerHTML = '<span class="material-symbols-outlined text-sm">check</span>';
+                        if (line) line.className = "h-[2px] bg-primary flex-[0.5] -mx-2";
+                    } else if (i === step) {
+                        circle.className = "w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-xl shadow-primary/30 z-10 scale-110 transition-all duration-300";
+                        circle.innerHTML = `<span class="text-xs font-black">0${i}</span>`;
+                        if (line) line.className = "h-[2px] bg-slate-200 flex-[0.5] -mx-2";
+                    } else {
+                        circle.className = "w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center z-10 transition-all duration-300";
+                        circle.innerHTML = `<span class="text-xs font-black">0${i}</span>`;
+                        if (line) line.className = "h-[2px] bg-slate-200 flex-[0.5] -mx-2";
+                    }
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            function triggerUpload(group) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.multiple = true;
+                input.onchange = (e) => handleImageUpload(e.target.files, group);
+                input.click();
+            }
+
+            async function handleImageUpload(files, group) {
+                if (!files || files.length === 0) return;
+
+                try {
+                    LunaApp.toast('이미지 업로드를 시작합니다...');
+
+                    const uploadPromises = Array.from(files).map(async (file) => {
+                        const storageRef = firebase.storage().ref();
+                        const fileName = `classes/${Date.now()}_${file.name}`;
+                        const fileRef = storageRef.child(fileName);
+
+                        // Upload file
+                        const snapshot = await fileRef.put(file);
+                        const downloadURL = await snapshot.ref.getDownloadURL();
+
+                        // Generate thumbnail
+                        const generateThumbnailFunction = firebase.functions().httpsCallable('generateThumbnail');
+                        const thumbnailResult = await generateThumbnailFunction({
+                            imageUrl: downloadURL,
+                            width: 300,
+                            height: 200
+                        });
+
+                        return {
+                            original: downloadURL,
+                            thumbnail: thumbnailResult.data.thumbnailUrl,
+                            fileName: file.name
+                        };
+                    });
+
+                    const uploadedImages = await Promise.all(uploadPromises);
+
+                    // Add images to current step
+                    const currentStep = document.querySelector('[id$="-content"]:not(.hidden)');
+                    if (currentStep) {
+                        const imageContainer = currentStep.querySelector('.image-container') || createImageContainer(currentStep);
+                        uploadedImages.forEach(img => {
+                            addImageToContainer(imageContainer, img);
+                        });
+                    }
+
+                    LunaApp.toast(`${uploadedImages.length}개의 이미지가 업로드되었습니다.`);
+
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    LunaApp.toast('이미지 업로드에 실패했습니다: ' + error.message);
+                }
+            }
+
+            function createImageContainer(stepElement) {
+                const container = document.createElement('div');
+                container.className = 'image-container grid grid-cols-2 md:grid-cols-3 gap-4 mt-4';
+                stepElement.appendChild(container);
+                return container;
+            }
+
+            function addImageToContainer(container, imageData) {
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'relative group';
+                imageDiv.innerHTML = `
+                <img src="${imageData.thumbnail}" alt="${imageData.fileName}"
+                     class="w-full h-32 object-cover rounded-lg border-2 border-gray-200 hover:border-primary transition-colors">
+                <button onclick="removeImage(this)" class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="material-symbols-outlined text-xs">close</span>
+                </button>
+                <input type="hidden" name="images[]" value="${JSON.stringify(imageData)}">
+            `;
+                container.appendChild(imageDiv);
+            }
+
+            function removeImage(button) {
+                button.closest('.relative').remove();
+            }
+
+            // ── Publish class ──
+            async function publishClass() {
+                try {
+                    // Collect all form data
+                    const classData = {
+                        title: document.querySelector('#step1-content input[type="text"]').value || 'New Lesson',
+                        description: document.querySelector('#step1-content textarea').value || '',
+                        // keep original "level" selection as category if desired
+                        category: document.querySelector('#step1-content select:not(#subcat-select)').value || 'art',
+                        ageRange: document.querySelector('#step1-content input[type="number"]').value || '5-8',
+                        duration: document.querySelector('#step1-content input[type="number"]:nth-of-type(2)').value || 60,
+                        materials: Array.from(document.querySelectorAll('#step1-content input[type="checkbox"]:checked')).map(cb => cb.value),
+                        artistId: document.getElementById('artist-select').value || null,
+                        subCategory: document.getElementById('subcat-select').value || null,
+                        month: document.getElementById('month-input') ? document.getElementById('month-input').value : null,
+                        steps: []
+                    };
+
+                    // Collect step data
+                    for (let i = 2; i <= 7; i++) {
+                        const stepContent = document.getElementById(`step${i}-content`);
+                        if (stepContent) {
+                            const images = [];
+                            const imageInputs = stepContent.querySelectorAll('input[name="images[]"]');
+                            imageInputs.forEach(input => {
+                                images.push(JSON.parse(input.value));
+                            });
+
+                            const stepData = {
+                                title: stepContent.querySelector('h3')?.textContent || `Step ${i}`,
+                                content: stepContent.querySelector('textarea')?.value || '',
+                                images: images
+                            };
+                            classData.steps.push(stepData);
+                        }
+                    }
+
+                    // Call Firebase Function
+                    const createClassFunction = firebase.functions().httpsCallable('createClass');
+                    const result = await createClassFunction({ classData });
+
+                    if (result.data.success) {
+                        LunaApp.toast('수업이 성공적으로 등록되었습니다!');
+                        setTimeout(() => {
+                            // after creating, if a month param exists we can redirect to that month view
+                            let redirect = 'classes.html';
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const m = urlParams.get('month');
+                            if (m) redirect += '#' + m;
+                            window.location.href = redirect;
+                        }, 1500);
+                    } else {
+                        throw new Error(result.data.message);
+                    }
+
+                } catch (error) {
+                    console.error('Publish error:', error);
+                    LunaApp.toast('수업 등록에 실패했습니다: ' + error.message);
+                }
+            }
+
+            async function downloadMaterials() {
+                try {
+                    LunaApp.toast('수업 자료를 준비하고 있습니다...');
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            // ── Subcategory / Month helper ──
+            document.addEventListener('DOMContentLoaded', () => {
+                const subSelect = document.getElementById('subcat-select');
+                const monthField = document.getElementById('month-field');
+                const monthInput = document.getElementById('month-input');
+
+                function updateMonthVisibility() {
+                    if (subSelect && monthField) {
+                        if (subSelect.value === 'Monthly') {
+                            monthField.classList.remove('hidden');
+                            // set default month if empty
+                            if (monthInput && !monthInput.value) {
+                                const urlParams = new URLSearchParams(window.location.search);
+                                const mparam = urlParams.get('month');
+                                if (mparam) monthInput.value = mparam;
+                                else {
+                                    const today = new Date();
+                                    const yyyy = today.getFullYear();
+                                    const mm = String(today.getMonth() + 1).padStart(2, '0');
+                                    monthInput.value = `${yyyy}-${mm}`;
+                                }
+                            }
+                        } else {
+                            monthField.classList.add('hidden');
+                        }
+                    }
+                }
+
+                if (subSelect) {
+                    subSelect.addEventListener('change', updateMonthVisibility);
+                }
+
+                // prepopulate from URL
+                const params = new URLSearchParams(window.location.search);
+                const sub = params.get('sub');
+                if (sub && subSelect) {
+                    subSelect.value = sub;
+                }
+                const m = params.get('month');
+                if (m && monthInput) {
+                    monthInput.value = m;
+                }
+                updateMonthVisibility();
+            });
+
+            // ── AI Level Derivation UI ──
+            async function generateAILevels() {
+                try {
+                    LunaApp.toast('AI가 연령별 콘텐츠를 생성하고 있습니다...');
+
+                    // For now, we'll create a temporary class ID for testing
+                    // In production, this would be called after publishing
+                    const tempClassId = 'temp_' + Date.now();
+
+                    // Collect current form data
+                    const classData = {
+                        title: document.querySelector('#step1-content input[type="text"]').value || 'New Lesson',
+                        description: document.querySelector('#step1-content textarea').value || '',
+                        steps: []
+                    };
+
+                    // Collect step data and images
+                    for (let i = 2; i <= 7; i++) {
+                        const stepContent = document.getElementById(`step${i}-content`);
+                        if (stepContent) {
+                            const images = [];
+                            const imageInputs = stepContent.querySelectorAll('input[name="images[]"]');
+                            imageInputs.forEach(input => {
+                                images.push(JSON.parse(input.value));
+                            });
+
+                            const stepData = {
+                                title: stepContent.querySelector('h3')?.textContent || `Step ${i}`,
+                                content: stepContent.querySelector('textarea')?.value || '',
+                                images: images
+                            };
+                            classData.steps.push(stepData);
+                        }
+                    }
+
+                    // Call Firebase Function
+                    const downloadFunction = firebase.functions().httpsCallable('downloadClassMaterials');
+                    const result = await downloadFunction({ classId: tempClassId, classData });
+
+                    if (result.data.success) {
+                        // Trigger download
+                        const link = document.createElement('a');
+                        link.href = result.data.downloadUrl;
+                        link.download = `${classData.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_materials.zip`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        LunaApp.toast('수업 자료 다운로드가 시작되었습니다.');
+                    } else {
+                        throw new Error(result.data.message);
+                    }
+
+                } catch (error) {
+                    console.error('Download error:', error);
+                    LunaApp.toast('다운로드에 실패했습니다: ' + error.message);
+                }
+            }
+
+            // ── AI Level Derivation UI ──
+            async function generateAILevels() {
+                try {
+                    LunaApp.toast('AI가 연령별 콘텐츠를 생성하고 있습니다...');
+
+                    // Get original content
+                    const originalContent = document.querySelector('#step1-content textarea')?.value || "원본 수업 내용";
+
+                    // Generate content for different age levels
+                    const generateAIContentFunction = firebase.functions().httpsCallable('generateAIContent');
+
+                    const [level2Result, level3Result] = await Promise.all([
+                        generateAIContentFunction({
+                            originalContent: originalContent,
+                            targetAge: '5-6',
+                            contentType: 'description'
+                        }),
+                        generateAIContentFunction({
+                            originalContent: originalContent,
+                            targetAge: '3-4',
+                            contentType: 'description'
+                        })
+                    ]);
+
+                    // UI Toggle
+                    document.getElementById('gallery-main-view').classList.add('hidden');
+                    document.getElementById('ai-level-review-ui').classList.remove('hidden');
+                    document.getElementById('standard-publish-group').classList.add('hidden');
+                    document.getElementById('ai-derive-btn').classList.add('hidden');
+                    document.getElementById('multi-publish-btn').classList.remove('hidden');
+
+                    // Populate content
+                    document.getElementById('lvl1-summary').innerText =
+                        "[원본 레벨]: " + originalContent + " ... (데이터 분석 완료)";
+
+                    document.getElementById('lvl2-desc').value = level2Result.data.generatedContent;
+                    document.getElementById('lvl2-prompt').value = "자, 이제 우리 친구들아! 이 부분은 조금 어려울 수 있으니까 선생님이랑 천천히 같이 해볼까?";
+
+                    document.getElementById('lvl3-desc').value = level3Result.data.generatedContent;
+                    document.getElementById('lvl3-prompt').value = "얘들아! 선생님이랑 같이 빨간색 클레이를 동글동글하게 만들어 볼까요? 와, 정말 잘한다!";
+
+                    LunaApp.toast('AI가 연령별 레벨 2, 3 내용을 최적화하여 생성했습니다.');
+
+                } catch (error) {
+                    console.error('AI generation error:', error);
+                    LunaApp.toast('AI 콘텐츠 생성에 실패했습니다: ' + error.message);
+                }
+            }
+
+            function switchReviewTab(level) {
+                // Tab active states
+                for (let i = 1; i <= 3; i++) {
+                    const tab = document.getElementById(`tab-lvl${i}`);
+                    const content = document.getElementById(`review-content-${i}`);
+                    if (i === level) {
+                        tab.classList.add('bg-white', 'shadow-sm');
+                        tab.classList.remove('text-slate-400');
+                        content.classList.remove('hidden');
+                    } else {
+                        tab.classList.remove('bg-white', 'shadow-sm');
+                        tab.classList.add('text-slate-400');
+                        content.classList.add('hidden');
+                    }
+                }
+            }
+
+            // ── Load Artists Data ──
+            async function loadArtistsData() {
+                try {
+                    const response = await fetch('../../data/cards/100_artists.json');
+                    const artists = await response.json();
+
+                    const artistSelect = document.getElementById('artist-select');
+                    artists.forEach(artist => {
+                        const option = document.createElement('option');
+                        option.value = artist.id;
+                        option.textContent = `${artist.title_ko} (${artist.title_en})`;
+                        artistSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Failed to load artists data:', error);
+                }
+            }
+
+            // ── Language picker ──
+            function toggleLangCre() {
+                var m = document.getElementById('lang-menu-cre');
+                m.style.display = m.style.display === 'block' ? 'none' : 'block';
+            }
+            document.addEventListener('DOMContentLoaded', function () {
+                // Apply current lang
+                var lang = localStorage.getItem('lw_lang') || 'en';
+                if (typeof lwApplyLang === 'function') lwApplyLang(lang);
+
+                // Render picker
+                if (typeof lwRenderLangPicker === 'function') {
+                    lwRenderLangPicker('lang-menu-cre');
+                }
+
+                // Load artists data
+                loadArtistsData();
+            });
+            document.addEventListener('click', function (e) {
+                const c = document.getElementById('lang-container-cre');
+                if (c && !c.contains(e.target)) {
+                    var m = document.getElementById('lang-menu-cre');
+                    if (m) m.style.display = 'none';
+                }
+            });
+        </script>
+
+        <!-- Toast Container -->
+        <div class="toast-container"></div>
+    </body>
+
+</html>

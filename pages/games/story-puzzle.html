@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📝 문장 만들기 퍼즐</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+    --bg: #FFF8F0;
+    --card-who: #FF6B6B;
+    --card-when: #FFA94D;
+    --card-where: #51CF66;
+    --card-what: #339AF0;
+    --card-how: #CC5DE8;
+    --card-why: #FF922B;
+    --slot-empty: #F1F3F5;
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-hover: 0 6px 20px rgba(0,0,0,0.15);
+}
+body {
+    font-family: 'Jua', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Floating decorations */
+body::before {
+    content: '✏️ 📖 🌈 ⭐ 🎨 📝 🦋 🌸';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    font-size: 28px;
+    word-spacing: 80px;
+    line-height: 120px;
+    opacity: 0.07;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, #FF6B6B 0%, #FFA94D 25%, #51CF66 50%, #339AF0 75%, #CC5DE8 100%);
+    padding: 4px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.header-inner {
+    background: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 12px;
+}
+.header h1 {
+    font-size: 26px;
+    background: linear-gradient(135deg, #FF6B6B, #CC5DE8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.header .sub {
+    font-family: 'Gaegu', cursive;
+    font-size: 14px;
+    color: #868E96;
+}
+.level-badge {
+    background: linear-gradient(135deg, #FFD43B, #FFA94D);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s;
+}
+.level-badge:hover { transform: scale(1.05); }
+.level-badge:active { transform: scale(0.95); }
+
+.score-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    color: #495057;
+}
+.score-bar .stars { color: #FFD43B; font-size: 20px; letter-spacing: 2px; }
+.combo {
+    background: #FFF3BF;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #E67700;
+    display: none;
+}
+.combo.active { display: inline-block; animation: comboPop 0.3s ease; }
+
+@keyframes comboPop {
+    0% { transform: scale(0.5); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Main content */
+.main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 100px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Sentence frame */
+.sentence-frame {
+    background: white;
+    border-radius: 24px;
+    padding: 28px 24px 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 28px;
+    border: 3px solid #F1F3F5;
+    position: relative;
+}
+.sentence-frame::before {
+    content: '📝 문장을 완성해봐요!';
+    position: absolute;
+    top: -14px;
+    left: 24px;
+    background: white;
+    padding: 2px 12px;
+    font-size: 14px;
+    color: #868E96;
+    border-radius: 8px;
+}
+.sentence-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-height: 80px;
+}
+
+/* Slots */
+.slot {
+    width: 120px;
+    height: 72px;
+    border-radius: 16px;
+    border: 3px dashed #DEE2E6;
+    background: var(--slot-empty);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: pointer;
+}
+.slot.highlight {
+    border-color: var(--slot-color);
+    background: color-mix(in srgb, var(--slot-color) 8%, white);
+    transform: scale(1.05);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--slot-color) 20%, transparent);
+}
+.slot .slot-label {
+    font-size: 11px;
+    color: #ADB5BD;
+    margin-bottom: 2px;
+}
+.slot .slot-emoji {
+    font-size: 22px;
+    opacity: 0.4;
+}
+.slot.filled {
+    border-style: solid;
+    border-color: var(--slot-color);
+    background: color-mix(in srgb, var(--slot-color) 12%, white);
+}
+.slot.filled .slot-label,
+.slot.filled .slot-emoji { display: none; }
+.slot.filled .filled-text {
+    font-family: 'Gaegu', cursive;
+    font-size: 18px;
+    font-weight: 700;
+    color: #343A40;
+}
+.slot.filled .filled-emoji {
+    font-size: 20px;
+}
+.slot.filled::after {
+    content: '×';
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 22px;
+    height: 22px;
+    background: #FF6B6B;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.slot.filled:hover::after { opacity: 1; }
+
+.slot-connector {
+    font-size: 20px;
+    color: #CED4DA;
+    font-weight: bold;
+}
+
+/* Category selector */
+.category-tabs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.cat-tab {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 2.5px solid;
+    background: white;
+    font-family: 'Jua', sans-serif;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+.cat-tab:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.cat-tab.active {
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+.cat-tab[data-cat="who"] { border-color: var(--card-who); color: var(--card-who); }
+.cat-tab[data-cat="who"].active { background: var(--card-who); }
+.cat-tab[data-cat="when"] { border-color: var(--card-when); color: var(--card-when); }
+.cat-tab[data-cat="when"].active { background: var(--card-when); }
+.cat-tab[data-cat="where"] { border-color: var(--card-where); color: var(--card-where); }
+.cat-tab[data-cat="where"].active { background: var(--card-where); }
+.cat-tab[data-cat="what"] { border-color: var(--card-what); color: var(--card-what); }
+.cat-tab[data-cat="what"].active { background: var(--card-what); }
+.cat-tab[data-cat="how"] { border-color: var(--card-how); color: var(--card-how); }
+.cat-tab[data-cat="how"].active { background: var(--card-how); }
+.cat-tab[data-cat="why"] { border-color: var(--card-why); color: var(--card-why); }
+.cat-tab[data-cat="why"].active { background: var(--card-why); }
+
+/* Word cards pool */
+.card-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 20px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    min-height: 120px;
+    border: 2px solid #F1F3F5;
+}
+
+.word-card {
+    padding: 10px 16px;
+    border-radius: 14px;
+    font-family: 'Gaegu', cursive;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+    border: 2.5px solid;
+    background: white;
+    position: relative;
+}
+.word-card:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: var(--shadow-hover);
+}
+.word-card:active {
+    transform: scale(0.95);
+}
+.word-card.used {
+    opacity: 0.3;
+    pointer-events: none;
+    transform: scale(0.9);
+}
+.word-card .card-emoji { font-size: 20px; }
+
+.word-card[data-cat="who"] { border-color: var(--card-who); color: var(--card-who); }
+.word-card[data-cat="when"] { border-color: var(--card-when); color: var(--card-when); }
+.word-card[data-cat="where"] { border-color: var(--card-where); color: var(--card-where); }
+.word-card[data-cat="what"] { border-color: var(--card-what); color: var(--card-what); }
+.word-card[data-cat="how"] { border-color: var(--card-how); color: var(--card-how); }
+.word-card[data-cat="why"] { border-color: var(--card-why); color: var(--card-why); }
+
+/* Complete sentence display */
+.complete-sentence {
+    display: none;
+    background: linear-gradient(135deg, #FFF9DB, #FFF3BF);
+    border-radius: 20px;
+    padding: 24px;
+    margin-top: 20px;
+    text-align: center;
+    border: 3px solid #FFD43B;
+    animation: sentencePop 0.5s ease;
+}
+.complete-sentence.show { display: block; }
+.complete-sentence .sentence-text {
+    font-family: 'Gaegu', cursive;
+    font-size: 26px;
+    font-weight: 700;
+    color: #343A40;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+.complete-sentence .action-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.action-btn {
+    padding: 10px 24px;
+    border-radius: 16px;
+    border: none;
+    font-family: 'Jua', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.action-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.action-btn.listen { background: #D0BFFF; color: #5F3DC4; }
+.action-btn.retry { background: #FFE3E3; color: #E03131; }
+.action-btn.save { background: #D3F9D8; color: #2B8A3E; }
+
+@keyframes sentencePop {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* History panel */
+.history-panel {
+    margin-top: 24px;
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    display: none;
+}
+.history-panel.show { display: block; }
+.history-panel h3 {
+    font-size: 18px;
+    color: #495057;
+    margin-bottom: 12px;
+}
+.history-item {
+    padding: 12px 16px;
+    background: #F8F9FA;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    font-family: 'Gaegu', cursive;
+    font-size: 18px;
+    font-weight: 700;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.history-item .num {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #FFD43B, #FFA94D);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Jua', sans-serif;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+/* Confetti */
+.confetti-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 999;
+}
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    animation: confettiFall 1.5s ease-out forwards;
+}
+@keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Start screen */
+.start-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, #FFF8F0 0%, #FFE8CC 50%, #FFF0DB 100%);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.start-screen.hidden { display: none; }
+.start-title { font-size: 48px; margin-bottom: 4px; }
+.start-sub { font-size: 28px; color: #495057; margin-bottom: 8px; }
+.start-desc { font-size: 15px; color: #868E96; font-family: 'Gaegu', cursive; margin-bottom: 32px; }
+
+/* Level modal (reused for mid-game change) */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+    background: white;
+    border-radius: 24px;
+    padding: 32px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    animation: modalPop 0.3s ease;
+}
+@keyframes modalPop {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.modal h2 { font-size: 22px; margin-bottom: 16px; color: #343A40; }
+.modal .level-option {
+    padding: 14px;
+    border-radius: 14px;
+    border: 2.5px solid #E9ECEF;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+.modal .level-option:hover {
+    border-color: #339AF0;
+    background: #E7F5FF;
+    transform: translateX(4px);
+}
+.modal .level-option.active {
+    border-color: #339AF0;
+    background: #D0EBFF;
+}
+.modal .level-option .lv-title { font-size: 16px; color: #343A40; }
+.modal .level-option .lv-desc { font-size: 13px; color: #868E96; font-family: 'Gaegu', cursive; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .slot { width: 100px; height: 64px; }
+    .slot .slot-label { font-size: 10px; }
+    .word-card { padding: 8px 12px; font-size: 15px; }
+    .sentence-row { gap: 6px; }
+    .slot-connector { font-size: 16px; }
+    .header h1 { font-size: 20px; }
+}
+@media (max-width: 480px) {
+    .slot { width: 88px; height: 58px; }
+    .category-tabs { gap: 5px; }
+    .cat-tab { padding: 6px 12px; font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Start screen -->
+<div class="start-screen" id="startScreen">
+    <div class="start-title">📝</div>
+    <div class="start-sub">문장 만들기 퍼즐</div>
+    <div class="start-desc">카드를 골라 빈칸을 채워 문장을 완성해요!</div>
+    <div class="modal">
+        <h2>🎯 난이도를 골라주세요!</h2>
+        <div class="level-option" onclick="startGame(1)">
+            <div class="lv-title">⭐ 레벨 1 — 카드 4장</div>
+            <div class="lv-desc">강아지, 아침에, 집에서... 쉬운 단어 4개씩!</div>
+        </div>
+        <div class="level-option" onclick="startGame(2)">
+            <div class="lv-title">⭐⭐ 레벨 2 — 카드 8장</div>
+            <div class="lv-desc">나비, 겨울에, 동물원에서... 단어가 많아졌어요!</div>
+        </div>
+        <div class="level-option" onclick="startGame(3)">
+            <div class="lv-title">⭐⭐⭐ 레벨 3 — 카드 16장!</div>
+            <div class="lv-desc">마법사, 꿈속에서, 별나라에서... 엄청 많은 단어!</div>
+        </div>
+    </div>
+</div>
+
+<div class="header">
+    <div class="header-inner">
+        <div>
+            <h1>📝 문장 만들기 퍼즐</h1>
+            <div class="sub">카드를 골라 빈칸을 채워봐요!</div>
+        </div>
+        <div class="score-bar">
+            <div class="stars" id="stars">☆☆☆☆☆</div>
+            <div class="combo" id="combo">🔥 x2</div>
+            <button class="level-badge" onclick="showLevelModal()">⭐ 레벨 1</button>
+        </div>
+    </div>
+</div>
+
+<div class="main">
+    <!-- Sentence frame with slots -->
+    <div class="sentence-frame">
+        <div class="sentence-row" id="sentenceRow">
+            <div class="slot" data-slot="who" style="--slot-color: var(--card-who);" onclick="activateSlot('who')">
+                <div class="slot-label">누가?</div>
+                <div class="slot-emoji">🧑</div>
+            </div>
+            <span class="slot-connector">+</span>
+            <div class="slot" data-slot="when" style="--slot-color: var(--card-when);" onclick="activateSlot('when')">
+                <div class="slot-label">언제?</div>
+                <div class="slot-emoji">🕐</div>
+            </div>
+            <span class="slot-connector">+</span>
+            <div class="slot" data-slot="where" style="--slot-color: var(--card-where);" onclick="activateSlot('where')">
+                <div class="slot-label">어디서?</div>
+                <div class="slot-emoji">🌍</div>
+            </div>
+            <span class="slot-connector">+</span>
+            <div class="slot" data-slot="what" style="--slot-color: var(--card-what);" onclick="activateSlot('what')">
+                <div class="slot-label">무엇을?</div>
+                <div class="slot-emoji">🎯</div>
+            </div>
+            <span class="slot-connector">+</span>
+            <div class="slot" data-slot="how" style="--slot-color: var(--card-how);" onclick="activateSlot('how')">
+                <div class="slot-label">어떻게?</div>
+                <div class="slot-emoji">✨</div>
+            </div>
+            <span class="slot-connector">+</span>
+            <div class="slot" data-slot="why" style="--slot-color: var(--card-why);" onclick="activateSlot('why')">
+                <div class="slot-label">왜?</div>
+                <div class="slot-emoji">💭</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card pool (모든 카테고리 섞임!) -->
+    <div style="text-align:center;margin-bottom:10px;font-size:14px;color:#868E96;">👇 알맞은 카드를 찾아서 위의 빈칸에 넣어보세요!</div>
+    <div class="card-pool" id="cardPool"></div>
+
+    <!-- Complete sentence -->
+    <div class="complete-sentence" id="completeSentence">
+        <div class="sentence-text" id="sentenceText"></div>
+        <div class="action-btns">
+            <button class="action-btn listen" onclick="readSentence()">🔊 읽어주기</button>
+            <button class="action-btn" onclick="generateImage()" id="genImgBtn" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;">🎨 그림 만들기</button>
+            <button class="action-btn retry" onclick="resetAll()">🔄 다시 만들기</button>
+            <button class="action-btn save" onclick="saveSentence()">⭐ 저장하기</button>
+        </div>
+        <!-- AI 이미지 결과 -->
+        <div id="aiImageArea" style="display:none;margin-top:16px;text-align:center;">
+            <div id="aiLoading" style="display:none;padding:30px;">
+                <div style="font-size:40px;animation:spin 1.5s linear infinite;display:inline-block;">🎨</div>
+                <p style="margin-top:8px;color:#764ba2;font-weight:600;">그림을 그리고 있어요...</p>
+            </div>
+            <img id="aiResultImg" style="display:none;max-width:100%;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.15);"/>
+            <div id="aiError" style="display:none;color:#e74c3c;padding:12px;"></div>
+            <div id="aiActionBtns" style="display:none;margin-top:12px;gap:8px;justify-content:center;flex-wrap:wrap;display:none;">
+                <button onclick="downloadAiImage()" style="padding:8px 20px;border:none;border-radius:20px;background:#764ba2;color:#fff;font-size:14px;cursor:pointer;">💾 저장하기</button>
+                <button onclick="convertToSketch()" style="padding:8px 20px;border:none;border-radius:20px;background:linear-gradient(135deg,#2d3436,#636e72);color:#fff;font-size:14px;cursor:pointer;">✏️ 색칠공부 도안</button>
+                <button onclick="openInColoring()" id="coloringBtn" style="display:none;padding:8px 20px;border:none;border-radius:20px;background:linear-gradient(135deg,#00b894,#00cec9);color:#fff;font-size:14px;cursor:pointer;">🖍️ 색칠하러 가기</button>
+            </div>
+            <!-- 스케치 결과 -->
+            <canvas id="sketchCanvas" style="display:none;max-width:100%;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);margin-top:12px;"></canvas>
+            <button id="sketchDownloadBtn" onclick="downloadSketch()" style="display:none;margin-top:8px;padding:8px 20px;border:none;border-radius:20px;background:#2d3436;color:#fff;font-size:14px;cursor:pointer;">💾 도안 저장하기</button>
+            <p style="margin-top:10px;font-size:11px;color:#ADB5BD;">🔒 API 키는 서버에 저장되지 않으며, 사용 중인 PC 브라우저에만 임시 저장됩니다.</p>
+        </div>
+    </div>
+
+    <!-- History -->
+    <div class="history-panel" id="historyPanel">
+        <h3>📚 내가 만든 문장들</h3>
+        <div id="historyList"></div>
+    </div>
+</div>
+
+<!-- Level modal -->
+<div class="modal-overlay" id="levelModal">
+    <div class="modal">
+        <h2>🎯 난이도 선택</h2>
+        <div class="level-option active" onclick="setLevel(1)">
+            <div class="lv-title">⭐ 레벨 1 — 카드 4장</div>
+            <div class="lv-desc">강아지, 아침에, 집에서... 쉬운 단어 4개씩!</div>
+        </div>
+        <div class="level-option" onclick="setLevel(2)">
+            <div class="lv-title">⭐⭐ 레벨 2 — 카드 8장</div>
+            <div class="lv-desc">나비, 겨울에, 동물원에서... 단어가 많아졌어요!</div>
+        </div>
+        <div class="level-option" onclick="setLevel(3)">
+            <div class="lv-title">⭐⭐⭐ 레벨 3 — 카드 16장!</div>
+            <div class="lv-desc">마법사, 꿈속에서, 별나라에서... 엄청 많은 단어!</div>
+        </div>
+        <button class="action-btn retry" onclick="closeLevelModal()" style="margin-top:16px;">닫기</button>
+    </div>
+</div>
+
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+// 전체 단어 풀 — 레벨에 따라 앞에서부터 잘라서 보여줌
+// 레벨1: 4개 (쉬움), 레벨2: 8개 (보통), 레벨3: 전체 (많음!)
+const WORD_POOL = {
+    who: [
+        // 쉬운 (Lv1)
+        { text: '강아지가', emoji: '🐶' },
+        { text: '고양이가', emoji: '🐱' },
+        { text: '토끼가', emoji: '🐰' },
+        { text: '펭귄이', emoji: '🐧' },
+        // 보통 (Lv2)
+        { text: '아기 곰이', emoji: '🐻' },
+        { text: '나비가', emoji: '🦋' },
+        { text: '코끼리가', emoji: '🐘' },
+        { text: '거북이가', emoji: '🐢' },
+        // 어려움 (Lv3)
+        { text: '다람쥐가', emoji: '🐿️' },
+        { text: '아기새가', emoji: '🐦' },
+        { text: '공주가', emoji: '👸' },
+        { text: '마법사가', emoji: '🧙' },
+        { text: '로봇이', emoji: '🤖' },
+        { text: '용이', emoji: '🐉' },
+        { text: '우주비행사가', emoji: '👨‍🚀' },
+        { text: '달토끼가', emoji: '🌙' },
+    ],
+    when: [
+        { text: '아침에', emoji: '🌅' },
+        { text: '점심에', emoji: '☀️' },
+        { text: '저녁에', emoji: '🌆' },
+        { text: '밤에', emoji: '🌙' },
+        { text: '봄에', emoji: '🌸' },
+        { text: '여름에', emoji: '🌻' },
+        { text: '가을에', emoji: '🍂' },
+        { text: '겨울에', emoji: '❄️' },
+        { text: '생일날', emoji: '🎂' },
+        { text: '새벽에', emoji: '🌄' },
+        { text: '눈이 올 때', emoji: '🌨️' },
+        { text: '보름달에', emoji: '🌕' },
+        { text: '비 오는 날', emoji: '🌧️' },
+        { text: '무지개가 뜰 때', emoji: '🌈' },
+        { text: '별똥별이 올 때', emoji: '🌠' },
+        { text: '꿈속에서', emoji: '💤' },
+    ],
+    where: [
+        { text: '집에서', emoji: '🏠' },
+        { text: '공원에서', emoji: '🌳' },
+        { text: '학교에서', emoji: '🏫' },
+        { text: '바다에서', emoji: '🏖️' },
+        { text: '숲에서', emoji: '🌲' },
+        { text: '산에서', emoji: '⛰️' },
+        { text: '놀이터에서', emoji: '🎪' },
+        { text: '동물원에서', emoji: '🦁' },
+        { text: '하늘에서', emoji: '🌤️' },
+        { text: '동굴에서', emoji: '🕳️' },
+        { text: '성 안에서', emoji: '🏰' },
+        { text: '구름 위에서', emoji: '☁️' },
+        { text: '바닷속에서', emoji: '🐠' },
+        { text: '정글에서', emoji: '🌴' },
+        { text: '무지개 위에서', emoji: '🌈' },
+        { text: '별나라에서', emoji: '⭐' },
+    ],
+    what: [
+        // text = 카드에 표시, verb = 문장 완성 시 사용
+        { text: '노래를', emoji: '🎵', verb: '불렀어요' },
+        { text: '그림을', emoji: '🎨', verb: '그렸어요' },
+        { text: '축구를', emoji: '⚽', verb: '했어요' },
+        { text: '꽃을', emoji: '🌷', verb: '심었어요' },
+        { text: '케이크를', emoji: '🎂', verb: '만들었어요' },
+        { text: '편지를', emoji: '💌', verb: '썼어요' },
+        { text: '간식을', emoji: '🍪', verb: '먹었어요' },
+        { text: '모래성을', emoji: '🏰', verb: '쌓았어요' },
+        { text: '보물을', emoji: '💎', verb: '찾았어요' },
+        { text: '별을', emoji: '⭐', verb: '모았어요' },
+        { text: '풍선을', emoji: '🎈', verb: '날렸어요' },
+        { text: '무지개를', emoji: '🌈', verb: '그렸어요' },
+        { text: '마법 물약을', emoji: '🧪', verb: '만들었어요' },
+        { text: '비밀 지도를', emoji: '🗺️', verb: '그렸어요' },
+        { text: '마법 지팡이를', emoji: '🪄', verb: '만들었어요' },
+        { text: '날개를', emoji: '🪽', verb: '달았어요' },
+    ],
+    how: [
+        { text: '신나게', emoji: '🥳' },
+        { text: '함께', emoji: '🤝' },
+        { text: '열심히', emoji: '💪' },
+        { text: '즐겁게', emoji: '😄' },
+        { text: '조용히', emoji: '🤫' },
+        { text: '폴짝폴짝', emoji: '🦘' },
+        { text: '살금살금', emoji: '🐾' },
+        { text: '뒤뚱뒤뚱', emoji: '🐧' },
+        { text: '반짝반짝', emoji: '✨' },
+        { text: '빙글빙글', emoji: '🌀' },
+        { text: '두근두근', emoji: '💓' },
+        { text: '용감하게', emoji: '🦁' },
+        { text: '번쩍번쩍', emoji: '⚡' },
+        { text: '몰래몰래', emoji: '🕵️' },
+        { text: '눈부시게', emoji: '☀️' },
+        { text: '노래하며', emoji: '🎤' },
+    ],
+    why: [
+        { text: '좋아서', emoji: '❤️' },
+        { text: '심심해서', emoji: '😐' },
+        { text: '배고파서', emoji: '😋' },
+        { text: '기뻐서', emoji: '😊' },
+        { text: '궁금해서', emoji: '🤔' },
+        { text: '선물로', emoji: '🎁' },
+        { text: '놀고 싶어서', emoji: '🎈' },
+        { text: '친구를 만나서', emoji: '👋' },
+        { text: '소원을 빌려고', emoji: '⭐' },
+        { text: '모험하려고', emoji: '🗺️' },
+        { text: '꿈을 이루려고', emoji: '🌟' },
+        { text: '비밀을 풀려고', emoji: '🔓' },
+        { text: '세상을 구하려고', emoji: '🌍' },
+        { text: '마법을 배우려고', emoji: '📚' },
+        { text: '보물을 지키려고', emoji: '🛡️' },
+        { text: '사랑하니까', emoji: '💕' },
+    ]
+};
+
+// 레벨별 카드 수: Lv1=4개, Lv2=8개, Lv3=전체16개
+const LEVEL_COUNT = { 1: 4, 2: 8, 3: 16 };
+
+// ============================================================
+// STATE
+// ============================================================
+let currentLevel = 1;
+let currentCat = 'who';
+let activeSlot = 'who';
+let filledSlots = {};
+let history = [];
+let comboCount = 0;
+let totalStars = 0;
+
+const CATS = ['who','when','where','what','how','why'];
+const CAT_NAMES = { who:'누가', when:'언제', where:'어디서', what:'무엇을', how:'어떻게', why:'왜' };
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+    renderCards();
+    highlightEmptySlots();
+}
+
+// ============================================================
+// SHUFFLE HELPER
+// ============================================================
+function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+// ============================================================
+// RENDER CARDS — 모든 카테고리 섞어서 표시!
+// ============================================================
+function renderCards() {
+    const pool = document.getElementById('cardPool');
+    const count = LEVEL_COUNT[currentLevel];
+    // 각 카테고리에서 count개씩 뽑아서 전부 섞음
+    let allCards = [];
+    CATS.forEach(cat => {
+        const words = WORD_POOL[cat].slice(0, count);
+        words.forEach(w => allCards.push({ ...w, cat }));
+    });
+    allCards = shuffle(allCards);
+
+    pool.innerHTML = '';
+    allCards.forEach((w) => {
+        const card = document.createElement('div');
+        card.className = 'word-card';
+        card.dataset.cat = w.cat;
+        // 이미 사용된 카드인지
+        if (filledSlots[w.cat] && filledSlots[w.cat].text === w.text) {
+            card.classList.add('used');
+        }
+        card.innerHTML = `<span class="card-emoji">${w.emoji}</span> ${w.text}`;
+        card.onclick = () => placeCard(w.cat, w);
+        pool.appendChild(card);
+    });
+}
+
+// ============================================================
+// SLOT INTERACTION
+// ============================================================
+function activateSlot(slot) {
+    if (filledSlots[slot]) {
+        // 제거
+        delete filledSlots[slot];
+        renderSlot(slot);
+        renderCards();
+        highlightEmptySlots();
+        document.getElementById('completeSentence').classList.remove('show');
+    }
+}
+
+function highlightEmptySlots() {
+    document.querySelectorAll('.slot').forEach(s => {
+        const sl = s.dataset.slot;
+        s.classList.toggle('highlight', !filledSlots[sl]);
+    });
+}
+
+// ============================================================
+// PLACE CARD — 카드 클릭 시 해당 카테고리 슬롯에 자동 배치
+// ============================================================
+function placeCard(cat, word) {
+    filledSlots[cat] = word;
+    renderSlot(cat);
+    renderCards();
+    highlightEmptySlots();
+
+    playSound('place');
+
+    // 모두 채워졌는지 확인
+    const allFilled = CATS.every(c => filledSlots[c]);
+    if (allFilled) {
+        completeSentence();
+    }
+}
+
+function renderSlot(cat) {
+    const slot = document.querySelector(`.slot[data-slot="${cat}"]`);
+    if (filledSlots[cat]) {
+        slot.classList.add('filled');
+        const w = filledSlots[cat];
+        slot.innerHTML = `
+            <div class="slot-label" style="display:none">-</div>
+            <div class="slot-emoji" style="display:none">-</div>
+            <div class="filled-emoji">${w.emoji}</div>
+            <div class="filled-text">${w.text}</div>
+        `;
+    } else {
+        slot.classList.remove('filled');
+        const emojis = { who:'🧑', when:'🕐', where:'🌍', what:'🎯', how:'✨', why:'💭' };
+        slot.innerHTML = `
+            <div class="slot-label">${CAT_NAMES[cat]}?</div>
+            <div class="slot-emoji">${emojis[cat]}</div>
+        `;
+    }
+}
+
+// ============================================================
+// COMPLETE SENTENCE
+// ============================================================
+function completeSentence() {
+    const g = cat => filledSlots[cat]?.text || '___';
+    const verb = filledSlots['what']?.verb || '했어요';
+    // 누가 + 언제 + 어디서 + 무엇을 + 어떻게 + [동사]. 왜냐하면 + 왜!
+    const sentence = `${g('who')} ${g('when')} ${g('where')} ${g('what')} ${g('how')} ${verb}. 왜냐하면 ${g('why')}!`;
+
+    document.getElementById('sentenceText').textContent = sentence;
+    document.getElementById('completeSentence').classList.add('show');
+
+    // Stars & combo
+    comboCount++;
+    totalStars = Math.min(5, totalStars + 1);
+    updateStars();
+    updateCombo();
+
+    // Confetti!
+    launchConfetti();
+    playSound('complete');
+}
+
+function updateStars() {
+    const filled = '★'.repeat(totalStars);
+    const empty = '☆'.repeat(5 - totalStars);
+    document.getElementById('stars').textContent = filled + empty;
+}
+
+function updateCombo() {
+    const el = document.getElementById('combo');
+    if (comboCount > 1) {
+        el.textContent = `🔥 x${comboCount}`;
+        el.classList.add('active');
+    }
+}
+
+// ============================================================
+// ACTIONS
+// ============================================================
+function readSentence() {
+    const text = document.getElementById('sentenceText').textContent;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ko-KR';
+    u.rate = 0.85;
+    u.pitch = 1.1;
+    speechSynthesis.speak(u);
+}
+
+function resetAll() {
+    filledSlots = {};
+    CATS.forEach(c => renderSlot(c));
+    document.getElementById('completeSentence').classList.remove('show');
+    renderCards();
+    highlightEmptySlots();
+    playSound('place');
+}
+
+function saveSentence() {
+    const text = document.getElementById('sentenceText').textContent;
+    history.push(text);
+    renderHistory();
+    playSound('complete');
+    resetAll();
+}
+
+function renderHistory() {
+    const panel = document.getElementById('historyPanel');
+    const list = document.getElementById('historyList');
+    if (history.length === 0) { panel.classList.remove('show'); return; }
+    panel.classList.add('show');
+    list.innerHTML = '';
+    history.forEach((h, i) => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `<span class="num">${i + 1}</span> ${h}`;
+        list.appendChild(div);
+    });
+}
+
+// ============================================================
+// LEVEL
+// ============================================================
+function startGame(lv) {
+    currentLevel = lv;
+    document.querySelector('.level-badge').textContent = '⭐'.repeat(lv) + ` 레벨 ${lv}`;
+    document.getElementById('startScreen').classList.add('hidden');
+    resetAll();
+}
+
+function showLevelModal() {
+    document.getElementById('levelModal').classList.add('show');
+}
+function closeLevelModal() {
+    document.getElementById('levelModal').classList.remove('show');
+}
+function setLevel(lv) {
+    currentLevel = lv;
+    document.querySelector('.level-badge').textContent = '⭐'.repeat(lv) + ` 레벨 ${lv}`;
+    document.querySelectorAll('.level-option').forEach((o, i) => o.classList.toggle('active', i === lv - 1));
+    closeLevelModal();
+    resetAll();
+}
+
+// ============================================================
+// EFFECTS
+// ============================================================
+function launchConfetti() {
+    const container = document.getElementById('confettiContainer');
+    const colors = ['#FF6B6B','#FFA94D','#51CF66','#339AF0','#CC5DE8','#FFD43B'];
+    for (let i = 0; i < 50; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random() * 100 + '%';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.animationDelay = Math.random() * 0.5 + 's';
+        c.style.width = (Math.random() * 8 + 6) + 'px';
+        c.style.height = (Math.random() * 8 + 6) + 'px';
+        container.appendChild(c);
+    }
+    setTimeout(() => container.innerHTML = '', 2500);
+}
+
+function playSound(type) {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        gain.gain.value = 0.1;
+        if (type === 'place') {
+            osc.frequency.value = 600;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+            osc.start(); osc.stop(ctx.currentTime + 0.15);
+        } else {
+            osc.frequency.value = 523;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            osc.start();
+            setTimeout(() => { osc.frequency.value = 659; }, 100);
+            setTimeout(() => { osc.frequency.value = 784; }, 200);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc.stop(ctx.currentTime + 0.4);
+        }
+    } catch(e) {}
+}
+
+// ============================================================
+// GEMINI IMAGE GENERATION
+// ============================================================
+const GEMINI_STORAGE_KEY = 'luna_gemini_api_key';
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+function getGeminiKey() {
+    return localStorage.getItem(GEMINI_STORAGE_KEY);
+}
+
+function promptApiKey() {
+    const key = prompt(
+        '🔑 Gemini API 키를 입력해주세요.\n\n' +
+        '⚠️ 이 키는 서버에 저장되지 않습니다.\n사용 중인 PC의 브라우저에만 임시 저장됩니다.\n\n' +
+        'Google AI Studio에서 무료로 발급받을 수 있어요:\nhttps://aistudio.google.com/apikey'
+    );
+    if (key && key.trim()) {
+        localStorage.setItem(GEMINI_STORAGE_KEY, key.trim());
+        return key.trim();
+    }
+    return null;
+}
+
+async function generateImage() {
+    let apiKey = getGeminiKey();
+    if (!apiKey) {
+        apiKey = promptApiKey();
+        if (!apiKey) return;
+    }
+
+    const sentence = document.getElementById('sentenceText').textContent;
+    if (!sentence) return;
+
+    const area = document.getElementById('aiImageArea');
+    const loading = document.getElementById('aiLoading');
+    const img = document.getElementById('aiResultImg');
+    const errEl = document.getElementById('aiError');
+    const actionBtns = document.getElementById('aiActionBtns');
+    const genBtn = document.getElementById('genImgBtn');
+
+    area.style.display = 'block';
+    loading.style.display = 'block';
+    img.style.display = 'none';
+    errEl.style.display = 'none';
+    actionBtns.style.display = 'none';
+    document.getElementById('sketchCanvas').style.display = 'none';
+    document.getElementById('sketchDownloadBtn').style.display = 'none';
+    document.getElementById('coloringBtn').style.display = 'none';
+    genBtn.disabled = true;
+    genBtn.textContent = '⏳ 생성 중...';
+
+    const prompt = `Create a cute, colorful children's storybook cover illustration for this Korean sentence: "${sentence}".
+Style: warm, whimsical, pastel colors, adorable cartoon characters, suitable for ages 5-8.
+The illustration should be cheerful and magical, like a picture book cover.
+Do NOT include any text or letters in the image.`;
+
+    const models = [
+        'gemini-2.5-flash-preview-image-generation',
+        'gemini-2.5-flash-image',
+        'gemini-3.1-flash-image-preview'
+    ];
+
+    let success = false;
+
+    for (const model of models) {
+        try {
+            const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${apiKey}`;
+            const body = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { responseModalities: ['IMAGE'] }
+            };
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                const errMsg = errData?.error?.message || res.statusText;
+                if (res.status === 401 || res.status === 403) {
+                    localStorage.removeItem(GEMINI_STORAGE_KEY);
+                    throw new Error('API 키가 올바르지 않습니다. 다시 시도해주세요.');
+                }
+                if (res.status === 404 || (res.status === 400 && (errMsg.includes('not found') || errMsg.includes('not supported')))) {
+                    continue;
+                }
+                throw new Error(errMsg);
+            }
+
+            const data = await res.json();
+            const parts = data?.candidates?.[0]?.content?.parts;
+            if (!parts) throw new Error('응답이 비어있습니다');
+
+            const imgPart = parts.find(p => p.inlineData);
+            if (imgPart) {
+                img.src = `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`;
+                img.style.display = 'block';
+                actionBtns.style.display = 'flex';
+                success = true;
+                playSound('complete');
+                break;
+            }
+        } catch (e) {
+            console.warn(`[${model}]`, e.message);
+            if (e.message.includes('API 키')) {
+                errEl.textContent = '🔑 ' + e.message;
+                errEl.style.display = 'block';
+                success = true; // stop trying
+                break;
+            }
+        }
+    }
+
+    if (!success) {
+        errEl.textContent = '😢 그림 생성에 실패했어요. 다시 시도해보세요!';
+        errEl.style.display = 'block';
+    }
+
+    loading.style.display = 'none';
+    genBtn.disabled = false;
+    genBtn.textContent = '🎨 그림 만들기';
+}
+
+function downloadAiImage() {
+    const img = document.getElementById('aiResultImg');
+    if (!img.src) return;
+    const a = document.createElement('a');
+    a.href = img.src;
+    a.download = `내문장_동화_${Date.now()}.png`;
+    a.click();
+}
+
+// ============================================================
+// SKETCH CONVERSION (Sobel Edge Detection → 색칠공부 도안)
+// ============================================================
+function convertToSketch() {
+    const img = document.getElementById('aiResultImg');
+    if (!img.src) return;
+
+    const canvas = document.getElementById('sketchCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // 임시 이미지로 로드
+    const tempImg = new Image();
+    tempImg.crossOrigin = 'anonymous';
+    tempImg.onload = () => {
+        canvas.width = tempImg.width;
+        canvas.height = tempImg.height;
+
+        // 원본 그리기
+        ctx.drawImage(tempImg, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const src = imageData.data;
+        const w = canvas.width, h = canvas.height;
+
+        // 1. Grayscale 변환
+        const gray = new Float32Array(w * h);
+        for (let i = 0; i < w * h; i++) {
+            const pi = i * 4;
+            gray[i] = 0.299 * src[pi] + 0.587 * src[pi + 1] + 0.114 * src[pi + 2];
+        }
+
+        // 2. Gaussian Blur (3x3) — 노이즈 제거
+        const blurred = new Float32Array(w * h);
+        const kernel = [1,2,1, 2,4,2, 1,2,1];
+        const kSum = 16;
+        for (let y = 1; y < h - 1; y++) {
+            for (let x = 1; x < w - 1; x++) {
+                let sum = 0, ki = 0;
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        sum += gray[(y+dy)*w + (x+dx)] * kernel[ki++];
+                    }
+                }
+                blurred[y*w + x] = sum / kSum;
+            }
+        }
+
+        // 3. Sobel Edge Detection
+        const output = ctx.createImageData(w, h);
+        const dst = output.data;
+
+        for (let y = 1; y < h - 1; y++) {
+            for (let x = 1; x < w - 1; x++) {
+                const gx =
+                    -blurred[(y-1)*w+(x-1)] + blurred[(y-1)*w+(x+1)]
+                    -2*blurred[y*w+(x-1)] + 2*blurred[y*w+(x+1)]
+                    -blurred[(y+1)*w+(x-1)] + blurred[(y+1)*w+(x+1)];
+                const gy =
+                    -blurred[(y-1)*w+(x-1)] - 2*blurred[(y-1)*w+x] - blurred[(y-1)*w+(x+1)]
+                    +blurred[(y+1)*w+(x-1)] + 2*blurred[(y+1)*w+x] + blurred[(y+1)*w+(x+1)];
+
+                let mag = Math.sqrt(gx*gx + gy*gy);
+                // 반전 (선=검정, 배경=흰색) + 대비 강화
+                let val = 255 - Math.min(255, mag * 1.8);
+                // 임계값으로 깔끔하게
+                val = val > 200 ? 255 : val < 80 ? 0 : val;
+
+                const pi = (y*w + x) * 4;
+                dst[pi] = dst[pi+1] = dst[pi+2] = val;
+                dst[pi+3] = 255;
+            }
+        }
+
+        // 테두리 흰색
+        for (let x = 0; x < w; x++) {
+            const t = x*4, b = ((h-1)*w+x)*4;
+            dst[t]=dst[t+1]=dst[t+2]=255; dst[t+3]=255;
+            dst[b]=dst[b+1]=dst[b+2]=255; dst[b+3]=255;
+        }
+        for (let y = 0; y < h; y++) {
+            const l = (y*w)*4, r = (y*w+w-1)*4;
+            dst[l]=dst[l+1]=dst[l+2]=255; dst[l+3]=255;
+            dst[r]=dst[r+1]=dst[r+2]=255; dst[r+3]=255;
+        }
+
+        ctx.putImageData(output, 0, 0);
+        canvas.style.display = 'block';
+        document.getElementById('sketchDownloadBtn').style.display = 'inline-block';
+        document.getElementById('coloringBtn').style.display = 'inline-block';
+        playSound('complete');
+    };
+    tempImg.src = img.src;
+}
+
+function downloadSketch() {
+    const canvas = document.getElementById('sketchCanvas');
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = `내문장_색칠도안_${Date.now()}.png`;
+    a.click();
+}
+
+function openInColoring() {
+    // 스케치 이미지를 sessionStorage에 저장 → 색칠교실로 이동
+    const canvas = document.getElementById('sketchCanvas');
+    sessionStorage.setItem('story_sketch', canvas.toDataURL('image/png'));
+    window.open('/pages/main/coloring.html?from=story', '_blank');
+}
+
+// Start
+init();
+</script>
+</body>
+</html>

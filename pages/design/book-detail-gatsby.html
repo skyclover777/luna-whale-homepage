@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <title>위대한 개츠비 — 북커버 디자인 분석 - Luna Whale</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background: #060812;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #e8e8f0;
+        }
+
+        /* ─── Two-panel layout ─── */
+        .layout {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        /* ─── LEFT: Fixed cover panel ─── */
+        .panel-left {
+            width: 42%;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+            background: #030610;
+        }
+
+        /* Full bleed blurred BG */
+        .panel-left-bg {
+            position: absolute;
+            inset: -20px;
+            background-image: url('../../images/book-covers/full/book_0001_the-great-gatsby.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(24px) brightness(0.35);
+            transform: scale(1.1);
+        }
+
+        /* Book cover centered */
+        .cover-wrap {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 24px 32px;
+            gap: 20px;
+        }
+
+        .cover-img-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 220px;
+        }
+
+        .cover-img-wrap img {
+            width: 100%;
+            display: block;
+            border-radius: 3px 10px 10px 3px;
+            box-shadow:
+                -5px 0 15px rgba(0,0,0,0.6),
+                10px 20px 50px rgba(0,0,0,0.8),
+                0 0 60px rgba(100,80,200,0.2);
+        }
+
+        /* Book spine */
+        .cover-img-wrap::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 8px;
+            background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.1));
+            border-radius: 3px 0 0 3px;
+            z-index: 1;
+        }
+
+        /* Placeholder when no image */
+        .cover-placeholder {
+            width: 100%;
+            max-width: 220px;
+            aspect-ratio: 2/3;
+            background: linear-gradient(135deg, #1a1a4e, #2d2d8e);
+            border-radius: 3px 12px 12px 3px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.6), 10px 20px 50px rgba(0,0,0,0.8);
+        }
+
+        /* Float animation */
+        @keyframes floatBook {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .book-float { animation: floatBook 4s ease-in-out infinite; }
+
+        /* Cover info below */
+        .cover-meta {
+            text-align: center;
+        }
+
+        /* ─── RIGHT: Scrollable info panel ─── */
+        .panel-right {
+            flex: 1;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #080b1a;
+            border-left: 1px solid rgba(160,140,255,0.1);
+        }
+
+        .panel-right::-webkit-scrollbar { width: 3px; }
+        .panel-right::-webkit-scrollbar-thumb { background: rgba(140,120,255,0.3); border-radius: 10px; }
+        .panel-right::-webkit-scrollbar-track { background: transparent; }
+
+        .right-inner {
+            padding: 20px 28px 60px;
+            max-width: 560px;
+        }
+
+        /* ─── Nav bar ─── */
+        .top-nav {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: linear-gradient(to bottom, rgba(3,6,16,0.9), transparent);
+        }
+
+        .nav-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            border: 1.5px solid rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #c8c8e8;
+        }
+        .nav-btn:hover {
+            background: rgba(160,130,255,0.2);
+            border-color: rgba(160,130,255,0.4);
+        }
+
+        /* ─── Feature card ─── */
+        .feature-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(160,140,255,0.1);
+            border-radius: 14px;
+            padding: 16px 18px;
+            margin-bottom: 10px;
+            transition: all 0.25s;
+        }
+        .feature-card:hover {
+            background: rgba(160,130,255,0.06);
+            border-color: rgba(160,130,255,0.2);
+            transform: translateX(3px);
+        }
+
+        /* ─── Divider ─── */
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, rgba(160,140,255,0.2), transparent);
+            margin: 24px 0;
+        }
+
+        /* ─── Grain ─── */
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 9999;
+        }
+
+        /* ─── Animations ─── */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.5s ease both; }
+
+        /* ─── Mobile: stack vertically ─── */
+        @media (max-width: 600px) {
+            html, body { overflow: auto; }
+            .layout { flex-direction: column; height: auto; }
+            .panel-left { width: 100%; height: 55vh; min-height: 320px; }
+            .panel-right { height: auto; overflow-y: visible; border-left: none; border-top: 1px solid rgba(160,140,255,0.1); }
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- ══════════════════════════════
+         LEFT PANEL — Fixed cover
+    ══════════════════════════════ -->
+    <div class="panel-left">
+        <div class="panel-left-bg"></div>
+
+        <!-- Top nav (overlaid on left panel) -->
+        <div class="top-nav">
+            <div style="display:flex;gap:8px;">
+                <button class="nav-btn" onclick="window.location.href='../../index.html'" title="홈">
+                    <span class="material-symbols-outlined" style="font-size:17px;">home</span>
+                </button>
+                <button class="nav-btn" onclick="window.location.href='book-covers.html'" title="아카이브">
+                    <span class="material-symbols-outlined" style="font-size:17px;">grid_view</span>
+                </button>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button class="nav-btn" onclick="window.location.href='book-detail-belljar.html'" title="이전">
+                    <span class="material-symbols-outlined" style="font-size:17px;">chevron_left</span>
+                </button>
+                <button class="nav-btn" onclick="window.location.href='book-detail-beloved.html'" title="다음">
+                    <span class="material-symbols-outlined" style="font-size:17px;">chevron_right</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="cover-wrap">
+            <!-- Book cover image -->
+            <div class="book-float" style="width:100%;max-width:200px;">
+                <div class="cover-img-wrap">
+                    <img
+                        src="../../images/book-covers/full/book_0001_the-great-gatsby.jpg"
+                        alt="The Great Gatsby"
+                        onerror="
+                            this.style.display='none';
+                            document.getElementById('gatsby-placeholder').style.display='flex';
+                        "
+                    />
+                </div>
+                <div class="cover-placeholder" id="gatsby-placeholder" style="display:none;">
+                    <span style="font-size:36px;">📖</span>
+                    <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);text-align:center;padding:0 12px;line-height:1.4;">The Great<br/>Gatsby</span>
+                    <span style="font-size:9px;color:rgba(255,255,255,0.4);">이미지 준비 중</span>
+                </div>
+            </div>
+
+            <!-- Book meta -->
+            <div class="cover-meta fade-in" style="animation-delay:0.2s;">
+                <div style="font-size:11px;font-weight:700;color:rgba(200,180,255,0.6);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">No.001</div>
+                <h2 style="font-family:'Playfair Display',serif;font-size:18px;color:#f0ecff;font-weight:700;line-height:1.3;margin-bottom:4px;">The Great Gatsby</h2>
+                <p style="font-size:12px;color:rgba(180,170,220,0.6);font-style:italic;margin-bottom:12px;">위대한 개츠비</p>
+                <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:5px;">
+                    <span style="padding:3px 10px;background:rgba(245,158,11,0.18);border:1px solid rgba(245,158,11,0.35);border-radius:20px;font-size:10px;color:#fbbf24;">1925</span>
+                    <span style="padding:3px 10px;background:rgba(255,255,255,0.06);border-radius:20px;font-size:10px;color:rgba(200,190,230,0.7);">F. Scott Fitzgerald</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll hint on left -->
+        <div style="position:absolute;bottom:20px;right:16px;font-size:9px;color:rgba(160,140,200,0.4);letter-spacing:0.5px;writing-mode:vertical-rl;pointer-events:none;">
+            ← 오른쪽을 스크롤하세요
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         RIGHT PANEL — Scrollable info
+    ══════════════════════════════ -->
+    <div class="panel-right">
+        <div class="right-inner">
+
+            <!-- Spacer for top nav -->
+            <div style="height:24px;"></div>
+
+            <!-- Lang + archive badge -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 11px;background:rgba(160,140,255,0.1);border:1px solid rgba(160,140,255,0.25);border-radius:20px;font-size:10px;font-weight:700;color:#b0a0f0;letter-spacing:1px;text-transform:uppercase;">
+                    ✦ 북커버 아카이브
+                </div>
+                <button id="lang-btn" onclick="toggleLang()"
+                    style="padding:4px 13px;background:rgba(160,140,255,0.1);border:1.5px solid rgba(160,140,255,0.25);border-radius:20px;font-size:11px;font-weight:700;color:#b0a0f0;cursor:pointer;">
+                    🌐 EN
+                </button>
+            </div>
+
+            <!-- Headline -->
+            <div style="margin-bottom:22px;">
+                <div style="width:28px;height:2px;background:linear-gradient(to right,#a07cff,transparent);margin-bottom:12px;"></div>
+                <h1 id="headline" style="font-family:'Playfair Display',serif;font-size:20px;color:#e8e0ff;line-height:1.45;font-style:italic;font-weight:400;">
+                    코발트 밤하늘에 떠오른 두 눈 — 미국 문학 표지 디자인의 영원한 전설
+                </h1>
+            </div>
+
+            <!-- Credits row -->
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px;">
+                <span style="padding:4px 11px;background:rgba(255,255,255,0.05);border-radius:20px;font-size:11px;color:rgba(190,185,225,0.7);">Design: Francis Cugat</span>
+                <span style="padding:4px 11px;background:rgba(255,255,255,0.05);border-radius:20px;font-size:11px;color:rgba(190,185,225,0.7);">Scribner</span>
+            </div>
+
+            <!-- Summary -->
+            <p id="summary" style="font-size:13.5px;color:rgba(210,205,240,0.82);line-height:1.78;margin-bottom:24px;"></p>
+
+            <div class="divider"></div>
+
+            <!-- Design analysis -->
+            <div style="margin-bottom:24px;">
+                <h3 style="font-size:11px;font-weight:700;color:rgba(160,140,255,0.7);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;">✦ 디자인 분석</h3>
+                <div id="features"></div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Book intro -->
+            <div style="background:linear-gradient(135deg,rgba(40,30,80,0.4),rgba(20,15,50,0.25));border:1px solid rgba(160,140,255,0.12);border-radius:14px;padding:20px;margin-bottom:24px;">
+                <h3 style="font-size:11px;font-weight:700;color:rgba(160,140,255,0.65);letter-spacing:2px;text-transform:uppercase;margin-bottom:11px;">📖 책 소개</h3>
+                <p id="book-intro" style="font-size:12.5px;color:rgba(200,195,230,0.78);line-height:1.8;"></p>
+            </div>
+
+            <!-- CTA buttons -->
+            <div style="display:flex;gap:10px;">
+                <a href="https://www.amazon.com/s?k=The+Great+Gatsby" target="_blank"
+                    style="flex:1;padding:13px;background:linear-gradient(135deg,#f59e0b,#fbbf24);border-radius:12px;text-align:center;font-size:12.5px;font-weight:700;color:#1a0f00;text-decoration:none;transition:all 0.2s;"
+                    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(245,158,11,0.4)'"
+                    onmouseout="this.style.transform='';this.style.boxShadow=''">
+                    📦 구매하기 · Amazon
+                </a>
+                <a href="https://bookcoverarchive.com" target="_blank"
+                    style="padding:13px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;font-size:12.5px;font-weight:600;color:rgba(180,175,215,0.7);text-decoration:none;transition:all 0.2s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.09)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    🔗 원본
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+const DATA = {
+    ko: {
+        headline: '코발트 밤하늘에 떠오른 두 눈 — 미국 문학 표지 디자인의 영원한 전설',
+        summary: '프란시스 쿠갓이 그린 이 표지는 짙푸른 밤하늘을 배경으로 두 개의 눈과 입술이 빛나는 초현실적 이미지를 담고 있습니다. 아르 데코 황금기의 향수와 타락한 아메리칸 드림을 단 하나의 이미지로 압축한 20세기 최고의 표지 디자인으로 꼽힙니다.',
+        features: [
+            { title: '색채의 대비', text: '짙은 코발트 블루 배경과 황금빛 조명이 극적인 대비를 만들어냅니다. 차갑고 어두운 하늘은 재즈 시대의 공허함을, 황금빛은 개츠비의 욕망을 상징합니다.' },
+            { title: '초현실적 상징주의', text: '두 눈동자는 소설 속 안과 의사 광고판 \'닥터 T.J. 에클버그의 눈\'을 연상시키며, 신의 시선 또는 도덕적 심판을 암시합니다. 피츠제럴드는 이 그림을 보고 소설에 이 장면을 추가했다는 설도 있습니다.' },
+            { title: '아르 데코 타이포그래피', text: '제목 레터링은 1920년대 아르 데코 양식의 기하학적이고 장식적인 서체를 사용합니다. 각 글자의 세리프와 장식이 시대적 배경을 오롯이 담아냅니다.' },
+            { title: '구도의 힘', text: '눈동자가 화면 정중앙 상단에 위치하여 강렬한 시선을 끌어당깁니다. 마치 독자를 응시하는 듯한 구도는 책을 집어들 수밖에 없게 만드는 강한 자기장을 형성합니다.' }
+        ],
+        book_intro: '1920년대 미국의 화려한 재즈 시대를 배경으로, 신비로운 갑부 개츠비와 그의 잃어버린 사랑 데이지의 이야기를 그린 소설입니다. 아메리칸 드림의 허상과 상류층의 도덕적 타락을 날카롭게 해부한 작품으로, 출판 당시에는 크게 주목받지 못했지만 피츠제럴드 사후 20세기 미국 최고의 소설 중 하나로 재평가되었습니다. 짧지만 강렬한 문장들이 인상적이며, 녹빛 빛 너머 꿈을 좇는 개츠비의 이야기는 지금도 전 세계 독자들에게 깊은 울림을 줍니다.'
+    },
+    en: {
+        headline: 'Two Eyes in a Cobalt Sky — The Eternal Legend of American Literary Cover Design',
+        summary: 'Painted by Francis Cugat, this cover presents a surreal image of glowing eyes and lips against a deep blue night sky. It stands as one of the greatest cover designs of the 20th century, compressing the nostalgia of the Art Deco era and the corrupted American Dream into a single image.',
+        features: [
+            { title: 'Color Contrast', text: 'The deep cobalt blue background and golden illumination create a dramatic contrast. The cold, dark sky symbolizes the emptiness of the Jazz Age, while the gold represents Gatsby\'s longing.' },
+            { title: 'Surreal Symbolism', text: 'The eyes evoke the billboard of \'Doctor T.J. Eckleburg\' in the novel — a symbol of divine observation or moral judgment. Fitzgerald reportedly saw this painting before finishing the book and wrote the eyes into the story.' },
+            { title: 'Art Deco Typography', text: 'The title lettering uses the geometric, ornamental typeface of 1920s Art Deco style. The serifs and decorative elements perfectly encapsulate the era.' },
+            { title: 'The Power of Composition', text: 'The eyes sit at the upper center of the frame, commanding the viewer\'s gaze. The composition — as if the cover is watching you — creates an irresistible magnetism that compels you to pick up the book.' }
+        ],
+        book_intro: 'Set in 1920s America during the glittering Jazz Age, this novel follows the mysterious millionaire Jay Gatsby and his lost love Daisy. A sharp dissection of the illusion of the American Dream and the moral decay of the upper class, the book was initially overlooked but has since been elevated as one of the greatest American novels of the 20th century. Its short, intense sentences are unforgettable, and Gatsby\'s pursuit of the green light across the bay still resonates with readers worldwide.'
+    }
+};
+
+let lang = 'ko';
+
+function renderContent() {
+    const d = DATA[lang];
+    document.getElementById('headline').textContent = d.headline;
+    document.getElementById('summary').textContent = d.summary;
+    document.getElementById('book-intro').textContent = d.book_intro;
+    document.getElementById('lang-btn').textContent = lang === 'ko' ? '🌐 EN' : '🌐 KO';
+    document.getElementById('features').innerHTML = d.features.map(f => `
+        <div class="feature-card">
+            <div style="font-size:11px;font-weight:700;color:#b0a0f0;margin-bottom:6px;">✦ ${f.title}</div>
+            <p style="font-size:12.5px;color:rgba(190,185,225,0.75);line-height:1.7;">${f.text}</p>
+        </div>
+    `).join('');
+}
+
+function toggleLang() {
+    lang = lang === 'ko' ? 'en' : 'ko';
+    renderContent();
+}
+
+renderContent();
+</script>
+</body>
+</html>

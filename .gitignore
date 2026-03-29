@@ -1,0 +1,65 @@
+# Mac
+.DS_Store
+**/.DS_Store
+
+# Large asset & image folders
+images/
+shared-assets/
+lunawhale-assets/
+00_Luna Whale Final Class Selection/
+LunaWhaleScience/
+math-artillery/
+molecular-magnifier/
+models/
+app/
+assets/
+public/
+react-components/
+functions/
+classes/
+data/
+memory/
+tools/
+scripts/
+_stitch-brief/
+.claude/
+
+# Firebase / secrets
+luna-whale-firebase-adminsdk-*.json
+firebase.json
+firestore.rules
+firestore.indexes.json
+database.rules.json
+storage.rules
+.firebaserc
+.firebase/
+
+# Node
+node_modules/
+package-lock.json
+package.json
+
+# Misc build/test files
+*.log
+*.tmp
+*.py
+tmp_*
+test_*
+debug-viewer*.js
+stitch_screen*.png
+check_*.js
+check_*.py
+fix_*.py
+fetch_*.js
+sync_*.js
+scrape_*.js
+install_*.py
+setup_*.py
+wipe_*.js
+add_*.py
+refactor_*.py
+redesign_*.py
+
+# MCP config (may contain API keys)
+.mcp.json
+mcp-config.json

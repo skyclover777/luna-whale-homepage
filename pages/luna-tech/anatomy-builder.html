@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>인체 탐험 - Luna Whale TECH</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Jua',sans-serif;background:#0a0a1a;color:#e2e8f0;overflow:hidden;height:100vh}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;height:48px;background:rgba(10,10,30,.95);border-bottom:1px solid rgba(6,182,212,.15);z-index:10;position:relative}
+.hdr-left{display:flex;align-items:center;gap:12px}
+.back-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.15);border-radius:10px;color:#06b6d4;text-decoration:none;font-size:12px}
+.hdr h1{font-size:20px;color:#fff}
+.hdr h1 span{color:#06b6d4}
+.hdr-right{display:flex;gap:6px;align-items:center}
+.pill{padding:5px 12px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#64748b;font-size:13px;cursor:pointer;font-family:'Jua'}
+.pill.on{background:rgba(6,182,212,.15);border-color:#06b6d4;color:#06b6d4}
+.wrap{display:flex;height:calc(100vh - 48px)}
+.side{width:140px;background:rgba(10,10,30,.9);border-right:1px solid rgba(6,182,212,.12);padding:8px;overflow-y:auto;flex-shrink:0}
+.side h3{font-size:11px;color:#06b6d4;padding:4px;border-bottom:1px solid rgba(6,182,212,.12);margin-bottom:4px}
+.sb{display:block;width:100%;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);color:#94a3b8;font-size:11px;cursor:pointer;text-align:left;margin-bottom:2px;font-family:'Jua'}
+.sb:hover{background:rgba(6,182,212,.08)}
+.sb.on{background:rgba(6,182,212,.12);border-color:#06b6d4;color:#06b6d4}
+.sb.m{color:#a78bfa}.sb.m.on{background:rgba(139,92,246,.12);border-color:#8b5cf6;color:#8b5cf6}
+.ab{display:block;width:100%;padding:7px;border-radius:8px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:#10b981;font-size:12px;cursor:pointer;margin-top:4px;font-family:'Jua'}
+.ab.r{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.2);color:#ef4444;margin-top:2px}
+.lbl{font-size:9px;color:#475569;padding:4px;letter-spacing:1px;margin-top:6px}
+.view{flex:1;position:relative;background:#080812}
+#c{display:block;position:absolute;inset:0}
+.dbg{position:absolute;bottom:8px;left:8px;font-size:10px;color:#06b6d4;background:rgba(0,0,0,.6);padding:4px 8px;border-radius:6px;z-index:5}
+.hud{position:absolute;top:8px;left:8px;font-size:10px;color:#64748b;z-index:5}
+.hud span{color:#06b6d4}
+/* Info panel */
+.info{position:fixed;right:-360px;top:0;bottom:0;width:350px;background:rgba(10,10,30,.95);backdrop-filter:blur(12px);border-left:1px solid rgba(6,182,212,.15);z-index:50;transition:right .3s;overflow-y:auto;padding:20px}
+.info.open{right:0}
+.info-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.info-icon{font-size:36px}
+.info-name{font-size:20px;color:#fff;flex:1}
+.info-sub{font-size:12px;color:#64748b}
+.xcl{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#64748b;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.stats{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:11px;margin-bottom:10px;padding:8px;background:rgba(6,182,212,.05);border-radius:8px;border:1px solid rgba(6,182,212,.12)}
+.sl{color:#64748b}.sv{color:#06b6d4;font-weight:600}
+.itxt{font-size:14px;line-height:1.7;margin-bottom:10px;white-space:pre-line}
+.idis{padding:8px;background:rgba(239,68,68,.06);border-radius:8px;border:1px solid rgba(239,68,68,.12);font-size:11px}
+.idis h4{color:#ef4444;margin-bottom:4px;font-size:12px}
+.tip{position:fixed;padding:6px 12px;background:rgba(10,10,30,.9);border:1px solid rgba(6,182,212,.3);border-radius:8px;color:#fff;font-size:12px;pointer-events:none;z-index:40;display:none}
+.tip.show{display:block}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-left">
+    <a href="index.html" class="back-btn">← 돌아가기</a>
+    <h1>🫀 <span>인체</span> 탐험</h1>
+  </div>
+  <div class="hdr-right">
+    <button class="pill on" onclick="setLv('elem',this)">초등</button>
+    <button class="pill" onclick="setLv('mid',this)">중등</button>
+    <button class="pill" onclick="setLv('high',this)">고등</button>
+    <button class="pill" id="langB" onclick="tgLang()">EN</button>
+  </div>
+</div>
+<div class="wrap">
+  <div class="side">
+    <h3>시스템</h3>
+    <button class="sb on" onclick="setSys('all',this)">🧬 전체</button>
+    <button class="sb" onclick="setSys('digestive',this)">🍽️ 소화계</button>
+    <button class="sb" onclick="setSys('circulatory',this)">❤️ 순환계</button>
+    <button class="sb" onclick="setSys('respiratory',this)">🌬️ 호흡계</button>
+    <button class="sb" onclick="setSys('urinary',this)">💧 비뇨계</button>
+    <button class="sb" onclick="setSys('nervous',this)">⚡ 신경계</button>
+    <div class="lbl">MODE</div>
+    <button class="sb m on" onclick="setMd('observe',this)">🔍 관찰</button>
+    <button class="sb m" onclick="setMd('water',this)">💧 물 마시기</button>
+    <button class="sb m" onclick="setMd('blood',this)">🩸 혈액 순환</button>
+    <button class="sb m" onclick="setMd('nerve',this)">⚡ 신경</button>
+    <div class="lbl">ACTION</div>
+    <button class="ab" id="actB" onclick="doAct()">💧 물 붓기</button>
+    <button class="ab r" onclick="resetSim()">🔄 리셋</button>
+    <div class="lbl">VIEW</div>
+    <button class="sb on" id="bodyBtn" onclick="tgBody()">👤 사람 보이기</button>
+  </div>
+  <div class="view" id="viewport">
+    <canvas id="c"></canvas>
+    <div class="hud">Mode: <span id="hM">관찰</span> | Particles: <span id="hP">0</span></div>
+    <div class="dbg" id="dbg">loading...</div>
+  </div>
+</div>
+<div class="info" id="infoP">
+  <div class="info-hdr">
+    <span class="info-icon" id="iIco">🫀</span>
+    <div><div class="info-name" id="iNm">심장</div><div class="info-sub" id="iSub">Heart</div></div>
+    <button class="xcl" onclick="closeInfo()">✕</button>
+  </div>
+  <div class="stats" id="iSt"></div>
+  <div class="itxt" id="iTxt"></div>
+  <div class="idis" id="iDis"></div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const dbg = document.getElementById('dbg');
+dbg.textContent = 'Three.js loaded ✓';
+
+// ─── STATE ───
+let lang='ko', lv='elem', sys='all', md='observe';
+const parts=[];
+
+// ─── RENDERER ───
+const vp = document.getElementById('viewport');
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.5;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x080812);
+
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
+camera.position.set(0, 10, 30);
+
+const ctrl = new OrbitControls(camera, canvas);
+ctrl.enableDamping = true;
+ctrl.target.set(0, 8, 0);
+ctrl.minDistance = 12;
+ctrl.maxDistance = 50;
+
+// ─── LIGHTS ───
+scene.add(new THREE.AmbientLight(0x8899bb, 1.2));
+const dl = new THREE.DirectionalLight(0xffffff, 2.5);
+dl.position.set(8, 20, 12);
+scene.add(dl);
+scene.add(new THREE.DirectionalLight(0x06b6d4, 0.6).translateX(-8).translateY(10).translateZ(-8));
+scene.add(new THREE.PointLight(0x8b5cf6, 15, 50).translateY(20));
+
+// ─── GRID ───
+const grid = new THREE.GridHelper(30, 30, 0x1a2a3a, 0x111827);
+grid.position.y = -0.3;
+scene.add(grid);
+
+// ─── TRANSPARENT HUMAN BODY (Lathe profile) ───
+const bodyGroup = new THREE.Group();
+const bodyMat = new THREE.MeshStandardMaterial({
+    color: 0x88aacc, transparent:true, opacity:0.07,
+    roughness:0.5, side: THREE.DoubleSide, depthWrite:false,
+});
+const bodyWire = new THREE.MeshStandardMaterial({
+    color: 0x3388aa, transparent:true, opacity:0.12,
+    wireframe:true, side: THREE.DoubleSide,
+});
+
+// Human torso profile (half cross-section, will be revolved)
+// Points: [radius, height] from bottom to top
+const profile = [
+    // Feet
+    [0.6, -11], [0.7, -10.5],
+    // Ankle
+    [0.55, -10],
+    // Calf
+    [0.9, -8], [1.05, -6.5],
+    // Knee
+    [0.85, -5.5],
+    // Thigh
+    [1.3, -4], [1.6, -2.5],
+    // Crotch/hip merge (wider)
+    [2.8, -1],
+    // Hips
+    [3.2, 0], [3.3, 0.8],
+    // Waist
+    [2.8, 2.5], [2.6, 3.5],
+    // Abdomen
+    [3.0, 5], [3.2, 6.5],
+    // Ribcage
+    [3.5, 8], [3.8, 9.5],
+    // Chest (widest)
+    [4.0, 11], [4.0, 12.5],
+    // Shoulders
+    [3.8, 13.5], [3.5, 14.5],
+    // Neck base
+    [1.5, 15.5],
+    // Neck
+    [1.0, 16], [0.9, 16.8],
+    // Chin
+    [1.1, 17.2],
+    // Jaw
+    [1.5, 17.5],
+    // Face
+    [1.7, 18], [1.8, 18.5],
+    // Forehead
+    [1.85, 19], [1.8, 19.5],
+    // Crown
+    [1.5, 20], [0.8, 20.3],
+    // Top of head
+    [0, 20.5],
+].map(([r,y]) => new THREE.Vector2(r, y));
+
+const latheGeo = new THREE.LatheGeometry(profile, 24);
+const torso = new THREE.Mesh(latheGeo, bodyMat);
+torso.scale.set(1, 1, 0.65); // flatten front-to-back
+bodyGroup.add(torso);
+const torsoW = new THREE.Mesh(latheGeo, bodyWire);
+torsoW.scale.set(1, 1, 0.65);
+bodyGroup.add(torsoW);
+
+// Arms (capsule-like, using lathe for smooth taper)
+const armProfile = [
+    [0, 4.5], [0.5, 4], [0.65, 3], [0.7, 1], [0.7, -1],
+    [0.65, -3], [0.55, -4.5], [0.45, -5.5], [0, -6],
+].map(([r,y]) => new THREE.Vector2(r, y));
+const armGeo = new THREE.LatheGeometry(armProfile, 10);
+
+[-1,1].forEach(side=>{
+    const arm = new THREE.Mesh(armGeo, bodyMat);
+    arm.position.set(side * 4.8, 10.5, 0);
+    arm.rotation.z = side * 0.08;
+    arm.scale.set(1, 1, 0.85);
+    bodyGroup.add(arm);
+    const armW = new THREE.Mesh(armGeo, bodyWire);
+    armW.position.copy(arm.position);
+    armW.rotation.copy(arm.rotation);
+    armW.scale.copy(arm.scale);
+    bodyGroup.add(armW);
+});
+
+// Separate leg shapes (the lathe makes merged legs, we need split)
+// Add inner thigh gap by carving with a box
+const legProfile = [
+    [0, 0], [0.5, -0.3], [0.8, -1],
+    [1.0, -2], [1.05, -3.5], [0.9, -5],
+    [0.85, -5.5], [1.0, -6.5], [0.9, -8],
+    [0.7, -9.5], [0.55, -10], [0.6, -10.5],
+    [0.5, -11], [0, -11.2],
+].map(([r,y]) => new THREE.Vector2(r, y));
+const legGeo = new THREE.LatheGeometry(legProfile, 10);
+
+[-1,1].forEach(side=>{
+    const leg = new THREE.Mesh(legGeo, bodyMat);
+    leg.position.set(side * 1.5, 0, 0);
+    leg.scale.set(1, 1, 0.85);
+    bodyGroup.add(leg);
+});
+
+scene.add(bodyGroup);
+let showBody = true;
+
+window.tgBody = function(){
+    showBody = !showBody;
+    bodyGroup.visible = showBody;
+    document.getElementById('bodyBtn').classList.toggle('on', showBody);
+};
+
+// ─── MATERIALS ───
+function mat(color, op=0.72) {
+    return new THREE.MeshStandardMaterial({
+        color, transparent:true, opacity:op,
+        roughness:0.18, metalness:0.05,
+        emissive: new THREE.Color(color), emissiveIntensity:0.12,
+    });
+}
+
+// ─── VOXEL BUILDER ───
+const VS = 0.25;
+const geo = new THREE.BoxGeometry(VS*0.94, VS*0.94, VS*0.94);
+
+function buildOrgan(id, voxels, color, pos, sysTag) {
+    const g = new THREE.Group();
+    const m = mat(color);
+    voxels.forEach(([x,y,z])=>{
+        const mesh = new THREE.Mesh(geo, m);
+        mesh.position.set(x*VS, y*VS, z*VS);
+        g.add(mesh);
+    });
+    g.position.set(...pos);
+    g.userData = {id, sys:sysTag};
+    scene.add(g);
+    return g;
+}
+
+// ─── SHAPE GENERATORS ──────────────────────────────
+function ellipsoid(rx,ry,rz,cx=0,cy=0,cz=0){
+    const v=[];
+    for(let x=-rx;x<=rx;x++)for(let y=-ry;y<=ry;y++)for(let z=-rz;z<=rz;z++){
+        if((x*x)/(rx*rx)+(y*y)/(ry*ry)+(z*z)/(rz*rz)<=1) v.push([x+cx,y+cy,z+cz]);
+    }
+    return v;
+}
+function cylinder(r,h,cx=0,cy=0,cz=0){
+    const v=[];
+    for(let x=-r;x<=r;x++)for(let y=0;y<h;y++)for(let z=-r;z<=r;z++){
+        if(x*x+z*z<=r*r) v.push([x+cx,y+cy,z+cz]);
+    }
+    return v;
+}
+function bean(rx,ry,rz,cx=0,cy=0,cz=0){
+    const v=[];
+    for(let x=-rx;x<=rx;x++)for(let y=-ry;y<=ry;y++)for(let z=-rz;z<=rz;z++){
+        const nx=x/rx,ny=y/ry,nz=z/rz;
+        const indent = x<0 ? 0.3*Math.exp(-y*y/(ry*ry*0.5)) : 0;
+        if(nx*nx+ny*ny+nz*nz <= 1-indent) v.push([x+cx,y+cy,z+cz]);
+    }
+    return v;
+}
+
+// ─── ORGAN DATA (HIGH DETAIL) ──────────────────────
+const O = {};
+
+// Brain — dome with hemispheres (~200 voxels)
+O.brain = buildOrgan('brain', (()=>{
+    const v=[];
+    for(let x=-6;x<=6;x++)for(let y=-2;y<=4;y++)for(let z=-4;z<=4;z++){
+        const d=(x*x)/36+(y*y)/16+(z*z)/16;
+        if(d<=1 && y>=-1){
+            // Split hemispheres (gap at x=0, z>0)
+            if(x===0 && z>=0 && y>0) continue;
+            v.push([x,y,z]);
+        }
+    }
+    // Brain stem
+    for(let y=-4;y<=-1;y++) v.push([0,y,0],[0,y,1]);
+    // Cerebellum
+    for(let x=-3;x<=3;x++)for(let z=1;z<=3;z++){
+        if(x*x/9+z*z/9<=1) v.push([x,-2,z]);
+    }
+    return v;
+})(), '#dba8b0', [0,17,0], 'nervous');
+
+// Heart — proper heart shape (~150 voxels)
+O.heart = buildOrgan('heart', (()=>{
+    const v=[];
+    for(let x=-5;x<=5;x++)for(let y=-6;y<=4;y++)for(let z=-3;z<=3;z++){
+        // Heart equation approximation
+        const nx=x/5, ny=-y/5, nz=z/3;
+        const h = nx*nx + (ny - Math.sqrt(Math.abs(nx))*0.7)*(ny - Math.sqrt(Math.abs(nx))*0.7) + nz*nz;
+        if(h <= 1.0) v.push([x,y,z]);
+    }
+    // Aorta
+    for(let y=5;y<=8;y++){v.push([0,y,0]);v.push([1,y,0]);if(y>6)v.push([2,y,0]);}
+    return v;
+})(), '#dc2626', [-1,10,0], 'circulatory');
+
+// Lungs — proper lobe shapes (~180 each)
+function makeLung(side){
+    const v=[], flip = side==='R'?-1:1;
+    const lobes = side==='R'?3:2;
+    for(let x=0;x<=6;x++)for(let y=-7;y<=7;y++)for(let z=-3;z<=3;z++){
+        const rx=6, ry=7, rz=3;
+        const d=(x*x)/(rx*rx)+(y*y)/(ry*ry)+(z*z)/(rz*rz);
+        if(d<=1){
+            // Lobe divisions
+            if(lobes===3 && y===2 && x>1) continue; // upper-middle split
+            if(y===-2 && x>1) continue; // middle-lower split
+            // Mediastinal indent
+            if(x<=1 && Math.abs(y)<3 && Math.abs(z)<2) continue;
+            v.push([x*flip,y,z]);
+        }
+    }
+    return v;
+}
+O.lungL = buildOrgan('lungL', makeLung('L'), '#e8a0a8', [-5,10,0], 'respiratory');
+O.lungR = buildOrgan('lungR', makeLung('R'), '#e8a0a8', [5,10,0], 'respiratory');
+
+// Trachea — ringed tube
+O.trachea = buildOrgan('trachea', (()=>{
+    const v=[];
+    for(let y=0;y<10;y++)for(let x=-1;x<=1;x++)for(let z=-1;z<=1;z++){
+        if(x*x+z*z<=1) v.push([x,y,z]);
+    }
+    // Bifurcation
+    for(let i=1;i<=3;i++){v.push([-i,-1,0]);v.push([i,-1,0]);v.push([-i,-2,0]);v.push([i,-2,0]);}
+    return v;
+})(), '#f0b0c8', [0,13,0], 'respiratory');
+
+// Stomach — J-shaped bag (~120 voxels)
+O.stomach = buildOrgan('stomach', (()=>{
+    const v=[];
+    for(let x=-5;x<=4;x++)for(let y=-5;y<=4;y++)for(let z=-3;z<=3;z++){
+        // J-shape: upper wide, lower narrow, curves right
+        const ry = x<0 ? 4 : 3-x*0.3;
+        const rz = 3 - Math.abs(y)*0.2;
+        if(y*y/(ry*ry)+z*z/(rz*rz)<=1 && !(x>2&&y>2)){
+            v.push([x,y,z]);
+        }
+    }
+    return v;
+})(), '#e07070', [-2,7,0], 'digestive');
+
+// Liver — large right lobe (~160 voxels)
+O.liver = buildOrgan('liver', (()=>{
+    const v=[];
+    for(let x=-6;x<=4;x++)for(let y=-2;y<=2;y++)for(let z=-3;z<=3;z++){
+        const rx = 6, ry = 2.5, rz = 3;
+        const d=(x+1)*(x+1)/(rx*rx)+y*y/(ry*ry)+z*z/(rz*rz);
+        // Taper left side
+        const taper = x>0 ? 1 : 1-Math.abs(x)*0.05;
+        if(d<=taper) v.push([x,y,z]);
+    }
+    return v;
+})(), '#8b5020', [-3,8.5,0], 'digestive');
+
+// Small intestine — zigzag coils (~200 voxels)
+O.smallInt = buildOrgan('smallInt', (()=>{
+    const v=[];
+    const coils = 7;
+    for(let i=0;i<coils;i++){
+        const y = -i*2;
+        const dir = i%2===0?1:-1;
+        for(let x=-5;x<=5;x++){
+            for(let z=-1;z<=1;z++){
+                v.push([x*dir, y, z]);
+                v.push([x*dir, y+1, z]);
+            }
+        }
+        // Connect turns
+        if(i<coils-1){
+            const endX = 5*(i%2===0?1:-1);
+            for(let z=-1;z<=1;z++){v.push([endX,y-1,z]);v.push([endX,y-2,z]);}
+        }
+    }
+    return v;
+})(), '#e8a0a0', [0,4,0], 'digestive');
+
+// Large intestine — ascending/transverse/descending (~140 voxels)
+O.largeInt = buildOrgan('largeInt', (()=>{
+    const v=[], r=1;
+    // Ascending (right side)
+    for(let y=0;y<=8;y++)for(let x=-r;x<=r;x++)for(let z=-r;z<=r;z++){
+        if(x*x+z*z<=r*r) v.push([6+x,y,z]);
+    }
+    // Transverse (top)
+    for(let x=-6;x<=6;x++)for(let z=-r;z<=r;z++){
+        v.push([x,8,z]); v.push([x,9,z]);
+    }
+    // Descending (left side)
+    for(let y=0;y<=8;y++)for(let x=-r;x<=r;x++)for(let z=-r;z<=r;z++){
+        if(x*x+z*z<=r*r) v.push([-6+x,y,z]);
+    }
+    // Sigmoid (bottom curve)
+    for(let x=-3;x<=3;x++)for(let z=-r;z<=r;z++){v.push([x,0,z]);v.push([x,-1,z]);}
+    return v;
+})(), '#c07070', [-1,-2,0], 'digestive');
+
+// Kidneys — bean shapes (~80 each)
+O.kidneyL = buildOrgan('kidneyL', bean(3,5,3), '#a05828', [-5,6.5,0], 'urinary');
+O.kidneyR = buildOrgan('kidneyR', bean(3,5,3), '#a05828', [5,6.5,0], 'urinary');
+
+// Bladder — sphere (~60 voxels)
+O.bladder = buildOrgan('bladder', (()=>{
+    const v=ellipsoid(3,3,3);
+    // Urethra
+    for(let y=-5;y<=-3;y++) v.push([0,y,0]);
+    return v;
+})(), '#c8a060', [0,-3,0], 'urinary');
+
+// Spinal Cord — thin column
+O.spinalCord = buildOrgan('spinalCord', (()=>{
+    const v=[];
+    for(let y=0;y<40;y++){v.push([0,y,0]);v.push([1,y,0]);}
+    // Nerve branches every 4 units
+    for(let y=2;y<38;y+=4){
+        for(let i=1;i<=3;i++){v.push([-i,y,0]);v.push([1+i,y,0]);}
+    }
+    return v;
+})(), '#e8e050', [0,-3,-2], 'nervous');
+
+// Pancreas — elongated
+O.pancreas = buildOrgan('pancreas', (()=>{
+    const v=[];
+    for(let x=-1;x<=6;x++)for(let y=-1;y<=1;y++)for(let z=-1;z<=1;z++){
+        const ry = 1.5 - x*0.1;
+        if(y*y/(ry*ry)+z*z<=1) v.push([x,y,z]);
+    }
+    return v;
+})(), '#c8b070', [1,6.5,0], 'digestive');
+
+// Diaphragm — flat dome
+O.diaphragm = buildOrgan('diaphragm', (()=>{
+    const v=[];
+    for(let x=-8;x<=8;x++)for(let z=-4;z<=4;z++){
+        const d = x*x/64+z*z/16;
+        if(d<=1){
+            const y = Math.round(Math.cos(Math.sqrt(d)*Math.PI*0.5)*1.5);
+            v.push([x,y,z]);
+        }
+    }
+    return v;
+})(), '#d09020', [0,5.5,0], 'respiratory');
+
+// Esophagus — tube from throat to stomach
+O.esophagus = buildOrgan('esophagus', cylinder(1,16), '#c09080', [0,7,1], 'digestive');
+
+dbg.textContent = `✓ ${Object.keys(O).length} organs built`;
+
+// ─── PARTICLES ───
+const pGeo = new THREE.SphereGeometry(0.12,6,6);
+const waterM = new THREE.MeshStandardMaterial({color:0x3b82f6,transparent:true,opacity:0.8,emissive:0x3b82f6,emissiveIntensity:0.3});
+const urineM = new THREE.MeshStandardMaterial({color:0xfbbf24,transparent:true,opacity:0.8,emissive:0xfbbf24,emissiveIntensity:0.3});
+const bloodM = new THREE.MeshStandardMaterial({color:0xef4444,transparent:true,opacity:0.8,emissive:0xef4444,emissiveIntensity:0.3});
+const nerveM = new THREE.MeshStandardMaterial({color:0xfacc15,emissive:0xfacc15,emissiveIntensity:0.8,transparent:true,opacity:0.9});
+
+const STOPS=[{y:16},{y:13},{y:7},{y:5},{y:1},{y:-2}];
+
+window.spawnWater = function(){
+    if(parts.length>200)return;
+    for(let i=0;i<8;i++){
+        const m=new THREE.Mesh(pGeo,waterM.clone());
+        m.position.set((Math.random()-.5)*2, 18, (Math.random()-.5));
+        scene.add(m);
+        parts.push({mesh:m,type:'water',si:0,spd:0.03+Math.random()*0.02,age:0,w:Math.random()*6.28});
+    }
+};
+window.spawnBlood = function(){
+    if(parts.length>200)return;
+    for(let i=0;i<4;i++){
+        const m=new THREE.Mesh(pGeo,bloodM.clone());
+        m.position.set(-1+Math.random()*2, 12, Math.random()-.5);
+        scene.add(m);
+        parts.push({mesh:m,type:'blood',ang:Math.random()*6.28,r:3+Math.random()*5,spd:0.012+Math.random()*0.01,age:0,yb:10});
+    }
+};
+window.spawnNerve = function(ty){
+    const m=new THREE.Mesh(pGeo,nerveM.clone());
+    m.position.set((Math.random()-.5)*3, ty||0, (Math.random()-.5)*2);
+    m.scale.set(2,2,2);
+    scene.add(m);
+    parts.push({mesh:m,type:'nerve',spd:0.1,age:0});
+};
+
+function updParts(){
+    for(let i=parts.length-1;i>=0;i--){
+        const p=parts[i]; p.age++;
+        if(p.type==='water'){
+            p.mesh.position.y-=p.spd;
+            p.w+=.05; p.mesh.position.x+=Math.sin(p.w)*.015;
+            if(p.mesh.position.y<-3||Math.random()<.001){rmP(i);continue;}
+            if(p.si<STOPS.length&&p.mesh.position.y<=STOPS[p.si].y){p.si++;if(Math.random()<.15){rmP(i);continue;}}
+            if(p.mesh.position.y<2&&p.type==='water'&&Math.random()<.005){p.mesh.material=urineM.clone();p.type='urine';}
+        }else if(p.type==='urine'){
+            p.mesh.position.y-=p.spd*.5;
+            if(p.mesh.position.y<-4){rmP(i);continue;}
+        }else if(p.type==='blood'){
+            p.ang+=p.spd;
+            p.mesh.position.x=Math.cos(p.ang)*p.r;
+            p.mesh.position.y=p.yb+Math.sin(p.ang*2)*4;
+            p.mesh.position.z=Math.sin(p.ang)*p.r*.3;
+            if(p.age>600){rmP(i);continue;}
+        }else if(p.type==='nerve'){
+            p.mesh.position.y+=p.spd;
+            if(p.mesh.position.y>17){rmP(i);continue;}
+        }
+    }
+    document.getElementById('hP').textContent=parts.length;
+}
+function rmP(i){scene.remove(parts[i].mesh);parts.splice(i,1);}
+
+// ─── ANIMATIONS ───
+function animOrgans(t){
+    if(O.heart){const b=1+Math.sin(t*.005)*.08;O.heart.scale.set(b,b,b);}
+    if(O.lungL){const b=1+Math.sin(t*.002)*.05;O.lungL.scale.set(b,b,b);O.lungR.scale.set(b,b,b);}
+    Object.entries(O).forEach(([id,g])=>{
+        const d=g.userData;
+        g.visible = sys==='all' || d.sys===sys;
+    });
+    if(md==='nerve'&&O.spinalCord) O.spinalCord.visible=true;
+}
+
+// ─── RAYCASTER ───
+const rc = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const tip = document.getElementById('tip');
+
+canvas.addEventListener('pointermove',e=>{
+    const r=canvas.getBoundingClientRect();
+    mouse.x=((e.clientX-r.left)/r.width)*2-1;
+    mouse.y=-((e.clientY-r.top)/r.height)*2+1;
+    rc.setFromCamera(mouse,camera);
+    const hits=rc.intersectObjects(scene.children,true);
+    const h=hits.find(x=>x.object.parent?.userData?.id);
+    if(h){
+        const id=h.object.parent.userData.id;
+        const info=INFO[id];
+        tip.textContent=(info?info.icon+' ':'')+id;
+        tip.style.left=e.clientX+12+'px';tip.style.top=e.clientY-8+'px';
+        tip.classList.add('show');
+        canvas.style.cursor='pointer';
+    }else{tip.classList.remove('show');canvas.style.cursor='grab';}
+});
+
+canvas.addEventListener('click',e=>{
+    if(md==='water'){window.spawnWater();return;}
+    if(md==='nerve'){
+        const r=canvas.getBoundingClientRect();
+        const clickY=(1-((e.clientY-r.top)/r.height))*18;
+        window.spawnNerve(clickY);return;
+    }
+    rc.setFromCamera(mouse,camera);
+    const hits=rc.intersectObjects(scene.children,true);
+    const h=hits.find(x=>x.object.parent?.userData?.id);
+    if(h) openInfo(h.object.parent.userData.id);
+});
+
+// ─── INFO ───
+const INFO={
+    heart:{icon:'🫀',ko:'심장',en:'Heart',st:{s:'주먹 크기',w:'300g',f:'혈액 펌프'},stE:{s:'Fist-sized',w:'300g',f:'Blood pump'},
+        lv:{elem:{ko:'심장은 피를 온몸에 보내주는 펌프! 💪\n하루 약 10만 번 뛰어요.',en:'Heart pumps blood everywhere! 💪\nBeats ~100,000 times a day.'},
+            mid:{ko:'4개 방: 좌심방, 좌심실, 우심방, 우심실.\n판막이 역류를 방지합니다.',en:'4 chambers. Valves prevent backflow.'},
+            high:{ko:'SA node → 전기신호. CO = SV × HR.\n안정 시 5L/min.',en:'SA node generates impulses. CO = SV × HR.'}},
+        dis:{ko:['심근경색','부정맥','심부전'],en:['Heart Attack','Arrhythmia','Heart Failure']}},
+    brain:{icon:'🧠',ko:'뇌',en:'Brain',st:{s:'~15cm',w:'1.4kg',f:'모든 기능 제어'},stE:{s:'~15cm',w:'1.4kg',f:'Controls everything'},
+        lv:{elem:{ko:'뇌는 우리 몸의 사령관! 🧠\n860억 개의 신경세포!',en:'Brain is your commander! 🧠\n86 billion neurons!'},
+            mid:{ko:'대뇌, 소뇌, 뇌간. 시냅스 전달.',en:'Cerebrum, cerebellum, brainstem.'},
+            high:{ko:'Na⁺ 탈분극(-70→+30mV). LTP로 장기기억.',en:'Na⁺ depolarization. LTP for memory.'}},
+        dis:{ko:['뇌졸중','알츠하이머'],en:['Stroke',"Alzheimer's"]}},
+    stomach:{icon:'🫃',ko:'위',en:'Stomach',st:{s:'~25cm',w:'150g',f:'위산 분해'},stE:{s:'~25cm',w:'150g',f:'Acid digestion'},
+        lv:{elem:{ko:'위는 음식 분쇄 주머니! 🎒\n위산으로 녹여요.',en:'Stomach crushes food! 🎒'},
+            mid:{ko:'3겹 근육. pH 1.5~3.5 HCl.',en:'3 muscle layers. HCl pH 1.5-3.5.'},
+            high:{ko:'주세포→펩시노겐, 벽세포→HCl+내인자.',en:'Chief→pepsinogen, parietal→HCl.'}},
+        dis:{ko:['위염','위궤양'],en:['Gastritis','Ulcer']}},
+    lungL:{icon:'🫁',ko:'폐',en:'Lungs',st:{s:'좌2/우3엽',w:'500-600g',f:'O₂/CO₂교환'},stE:{s:'L2/R3 lobes',w:'500-600g',f:'Gas exchange'},
+        lv:{elem:{ko:'폐는 숨쉬는 장기! 🌬️\n3억 개 폐포!',en:'Lungs for breathing! 🌬️\n300M alveoli!'},
+            mid:{ko:'횡격막 수축→폐 팽창. 폐포 70m².',en:'Diaphragm→expansion. 70m² area.'},
+            high:{ko:'Fick 확산. Surfactant 폐허탈방지.',en:"Fick's law. Surfactant prevents collapse."}},
+        dis:{ko:['폐렴','천식'],en:['Pneumonia','Asthma']}},
+    kidneyL:{icon:'🫘',ko:'신장',en:'Kidney',st:{s:'~11cm',w:'150g',f:'혈액 여과'},stE:{s:'~11cm',w:'150g',f:'Filters blood'},
+        lv:{elem:{ko:'신장은 피 필터! 🧹\n나쁜것→오줌!',en:'Kidneys filter blood! 🧹'},
+            mid:{ko:'100만 네프론. 180L/일→소변1.5L.',en:'1M nephrons. 180L→1.5L urine.'},
+            high:{ko:'GFR≈125mL/min. RAAS 혈압조절.',en:'GFR≈125mL/min. RAAS regulates BP.'}},
+        dis:{ko:['신부전','신결석'],en:['Failure','Stones']}},
+    bladder:{icon:'💛',ko:'방광',en:'Bladder',st:{s:'~500mL',w:'50g',f:'소변 저장'},stE:{s:'~500mL',w:'50g',f:'Stores urine'},
+        lv:{elem:{ko:'방광은 오줌 주머니! 🎈',en:'Bladder collects urine! 🎈'},
+            mid:{ko:'이행상피. 배뇨근 수축 배출.',en:'Transitional epithelium. Detrusor.'},
+            high:{ko:'S2-S4→PMC→배뇨근수축.',en:'S2-S4→PMC→detrusor contraction.'}},
+        dis:{ko:['방광염'],en:['Cystitis']}},
+    liver:{icon:'🫁',ko:'간',en:'Liver',st:{s:'~25cm',w:'1.5kg',f:'해독/담즙'},stE:{s:'~25cm',w:'1.5kg',f:'Detox/bile'},
+        lv:{elem:{ko:'간은 화학공장! 🏭',en:'Liver is your factory! 🏭'},
+            mid:{ko:'해독, 담즙, 글리코겐, 단백질합성.',en:'Detox, bile, glycogen, proteins.'},
+            high:{ko:'CYP450 대사. 70%재생가능.',en:'CYP450 metabolism. 70% regeneration.'}},
+        dis:{ko:['간경변','간염'],en:['Cirrhosis','Hepatitis']}},
+    smallInt:{icon:'🌀',ko:'소장',en:'Small Intestine',st:{s:'~6m',w:'600g',f:'영양흡수'},stE:{s:'~6m',w:'600g',f:'Nutrient absorption'},
+        lv:{elem:{ko:'가장 긴 장기! 6m! 📏',en:'Longest organ! 6m! 📏'},
+            mid:{ko:'융모→표면적 250m².',en:'Villi→250m² surface.'},
+            high:{ko:'SGLT1 포도당 공수송.',en:'SGLT1 glucose co-transport.'}},
+        dis:{ko:['크론병'],en:["Crohn's"]}},
+    spinalCord:{icon:'⚡',ko:'척수',en:'Spinal Cord',st:{s:'~45cm',w:'35g',f:'신호전달'},stE:{s:'~45cm',w:'35g',f:'Signal relay'},
+        lv:{elem:{ko:'뇌↔몸 연결 전선! ⚡',en:'Brain↔body wire! ⚡'},
+            mid:{ko:'31쌍 척수신경. 반사궁.',en:'31 pairs. Reflex arcs.'},
+            high:{ko:'추체교차→반대측제어.',en:'Pyramidal decussation.'}},
+        dis:{ko:['척수손상'],en:['Spinal Injury']}},
+};
+INFO.lungR=INFO.lungL; INFO.kidneyR=INFO.kidneyL;
+
+function openInfo(id){
+    const info=INFO[id]; if(!info)return;
+    document.getElementById('iIco').textContent=info.icon;
+    document.getElementById('iNm').textContent=lang==='en'?info.en:info.ko;
+    document.getElementById('iSub').textContent=lang==='en'?info.ko:info.en;
+    const st=lang==='en'?(info.stE||info.st):info.st;
+    document.getElementById('iSt').innerHTML=`<span class="sl">크기</span><span class="sv">${st.s}</span><span class="sl">무게</span><span class="sv">${st.w}</span><span class="sl">기능</span><span class="sv">${st.f}</span>`;
+    const t=info.lv?.[lv]; document.getElementById('iTxt').textContent=t?(lang==='en'?t.en:t.ko):'';
+    const d=info.dis; document.getElementById('iDis').innerHTML=d?`<h4>⚠️ 관련 질환</h4>${(lang==='en'?d.en:d.ko).join(' · ')}`:'';
+    document.getElementById('infoP').classList.add('open');
+}
+window.closeInfo=()=>document.getElementById('infoP').classList.remove('open');
+
+// ─── CONTROLS ───
+window.setSys=(s,el)=>{sys=s;document.querySelectorAll('.sb:not(.m)').forEach(b=>b.classList.remove('on'));el.classList.add('on');};
+window.setMd=(m,el)=>{
+    md=m;document.querySelectorAll('.sb.m').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+    document.getElementById('hM').textContent=m;
+    const ab=document.getElementById('actB');
+    if(m==='water')ab.textContent='💧 물 붓기';
+    else if(m==='blood'){ab.textContent='🩸 순환시작';window.spawnBlood();}
+    else if(m==='nerve')ab.textContent='⚡ 클릭하세요';
+    else ab.textContent='';
+};
+window.doAct=()=>{if(md==='water')window.spawnWater();else if(md==='blood')window.spawnBlood();};
+window.resetSim=()=>{while(parts.length)rmP(0);window.closeInfo();};
+window.setLv=(l,el)=>{lv=l;document.querySelectorAll('.pill').forEach(b=>b.classList.remove('on'));el.classList.add('on');};
+window.tgLang=()=>{lang=lang==='ko'?'en':'ko';document.getElementById('langB').textContent=lang==='ko'?'EN':'한';};
+
+document.addEventListener('keydown',e=>{
+    if(e.key===' '){e.preventDefault();}
+    if(e.key==='Escape')window.closeInfo();
+});
+
+// ─── RESIZE ───
+function resize(){
+    const w=vp.clientWidth||800, h=vp.clientHeight||600;
+    renderer.setSize(w,h);
+    camera.aspect=w/h;
+    camera.updateProjectionMatrix();
+}
+window.addEventListener('resize',resize);
+resize();
+
+// ─── LOOP ───
+let lastBlood=0;
+function loop(t){
+    requestAnimationFrame(loop);
+    updParts();
+    animOrgans(t);
+    if(md==='blood'&&t-lastBlood>2000&&parts.filter(p=>p.type==='blood').length<25){window.spawnBlood();lastBlood=t;}
+    ctrl.update();
+    renderer.render(scene,camera);
+}
+loop(0);
+
+dbg.textContent = `✓ ${Object.keys(O).length} organs | running`;
+</script>
+</body>
+</html>

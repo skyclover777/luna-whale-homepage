@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>마음을 전하는 책갈피 | 루나웨일</title>
+<style>
+:root{--g0:#042f2e;--g1:#134e4a;--g2:#1e6e68;--glow:#67e8f9;--pale:#22d3ee;--acc:#0891b2;--cream:#fefaf2;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#000;color:var(--cream);user-select:none;}
+#sw{width:100%;height:100%;position:relative;overflow:hidden;}
+.slide{position:absolute;inset:0;opacity:0;transform:scale(.97);transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.4,0,.2,1);pointer-events:none;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.slide.active{opacity:1;transform:scale(1);pointer-events:auto;}
+.slide.exit-left{opacity:0;transform:scale(1.03);}
+.bg{position:absolute;inset:0;background:linear-gradient(135deg,var(--g0) 0%,var(--g1) 50%,var(--g2) 100%);}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:12px 28px;background:rgba(14,35,24,0.75);backdrop-filter:blur(20px);border-bottom:1px solid rgba(168,230,191,0.1);}
+.lcode{position:fixed;top:52px;left:28px;z-index:201;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);font-size:9px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,0.28);font-family:monospace;backdrop-filter:blur(8px);pointer-events:none;}
+.tlogo{font-size:14px;font-weight:700;color:var(--glow);cursor:pointer;transition:.2s;}.tlogo:hover{opacity:.7;}
+.tsc{font-size:13px;color:rgba(255,255,255,.4);}.tsc strong{color:rgba(255,255,255,.9);}
+.tbadges{display:flex;gap:8px;}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.bl{background:rgba(168,230,191,.12);color:var(--glow);border:1px solid rgba(168,230,191,.25);}
+.ba{background:rgba(245,215,110,.12);color:var(--acc);border:1px solid rgba(245,215,110,.25);}
+.dots{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;display:flex;gap:6px;align-items:center;}
+.dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.2);cursor:pointer;transition:all .3s;}
+.dot.active{width:22px;background:var(--glow);}
+.arr{position:fixed;top:50%;z-index:200;transform:translateY(-50%);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;transition:all .25s;backdrop-filter:blur(8px);}
+.arr:hover{background:rgba(168,230,191,.2);color:#fff;border-color:var(--glow);transform:translateY(-50%) scale(1.1);}
+.arr:disabled{opacity:.1;cursor:default;pointer-events:none;}
+#bp{left:16px;}#bn{right:16px;}
+@media(max-width:768px){.arr{display:none;}.tsc{display:none;}}
+.sc{position:relative;z-index:2;flex:1;min-height:0;display:flex;flex-direction:column;padding:80px 80px 60px;overflow:hidden;}
+@media(max-width:768px){.sc{padding:72px 24px 50px;}}
+#s0 .bg{background:linear-gradient(135deg,#042f2e,#134e4a,#1e6e68);}
+#s0 .bgimg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;animation:coverReveal 1.8s .3s cubic-bezier(.25,.46,.45,.94) forwards;}
+@keyframes coverReveal{0%{opacity:0;transform:scale(1.1);}100%{opacity:.5;transform:scale(1);}}
+#s0 .hov{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,24,18,.97) 0%,rgba(8,24,18,.6) 35%,rgba(8,24,18,.2) 70%,transparent 100%);}
+#s0 .sc{justify-content:flex-end;padding-bottom:90px;}
+#s0 .ew{opacity:0;animation:fadeUp .8s .8s forwards;}
+#s0 .stitle{opacity:0;animation:fadeUp .8s 1s forwards;}
+#s0 .ssub{opacity:0;animation:fadeUp .8s 1.2s forwards;}
+#s0 .metas{opacity:0;animation:fadeUp .8s 1.4s forwards;}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(25px);}100%{opacity:1;transform:translateY(0);}}
+.ew{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--pale);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.ew::before{content:'';display:block;width:20px;height:2px;background:var(--pale);}
+.stitle{font-size:clamp(34px,4.5vw,62px);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;background:linear-gradient(135deg,#fff 0%,var(--glow) 50%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.ssub{font-size:clamp(15px,1.6vw,20px);color:rgba(255,255,255,.55);font-style:italic;margin-bottom:28px;}
+.metas{display:flex;gap:14px;flex-wrap:wrap;}
+.mc{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:30px;padding:6px 14px;font-size:13px;color:rgba(255,255,255,.75);}
+.pt{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.p{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(168,230,191,.45),transparent);animation:pf linear infinite;}
+@keyframes pf{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:.7}90%{opacity:.25}100%{transform:translateY(-60px) scale(1);opacity:0}}
+.float-emoji{position:absolute;pointer-events:none;animation:floatUp ease-in-out infinite;}
+@keyframes floatUp{0%{transform:translateY(100vh) translateX(0) rotate(0deg) scale(.3);opacity:0}10%{opacity:.6}40%{transform:translateY(50vh) translateX(25px) rotate(90deg) scale(.9);}70%{transform:translateY(20vh) translateX(-15px) rotate(180deg) scale(1);}100%{transform:translateY(-40px) translateX(10px) rotate(270deg) scale(.5);opacity:0}}
+.gg{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;align-content:start;margin-top:4px;perspective:1200px;}
+.gc-wrap{position:relative;cursor:pointer;height:clamp(160px,21vh,210px);}
+.gc-wrap.flipped .gc-inner{transform:rotateY(180deg);}
+.gc-inner{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;}
+.gc-front,.gc-back{position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;display:flex;flex-direction:column;}
+.gc-front{background:rgba(45,94,70,.35);border:1px solid rgba(168,230,191,.18);transition:border-color .3s,box-shadow .3s;align-items:center;justify-content:center;gap:3px;text-align:center;padding:12px 14px;}
+.gc-wrap:hover .gc-front{border-color:rgba(168,230,191,.5);box-shadow:0 6px 24px rgba(168,230,191,.1);}
+.gc-front::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,var(--glow),var(--acc));opacity:0;transition:.3s;}
+.gc-wrap:hover .gc-front::before{opacity:1;}
+.gc-front .gci{font-size:28px;}
+.gc-front h3{font-size:clamp(16px,2vw,22px);font-weight:800;color:var(--glow);}
+.gc-front p{font-size:clamp(10px,1.1vw,12px);line-height:1.45;color:rgba(255,255,255,.55);}
+.gc-flip-hint{font-size:9px;color:rgba(255,255,255,.2);margin-top:auto;padding-top:2px;}
+.gc-back{background:rgba(20,50,38,.95);border:1px solid rgba(168,230,191,.25);transform:rotateY(180deg);padding:12px 14px;gap:5px;overflow:hidden;}
+.gc-back::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,rgba(120,200,255,.8),rgba(255,200,120,.8));}
+.gc-back-title{font-size:11px;font-weight:800;color:#fff;display:flex;align-items:center;gap:4px;padding-top:2px;}
+.gc-sec{display:flex;flex-direction:column;gap:1px;}
+.gc-sec-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.gc-sec-label.research{color:rgba(120,200,255,.85);}
+.gc-sec-label.caution{color:rgba(255,200,120,.85);}
+.gc-sec p{font-size:10px;line-height:1.55;color:rgba(255,255,255,.6);margin:0;}
+.gc-sec .cite{font-size:8px;color:rgba(255,255,255,.25);font-style:italic;}
+.gc-back-hint{font-size:8px;color:rgba(255,255,255,.18);text-align:right;margin-top:auto;}
+.ml{display:grid;grid-template-columns:1fr 1fr;gap:28px;flex:1;align-items:center;}
+@media(max-width:768px){.ml{grid-template-columns:1fr;}}
+.mph{aspect-ratio:4/3;border-radius:20px;overflow:hidden;position:relative;}
+.mph img{width:100%;height:100%;object-fit:cover;transition:transform .6s;}
+.mph:hover img{transform:scale(1.05);}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.mi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.8);transition:all .2s;}
+.mi:hover{background:rgba(168,230,191,.08);border-color:rgba(168,230,191,.2);}
+.sl{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1;align-items:center;}
+@media(max-width:768px){.sl{grid-template-columns:1fr;}}
+.sph{aspect-ratio:4/3;border-radius:20px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.sph img{width:100%;height:100%;object-fit:cover;transition:transform 8s cubic-bezier(.25,.46,.45,.94);}
+.slide.active .sph img{transform:scale(1.08);}
+.snum{font-size:88px;font-weight:900;line-height:.9;background:linear-gradient(135deg,rgba(168,230,191,.15),transparent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;}
+.sb h3{font-size:clamp(20px,2.5vw,32px);font-weight:800;color:#fff;margin-bottom:12px;line-height:1.2;}
+.sb h3 em{color:var(--glow);font-style:normal;}
+.sb p{font-size:15px;line-height:1.85;color:rgba(255,255,255,.72);margin-bottom:14px;}
+.tip{background:rgba(245,215,110,.07);border:1px solid rgba(245,215,110,.2);border-radius:12px;padding:12px 16px;font-size:13px;color:rgba(245,215,110,.9);line-height:1.6;}
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;flex:1;overflow-y:auto;align-content:start;padding-bottom:10px;}
+.ref-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .3s;}
+.ref-grid img:hover{transform:scale(1.03);border-color:rgba(255,255,255,.3);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.ref-note{font-size:11px;color:rgba(255,255,255,.35);text-align:center;margin-top:4px;}
+.gal-wrap{overflow-y:auto;flex:1;min-height:0;margin-top:6px;padding-bottom:8px;}
+.gal-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+@media(max-width:900px){.gal-grid{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:600px){.gal-grid{grid-template-columns:repeat(3,1fr);}}
+.gal-item{border-radius:10px;overflow:hidden;cursor:pointer;position:relative;aspect-ratio:1/1;background:rgba(255,255,255,.05);}
+.gal-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.25,.46,.45,.94);}
+.gal-item:hover img{transform:scale(1.12);}
+.gal-item::after{content:'';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);transition:.3s;}
+.gal-item:hover::after{opacity:1;}
+#lbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(20px);}
+#lbox.open{display:flex;}
+#lbox-img{max-width:90vw;max-height:72vh;object-fit:contain;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.8);}
+.lbox-actions{display:flex;gap:12px;margin-top:16px;}
+.lbox-dl{padding:10px 24px;background:var(--glow);color:#000;border-radius:10px;font-weight:700;text-decoration:none;font-size:13px;letter-spacing:.5px;transition:.2s;}
+.lbox-dl:hover{background:#fff;}
+.lbox-cl{padding:10px 24px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:10px;font-weight:700;cursor:pointer;border:none;font-size:13px;font-family:inherit;transition:.2s;}
+.lbox-cl:hover{background:rgba(255,255,255,.2);}
+.tnote{position:absolute;bottom:16px;right:24px;z-index:10;max-width:260px;padding:10px 14px;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.06);border-radius:10px;backdrop-filter:blur(14px);font-size:11px;line-height:1.6;color:rgba(255,255,255,0.35);transition:opacity .3s;}
+.tnote strong{color:rgba(255,255,255,0.5);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;display:block;margin-bottom:3px;}
+.tnote ul{list-style:none;padding:0;margin:0;}
+.tnote ul li{margin-bottom:2px;}
+.tnote ul li::before{content:'·';margin-right:4px;color:var(--glow);opacity:.5;}
+@media(max-width:768px){.tnote{display:none;}}
+.done-center{align-items:center;justify-content:center;text-align:center;gap:20px;}
+.back-btn{margin-top:24px;background:rgba(168,230,191,.15);border:1px solid rgba(168,230,191,.4);color:var(--glow);border-radius:14px;padding:14px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.25s;}
+.end-bar{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:10px;flex-wrap:wrap;justify-content:center;z-index:20;}
+.end-bar .back-btn{margin-top:0;padding:11px 22px;font-size:13px;}
+.end-bar .ai-btn{background:linear-gradient(135deg,rgba(120,180,255,.2),rgba(200,140,255,.2));border:1px solid rgba(160,140,255,.4);color:rgba(200,180,255,.95);border-radius:14px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.25s;display:flex;align-items:center;gap:6px;}
+.end-bar .ai-btn:hover{background:linear-gradient(135deg,rgba(120,180,255,.35),rgba(200,140,255,.35));border-color:rgba(200,180,255,.6);}
+.ai-panel{display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);backdrop-filter:blur(16px);align-items:center;justify-content:center;padding:24px;}
+.ai-panel.open{display:flex;}
+.ai-box{background:rgba(22,36,50,.97);border:1px solid rgba(160,140,255,.2);border-radius:20px;max-width:640px;width:100%;max-height:85vh;overflow-y:auto;padding:28px 30px;position:relative;display:flex;flex-direction:column;gap:12px;box-shadow:0 40px 100px rgba(0,0,0,.6);}
+.ai-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0;background:linear-gradient(90deg,rgba(120,180,255,.8),rgba(200,140,255,.8));}
+.ai-box h3{font-size:18px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;}
+.ai-box .ai-desc{font-size:12px;color:rgba(255,255,255,.4);line-height:1.5;}
+.ai-msg{position:relative;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 50px 14px 16px;font-size:13px;line-height:1.7;color:rgba(255,255,255,.75);transition:border-color .2s;}
+.ai-msg:hover{border-color:rgba(160,140,255,.3);}
+.ai-copy{position:absolute;top:50%;right:10px;transform:translateY(-50%);background:rgba(160,140,255,.15);border:1px solid rgba(160,140,255,.3);color:rgba(200,180,255,.8);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;font-family:inherit;transition:.2s;white-space:nowrap;}
+.ai-copy:hover{background:rgba(160,140,255,.3);color:#fff;}
+.ai-copy.copied{background:rgba(100,200,140,.2);border-color:rgba(100,200,140,.4);color:rgba(150,230,170,.9);}
+.ai-close{position:absolute;top:16px;right:20px;background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;transition:.2s;padding:4px 8px;}
+.ai-close:hover{color:#fff;}
+.back-btn:hover{background:rgba(168,230,191,.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(168,230,191,.15);}
+.slide.active:not(#s0) .sc>*{animation:contentIn .6s both;}
+.slide.active:not(#s0) .sc>*:nth-child(1){animation-delay:.1s;}
+.slide.active:not(#s0) .sc>*:nth-child(2){animation-delay:.2s;}
+.slide.active:not(#s0) .sc>*:nth-child(3){animation-delay:.3s;}
+.slide.active:not(#s0) .sc>*:nth-child(4){animation-delay:.4s;}
+.slide.active:not(#s0) .sc>*:nth-child(5){animation-delay:.5s;}
+@keyframes contentIn{0%{opacity:0;transform:translateY(15px);}100%{opacity:1;transform:translateY(0);}}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+<div class="topbar">
+  <span class="tlogo" onclick="typeof LunaApp!=='undefined'?LunaApp.navigate('monthlyDetail',{month:'2025-10'}):history.back()">&#127754; Luna Whale</span>
+  <div class="tsc"><strong id="cn">1</strong> / <span id="tn">9</span></div>
+  <div class="tbadges"><span class="badge bl">레벨 3</span><span class="badge ba">10~13세</span></div>
+</div>
+<button class="arr" id="bp" onclick="nav(-1)">&lsaquo;</button>
+<button class="arr" id="bn" onclick="nav(1)">&rsaquo;</button>
+<div class="dots" id="db"></div>
+<div id="sw">
+<div class="lcode">25M10D3</div>
+
+<!-- S0: COVER -->
+<div class="slide active" id="s0">
+  <div class="bg"></div>
+  <div class="bgimg" style="background-image:url('../../images/lessons/2025-10/l12-cover.jpg');"></div>
+  <div class="hov"></div>
+  <div class="pt" id="pt"></div>
+  <div class="sc">
+    <div class="ew">📖 2025년 10월 · 판화 협동</div>
+    <h1 class="stitle">마음을 전하는 책갈피</h1>
+    <p class="ssub">"협동 메시지 오브제로 마음을 전해요!"</p>
+    <div class="metas">
+      <div class="mc">&#128100; 레벨 3 &middot; 10~13세</div>
+      <div class="mc">&#9201;&#65039; 90분</div>
+      <div class="mc">&#9995; 협동 판화 프로젝트</div>
+    </div>
+  </div>
+</div>
+
+<!-- S1: OBJECTIVES -->
+<div class="slide" id="s1">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">수업 목표</div>
+    <h2 class="stitle">오늘 배우는 것들</h2>
+    <div class="gg">
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">👤</div>
+            <h3>자화상 관찰력</h3>
+            <p>거울을 보며 자기 얼굴의 특징을 관찰하고 단순화해요.</p>
+            <span class="gc-flip-hint">&#8635; 클릭해서 더 알아봐요</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">👤 자화상 관찰력</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; 교육적 효과</div>
+            <p>자화상 작업은 <strong style="color:rgba(120,200,255,.9);">자아 인식</strong>과 정체성 탐구를 돕습니다.</p>
+            <p class="cite">Lowenfeld (1987)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; 유의점</div>
+            <p>외모 비교/놀림 방지. 개성 존중 분위기 필수.</p></div>
+            <span class="gc-back-hint">&#8635; 다시 클릭</span>
+          </div>
+        </div>
+      </div>
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">🖨️</div>
+            <h3>다색 판화 기법</h3>
+            <p>두 가지 이상 색을 겹쳐 찍는 다색 판화를 체험해요.</p>
+            <span class="gc-flip-hint">&#8635; 클릭해서 더 알아봐요</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">🖨️ 다색 판화 기법</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; 교육적 효과</div>
+            <p>다색 판화는 <strong style="color:rgba(120,200,255,.9);">계획적 사고</strong>와 색채 감각을 동시에 기릅니다.</p>
+            <p class="cite">Eisner (2002)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; 유의점</div>
+            <p>색 순서(밝은 색→어두운 색) 설명. 건조 시간 확보.</p></div>
+            <span class="gc-back-hint">&#8635; 다시 클릭</span>
+          </div>
+        </div>
+      </div>
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">📖</div>
+            <h3>앨범 편집 디자인</h3>
+            <p>판화 자화상을 레이아웃하여 클래스 앨범을 구성해요.</p>
+            <span class="gc-flip-hint">&#8635; 클릭해서 더 알아봐요</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">📖 앨범 편집 디자인</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; 교육적 효과</div>
+            <p>편집 활동은 <strong style="color:rgba(120,200,255,.9);">구성력</strong>과 시각적 커뮤니케이션을 발달시킵니다.</p>
+            <p class="cite">Arnheim (1974)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; 유의점</div>
+            <p>모든 학생 작품이 동등하게 배치되도록 지도.</p></div>
+            <span class="gc-back-hint">&#8635; 다시 클릭</span>
+          </div>
+        </div>
+      </div>
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">🏆</div>
+            <h3>공동체 소속감</h3>
+            <p>반 친구들과 함께 하나의 앨범을 완성하며 소속감을 느껴요.</p>
+            <span class="gc-flip-hint">&#8635; 클릭해서 더 알아봐요</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">🏆 공동체 소속감</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; 교육적 효과</div>
+            <p>공동 프로젝트는 <strong style="color:rgba(120,200,255,.9);">사회정서 역량</strong>을 높입니다.</p>
+            <p class="cite">Bandura (1997)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; 유의점</div>
+            <p>빠지는 학생 없이 모두 포함되도록 확인.</p></div>
+            <span class="gc-back-hint">&#8635; 다시 클릭</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>목표 카드 하나씩 보여주며 설명</li>
+        <li>아이들에게 기대감 형성</li>
+        <li>질문으로 호기심 유발</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S2: MATERIALS -->
+<div class="slide" id="s2">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">준비물</div>
+    <h2 class="stitle">수업 전에 준비해요</h2>
+    <div class="ml">
+      <div class="mph"><img src="../../images/lessons/2025-10/l12-materials.jpg" loading="lazy" alt="준비물"></div>
+      <div class="mg">
+        <div class="mi">📦 고무판/스티로폼 판</div>
+        <div class="mi">🖌️ 판화 잉크 (2~3색)</div>
+        <div class="mi">🧽 브레이어 (잉크 롤러)</div>
+        <div class="mi">📄 판화 용지 (A4)</div>
+        <div class="mi">🪞 개인 거울</div>
+        <div class="mi">✏️ 조각도/볼펜</div>
+        <div class="mi">📎 스테이플러/바인딩</div>
+        <div class="mi">🖍️ 색연필 (보조)</div>
+        <div class="mi">🧻 신문지/물티슈</div>
+        <div class="mi">🧤 비닐 장갑</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>재료 미리 세팅</li>
+        <li>부족분 사전 확인</li>
+        <li>앞치마/바닥 보호</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S3: REFERENCE IMAGES -->
+<div class="slide" id="s3">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">레퍼런스 이미지</div>
+    <h2 class="stitle" style="font-size:clamp(22px,2.8vw,36px);">참고 작품 살펴보기</h2>
+    <p style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:12px;">선생님용 — 필요시 프린트하여 수업에 활용하세요</p>
+    <div class="ref-grid">
+      <img src="../../images/lessons/2025-10/refs/l12-ref01.jpg" loading="lazy" alt="레퍼런스 1">
+      <img src="../../images/lessons/2025-10/refs/l12-ref02.jpg" loading="lazy" alt="레퍼런스 2">
+      <img src="../../images/lessons/2025-10/refs/l12-ref03.jpg" loading="lazy" alt="레퍼런스 3">
+      <img src="../../images/lessons/2025-10/refs/l12-ref04.jpg" loading="lazy" alt="레퍼런스 4">
+      <img src="../../images/lessons/2025-10/refs/l12-ref05.jpg" loading="lazy" alt="레퍼런스 5">
+      <img src="../../images/lessons/2025-10/refs/l12-ref06.jpg" loading="lazy" alt="레퍼런스 6">
+      <img src="../../images/lessons/2025-10/refs/l12-ref07.jpg" loading="lazy" alt="레퍼런스 7">
+      <img src="../../images/lessons/2025-10/refs/l12-ref08.jpg" loading="lazy" alt="레퍼런스 8">
+    </div>
+    <div class="ref-note">이미지를 클릭하면 크게 볼 수 있어요</div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;"><a href="https://www.youtube.com/watch?v=0TMre4KPFCY" target="_blank" style="padding:6px 14px;border-radius:8px;background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.25);color:rgba(255,100,100,.9);font-size:11px;text-decoration:none;font-weight:600;">▶ 다색 판화 기법</a><a href="https://www.youtube.com/watch?v=Rk2iBOBqdqw" target="_blank" style="padding:6px 14px;border-radius:8px;background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.25);color:rgba(255,100,100,.9);font-size:11px;text-decoration:none;font-weight:600;">▶ 자화상 판화 수업</a></div>
+    
+  </div>
+</div>
+
+<!-- STEP 1 -->
+<div class="slide" id="s4">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">단계별 가이드</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">차근차근 따라해요</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2025-10/l12-step1.jpg" loading="lazy" alt="Step 1"></div>
+      <div class="sb">
+        <div class="snum">01</div>
+        <h3>거울 속 <em>나</em>를 관찰해요</h3>
+        <p>거울을 보며 자기 얼굴의 특징을 찾아요. 눈 모양, 머리 스타일, 좋아하는 표정 등을 연필로 먼저 스케치합니다. 사실적이지 않아도 OK, 나만의 캐릭터처럼 그려도 좋아요!</p>
+        <div class="tip">💡 "친구 얼굴의 가장 멋진 점 하나씩 말해주기" 워밍업을 하면 분위기가 좋아져요!</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>개인 거울 인원수만큼 준비</li>
+        <li>자화상 예시 (피카소, 프리다 칼로 등) 보여주기</li>
+        <li>과장/단순화 스타일 소개</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="slide" id="s5">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">단계별 가이드</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">차근차근 따라해요</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2025-10/l12-step2.jpg" loading="lazy" alt="Step 2"></div>
+      <div class="sb">
+        <div class="snum">02</div>
+        <h3><em>판</em>에 새기고 찍기</h3>
+        <p>스케치를 바탕으로 고무판에 자화상을 새겨요. 먼저 밝은 색(노랑/분홍)으로 배경을 찍고, 건조 후 어두운 색(검정/남색)으로 얼굴 윤곽을 겹쳐 찍습니다.</p>
+        <div class="tip">💡 첫 색을 찍은 후 드라이어로 가볍게 말려주면 시간 절약!</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>판 새기기 시범 필수</li>
+        <li>색 순서: 밝은색 → 어두운색</li>
+        <li>다색 판화 예시 작품 전시</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="slide" id="s6">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">단계별 가이드</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">차근차근 따라해요</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2025-10/l12-step3.jpg" loading="lazy" alt="Step 3"></div>
+      <div class="sb">
+        <div class="snum">03</div>
+        <h3><em>앨범</em> 페이지 꾸미기</h3>
+        <p>잘 찍힌 자화상 아래에 이름, 좋아하는 것, 꿈 등을 적어 앨범 페이지를 완성해요. 색연필로 장식을 추가하고 여백을 꾸밉니다.</p>
+        <div class="tip">💡 "나의 보물 세 가지"를 적는 코너를 만들면 개성이 살아나요!</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>앨범 페이지 양식 프린트</li>
+        <li>적을 내용 예시 칠판에 게시</li>
+        <li>잉크 완전 건조 후 작업</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div class="slide" id="s7">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">단계별 가이드</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">차근차근 따라해요</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2025-10/l12-step4.jpg" loading="lazy" alt="Step 4"></div>
+      <div class="sb">
+        <div class="snum">04</div>
+        <h3>클래스 <em>앨범</em> 완성!</h3>
+        <p>모든 페이지를 모아 표지를 만들고 바인딩하여 클래스 앨범을 완성해요! 함께 감상하며 친구들의 자화상을 보고 감상평을 나눕니다.</p>
+        <div class="tip">💡 표지도 판화로 찍으면 통일감 UP! "OO반 우리들" 제목으로!</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>표지 디자인 대표 학생 선정</li>
+        <li>바인딩 교사 보조</li>
+        <li>완성 앨범 교실 비치/돌려보기</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<div class="slide" id="s8">
+  <div class="bg"></div>
+  <div class="sc" style="padding:50px 60px 16px;">
+    <div class="ew">&#127912; 작품 갤러리</div>
+    <h2 class="stitle" style="font-size:clamp(20px,2.5vw,32px);margin-bottom:2px;">이런 작품들이 나와요!</h2>
+    <p style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:6px;">클릭하면 크게 볼 수 있어요</p>
+    <div class="gal-wrap">
+      <div class="gal-grid">
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal01.jpg','gal01.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal01.jpg" loading="lazy" alt="작품1"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal02.jpg','gal02.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal02.jpg" loading="lazy" alt="작품2"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal03.jpg','gal03.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal03.jpg" loading="lazy" alt="작품3"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal04.jpg','gal04.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal04.jpg" loading="lazy" alt="작품4"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal05.jpg','gal05.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal05.jpg" loading="lazy" alt="작품5"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal06.jpg','gal06.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal06.jpg" loading="lazy" alt="작품6"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal07.jpg','gal07.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal07.jpg" loading="lazy" alt="작품7"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal08.jpg','gal08.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal08.jpg" loading="lazy" alt="작품8"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal09.jpg','gal09.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal09.jpg" loading="lazy" alt="작품9"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal10.jpg','gal10.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal10.jpg" loading="lazy" alt="작품10"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal11.jpg','gal11.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal11.jpg" loading="lazy" alt="작품11"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal12.jpg','gal12.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal12.jpg" loading="lazy" alt="작품12"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal13.jpg','gal13.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal13.jpg" loading="lazy" alt="작품13"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal14.jpg','gal14.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal14.jpg" loading="lazy" alt="작품14"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal15.jpg','gal15.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal15.jpg" loading="lazy" alt="작품15"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2025-10/l12-gal16.jpg','gal16.jpg')"><img src="../../images/lessons/2025-10/thumbs/l12-gal16.jpg" loading="lazy" alt="작품16"></div>
+      </div>
+    </div>
+    <div class="ai-panel" id="aiPanel" onclick="if(event.target===this)this.classList.remove('open')">
+      <div class="ai-box">
+        <button class="ai-close" onclick="document.getElementById('aiPanel').classList.remove('open')">&#10005;</button>
+        <h3>&#10024; 학부모 안내 문구</h3>
+        <p class="ai-desc">오늘 수업 후 학부모님께 보낼 메시지 예시입니다. 복사 버튼을 눌러 바로 사용하세요!</p>
+        <div class="ai-msg">👤 안녕하세요! 오늘 아이들이 거울을 보며 자화상을 그리고 판화로 찍었어요. 자기 얼굴의 특징을 찾아 표현하는 과정이 즐거웠답니다!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">🖨️ 두 가지 색을 겹쳐 찍는 다색 판화를 체험했어요. 종이를 떼는 순간 나타나는 자기 얼굴에 "와, 나다!" 하며 좋아했답니다!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">📖 자화상 판화로 클래스 앨범을 만들었어요. 우리 반 친구들 얼굴이 모두 담긴 세상에 하나뿐인 앨범이랍니다!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">🎨 피카소처럼 과감하게, 프리다 칼로처럼 당당하게! 아이들이 자기만의 스타일로 자화상을 표현했어요. 개성이 넘치는 작품들입니다!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">🤝 "이 앨범은 우리 반 보물이에요!" 모두가 함께 만든 앨범에 아이들이 뿌듯해했어요. 학년 말에 멋진 추억이 될 거예요!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">✨ 판화는 찍을 때마다 조금씩 다른 매력이 있어요. 아이에게 자기 자화상에서 가장 마음에 드는 부분이 어딘지 물어봐주세요!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>완성 작품 감상 & 발표 시간</li>
+        <li>친구 작품 칭찬하기</li>
+        <li>작품 사진 촬영 후 전시</li>
+      </ul>
+    </div>
+  </div>
+  <div class="end-bar">
+    <button class="back-btn" onclick="typeof LunaApp!=='undefined'?LunaApp.navigate('monthlyDetail',{month:'2025-10'}):history.back()">&#128218; 수업 홈</button>
+    <button class="back-btn" onclick="typeof LunaApp!=='undefined'?LunaApp.navigate('home'):location.href='../../index.html'">&#127968; 메인 페이지</button>
+    <button class="ai-btn" onclick="document.getElementById('aiPanel').classList.add('open')">&#10024; AI 리포트</button>
+  </div>
+</div>
+
+</div>
+  <div id="lbox" onclick="if(event.target===this)closeLb()">
+    <img id="lbox-img" src="" alt="">
+    <div class="lbox-actions">
+      <a class="lbox-dl" href="" download="">&#11015; 다운로드</a>
+      <button class="lbox-cl" onclick="closeLb()">&#10005; 닫기</button>
+    </div>
+  </div>
+
+<script>
+const total=9;let cur=0;
+function buildDots(){const db=document.getElementById('db');db.innerHTML='';for(let i=0;i<total;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=(()=>{const x=i;return()=>go(x);})();db.appendChild(d);}}
+function go(n){if(n===cur)return;const slides=document.querySelectorAll('.slide');slides[cur].classList.remove('active');slides[cur].classList.add('exit-left');slides[n].classList.remove('exit-left');slides[n].classList.add('active');document.querySelectorAll('.dot')[cur].classList.remove('active');document.querySelectorAll('.dot')[n].classList.add('active');cur=n;document.getElementById('cn').textContent=cur+1;document.getElementById('bp').disabled=cur===0;document.getElementById('bn').disabled=cur===total-1;setTimeout(()=>document.querySelectorAll('.slide').forEach(s=>{if(!s.classList.contains('active'))s.classList.remove('exit-left');}),700);}
+function nav(d){if(cur+d>=0&&cur+d<total)go(cur+d);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')nav(1);if(e.key==='ArrowLeft')nav(-1);if(e.key==='Escape')closeLb();});
+let tx=0;document.getElementById('sw').addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.getElementById('sw').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)nav(dx<0?1:-1);});
+(function(){
+  const pt=document.getElementById('pt');
+  for(let i=0;i<8;i++){const p=document.createElement('div');p.className='p';const s=15+Math.random()*30;p.style.cssText='width:'+s+'px;height:'+s+'px;left:'+Math.random()*100+'%;animation-duration:'+(8+Math.random()*14)+'s;animation-delay:'+Math.random()*10+'s;';pt.appendChild(p);}
+  const emojis=["✨","🎨","🖌️","⭐","💫","🌟"];
+  for(let i=0;i<10;i++){const l=document.createElement('div');l.className='float-emoji';l.textContent=emojis[Math.floor(Math.random()*emojis.length)];const s=12+Math.random()*16;l.style.cssText='font-size:'+s+'px;left:'+Math.random()*90+'%;animation-duration:'+(10+Math.random()*14)+'s;animation-delay:'+Math.random()*12+'s;';pt.appendChild(l);}
+})();
+buildDots();document.getElementById('tn').textContent=total;document.getElementById('bp').disabled=true;
+function copyMsg(btn){var t=btn.parentElement.childNodes[0].textContent.trim();navigator.clipboard.writeText(t).then(function(){btn.textContent='복사됨!';btn.classList.add('copied');setTimeout(function(){btn.textContent='복사';btn.classList.remove('copied');},1500);});}
+function openLb(src,fn){var lb=document.getElementById('lbox');lb.querySelector('#lbox-img').src=src;var dl=lb.querySelector('.lbox-dl');dl.href=src;dl.download=fn;lb.classList.add('open');}
+function closeLb(){document.getElementById('lbox').classList.remove('open');}
+document.querySelectorAll(".ref-grid img").forEach(i=>i.addEventListener("click",()=>openLb(i.src,i.alt||"ref")));
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<!-- Recent Lessons -->
+<script src="../../assets/js/recent-lessons.js?v=0321"></script>
+<script>document.addEventListener("DOMContentLoaded",function(){if(typeof RecentLessons!=="undefined")RecentLessons.saveFromLessonPage();});</script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

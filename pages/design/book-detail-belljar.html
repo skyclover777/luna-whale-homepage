@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <title>유리 종 — 북커버 디자인 분석 - Luna Whale</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; background: #050e08; font-family: 'Plus Jakarta Sans', sans-serif; color: #e8f0ec; }
+
+        .layout { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+
+        .panel-left {
+            width: 42%; flex-shrink: 0;
+            position: relative; overflow: hidden;
+            background: #030a05;
+        }
+        .panel-left-bg {
+            position: absolute; inset: -20px;
+            background-image: url('../../images/book-covers/full/book_0003_the-bell-jar.jpg');
+            background-size: cover; background-position: center;
+            filter: blur(24px) brightness(0.28) saturate(0.8);
+            transform: scale(1.1);
+        }
+        /* Mist effect */
+        @keyframes mistDrift {
+            0%, 100% { opacity: 0.3; transform: translateY(0) scale(1); }
+            50% { opacity: 0.5; transform: translateY(-12px) scale(1.02); }
+        }
+        .mist-layer {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 160px; z-index: 1;
+            background: linear-gradient(to top, rgba(40,120,60,0.08), transparent);
+            animation: mistDrift 8s ease-in-out infinite;
+        }
+
+        .cover-wrap {
+            position: relative; z-index: 2; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 80px 24px 32px; gap: 20px;
+        }
+        .cover-img-wrap { position: relative; width: 100%; max-width: 195px; }
+        .cover-img-wrap img {
+            width: 100%; display: block;
+            border-radius: 3px 10px 10px 3px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.6), 10px 20px 50px rgba(0,0,0,0.8), 0 0 60px rgba(40,140,70,0.18);
+        }
+        .cover-img-wrap::before {
+            content: ''; position: absolute;
+            left: 0; top: 0; bottom: 0; width: 8px;
+            background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.1));
+            border-radius: 3px 0 0 3px; z-index: 1;
+        }
+        .cover-placeholder {
+            width: 100%; max-width: 195px; aspect-ratio: 2/3;
+            background: linear-gradient(135deg, #0f2a1a, #1e5a3a);
+            border-radius: 3px 12px 12px 3px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 10px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.6), 10px 20px 50px rgba(0,0,0,0.8);
+        }
+        @keyframes floatBook {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .book-float { animation: floatBook 4.5s ease-in-out infinite; }
+
+        .panel-right {
+            flex: 1; height: 100vh;
+            overflow-y: auto; overflow-x: hidden;
+            background: #060e08;
+            border-left: 1px solid rgba(60,160,90,0.12);
+        }
+        .panel-right::-webkit-scrollbar { width: 3px; }
+        .panel-right::-webkit-scrollbar-thumb { background: rgba(60,180,90,0.3); border-radius: 10px; }
+        .panel-right::-webkit-scrollbar-track { background: transparent; }
+
+        .right-inner { padding: 20px 28px 60px; max-width: 560px; }
+
+        .top-nav {
+            position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 18px;
+            background: linear-gradient(to bottom, rgba(5,14,8,0.9), transparent);
+        }
+        .nav-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.11);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; color: #b8e8c8;
+        }
+        .nav-btn:hover { background: rgba(60,180,90,0.18); border-color: rgba(80,200,110,0.4); }
+
+        .feature-card {
+            background: rgba(255,255,255,0.025); border: 1px solid rgba(60,160,90,0.1);
+            border-radius: 14px; padding: 16px 18px; margin-bottom: 10px; transition: all 0.25s;
+        }
+        .feature-card:hover {
+            background: rgba(60,160,90,0.06); border-color: rgba(80,200,110,0.22);
+            transform: translateX(3px);
+        }
+        .divider { height: 1px; background: linear-gradient(to right, rgba(60,160,90,0.2), transparent); margin: 24px 0; }
+
+        body::after {
+            content: ''; position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 9999;
+        }
+
+        @media (max-width: 600px) {
+            html, body { overflow: auto; }
+            .layout { flex-direction: column; height: auto; }
+            .panel-left { width: 100%; height: 55vh; min-height: 320px; }
+            .panel-right { height: auto; overflow-y: visible; border-left: none; border-top: 1px solid rgba(60,160,90,0.15); }
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+<div class="layout">
+
+    <!-- LEFT: Fixed cover -->
+    <div class="panel-left">
+        <div class="panel-left-bg"></div>
+        <div class="mist-layer"></div>
+
+        <div class="top-nav">
+            <div style="display:flex;gap:8px;">
+                <button class="nav-btn" onclick="window.location.href='../../index.html'">
+                    <span class="material-symbols-outlined" style="font-size:17px;">home</span>
+                </button>
+                <button class="nav-btn" onclick="window.location.href='book-covers.html'">
+                    <span class="material-symbols-outlined" style="font-size:17px;">grid_view</span>
+                </button>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button class="nav-btn" onclick="window.location.href='book-detail-beloved.html'">
+                    <span class="material-symbols-outlined" style="font-size:17px;">chevron_left</span>
+                </button>
+                <button class="nav-btn" onclick="window.location.href='book-detail-gatsby.html'">
+                    <span class="material-symbols-outlined" style="font-size:17px;">chevron_right</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="cover-wrap">
+            <div class="book-float" style="width:100%;max-width:185px;">
+                <div class="cover-img-wrap">
+                    <img src="../../images/book-covers/full/book_0003_the-bell-jar.jpg" alt="The Bell Jar"
+                        onerror="this.style.display='none';document.getElementById('belljar-ph').style.display='flex';" />
+                </div>
+                <div class="cover-placeholder" id="belljar-ph" style="display:none;">
+                    <span style="font-size:36px;">🔮</span>
+                    <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.85);text-align:center;padding:0 12px;line-height:1.4;">The Bell Jar</span>
+                    <span style="font-size:9px;color:rgba(160,230,180,0.5);">이미지 준비 중</span>
+                </div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:11px;font-weight:700;color:rgba(60,200,100,0.6);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">No.003</div>
+                <h2 style="font-family:'Playfair Display',serif;font-size:19px;color:#e8f8ee;font-weight:700;margin-bottom:4px;">The Bell Jar</h2>
+                <p style="font-size:12px;color:rgba(160,220,180,0.6);font-style:italic;margin-bottom:12px;">유리 종</p>
+                <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:5px;">
+                    <span style="padding:3px 10px;background:rgba(60,160,90,0.18);border:1px solid rgba(80,200,110,0.35);border-radius:20px;font-size:10px;color:#80e0a0;">1963</span>
+                    <span style="padding:3px 10px;background:rgba(255,255,255,0.05);border-radius:20px;font-size:10px;color:rgba(200,230,210,0.7);">Sylvia Plath</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="position:absolute;bottom:20px;right:16px;font-size:9px;color:rgba(60,180,90,0.3);letter-spacing:0.5px;writing-mode:vertical-rl;pointer-events:none;">← 오른쪽을 스크롤하세요</div>
+    </div>
+
+    <!-- RIGHT: Scrollable info -->
+    <div class="panel-right">
+        <div class="right-inner">
+            <div style="height:24px;"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 11px;background:rgba(60,160,90,0.1);border:1px solid rgba(80,200,110,0.22);border-radius:20px;font-size:10px;font-weight:700;color:#70d090;letter-spacing:1px;text-transform:uppercase;">
+                    ✦ 북커버 아카이브
+                </div>
+                <button id="lang-btn" onclick="toggleLang()"
+                    style="padding:4px 13px;background:rgba(60,160,90,0.1);border:1.5px solid rgba(80,200,110,0.22);border-radius:20px;font-size:11px;font-weight:700;color:#70d090;cursor:pointer;">
+                    🌐 EN
+                </button>
+            </div>
+
+            <div style="margin-bottom:22px;">
+                <div style="width:28px;height:2px;background:linear-gradient(to right,#50b870,transparent);margin-bottom:12px;"></div>
+                <h1 id="headline" style="font-family:'Playfair Display',serif;font-size:20px;color:#e0f0e8;line-height:1.45;font-style:italic;font-weight:400;"></h1>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px;">
+                <span style="padding:4px 11px;background:rgba(255,255,255,0.04);border-radius:20px;font-size:11px;color:rgba(200,230,210,0.7);">Design: Shirley Tucker</span>
+                <span style="padding:4px 11px;background:rgba(255,255,255,0.04);border-radius:20px;font-size:11px;color:rgba(200,230,210,0.7);">Heinemann</span>
+            </div>
+
+            <p id="summary" style="font-size:13.5px;color:rgba(210,240,220,0.82);line-height:1.78;margin-bottom:24px;"></p>
+
+            <div class="divider"></div>
+
+            <div style="margin-bottom:24px;">
+                <h3 style="font-size:11px;font-weight:700;color:rgba(60,200,100,0.7);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;">✦ 디자인 분석</h3>
+                <div id="features"></div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div style="background:linear-gradient(135deg,rgba(20,50,30,0.38),rgba(10,25,15,0.22));border:1px solid rgba(60,160,90,0.15);border-radius:14px;padding:20px;margin-bottom:24px;">
+                <h3 style="font-size:11px;font-weight:700;color:rgba(60,200,100,0.65);letter-spacing:2px;text-transform:uppercase;margin-bottom:11px;">📖 책 소개</h3>
+                <p id="book-intro" style="font-size:12.5px;color:rgba(200,230,210,0.78);line-height:1.8;"></p>
+            </div>
+
+            <div style="display:flex;gap:10px;">
+                <a href="https://www.amazon.com/s?k=The+Bell+Jar+Sylvia+Plath" target="_blank"
+                    style="flex:1;padding:13px;background:linear-gradient(135deg,#2d8a50,#40b870);border-radius:12px;text-align:center;font-size:12.5px;font-weight:700;color:#fff;text-decoration:none;transition:all 0.2s;"
+                    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(40,160,80,0.4)'"
+                    onmouseout="this.style.transform='';this.style.boxShadow=''">
+                    📦 구매하기 · Amazon
+                </a>
+                <a href="https://bookcoverarchive.com" target="_blank"
+                    style="padding:13px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:12px;font-size:12.5px;font-weight:600;color:rgba(200,230,210,0.7);text-decoration:none;transition:all 0.2s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                    🔗 원본
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const DATA = {
+    ko: {
+        headline: '유리 안의 침묵 — 타이포그래피와 여백으로 말하는 정신의 갇힘',
+        summary: '다양한 에디션을 거쳐온 이 소설의 가장 인상적인 표지들은 공통적으로 \'갇힘\'의 감각을 시각화합니다. 플라스의 자전적 소설을 담기 위해 디자이너들은 투명한 유리 돔, 꽃잎, 유리병 같은 모티프로 보이지 않는 감옥을 표현해 왔습니다.',
+        features: [
+            { title: '갇힘의 은유적 시각화', text: '유리 종(Bell Jar)은 실험실에서 진공을 만들 때 쓰는 도구입니다. 투명하지만 완전히 차단된 공간 — 이 물체가 표지에 등장하는 순간 독자는 주인공의 정신적 고립을 직관적으로 이해합니다.' },
+            { title: '미니멀 타이포그래피의 힘', text: '많은 에디션이 강렬한 단색 배경에 깔끔한 산세리프 폰트만을 사용합니다. 꾸밈 없는 서체가 오히려 날카로운 심리적 긴장감을 조성합니다.' },
+            { title: '색채 심리학', text: '황녹색, 창백한 흰색, 병원의 흰색 — 표지의 색상들은 불안, 무기력, 임상적 차가움을 연상시킵니다. 화려한 색상 대신 불편한 색을 선택한 것 자체가 강력한 디자인 언어입니다.' },
+            { title: '저자명의 위치', text: 'Sylvia Plath라는 이름은 단순한 저자 표기 이상입니다. 이 소설이 사실상 그녀의 자전 소설임을 알고 있는 독자에게, 저자명 자체가 트라우마와 전설의 무게를 지닙니다. 많은 에디션이 이름을 크게, 혹은 전략적으로 배치합니다.' }
+        ],
+        book_intro: '1950년대 뉴욕을 배경으로 재능 있는 문학 지망생 에스더 그린우드가 정신 붕괴와 회복의 과정을 겪는 자전적 소설입니다. 실비아 플라스가 가명으로 출판했지만, 이미 수많은 독자들은 이 책이 그녀 자신의 이야기임을 알았습니다. 사회가 여성에게 강요하는 역할과 자아 정체성 사이의 충돌을 날카롭게 묘사하며, 플라스는 이 책 출판 한 달 후 세상을 떠났습니다.'
+    },
+    en: {
+        headline: 'Silence Inside Glass — Typography and Whitespace Speak of a Trapped Mind',
+        summary: 'Across its many editions, the most memorable covers of this novel share a common goal: to visualize the sensation of being trapped. To contain Plath\'s autobiographical novel, designers have consistently used motifs of transparent glass domes, flowers, and bell jars to represent an invisible prison.',
+        features: [
+            { title: 'Metaphorical Visualization of Entrapment', text: 'A bell jar is a laboratory tool for creating a vacuum — transparent yet completely sealed. The moment this object appears on a cover, readers intuitively understand the protagonist\'s psychological isolation without a word being read.' },
+            { title: 'The Power of Minimal Typography', text: 'Many editions use only a clean sans-serif font on a stark, monochromatic background. The unadorned typeface creates a sharp psychological tension precisely because of its restraint.' },
+            { title: 'Color Psychology', text: 'Yellowed greens, pallid whites, clinical hospital whites — the colors evoke anxiety, helplessness, and clinical coldness. The deliberate choice of uncomfortable over beautiful colors is itself a powerful design statement.' },
+            { title: 'The Weight of the Author\'s Name', text: 'Sylvia Plath is not merely an author credit. For readers who know this is essentially an autobiography, the name itself carries the weight of trauma and legend. Many editions make the name large or strategically prominent.' }
+        ],
+        book_intro: 'Set in 1950s New York, this autobiographical novel follows Esther Greenwood, a talented aspiring writer, through a mental breakdown and her struggle toward recovery. Plath published it under a pseudonym, but readers quickly recognized it as her own story. A razor-sharp depiction of the clash between the roles society forces upon women and individual identity, Plath died one month after the book\'s publication, lending its every page an unbearable poignancy.'
+    }
+};
+let lang = 'ko';
+function renderContent() {
+    const d = DATA[lang];
+    document.getElementById('headline').textContent = d.headline;
+    document.getElementById('summary').textContent = d.summary;
+    document.getElementById('book-intro').textContent = d.book_intro;
+    document.getElementById('lang-btn').textContent = lang === 'ko' ? '🌐 EN' : '🌐 KO';
+    document.getElementById('features').innerHTML = d.features.map(f => `
+        <div class="feature-card">
+            <div style="font-size:11px;font-weight:700;color:#70d090;margin-bottom:6px;">✦ ${f.title}</div>
+            <p style="font-size:12.5px;color:rgba(190,225,205,0.75);line-height:1.7;">${f.text}</p>
+        </div>`).join('');
+}
+function toggleLang() { lang = lang === 'ko' ? 'en' : 'ko'; renderContent(); }
+renderContent();
+</script>
+</body>
+</html>

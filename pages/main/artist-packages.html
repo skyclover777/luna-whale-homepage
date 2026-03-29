@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>작가가 되기 위한 100강 - 패키지 - Luna Whale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700;900&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0d0b08;
+            font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+            color: #f5ede0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── Ambient background ── */
+        .ambient {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .ambient .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.15;
+            animation: drift 20s ease-in-out infinite alternate;
+        }
+        .ambient .orb:nth-child(1) { width: 500px; height: 500px; background: #c9a24e; top: -100px; left: -100px; }
+        .ambient .orb:nth-child(2) { width: 400px; height: 400px; background: #8b6914; bottom: -80px; right: -80px; animation-delay: -7s; }
+        .ambient .orb:nth-child(3) { width: 300px; height: 300px; background: #a06030; top: 50%; left: 50%; animation-delay: -14s; }
+        @keyframes drift {
+            to { transform: translate(60px, -40px) scale(1.1); }
+        }
+
+        /* ── Layout ── */
+        .page-wrap {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 24px 80px;
+        }
+
+        /* ── Back ── */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: #c9a24e;
+            font-size: 14px;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            margin-bottom: 16px;
+        }
+        .back-btn:hover { opacity: 1; }
+
+        /* ── Hero ── */
+        .hero {
+            text-align: center;
+            padding: 20px 0 50px;
+        }
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 20px;
+            border: 1px solid rgba(201,162,78,0.4);
+            border-radius: 30px;
+            font-size: 12px;
+            color: #c9a24e;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .hero h1 {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 38px;
+            font-weight: 900;
+            line-height: 1.3;
+            background: linear-gradient(135deg, #f5ede0, #c9a24e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 14px;
+        }
+        .hero p {
+            font-size: 15px;
+            color: rgba(245,237,224,0.55);
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* ── Package Grid ── */
+        .pkg-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        /* ── Package Card ── */
+        .pkg-card {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(.22,.68,0,1), box-shadow 0.4s;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(201,162,78,0.15);
+            backdrop-filter: blur(10px);
+        }
+        .pkg-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(201,162,78,0.15);
+            border-color: rgba(201,162,78,0.35);
+        }
+
+        /* Cover mosaic */
+        .pkg-cover {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            padding: 2px;
+            aspect-ratio: 2.5;
+            background: rgba(0,0,0,0.3);
+        }
+        .pkg-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+            opacity: 0.85;
+            transition: opacity 0.3s;
+        }
+        .pkg-card:hover .pkg-cover img { opacity: 1; }
+
+        /* Gradient overlay */
+        .pkg-cover::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 50%;
+            background: linear-gradient(to bottom, transparent, rgba(13,11,8,0.95));
+            pointer-events: none;
+            z-index: 1;
+            top: auto;
+            bottom: 0;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 30%, rgba(13,11,8,0.9) 80%);
+        }
+
+        /* Card body */
+        .pkg-body {
+            position: relative;
+            z-index: 2;
+            padding: 20px 24px 24px;
+            margin-top: -60px;
+        }
+
+        .pkg-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 13px;
+            color: #c9a24e;
+            letter-spacing: 3px;
+            margin-bottom: 6px;
+        }
+
+        .pkg-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #f5ede0;
+        }
+
+        .pkg-subtitle {
+            font-family: 'Playfair Display', serif;
+            font-size: 13px;
+            color: rgba(201,162,78,0.7);
+            font-style: italic;
+            margin-bottom: 12px;
+        }
+
+        .pkg-desc {
+            font-size: 13px;
+            line-height: 1.7;
+            color: rgba(245,237,224,0.5);
+            margin-bottom: 14px;
+        }
+
+        .pkg-artists {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .pkg-artists span {
+            font-size: 11px;
+            padding: 3px 10px;
+            background: rgba(201,162,78,0.1);
+            border: 1px solid rgba(201,162,78,0.2);
+            border-radius: 20px;
+            color: rgba(201,162,78,0.8);
+            white-space: nowrap;
+        }
+
+        .pkg-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pkg-count {
+            font-size: 12px;
+            color: rgba(245,237,224,0.35);
+        }
+
+        .pkg-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            background: linear-gradient(135deg, #c9a24e, #8b6914);
+            color: #0d0b08;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .pkg-card:hover .pkg-cta {
+            background: linear-gradient(135deg, #e0c060, #c9a24e);
+            box-shadow: 0 4px 20px rgba(201,162,78,0.3);
+        }
+        .pkg-cta svg { width: 14px; height: 14px; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .pkg-grid { grid-template-columns: 1fr; gap: 20px; }
+            .hero h1 { font-size: 28px; }
+            .pkg-cover { aspect-ratio: 2.8; }
+            .pkg-title { font-size: 19px; }
+        }
+        @media (max-width: 480px) {
+            .page-wrap { padding: 20px 16px 60px; }
+            .hero h1 { font-size: 24px; }
+            .pkg-body { padding: 16px 18px 20px; }
+        }
+    </style>
+    <script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="ambient">
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+</div>
+
+<div class="page-wrap">
+    <a href="classes.html" class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        수업
+    </a>
+
+    <section class="hero">
+        <div class="hero-badge">LUNA WHALE ART LAB</div>
+        <h1>작가가 되기 위한<br>100강 패키지</h1>
+        <p>세계적 거장 100명의 시선으로 배우는 미술 수업.<br>10강씩 묶인 패키지로 단계별 성장을 경험하세요.</p>
+    </section>
+
+    <div class="pkg-grid" id="pkgGrid"></div>
+</div>
+
+<script src="../../assets/data/artist-100-data.js"></script>
+<script>
+// ═══ 10 Packages Definition ═══
+const PACKAGES = [
+    {
+        id: 1, range: [1, 10],
+        title: '선과 색의 기초',
+        en: 'Foundations of Line & Color',
+        desc: '칸딘스키, 클레, 몬드리안, 반 고흐 등 거장들과 함께 선, 색, 형태의 기본 언어를 배웁니다. 추상의 세계에 첫 발을 내딛는 입문 패키지.',
+        emoji: '🎨'
+    },
+    {
+        id: 2, range: [11, 20],
+        title: '시선과 감정',
+        en: 'Perspective & Emotion',
+        desc: '호퍼의 고독, 프리다의 자화상, 뭉크의 비명까지. 화가들이 세상을 바라보는 다양한 시선과 감정 표현법을 익힙니다.',
+        emoji: '👁️'
+    },
+    {
+        id: 3, range: [21, 30],
+        title: '상상과 해체',
+        en: 'Imagination & Deconstruction',
+        desc: '달리의 꿈, 마그리트의 역설, 에셔의 무한, 피카소의 해체. 현실을 넘어서는 초현실과 큐비즘의 세계를 탐험합니다.',
+        emoji: '🌀'
+    },
+    {
+        id: 4, range: [31, 40],
+        title: '거리와 패턴',
+        en: 'Streets & Patterns',
+        desc: '바스키아의 스프레이, 쿠사마의 물방울, 클림트의 황금 무늬. 거리 예술부터 장식 미술까지, 반복과 패턴의 힘을 체험합니다.',
+        emoji: '✨'
+    },
+    {
+        id: 5, range: [41, 50],
+        title: '사회와 내면',
+        en: 'Society & Inner Voice',
+        desc: '키스 해링의 저항, 바버라 크루거의 메시지, 아이 웨이웨이의 도전. 예술이 사회에 던지는 목소리와 내면의 울림을 다룹니다.',
+        emoji: '🔥'
+    },
+    {
+        id: 6, range: [51, 60],
+        title: '일상의 발견',
+        en: 'Discovering the Everyday',
+        desc: '모네의 빛, 와이어스의 계절, 에민의 감정 일기. 평범한 일상에서 예술을 발견하고 기록하는 방법을 배웁니다.',
+        emoji: '🌿'
+    },
+    {
+        id: 7, range: [61, 70],
+        title: '몸과 공간',
+        en: 'Body & Space',
+        desc: '다빈치의 해부학, 칼더의 모빌, 오키프의 풍경. 인체와 자연 공간을 새로운 시각으로 바라보고 표현하는 수업입니다.',
+        emoji: '🏛️'
+    },
+    {
+        id: 8, range: [71, 80],
+        title: '기억과 시간',
+        en: 'Memory & Time',
+        desc: '프리드리히의 달빛, 리히터의 흐릿한 기억, 호크니의 물속 리듬. 시간이 남기는 흔적과 기억의 풍경을 그립니다.',
+        emoji: '⏳'
+    },
+    {
+        id: 9, range: [81, 90],
+        title: '꿈과 실험',
+        en: 'Dreams & Experiments',
+        desc: '샤갈의 마법 동물, 골즈워디의 대지미술, 리시츠키의 구성주의. 경계를 허물고 새로운 매체와 기법을 실험합니다.',
+        emoji: '🔮'
+    },
+    {
+        id: 10, range: [91, 100],
+        title: '정체성과 출발',
+        en: 'Identity & New Beginning',
+        desc: '패턴 속 나를 찾고, 도시를 걸으며, 마지막에는 "나 자신"을 작가로 선언합니다. 당신만의 예술 세계가 시작되는 마지막 패키지.',
+        emoji: '🚀'
+    }
+];
+
+// ═══ Render ═══
+const grid = document.getElementById('pkgGrid');
+
+PACKAGES.forEach(pkg => {
+    const lessons = ARTIST_LESSONS.filter(l => l.id >= pkg.range[0] && l.id <= pkg.range[1]);
+    const artists = lessons.map(l => l.artist);
+
+    // Build mosaic — pick 5 images from the 10 lessons (evenly spaced)
+    const picks = [0, 2, 4, 6, 8].map(i => lessons[i] || lessons[0]);
+    const mosaicHTML = picks.map(l => {
+        const NNN = String(l.id).padStart(3, '0');
+        if (l.imageCount > 0) {
+            return `<img src="../../images/artist-100/${NNN}/thumbs/${NNN}_001.jpg" loading="lazy" alt="${l.artist}">`;
+        }
+        return `<div style="background:linear-gradient(135deg,#3a2a15,#1a1408);display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:4px;">${pkg.emoji}</div>`;
+    }).join('');
+
+    // Build 2-row mosaic (5+5)
+    const picks2 = [1, 3, 5, 7, 9].map(i => lessons[i] || lessons[0]);
+    const mosaicHTML2 = picks2.map(l => {
+        const NNN = String(l.id).padStart(3, '0');
+        if (l.imageCount > 0) {
+            return `<img src="../../images/artist-100/${NNN}/thumbs/${NNN}_001.jpg" loading="lazy" alt="${l.artist}">`;
+        }
+        return `<div style="background:linear-gradient(135deg,#3a2a15,#1a1408);display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:4px;">${pkg.emoji}</div>`;
+    }).join('');
+
+    const card = document.createElement('div');
+    card.className = 'pkg-card';
+    card.onclick = () => {
+        window.location.href = `artist-package-detail.html?pkg=${pkg.id}`;
+    };
+
+    card.innerHTML = `
+        <div class="pkg-cover">
+            ${mosaicHTML}
+            ${mosaicHTML2}
+        </div>
+        <div class="pkg-body">
+            <div class="pkg-number">VOLUME ${String(pkg.id).padStart(2, '0')}</div>
+            <div class="pkg-title">${pkg.emoji} ${pkg.title}</div>
+            <div class="pkg-subtitle">${pkg.en}</div>
+            <div class="pkg-desc">${pkg.desc}</div>
+            <div class="pkg-artists">
+                ${artists.slice(0, 5).map(a => `<span>${a}</span>`).join('')}
+                ${artists.length > 5 ? `<span>+${artists.length - 5}명</span>` : ''}
+            </div>
+            <div class="pkg-footer">
+                <span class="pkg-count">제${pkg.range[0]}강 ~ 제${pkg.range[1]}강 · ${lessons.length}수업</span>
+                <span class="pkg-cta">
+                    수업 보기
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+                </span>
+            </div>
+        </div>
+    `;
+
+    grid.appendChild(card);
+});
+</script>
+
+</body>
+</html>

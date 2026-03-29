@@ -1,0 +1,3435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=no" name="viewport" />
+    <title>Atomic Builder - Luna Whale TECH</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Jua&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #0a0a1a;
+            --cyan: #06b6d4;
+            --green: #10b981;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --yellow: #eab308;
+            --slate: #64748b;
+            --slate-light: #94a3b8;
+            --text: #e2e8f0;
+            --text-dim: #64748b;
+            --card-bg: rgba(15, 15, 40, 0.8);
+            --border: rgba(6, 182, 212, 0.15);
+        }
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* ===== Cyber Grid Background ===== */
+        .cyber-bg {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(6,182,212,.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6,182,212,.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0; pointer-events: none;
+        }
+        .cyber-bg::after {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse 600px 400px at 20% 30%, rgba(6,182,212,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse 500px 350px at 80% 70%, rgba(139,92,246,0.05) 0%, transparent 70%);
+            animation: gridPulse 8s ease-in-out infinite alternate;
+        }
+        @keyframes gridPulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* ===== Header ===== */
+        .game-header {
+            position: relative; z-index: 10;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 20px;
+            background: rgba(10, 10, 30, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .back-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 14px; background: var(--card-bg);
+            border: 1px solid var(--border); border-radius: 10px;
+            color: var(--cyan); text-decoration: none;
+            font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .back-btn:hover { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.3); }
+        .back-btn .material-symbols-outlined { font-size: 16px; }
+        .game-title {
+            font-family: 'Jua', sans-serif;
+            font-size: clamp(16px, 3vw, 22px);
+            color: #fff;
+        }
+        .game-title span { color: var(--cyan); }
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .score-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px; font-weight: 700;
+            color: var(--green);
+            padding: 6px 16px;
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.2);
+            border-radius: 10px;
+        }
+        .mission-counter {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; font-weight: 600;
+            color: var(--purple);
+            padding: 4px 12px;
+            background: rgba(139,92,246,0.1);
+            border: 1px solid rgba(139,92,246,0.2);
+            border-radius: 8px;
+        }
+
+        /* ===== Level Filter Bar ===== */
+        .level-bar {
+            position: relative; z-index: 10;
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 20px;
+            background: rgba(10, 10, 30, 0.85);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        .level-btn {
+            padding: 5px 14px; border-radius: 8px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--text-dim); font-size: 12px; font-weight: 600;
+            font-family: 'Jua', sans-serif;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .level-btn:hover { background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.2); }
+        .level-btn.active {
+            background: rgba(6,182,212,0.15);
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+        .cat-divider { width: 1px; height: 20px; background: rgba(255,255,255,0.08); margin: 0 4px; }
+        .cat-btn {
+            padding: 4px 10px; border-radius: 6px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: var(--text-dim); font-size: 11px; font-weight: 500;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .cat-btn:hover { background: rgba(139,92,246,0.1); }
+        .cat-btn.active {
+            background: rgba(139,92,246,0.12);
+            border-color: var(--purple);
+            color: var(--purple);
+        }
+
+        /* ===== Main Layout ===== */
+        .game-container {
+            position: relative; z-index: 1;
+            max-width: 100%; margin: 0 auto;
+            padding: 10px 16px;
+            min-height: auto;
+        }
+
+        /* ===== Mission Panel ===== */
+        .mission-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .mission-text {
+            font-family: 'Jua', sans-serif;
+            font-size: clamp(14px, 2.5vw, 18px);
+            color: #fff;
+        }
+        .mission-text .formula {
+            color: var(--cyan);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+        .mission-hint {
+            font-size: 12px; color: var(--text-dim);
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .hint-atom {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 10px; border-radius: 8px;
+            background: rgba(6,182,212,0.1);
+            border: 1px solid rgba(6,182,212,0.15);
+            font-weight: 600; font-size: 12px;
+        }
+        .skip-btn {
+            padding: 6px 14px; border-radius: 8px;
+            background: rgba(139,92,246,0.1);
+            border: 1px solid rgba(139,92,246,0.2);
+            color: var(--purple); font-size: 12px; font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .skip-btn:hover { background: rgba(139,92,246,0.2); }
+
+        /* ===== Building Field ===== */
+        .build-section {
+            flex: 1; display: flex; flex-direction: column; gap: 10px;
+        }
+        .build-toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .build-label {
+            font-family: 'Jua', sans-serif;
+            font-size: 14px; color: var(--text-dim);
+        }
+        .clear-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 8px;
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: var(--red); font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .clear-btn:hover { background: rgba(239,68,68,0.2); }
+
+        .build-field {
+            position: relative;
+            flex: 1; min-height: 260px;
+            background: rgba(10, 10, 30, 0.6);
+            border: 2px dashed rgba(6,182,212,0.2);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .build-field.drag-over {
+            border-color: var(--cyan);
+            background: rgba(6,182,212,0.04);
+        }
+        /* inner grid for build field */
+        .build-field::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(6,182,212,.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6,182,212,.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            pointer-events: none;
+        }
+        .build-field-hint {
+            position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%,-50%);
+            font-family: 'Jua', sans-serif;
+            font-size: 16px; color: rgba(100,116,139,0.3);
+            pointer-events: none;
+            text-align: center; line-height: 1.6;
+        }
+        .build-field.has-atoms .build-field-hint { display: none; }
+
+        /* ===== Bond lines (SVG) ===== */
+        .bond-svg {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
+        }
+        .bond-svg.scissor-mode { pointer-events: all; }
+        .bond-line {
+            stroke: var(--cyan);
+            stroke-width: 3;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 4px rgba(6,182,212,0.5));
+            pointer-events: stroke;
+        }
+        .bond-line.double { stroke-dasharray: none; }
+        .bond-line.cuttable {
+            stroke-width: 14;
+            stroke: transparent;
+            cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><text y='20' font-size='18'>✂️</text></svg>") 12 12, crosshair;
+            pointer-events: stroke;
+        }
+        .bond-line.cuttable-visible {
+            transition: stroke 0.15s;
+        }
+        .bond-line.cuttable-visible:hover {
+            stroke: rgba(239,68,68,0.7) !important;
+            filter: drop-shadow(0 0 6px rgba(239,68,68,0.5));
+        }
+        /* Bond feedback icons */
+        .bond-feedback {
+            position: absolute; pointer-events: none; z-index: 20;
+            font-size: 28px; font-weight: 800;
+            animation: bondFeedbackPop 0.6s ease-out forwards;
+        }
+        @keyframes bondFeedbackPop {
+            0% { transform: scale(0); opacity: 0; }
+            40% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+        .bond-feedback.success { color: #10b981; text-shadow: 0 0 12px rgba(16,185,129,0.6); }
+        .bond-feedback.fail { color: #ef4444; text-shadow: 0 0 12px rgba(239,68,68,0.6); animation: bondFeedbackFail 0.6s ease-out forwards; }
+        @keyframes bondFeedbackFail {
+            0% { transform: scale(0) rotate(0deg); opacity: 0; }
+            40% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+            60% { transform: scale(1.1) rotate(-5deg); opacity: 0.8; }
+            100% { transform: scale(0.8) rotate(0deg); opacity: 0; }
+        }
+        /* Noble gas glow in field */
+        .field-atom.noble-glow {
+            animation: nobleFieldGlow 1.5s ease-out forwards;
+        }
+        @keyframes nobleFieldGlow {
+            0% { box-shadow: 0 0 0 0 rgba(139,92,246,0); }
+            30% { box-shadow: 0 0 30px 10px rgba(139,92,246,0.6), 0 0 60px 20px rgba(139,92,246,0.2); }
+            100% { box-shadow: 0 0 16px 4px rgba(139,92,246,0.3); }
+        }
+
+        /* ===== Atoms in build field ===== */
+        .field-atom {
+            position: absolute; z-index: 5;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column;
+            cursor: grab;
+            transition: box-shadow 0.2s;
+            border: 2px solid rgba(255,255,255,0.15);
+        }
+        .field-atom:active { cursor: grabbing; }
+        .field-atom .atom-sym {
+            font-weight: 800; color: #fff;
+            text-shadow: 0 0 8px currentColor;
+            line-height: 1;
+        }
+        .field-atom .atom-kr {
+            font-family: 'Jua', sans-serif;
+            font-size: 8px; color: rgba(255,255,255,0.7);
+            line-height: 1;
+        }
+        /* Valence dots */
+        .valence-dot {
+            position: absolute;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 0 4px rgba(255,255,255,0.3);
+        }
+        .valence-dot.used {
+            background: var(--cyan);
+            border-color: var(--cyan);
+            box-shadow: 0 0 6px var(--cyan);
+        }
+
+        /* ===== Electron Orbits ===== */
+        .electron-shell {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(6,182,212,0.12);
+            pointer-events: none;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: electronOrbit linear infinite;
+        }
+        @keyframes electronOrbit { to { transform: translate(-50%, -50%) rotate(360deg); } }
+        .electron-dot {
+            position: absolute;
+            width: 3px; height: 3px;
+            background: #06b6d4;
+            border-radius: 50%;
+            box-shadow: 0 0 4px #06b6d4, 0 0 8px rgba(6,182,212,0.3);
+        }
+
+        /* ===== Bond Electron Animations ===== */
+        .bond-electron {
+            position: absolute;
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 3;
+        }
+        .bond-electron.covalent {
+            background: #06b6d4;
+            box-shadow: 0 0 6px #06b6d4, 0 0 12px rgba(6,182,212,0.4);
+            animation: electronShared 2s ease-in-out infinite;
+        }
+        @keyframes electronShared {
+            0% { offset-distance: 25%; }
+            50% { offset-distance: 75%; }
+            100% { offset-distance: 25%; }
+        }
+        .bond-electron.ionic-launch {
+            width: 6px; height: 6px;
+            background: #f59e0b;
+            box-shadow: 0 0 8px #f59e0b, 0 0 20px rgba(245,158,11,0.5);
+            animation: ionicLaunch 0.8s ease-in forwards;
+        }
+        @keyframes ionicLaunch {
+            0% { offset-distance: 0%; transform: scale(1); opacity: 1; }
+            70% { transform: scale(1.5); opacity: 1; }
+            100% { offset-distance: 100%; transform: scale(0.5); opacity: 0; }
+        }
+        .charge-label {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px; font-weight: 800;
+            pointer-events: none; z-index: 6;
+            animation: chargeAppear 0.5s ease-out forwards;
+        }
+        @keyframes chargeAppear {
+            0% { transform: scale(0) translateY(0); opacity: 0; }
+            60% { transform: scale(1.3) translateY(-5px); }
+            100% { transform: scale(1) translateY(-8px); opacity: 1; }
+        }
+        @keyframes noblePopIn {
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            60% { transform: scale(1.1) rotate(2deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        @keyframes sparkFly {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(0) translateY(-20px); opacity: 0; }
+        }
+        .charge-glow-pos {
+            box-shadow: 0 0 20px rgba(239,68,68,0.4), 0 0 40px rgba(239,68,68,0.15) !important;
+        }
+        .charge-glow-neg {
+            box-shadow: 0 0 20px rgba(6,182,212,0.4), 0 0 40px rgba(6,182,212,0.15) !important;
+        }
+        .ionic-flash {
+            position: absolute; pointer-events: none; z-index: 4;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(245,158,11,0.6) 0%, transparent 70%);
+            animation: ionicFlash 0.5s ease-out forwards;
+        }
+        @keyframes ionicFlash {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+        .electron-trail {
+            position: absolute; pointer-events: none; z-index: 3;
+            width: 3px; height: 3px; border-radius: 50%;
+            background: #f59e0b;
+            box-shadow: 0 0 4px #f59e0b;
+            opacity: 0.7;
+            animation: trailFade 0.5s ease-out forwards;
+        }
+        @keyframes trailFade { to { opacity: 0; transform: scale(0); } }
+
+        /* Metallic sea electrons */
+        .metallic-electron {
+            position: absolute; pointer-events: none; z-index: 3;
+            width: 4px; height: 4px; border-radius: 50%;
+            background: #f59e0b;
+            box-shadow: 0 0 5px #f59e0b;
+            animation: metallicFloat 3s ease-in-out infinite;
+        }
+        @keyframes metallicFloat {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(var(--mx1), var(--my1)); }
+            50% { transform: translate(var(--mx2), var(--my2)); }
+            75% { transform: translate(var(--mx3), var(--my3)); }
+            100% { transform: translate(0, 0); }
+        }
+
+        /* ===== Periodic Table (real 18-col layout) ===== */
+        .periodic-section {
+            background: rgba(10, 10, 30, 0.85);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px;
+        }
+        .periodic-label {
+            font-family: 'Jua', sans-serif;
+            font-size: 13px; color: var(--text-dim);
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .periodic-label::before {
+            content: ''; width: 3px; height: 14px;
+            background: var(--cyan); border-radius: 2px;
+            box-shadow: 0 0 6px rgba(6,182,212,0.4);
+        }
+        .periodic-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+            display: flex;
+            justify-content: center;
+        }
+        .periodic-scroll::-webkit-scrollbar { height: 4px; }
+        .periodic-scroll::-webkit-scrollbar-track { background: transparent; }
+        .periodic-scroll::-webkit-scrollbar-thumb { background: rgba(6,182,212,0.3); border-radius: 4px; }
+        .periodic-grid {
+            display: grid;
+            grid-template-columns: repeat(18, 40px);
+            grid-template-rows: repeat(7, 42px) 4px repeat(2, 42px);
+            gap: 2px;
+            min-width: fit-content;
+            margin: 0 auto;
+        }
+        .ptable-cell {
+            width: 40px; height: 42px;
+            border-radius: 4px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            cursor: grab;
+            transition: all 0.15s;
+            border: 1px solid rgba(255,255,255,0.06);
+            position: relative;
+            touch-action: none;
+            padding: 1px;
+        }
+        .ptable-cell:hover {
+            transform: scale(1.35);
+            z-index: 10;
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 0 12px currentColor;
+        }
+        .ptable-cell:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+        .ptable-cell .el-num {
+            font-size: 6px; color: rgba(255,255,255,0.4);
+            position: absolute; top: 1px; left: 2px;
+            font-weight: 600; line-height: 1;
+        }
+        .ptable-cell .el-sym {
+            font-size: 11px;
+            font-weight: 800; color: #fff;
+            line-height: 1;
+            text-shadow: 0 0 4px currentColor;
+        }
+        .ptable-cell .el-kr {
+            font-family: 'Jua', sans-serif;
+            font-size: 7px;
+            color: rgba(255,255,255,0.6);
+            line-height: 1;
+            margin-top: 1px;
+        }
+        .ptable-cell .el-val {
+            font-size: 6px; color: rgba(255,255,255,0.3);
+            position: absolute; bottom: 1px; right: 2px;
+            display: none;
+        }
+        /* Noble gas cells - draggable */
+        .ptable-cell.noble { opacity: 0.7; }
+        .ptable-cell.noble:hover { opacity: 1; }
+        /* Dimmed for difficulty filter */
+        .ptable-cell.dimmed { opacity: 0.2; }
+        .ptable-cell.dimmed:hover { transform: scale(1.1); }
+        /* Highlight glow for key elements */
+        .ptable-cell.highlighted { animation: ptHighlight 2s ease-in-out infinite alternate; }
+        @keyframes ptHighlight {
+            0% { box-shadow: 0 0 4px rgba(6,182,212,0.2); }
+            100% { box-shadow: 0 0 10px rgba(6,182,212,0.5); }
+        }
+        /* Lanthanide/actinide gap row */
+        .pt-gap { grid-column: 1 / -1; height: 4px; }
+        .pt-label-cell {
+            display: flex; align-items: center; justify-content: center;
+            font-size: 7px; color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+        }
+
+        /* Element tooltip */
+        .el-tooltip {
+            position: fixed;
+            z-index: 1000;
+            background: rgba(10, 10, 35, 0.95);
+            border: 1px solid rgba(6,182,212,0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            pointer-events: none;
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--text);
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            transition: opacity 0.15s;
+            max-width: 240px;
+        }
+        .el-tooltip.show { opacity: 1; }
+        .el-tooltip .tt-sym {
+            font-weight: 800; font-size: 16px;
+            margin-right: 6px;
+        }
+        .el-tooltip .tt-kr { font-family: 'Jua', sans-serif; }
+        .el-tooltip .tt-en { color: var(--text-dim); font-size: 11px; }
+        .el-tooltip .tt-info { color: var(--text-dim); font-size: 10px; }
+        .el-tooltip .tt-desc { margin-top: 4px; font-size: 9px; color: #94a3b8; line-height: 1.4; }
+
+        /* Legend */
+        .periodic-legend {
+            display: flex; gap: 6px; margin-top: 6px;
+            flex-wrap: wrap; justify-content: center;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 9px; color: var(--text-dim);
+            cursor: pointer; position: relative;
+            padding: 2px 4px; border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .legend-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        .legend-desc {
+            position: absolute; bottom: calc(100% + 8px); left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15,15,40,0.95);
+            border: 1px solid rgba(6,182,212,0.3);
+            color: #e2e8f0; font-size: 11px;
+            padding: 10px 14px; border-radius: 10px;
+            width: 220px; line-height: 1.5;
+            font-family: 'Jua', sans-serif;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            pointer-events: none; z-index: 200;
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .legend-item:hover .legend-desc {
+            opacity: 1;
+        }
+        .legend-dot {
+            width: 8px; height: 8px; border-radius: 2px;
+        }
+
+        /* Remove button */
+        .remove-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 8px;
+            background: rgba(245,158,11,0.1);
+            border: 1px solid rgba(245,158,11,0.2);
+            color: var(--amber); font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            font-family: 'JetBrains Mono', monospace;
+            width: 100%;
+        }
+        .remove-btn:hover { background: rgba(245,158,11,0.2); }
+        .remove-btn.active {
+            background: rgba(245,158,11,0.25);
+            border-color: var(--amber);
+            box-shadow: 0 0 10px rgba(245,158,11,0.3);
+        }
+        .build-field.remove-mode { cursor: crosshair; }
+        .build-field.remove-mode .field-atom { cursor: crosshair; }
+
+        /* Trash can */
+        .trash-can {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 10px;
+            opacity: 0.4;
+            transition: all 0.3s ease;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .trash-can.hover {
+            opacity: 1;
+            transform: scale(1.3);
+            border-color: #ef4444;
+            background: rgba(239,68,68,0.15);
+            box-shadow: 0 0 20px rgba(239,68,68,0.3);
+        }
+
+        /* Guide button & modal */
+        .guide-btn {
+            padding: 5px 10px; border-radius: 8px;
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.2);
+            color: var(--green); font-size: 12px; font-weight: 600;
+            font-family: 'Jua', sans-serif;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .guide-btn:hover { background: rgba(16,185,129,0.2); }
+        .guide-popup {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            z-index: 200;
+            background: rgba(10, 10, 35, 0.97);
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 16px;
+            padding: 20px 24px;
+            max-width: 340px; width: 90%;
+            font-family: 'Jua', sans-serif;
+            color: var(--text);
+            backdrop-filter: blur(12px);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .guide-popup.show { opacity: 1; pointer-events: all; }
+        .guide-popup h3 { font-size: 16px; margin-bottom: 12px; color: var(--green); }
+        .guide-popup .guide-step {
+            display: flex; gap: 8px; align-items: flex-start;
+            margin-bottom: 8px; font-size: 14px; line-height: 1.5;
+        }
+        .guide-popup .guide-step .step-num {
+            flex-shrink: 0; width: 22px; height: 22px;
+            border-radius: 50%; background: rgba(16,185,129,0.2);
+            border: 1px solid rgba(16,185,129,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; color: var(--green);
+        }
+        .guide-popup .guide-tip {
+            margin-top: 10px; padding: 8px 12px;
+            background: rgba(6,182,212,0.08);
+            border: 1px solid rgba(6,182,212,0.15);
+            border-radius: 8px;
+            font-size: 12px; color: var(--cyan);
+        }
+        .guide-popup .guide-close {
+            margin-top: 12px;
+            padding: 6px 20px; border-radius: 8px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-dim); font-size: 13px;
+            cursor: pointer; transition: all 0.2s;
+            display: block; margin-left: auto; margin-right: auto;
+        }
+        .guide-popup .guide-close:hover { background: rgba(255,255,255,0.1); }
+
+        @media (max-width: 768px) {
+            .periodic-grid {
+                grid-template-columns: repeat(18, 28px);
+                grid-template-rows: repeat(7, 30px) 3px repeat(2, 30px);
+            }
+            .ptable-cell { width: 28px; height: 30px; }
+            .ptable-cell .el-sym { font-size: 9px; }
+            .ptable-cell .el-num { font-size: 5px; }
+            .ptable-cell .el-kr { font-size: 5px; }
+        }
+
+        /* ===== Ghost atom (dragging clone) ===== */
+        .ghost-atom {
+            position: fixed; z-index: 1000;
+            width: 54px; height: 54px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; pointer-events: none;
+            border: 2px solid rgba(255,255,255,0.3);
+            opacity: 0.9;
+            filter: brightness(1.3);
+        }
+        .ghost-atom .atom-sym {
+            font-weight: 800; font-size: 18px; color: #fff;
+            text-shadow: 0 0 12px currentColor;
+        }
+        .ghost-atom .atom-kr {
+            font-family: 'Jua', sans-serif;
+            font-size: 8px; color: rgba(255,255,255,0.8);
+        }
+
+        /* ===== Success Modal ===== */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.show { opacity: 1; pointer-events: all; }
+        .molecule-card {
+            background: rgba(15, 15, 45, 0.95);
+            border: 1px solid rgba(6,182,212,0.3);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 520px; width: 92%;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: center;
+            transform: scale(0.8);
+            transition: transform 0.3s;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .modal-overlay.show .molecule-card { transform: scale(1); }
+        /* neon border animation */
+        .molecule-card::before {
+            content: '';
+            position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
+            border-radius: 22px;
+            background: linear-gradient(45deg, var(--cyan), var(--green), var(--purple), var(--cyan));
+            background-size: 400% 400%;
+            animation: neonBorder 3s linear infinite;
+            z-index: -1;
+        }
+        .molecule-card::after {
+            content: '';
+            position: absolute; top: 1px; left: 1px; right: 1px; bottom: 1px;
+            background: rgba(15, 15, 45, 0.97);
+            border-radius: 19px; z-index: -1;
+        }
+        @keyframes neonBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .card-emoji { font-size: 48px; margin-bottom: 8px; }
+        .card-mol-name {
+            font-family: 'Jua', sans-serif;
+            font-size: 24px; color: #fff; margin-bottom: 4px;
+        }
+        .card-mol-en { font-size: 13px; color: var(--text-dim); margin-bottom: 10px; }
+        .card-points {
+            display: inline-block;
+            padding: 4px 16px; border-radius: 12px;
+            background: rgba(16,185,129,0.12);
+            border: 1px solid rgba(16,185,129,0.25);
+            color: var(--green); font-weight: 700; font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        /* 3D Viewer */
+        .mol3d-container {
+            width: 300px; height: 300px;
+            margin: 0 auto 12px;
+            border-radius: 14px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(6,182,212,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .mol3d-container canvas { border-radius: 14px; }
+        .mol3d-label {
+            position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+            font-size: 10px; color: var(--text-dim);
+            background: rgba(0,0,0,0.5); padding: 2px 10px; border-radius: 6px;
+        }
+
+        /* Detail toggle */
+        .detail-toggle {
+            display: flex; justify-content: center; gap: 0; margin-bottom: 12px;
+        }
+        .detail-toggle button {
+            padding: 6px 20px; font-size: 12px; font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03);
+            color: var(--text-dim); cursor: pointer; transition: all 0.2s;
+        }
+        .detail-toggle button:first-child { border-radius: 8px 0 0 8px; }
+        .detail-toggle button:last-child { border-radius: 0 8px 8px 0; }
+        .detail-toggle button.active {
+            background: rgba(6,182,212,0.15);
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+
+        .card-details {
+            text-align: left;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px; padding: 14px;
+            margin-bottom: 12px;
+            font-size: 12px; color: var(--text-dim);
+            line-height: 1.8;
+        }
+        .card-details strong { color: var(--cyan); font-weight: 600; }
+        .card-info {
+            padding: 12px; border-radius: 10px;
+            background: rgba(6,182,212,0.06);
+            border: 1px solid rgba(6,182,212,0.1);
+            font-family: 'Jua', sans-serif;
+            font-size: 14px; color: var(--text);
+            line-height: 1.6; margin-bottom: 16px;
+        }
+        .next-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 32px; border-radius: 14px;
+            background: linear-gradient(135deg, var(--cyan), var(--green));
+            color: #0a0a1a; font-family: 'Jua', sans-serif;
+            font-size: 16px; font-weight: 700;
+            border: none; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .next-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+
+        /* ===== Complete Modal ===== */
+        .complete-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 28px; color: var(--cyan);
+            margin-bottom: 8px;
+        }
+        .complete-sub {
+            font-size: 14px; color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+        .final-score {
+            font-size: 48px; font-weight: 800;
+            color: var(--green);
+            text-shadow: 0 0 20px rgba(16,185,129,0.5);
+            margin-bottom: 6px;
+        }
+
+        /* ===== Particles ===== */
+        .particle {
+            position: fixed; pointer-events: none; z-index: 200;
+            border-radius: 50%;
+            animation: particleBurst 0.8s ease-out forwards;
+        }
+        @keyframes particleBurst {
+            0% { transform: translate(0,0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+        }
+
+        /* ===== Screen flash ===== */
+        .screen-flash {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(6,182,212,0.15);
+            pointer-events: none; z-index: 150;
+            animation: flashAnim 0.4s ease-out forwards;
+        }
+        @keyframes flashAnim {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 600px) {
+            .game-container { padding: 10px; gap: 10px; }
+            .mission-panel { padding: 10px 14px; }
+            .build-field { min-height: 220px; }
+            .field-atom .atom-sym { font-size: 15px; }
+            .periodic-section { padding: 10px; }
+            .mol3d-container { width: 240px; height: 240px; }
+            .molecule-card { padding: 18px; }
+        }
+
+        /* Scrollbar for modal */
+        .molecule-card::-webkit-scrollbar { width: 4px; }
+        .molecule-card::-webkit-scrollbar-track { background: transparent; }
+        .molecule-card::-webkit-scrollbar-thumb { background: rgba(6,182,212,0.3); border-radius: 4px; }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+    <!-- Background -->
+    <div class="cyber-bg"></div>
+
+    <!-- Header -->
+    <header class="game-header">
+        <div class="header-left">
+            <a href="index.html" class="back-btn">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span data-i18n="back">돌아가기</span>
+            </a>
+            <div class="game-title" data-i18n-html="title"><span>&#x269B;&#xFE0F;</span> 분자 빌더</div>
+        </div>
+        <div class="header-right">
+            <button id="langToggleBtn" onclick="toggleLang()" style="padding:4px 10px;border-radius:8px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;font-size:12px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all 0.2s;">EN</button>
+            <div class="mission-counter" id="missionCounter">0/10 완료</div>
+            <div class="score-display" id="scoreDisplay">SCORE: 0</div>
+        </div>
+    </header>
+
+    <!-- Level Filter Bar -->
+    <div class="level-bar" id="levelBar">
+        <button class="level-btn active" data-level="전체">전체</button>
+        <button class="level-btn" data-level="초등1">⭐ 초등1</button>
+        <button class="level-btn" data-level="초등2">⭐ 초등2</button>
+        <button class="level-btn" data-level="초등3">⭐ 초등3</button>
+        <button class="level-btn" data-level="중등1">⭐⭐ 중등1</button>
+        <button class="level-btn" data-level="중등2">⭐⭐ 중등2</button>
+        <button class="level-btn" data-level="고등1">⭐⭐⭐ 고등1</button>
+        <button class="level-btn" data-level="고등2">⭐⭐⭐ 고등2</button>
+        <button class="level-btn" data-level="대학">🎓 대학</button>
+        <div class="cat-divider"></div>
+        <button class="cat-btn active" data-cat="전체">전체</button>
+        <button class="cat-btn" data-cat="일상">일상</button>
+        <button class="cat-btn" data-cat="자연">자연</button>
+        <button class="cat-btn" data-cat="산업">산업</button>
+    </div>
+
+    <!-- Game: 한 화면에 모두 -->
+    <div class="game-container" style="display:flex;gap:10px;padding:10px 16px;height:calc(100vh - 100px - 380px);min-height:200px;overflow:hidden;">
+        <!-- 왼쪽: 미션 -->
+        <div style="width:200px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;">
+            <div class="mission-panel" style="flex-direction:column;align-items:flex-start;padding:14px;border-radius:14px;gap:8px;">
+                <div style="font-size:32px;" id="missionEmoji">&#x1F4A7;</div>
+                <div class="mission-text" id="missionText" style="font-size:15px;line-height:1.4;">
+                    물을 만들어보세요! <span class="formula">(H&#x2082;O)</span>
+                </div>
+                <div class="mission-hint" id="missionHint" style="font-size:12px;"></div>
+                <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">
+                    <button class="skip-btn" id="skipBtn" onclick="skipMission()" style="font-size:10px;padding:3px 7px;" data-i18n="skip">건너뛰기</button>
+                    <button class="guide-btn" id="guideBtn" onclick="showGuide()" style="font-size:10px;padding:3px 7px;" data-i18n="guide">💡가이드</button>
+                    <button id="freeModeBtn" onclick="toggleFreeMode()" style="font-size:10px;padding:3px 7px;background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.3);color:#06b6d4;border-radius:6px;cursor:pointer;" data-i18n="freeMode">🧪 자유 모드</button>
+                </div>
+            </div>
+            <div style="display:flex;gap:6px;">
+                <button class="clear-btn" id="clearBtn" onclick="clearField()" style="flex:1;padding:8px;border-radius:10px;" data-i18n="reset">
+                    🗑️ 초기화
+                </button>
+                <button class="remove-btn" id="removeBtn" onclick="toggleRemoveMode()" style="flex:1;padding:8px;border-radius:10px;" data-i18n="erase">
+                    ✖ 지우기
+                </button>
+            </div>
+        </div>
+
+        <!-- 가운데: 결합 필드 -->
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+            <div class="build-field" id="buildField" style="flex:1;min-height:0;">
+                <div id="trashCan" class="trash-can">🗑️</div>
+                <div class="build-field-hint" data-i18n="dragHint">
+                    아래 주기율표에서<br>원자를 드래그하세요!
+                </div>
+                <svg class="bond-svg" id="bondSvg"></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 고정: 주기율표 전체 (118 elements) -->
+    <div style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,30,0.95);backdrop-filter:blur(10px);border-top:1px solid rgba(6,182,212,0.15);padding:6px 12px 8px;z-index:50;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div style="font-family:'Jua',sans-serif;font-size:12px;color:var(--cyan);" data-i18n="periodicTitle">🪨 주기율표</div>
+            <div class="periodic-legend" style="margin:0;">
+                <div class="legend-item" data-desc="1족 금속. 물과 격렬하게 반응해요! (Na, K 등)" data-i18n-desc="alkaliDesc"><div class="legend-dot" style="background:#ef4444;"></div><span data-i18n="alkali">알칼리</span></div>
+                <div class="legend-item" data-desc="2족 금속. 뼈와 치아에 많아요! (Ca, Mg 등)" data-i18n-desc="alkalineDesc"><div class="legend-dot" style="background:#f97316;"></div><span data-i18n="alkaline">알칼리토</span></div>
+                <div class="legend-item" data-desc="다양한 색을 가진 금속. 도구와 장신구에 사용해요! (Fe, Cu, Au 등)" data-i18n-desc="transitionDesc"><div class="legend-dot" style="background:#eab308;"></div><span data-i18n="transition">전이</span></div>
+                <div class="legend-item" data-desc="무른 금속들. 납, 주석 등이 있어요!" data-i18n-desc="postTransDesc"><div class="legend-dot" style="background:#22c55e;"></div><span data-i18n="postTrans">전이후</span></div>
+                <div class="legend-item" data-desc="금속과 비금속의 중간! 반도체에 사용해요 (Si 등)" data-i18n-desc="metalloidDesc"><div class="legend-dot" style="background:#14b8a6;"></div><span data-i18n="metalloid">준금속</span></div>
+                <div class="legend-item" data-desc="생명에 필수! 탄소, 산소, 질소 등" data-i18n-desc="nonmetalDesc"><div class="legend-dot" style="background:#06b6d4;"></div><span data-i18n="nonmetal">비금속</span></div>
+                <div class="legend-item" data-desc="소독과 표백에 사용! 불소, 염소 등" data-i18n-desc="halogenDesc"><div class="legend-dot" style="background:#3b82f6;"></div><span data-i18n="halogen">할로겐</span></div>
+                <div class="legend-item" data-desc="결합을 안 해요! 이미 완벽한 원소들 (He, Ne 등)" data-i18n-desc="nobleDesc"><div class="legend-dot" style="background:#8b5cf6;"></div><span data-i18n="noble">비활성</span></div>
+                <div class="legend-item" data-desc="희토류 원소. 스마트폰에 들어있어요!" data-i18n-desc="lanthanideDesc"><div class="legend-dot" style="background:#ec4899;"></div><span data-i18n="lanthanide">란탄</span></div>
+                <div class="legend-item" data-desc="방사성 원소. 우라늄, 플루토늄 등" data-i18n-desc="actinideDesc"><div class="legend-dot" style="background:#f9a8d4;"></div><span data-i18n="actinide">악틴</span></div>
+            </div>
+        </div>
+        <div class="periodic-scroll">
+            <div class="periodic-grid" id="periodicGrid"></div>
+        </div>
+    </div>
+
+    <!-- Element tooltip -->
+    <div class="el-tooltip" id="elTooltip"></div>
+
+    <!-- Guide popup -->
+    <div class="guide-popup" id="guidePopup"></div>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="molecule-card" id="moleculeCard"></div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Molecule DB (external) -->
+    <script src="../../assets/data/molecule-db.js?v=0321d"></script>
+
+    <!-- Art Cosmos Widget -->
+    <script src="../../assets/data/art-archive.js?v=0319"></script>
+    <script src="../../assets/js/voice-engine.js?v=0319"></script>
+    <script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+
+    <script>
+    /* ============================================================
+       ATOMIC BUILDER  -  Luna Whale TECH  (v2 - 3D Upgrade)
+       ============================================================ */
+
+    // ---- i18n System ----
+    let currentLang = localStorage.getItem('atomic-builder-lang') || 'ko';
+
+    const I18N = {
+        ko: {
+            back: '돌아가기',
+            title: '⚛️ 분자 빌더',
+            missionOf: '완료',
+            all: '전체',
+            elem1: '⭐ 초등1', elem2: '⭐ 초등2', elem3: '⭐ 초등3',
+            mid1: '⭐⭐ 중등1', mid2: '⭐⭐ 중등2',
+            high1: '⭐⭐⭐ 고등1', high2: '⭐⭐⭐ 고등2',
+            univ: '🎓 대학',
+            catAll: '전체', catDaily: '일상', catNature: '자연', catIndustry: '산업',
+            skip: '건너뛰기', guide: '💡가이드',
+            freeMode: '🧪 자유 모드', freeModeOn: '🧪 자유 모드 ON',
+            reset: '🗑️ 초기화', erase: '✖ 지우기',
+            dragHint: '아래 주기율표에서\n원자를 드래그하세요!',
+            periodicTitle: '🪨 주기율표',
+            alkali: '알칼리', alkaline: '알칼리토', transition: '전이',
+            postTrans: '전이후', metalloid: '준금속', nonmetal: '비금속',
+            halogen: '할로겐', noble: '비활성', lanthanide: '란탄', actinide: '악틴',
+            alkaliDesc: '1족 금속. 물과 격렬하게 반응해요! (Na, K 등)',
+            alkalineDesc: '2족 금속. 뼈와 치아에 많아요! (Ca, Mg 등)',
+            transitionDesc: '다양한 색을 가진 금속. 도구와 장신구에 사용해요! (Fe, Cu, Au 등)',
+            postTransDesc: '무른 금속들. 납, 주석 등이 있어요!',
+            metalloidDesc: '금속과 비금속의 중간! 반도체에 사용해요 (Si 등)',
+            nonmetalDesc: '생명에 필수! 탄소, 산소, 질소 등',
+            halogenDesc: '소독과 표백에 사용! 불소, 염소 등',
+            nobleDesc: '결합을 안 해요! 이미 완벽한 원소들 (He, Ne 등)',
+            lanthanideDesc: '희토류 원소. 스마트폰에 들어있어요!',
+            actinideDesc: '방사성 원소. 우라늄, 플루토늄 등',
+            atomicNum: '원자번호', valence: '결합팔',
+            close: '닫기',
+            formula: '분자식', structure: '구조', bondType: '결합 유형',
+            ionicBond: '이온 결합 ⚡', covalentBond: '공유 결합 🤝', metallicBond: '금속 결합 🔗',
+            molarMass: '분자량', basic: '기본', advanced: '상세',
+            vsepr: 'VSEPR 기하', hybridization: '혼성 궤도', polarity: '극성',
+            enDiff: '전기음성도 차', bondEnergy: '결합 에너지',
+            mp: '녹는점', bp: '끓는점', state: '상태', color: '색',
+            nextMission: '다음 미션 →', points: '점',
+            allComplete: '모든 미션 완료!', greatChemist: '훌륭한 화학자가 되었어요!',
+            totalScore: '총점', restart: '처음부터 다시!',
+            makeMission: (name) => `${name}을 만들어보세요!`,
+            freeModeMsg: '자유롭게 원자를 결합해보세요!',
+            nobleMsg: '나는 이미 완벽해! 결합이 필요 없어요 😎',
+            freeFound: (kr, formula, info) => `🎉 이건 <strong>${kr}</strong> (${formula})이에요!<br><span style="font-size:13px;opacity:0.8;">${info}</span>`,
+            drag3d: '드래그로 회전 | 스크롤로 확대',
+        },
+        en: {
+            back: 'Back',
+            title: '⚛️ Molecule Builder',
+            missionOf: 'Done',
+            all: 'All',
+            elem1: '⭐ Elem 1', elem2: '⭐ Elem 2', elem3: '⭐ Elem 3',
+            mid1: '⭐⭐ Mid 1', mid2: '⭐⭐ Mid 2',
+            high1: '⭐⭐⭐ High 1', high2: '⭐⭐⭐ High 2',
+            univ: '🎓 Univ',
+            catAll: 'All', catDaily: 'Daily', catNature: 'Nature', catIndustry: 'Industry',
+            skip: 'Skip', guide: '💡Guide',
+            freeMode: '🧪 Free Mode', freeModeOn: '🧪 Free Mode ON',
+            reset: '🗑️ Reset', erase: '✖ Delete',
+            dragHint: 'Drag atoms from\nthe periodic table below!',
+            periodicTitle: '🪨 Periodic Table',
+            alkali: 'Alkali', alkaline: 'Alk. Earth', transition: 'Transition',
+            postTrans: 'Post-trans', metalloid: 'Semimetal', nonmetal: 'Nonmetal',
+            halogen: 'Halogen', noble: 'Noble', lanthanide: 'Lanthanide', actinide: 'Actinide',
+            alkaliDesc: 'Group 1 metals. React violently with water! (Na, K, etc.)',
+            alkalineDesc: 'Group 2 metals. Found in bones & teeth! (Ca, Mg, etc.)',
+            transitionDesc: 'Colorful metals used in tools & jewelry! (Fe, Cu, Au, etc.)',
+            postTransDesc: 'Soft metals like lead and tin!',
+            metalloidDesc: 'Between metals & nonmetals! Used in semiconductors (Si, etc.)',
+            nonmetalDesc: 'Essential for life! Carbon, oxygen, nitrogen, etc.',
+            halogenDesc: 'Used in disinfection & bleaching! Fluorine, chlorine, etc.',
+            nobleDesc: "Won't bond! Already perfect elements (He, Ne, etc.)",
+            lanthanideDesc: 'Rare earth elements. Found in your smartphone!',
+            actinideDesc: 'Radioactive elements. Uranium, plutonium, etc.',
+            atomicNum: 'Atomic #', valence: 'Valence',
+            close: 'Close',
+            formula: 'Formula', structure: 'Structure', bondType: 'Bond Type',
+            ionicBond: 'Ionic Bond ⚡', covalentBond: 'Covalent Bond 🤝', metallicBond: 'Metallic Bond 🔗',
+            molarMass: 'Molar Mass', basic: 'Basic', advanced: 'Advanced',
+            vsepr: 'VSEPR Geom.', hybridization: 'Hybridization', polarity: 'Polarity',
+            enDiff: 'EN Difference', bondEnergy: 'Bond Energy',
+            mp: 'Melting Pt.', bp: 'Boiling Pt.', state: 'State', color: 'Color',
+            nextMission: 'Next Mission →', points: 'pts',
+            allComplete: 'All Missions Complete!', greatChemist: "You're a great chemist!",
+            totalScore: 'Total Score', restart: 'Start Over!',
+            makeMission: (name) => `Build ${name}!`,
+            freeModeMsg: 'Freely combine atoms!',
+            nobleMsg: "I'm already perfect! No bonds needed 😎",
+            freeFound: (name, formula, info) => `🎉 It's <strong>${name}</strong> (${formula})!<br><span style="font-size:13px;opacity:0.8;">${info}</span>`,
+            drag3d: 'Drag to rotate | Scroll to zoom',
+        }
+    };
+
+    // English element descriptions
+    const ELEMENT_DESCS_EN = {
+        H: 'Lightest element. Makes up 75% of the universe. Component of water (H₂O)!',
+        He: 'Light gas that floats balloons. Made by nuclear fusion in the Sun.',
+        Li: 'Lightest metal. Found in your smartphone battery!',
+        Be: 'Very hard and light metal. Used in spacecraft windows.',
+        B: 'Used in borax (detergent). Found in heat-resistant glass (Pyrex).',
+        C: 'Basis of life! Both diamonds and pencil lead are carbon.',
+        N: '78% of air! Key component of fertilizer.',
+        O: 'Essential for breathing. 21% of Earth\'s atmosphere.',
+        F: 'Found in toothpaste. Most reactive element!',
+        Ne: 'The red light of neon signs! Doesn\'t bond at all.',
+        Na: 'Component of salt (NaCl). Explodes in water!',
+        Mg: 'White light in fireworks! Light and strong metal.',
+        Al: 'Used in drink cans and aircraft. Light and rust-proof.',
+        Si: 'Core of semiconductors! Computer chips are made of silicon.',
+        P: 'Sparks in matches! Also a component of DNA.',
+        S: 'Yellow powder. Used in gunpowder and rubber.',
+        Cl: 'Pool disinfectant! Component of salt.',
+        Ar: 'Gas inside fluorescent lights. Also used in welding.',
+        K: 'Abundant in bananas! Essential for muscle contraction.',
+        Ca: 'Main component of bones & teeth! Abundant in milk.',
+        Sc: 'Light and strong metal. Sometimes used in baseball bats.',
+        Ti: 'Very strong and light. Used in aircraft and artificial joints.',
+        V: 'Makes steel super strong when added. Secret of tool steel!',
+        Cr: 'Shiny chrome plating! Key component of stainless steel.',
+        Mn: 'Metal used in batteries and steel.',
+        Fe: 'Most used metal! Also in hemoglobin in blood.',
+        Co: 'Blue pigment. Also in smartphone batteries.',
+        Ni: 'Used in coins and stainless steel. Some people have nickel allergies.',
+        Cu: 'Material for electric wires! Statue of Liberty is made of copper.',
+        Zn: 'Galvanized coating. Also found in cold medicine.',
+        Ga: 'Melts in your hand! Melting point is only 29.8°C.',
+        Ge: 'Used in early transistors. A semiconductor material.',
+        As: 'Famous as poison, but also used in semiconductors.',
+        Se: 'Selenium. A semimetal used in copier drums.',
+        Br: 'Nonmetal that is liquid at room temperature! Red-brown vapor.',
+        Kr: 'Krypton! Named like Superman\'s planet. Used in camera flash.',
+        Rb: 'Explodes in water! Metal used in atomic clocks.',
+        Sr: 'Red color in fireworks! Was used in glow-in-the-dark watches.',
+        Y: 'Used in red phosphors of LED TVs.',
+        Zr: 'Material for cubic zirconia (fake diamond)! Also in nuclear fuel rods.',
+        Nb: 'Metal used in superconductors and jet engines.',
+        Mo: 'Extremely high melting point! Strengthens steel.',
+        Tc: 'First artificial element! Used in medical imaging.',
+        Ru: 'Precious metal used in fountain pen nibs.',
+        Rh: 'Catalytic converter for car exhaust. Very expensive!',
+        Pd: 'Used in catalytic converters and dental materials.',
+        Ag: 'Best electrical conductor! Used in silver rings and mirrors.',
+        Cd: 'NiCd battery material. Toxic, handle with care!',
+        In: 'Key element for touchscreens (ITO)!',
+        Sn: 'Tin. Used for coating tin cans.',
+        Sb: 'Metal used in solder and batteries.',
+        Te: 'Used in DVD/Blu-ray disc recording layers.',
+        I: 'Iodine antiseptic! Essential element for thyroid.',
+        Xe: 'Gas in HID headlights. Also used as anesthetic!',
+        Cs: 'Used in most accurate clock (cesium atomic clock).',
+        Ba: 'Barium solution you drink for stomach X-rays!',
+        La: 'Used in camera lenses. Start of rare earths!',
+        Ce: 'Material for lighter flints. Also in car catalysts.',
+        Pr: 'One of the materials for powerful magnets (neodymium magnets).',
+        Nd: 'World\'s strongest permanent magnet! Used in earphone speakers.',
+        Pm: 'Radioactive element. Was used in glow-in-the-dark paint.',
+        Sm: 'Samarium-cobalt magnet. Maintains magnetism at high temps!',
+        Eu: 'Used in anti-counterfeiting fluorescent ink on Euro bills!',
+        Gd: 'Rare earth element used in MRI contrast agents.',
+        Tb: 'Green phosphor. Used in energy-saving light bulbs.',
+        Dy: 'Essential element for EV motor magnets.',
+        Ho: 'Creates the strongest magnetic field of any element!',
+        Er: 'Used in fiber optic communication. Also a laser material!',
+        Tm: 'Rarest lanthanide element. Used in X-ray devices.',
+        Yb: 'Used in stress gauges and lasers.',
+        Lu: 'Element used in PET scan detectors.',
+        Hf: 'Used in nuclear reactor control rods and plasma torches.',
+        Ta: 'Essential for smartphone capacitors! A conflict mineral.',
+        W: 'Highest melting point metal! Was used in light bulb filaments.',
+        Re: 'Ultra heat-resistant metal used in jet engine blades.',
+        Os: 'Densest element! Used in fountain pen nibs.',
+        Ir: 'Abundant in meteorites. Element that proved dinosaur extinction!',
+        Pt: 'Precious metal for car catalysts and anticancer drugs (cisplatin).',
+        Au: 'Gold! Used in electronic contacts and space helmet visors.',
+        Hg: 'Only metal liquid at room temperature! Was used in thermometers.',
+        Tl: 'Extremely toxic metal. Famous as poison in detective novels.',
+        Pb: 'Lead. Used in radiation shielding and batteries. Toxic!',
+        Bi: 'Found in stomach medicine (Pepto-Bismol)! Rainbow crystals.',
+        Po: 'Discovered by Marie Curie! Extremely radioactive.',
+        At: 'Rarest element on Earth. Only about 28g exists!',
+        Rn: 'Radon. Colorless, odorless radioactive gas. Ventilation matters!',
+        Fr: 'Most unstable alkali metal. Half-life of 22 minutes!',
+        Ra: 'Radioactive element discovered by Marie Curie. Was used in glow watches.',
+        Ac: 'Actinium. Start of the radioactive elements!',
+        Th: 'Was used in gas lamp mantles. Future nuclear fuel candidate.',
+        Pa: 'Very rare radioactive element. Used only for research.',
+        U: 'Fuel for nuclear power! Also material for nuclear weapons.',
+        Np: 'Neptunium. Transuranium element after uranium.',
+        Pu: 'Used in nuclear weapons and space probe power (RTG).',
+        Am: 'Found in home smoke detectors!',
+        Cm: 'Element named after Marie Curie.',
+        Bk: 'Artificial element made at UC Berkeley.',
+        Cf: 'Californium. Used in metal detection and reactor startup.',
+        Es: 'Element named after Einstein!',
+        Fm: 'Element named after Fermi. Found in hydrogen bomb fallout.',
+        Md: 'Element named after Mendeleev!',
+        No: 'Element named after Nobel.',
+        Lr: 'Element named after Lawrence. Created with particle accelerator.',
+        Rf: 'Super-heavy element named after Rutherford.',
+        Db: 'Element named after Dubna (Russian lab).',
+        Sg: 'Element named after Seaborg. Only element named while person was alive!',
+        Bh: 'Element named after Niels Bohr.',
+        Hs: 'Element named after Hesse (German state).',
+        Mt: 'Named after Meitner (nuclear fission co-discoverer).',
+        Ds: 'Named after Darmstadt (German city).',
+        Rg: 'Named after Röntgen (X-ray discoverer).',
+        Cn: 'Element named after Copernicus.',
+        Nh: 'Nihonium. First element made in Japan!',
+        Fl: 'Named after Flerov (Russian physicist).',
+        Mc: 'Element named after Moscow.',
+        Lv: 'Named after Livermore (US lab).',
+        Ts: 'Named after Tennessee (US state).',
+        Og: 'Oganesson. Last element on the periodic table! Heaviest.',
+    };
+
+    function t(key) { return I18N[currentLang][key] || I18N['ko'][key] || key; }
+
+    function getMolName(mol) { return currentLang === 'en' ? mol.en : mol.kr; }
+    function getElName(el) { return currentLang === 'en' ? el.en : el.kr; }
+    function getElDesc(sym) { return currentLang === 'en' ? (ELEMENT_DESCS_EN[sym] || '') : (ELEMENT_DESCS[sym] || ''); }
+
+    function applyI18n() {
+        // Static HTML elements
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const val = t(el.dataset.i18n);
+            if (val.includes('\n')) el.innerHTML = val.replace(/\n/g, '<br>');
+            else el.textContent = val;
+        });
+        document.querySelectorAll('[data-i18n-html]').forEach(el => {
+            el.innerHTML = t(el.dataset.i18nHtml);
+        });
+        // Legend descs
+        document.querySelectorAll('[data-i18n-desc]').forEach(el => {
+            el.dataset.desc = t(el.dataset.i18nDesc);
+            const descDiv = el.querySelector('.legend-desc');
+            if (descDiv) descDiv.textContent = t(el.dataset.i18nDesc);
+        });
+        // Level buttons
+        const levelMap = {'전체':'all','초등1':'elem1','초등2':'elem2','초등3':'elem3','중등1':'mid1','중등2':'mid2','고등1':'high1','고등2':'high2','대학':'univ'};
+        document.querySelectorAll('.level-btn[data-level]').forEach(btn => {
+            const k = levelMap[btn.dataset.level];
+            if (k) btn.textContent = t(k);
+        });
+        const catMap = {'전체':'catAll','일상':'catDaily','자연':'catNature','산업':'catIndustry'};
+        document.querySelectorAll('.cat-btn[data-cat]').forEach(btn => {
+            const k = catMap[btn.dataset.cat];
+            if (k) btn.textContent = t(k);
+        });
+        // Update mission UI
+        if (typeof updateMissionUI === 'function') updateMissionUI();
+        if (typeof updateMissionCounter === 'function') updateMissionCounter();
+        // Rebuild legend descs
+        document.querySelectorAll('.legend-item[data-i18n-desc]').forEach(item => {
+            const desc = item.querySelector('.legend-desc');
+            if (desc) desc.textContent = t(item.dataset.i18nDesc);
+        });
+        // Lang button
+        const langBtn = document.getElementById('langToggleBtn');
+        if (langBtn) langBtn.textContent = currentLang === 'ko' ? 'EN' : '한';
+    }
+
+    function toggleLang() {
+        currentLang = currentLang === 'ko' ? 'en' : 'ko';
+        localStorage.setItem('atomic-builder-lang', currentLang);
+        applyI18n();
+        // Rebuild periodic table tooltips on hover (handled dynamically)
+    }
+
+    // ---- Sound System ----
+    const SOUNDS = {
+        pick:    '../../assets/sounds/SonSounds/DA - Pop - 3.mp3',
+        connect: '../../assets/sounds/SonSounds/KF - Transforming Element - 4.mp3',
+        success: '../../assets/sounds/SonSounds/049_띠룽 (슈퍼마리오 코인먹).mp3',
+        fail:    '../../assets/sounds/SonSounds/063_삐삑 (오답 -짧은).mp3',
+        levelup: '../../assets/sounds/SonSounds/080_깨달음.mp3',
+        click:   '../../assets/sounds/SonSounds/DA - Digital Click - 1.mp3',
+        sizzle:  '../../assets/sounds/SonSounds/KF - Transforming Element - 4.mp3',
+    };
+    const audioCache = {};
+    Object.entries(SOUNDS).forEach(([key, src]) => {
+        const a = new Audio(src);
+        a.preload = 'auto';
+        a.volume = 0.5;
+        audioCache[key] = a;
+    });
+    function playSound(key) {
+        try {
+            const a = new Audio(SOUNDS[key]);
+            a.volume = key === 'success' || key === 'levelup' ? 0.6 : 0.45;
+            a.play().catch(() => {});
+        } catch(e) {}
+    }
+
+    // ---- Group Colors ----
+    const GROUP_COLORS = {
+        alkali:     '#ef4444',
+        alkaline:   '#f97316',
+        transition: '#eab308',
+        post_trans:  '#22c55e',
+        metalloid:  '#14b8a6',
+        nonmetal:   '#06b6d4',
+        halogen:    '#3b82f6',
+        noble:      '#8b5cf6',
+        lanthanide: '#ec4899',
+        actinide:   '#f9a8d4',
+    };
+    // Legacy group→color mapping for game mechanics
+    function groupColor(g) { return GROUP_COLORS[g] || '#64748b'; }
+    function groupToLegacy(g) {
+        if (['alkali','alkaline','transition','post_trans','lanthanide','actinide'].includes(g)) return 'metal';
+        if (g === 'metalloid') return 'metalloid';
+        if (g === 'noble') return 'noble';
+        return 'nonmetal';
+    }
+
+    // ---- Full 118 Elements Data ----
+    const ELEMENTS = [
+      {num:1,  sym:'H',  kr:'수소',     en:'Hydrogen',      valence:1, group:'nonmetal',   row:1, col:1,  electrons:[1],            electronegativity:2.20, radius:20},
+      {num:2,  sym:'He', kr:'헬륨',     en:'Helium',        valence:0, group:'noble',       row:1, col:18, electrons:[2],            electronegativity:0,    radius:22},
+      {num:3,  sym:'Li', kr:'리튬',     en:'Lithium',       valence:1, group:'alkali',      row:2, col:1,  electrons:[2,1],          electronegativity:0.98, radius:48},
+      {num:4,  sym:'Be', kr:'베릴륨',   en:'Beryllium',     valence:2, group:'alkaline',    row:2, col:2,  electrons:[2,2],          electronegativity:1.57, radius:38},
+      {num:5,  sym:'B',  kr:'붕소',     en:'Boron',         valence:3, group:'metalloid',   row:2, col:13, electrons:[2,3],          electronegativity:2.04, radius:32},
+      {num:6,  sym:'C',  kr:'탄소',     en:'Carbon',        valence:4, group:'nonmetal',    row:2, col:14, electrons:[2,4],          electronegativity:2.55, radius:28},
+      {num:7,  sym:'N',  kr:'질소',     en:'Nitrogen',      valence:3, group:'nonmetal',    row:2, col:15, electrons:[2,5],          electronegativity:3.04, radius:27},
+      {num:8,  sym:'O',  kr:'산소',     en:'Oxygen',        valence:2, group:'nonmetal',    row:2, col:16, electrons:[2,6],          electronegativity:3.44, radius:26},
+      {num:9,  sym:'F',  kr:'플루오린', en:'Fluorine',      valence:1, group:'halogen',     row:2, col:17, electrons:[2,7],          electronegativity:3.98, radius:24},
+      {num:10, sym:'Ne', kr:'네온',     en:'Neon',          valence:0, group:'noble',       row:2, col:18, electrons:[2,8],          electronegativity:0,    radius:22},
+      {num:11, sym:'Na', kr:'나트륨',   en:'Sodium',        valence:1, group:'alkali',      row:3, col:1,  electrons:[2,8,1],        electronegativity:0.93, radius:55},
+      {num:12, sym:'Mg', kr:'마그네슘', en:'Magnesium',     valence:2, group:'alkaline',    row:3, col:2,  electrons:[2,8,2],        electronegativity:1.31, radius:48},
+      {num:13, sym:'Al', kr:'알루미늄', en:'Aluminium',     valence:3, group:'post_trans',   row:3, col:13, electrons:[2,8,3],        electronegativity:1.61, radius:42},
+      {num:14, sym:'Si', kr:'규소',     en:'Silicon',       valence:4, group:'metalloid',   row:3, col:14, electrons:[2,8,4],        electronegativity:1.90, radius:38},
+      {num:15, sym:'P',  kr:'인',       en:'Phosphorus',    valence:3, group:'nonmetal',    row:3, col:15, electrons:[2,8,5],        electronegativity:2.19, radius:36},
+      {num:16, sym:'S',  kr:'황',       en:'Sulfur',        valence:2, group:'nonmetal',    row:3, col:16, electrons:[2,8,6],        electronegativity:2.58, radius:36},
+      {num:17, sym:'Cl', kr:'염소',     en:'Chlorine',      valence:1, group:'halogen',     row:3, col:17, electrons:[2,8,7],        electronegativity:3.16, radius:36},
+      {num:18, sym:'Ar', kr:'아르곤',   en:'Argon',         valence:0, group:'noble',       row:3, col:18, electrons:[2,8,8],        electronegativity:0,    radius:28},
+      {num:19, sym:'K',  kr:'칼륨',     en:'Potassium',     valence:1, group:'alkali',      row:4, col:1,  electrons:[2,8,8,1],      electronegativity:0.82, radius:60},
+      {num:20, sym:'Ca', kr:'칼슘',     en:'Calcium',       valence:2, group:'alkaline',    row:4, col:2,  electrons:[2,8,8,2],      electronegativity:1.00, radius:55},
+      {num:21, sym:'Sc', kr:'스칸듐',   en:'Scandium',      valence:3, group:'transition',  row:4, col:3,  electrons:[2,8,9,2],      electronegativity:1.36, radius:44},
+      {num:22, sym:'Ti', kr:'타이타늄', en:'Titanium',      valence:4, group:'transition',  row:4, col:4,  electrons:[2,8,10,2],     electronegativity:1.54, radius:42},
+      {num:23, sym:'V',  kr:'바나듐',   en:'Vanadium',      valence:5, group:'transition',  row:4, col:5,  electrons:[2,8,11,2],     electronegativity:1.63, radius:40},
+      {num:24, sym:'Cr', kr:'크로뮴',   en:'Chromium',      valence:3, group:'transition',  row:4, col:6,  electrons:[2,8,13,1],     electronegativity:1.66, radius:40},
+      {num:25, sym:'Mn', kr:'망가니즈', en:'Manganese',     valence:2, group:'transition',  row:4, col:7,  electrons:[2,8,13,2],     electronegativity:1.55, radius:40},
+      {num:26, sym:'Fe', kr:'철',       en:'Iron',          valence:3, group:'transition',  row:4, col:8,  electrons:[2,8,14,2],     electronegativity:1.83, radius:40},
+      {num:27, sym:'Co', kr:'코발트',   en:'Cobalt',        valence:2, group:'transition',  row:4, col:9,  electrons:[2,8,15,2],     electronegativity:1.88, radius:38},
+      {num:28, sym:'Ni', kr:'니켈',     en:'Nickel',        valence:2, group:'transition',  row:4, col:10, electrons:[2,8,16,2],     electronegativity:1.91, radius:38},
+      {num:29, sym:'Cu', kr:'구리',     en:'Copper',        valence:2, group:'transition',  row:4, col:11, electrons:[2,8,18,1],     electronegativity:1.90, radius:38},
+      {num:30, sym:'Zn', kr:'아연',     en:'Zinc',          valence:2, group:'transition',  row:4, col:12, electrons:[2,8,18,2],     electronegativity:1.65, radius:38},
+      {num:31, sym:'Ga', kr:'갈륨',     en:'Gallium',       valence:3, group:'post_trans',   row:4, col:13, electrons:[2,8,18,3],     electronegativity:1.81, radius:36},
+      {num:32, sym:'Ge', kr:'저마늄',   en:'Germanium',     valence:4, group:'metalloid',   row:4, col:14, electrons:[2,8,18,4],     electronegativity:2.01, radius:36},
+      {num:33, sym:'As', kr:'비소',     en:'Arsenic',       valence:3, group:'metalloid',   row:4, col:15, electrons:[2,8,18,5],     electronegativity:2.18, radius:34},
+      {num:34, sym:'Se', kr:'셀레늄',   en:'Selenium',      valence:2, group:'nonmetal',    row:4, col:16, electrons:[2,8,18,6],     electronegativity:2.55, radius:34},
+      {num:35, sym:'Br', kr:'브로민',   en:'Bromine',       valence:1, group:'halogen',     row:4, col:17, electrons:[2,8,18,7],     electronegativity:2.96, radius:34},
+      {num:36, sym:'Kr', kr:'크립톤',   en:'Krypton',       valence:0, group:'noble',       row:4, col:18, electrons:[2,8,18,8],     electronegativity:3.00, radius:28},
+      {num:37, sym:'Rb', kr:'루비듐',   en:'Rubidium',      valence:1, group:'alkali',      row:5, col:1,  electrons:[2,8,18,8,1],   electronegativity:0.82, radius:62},
+      {num:38, sym:'Sr', kr:'스트론튬', en:'Strontium',     valence:2, group:'alkaline',    row:5, col:2,  electrons:[2,8,18,8,2],   electronegativity:0.95, radius:58},
+      {num:39, sym:'Y',  kr:'이트륨',   en:'Yttrium',       valence:3, group:'transition',  row:5, col:3,  electrons:[2,8,18,9,2],   electronegativity:1.22, radius:46},
+      {num:40, sym:'Zr', kr:'지르코늄', en:'Zirconium',     valence:4, group:'transition',  row:5, col:4,  electrons:[2,8,18,10,2],  electronegativity:1.33, radius:44},
+      {num:41, sym:'Nb', kr:'나이오븀', en:'Niobium',       valence:5, group:'transition',  row:5, col:5,  electrons:[2,8,18,12,1],  electronegativity:1.60, radius:42},
+      {num:42, sym:'Mo', kr:'몰리브덴', en:'Molybdenum',    valence:6, group:'transition',  row:5, col:6,  electrons:[2,8,18,13,1],  electronegativity:2.16, radius:42},
+      {num:43, sym:'Tc', kr:'테크네튬', en:'Technetium',    valence:7, group:'transition',  row:5, col:7,  electrons:[2,8,18,13,2],  electronegativity:1.90, radius:40},
+      {num:44, sym:'Ru', kr:'루테늄',   en:'Ruthenium',     valence:3, group:'transition',  row:5, col:8,  electrons:[2,8,18,15,1],  electronegativity:2.20, radius:40},
+      {num:45, sym:'Rh', kr:'로듐',     en:'Rhodium',       valence:3, group:'transition',  row:5, col:9,  electrons:[2,8,18,16,1],  electronegativity:2.28, radius:38},
+      {num:46, sym:'Pd', kr:'팔라듐',   en:'Palladium',     valence:2, group:'transition',  row:5, col:10, electrons:[2,8,18,18],    electronegativity:2.20, radius:38},
+      {num:47, sym:'Ag', kr:'은',       en:'Silver',        valence:1, group:'transition',  row:5, col:11, electrons:[2,8,18,18,1],  electronegativity:1.93, radius:40},
+      {num:48, sym:'Cd', kr:'카드뮴',   en:'Cadmium',       valence:2, group:'transition',  row:5, col:12, electrons:[2,8,18,18,2],  electronegativity:1.69, radius:40},
+      {num:49, sym:'In', kr:'인듐',     en:'Indium',        valence:3, group:'post_trans',   row:5, col:13, electrons:[2,8,18,18,3],  electronegativity:1.78, radius:38},
+      {num:50, sym:'Sn', kr:'주석',     en:'Tin',           valence:4, group:'post_trans',   row:5, col:14, electrons:[2,8,18,18,4],  electronegativity:1.96, radius:38},
+      {num:51, sym:'Sb', kr:'안티모니', en:'Antimony',      valence:3, group:'metalloid',   row:5, col:15, electrons:[2,8,18,18,5],  electronegativity:2.05, radius:36},
+      {num:52, sym:'Te', kr:'텔루륨',   en:'Tellurium',     valence:2, group:'metalloid',   row:5, col:16, electrons:[2,8,18,18,6],  electronegativity:2.10, radius:36},
+      {num:53, sym:'I',  kr:'아이오딘', en:'Iodine',        valence:1, group:'halogen',     row:5, col:17, electrons:[2,8,18,18,7],  electronegativity:2.66, radius:36},
+      {num:54, sym:'Xe', kr:'제논',     en:'Xenon',         valence:0, group:'noble',       row:5, col:18, electrons:[2,8,18,18,8],  electronegativity:2.60, radius:30},
+      {num:55, sym:'Cs', kr:'세슘',     en:'Caesium',       valence:1, group:'alkali',      row:6, col:1,  electrons:[2,8,18,18,8,1],electronegativity:0.79, radius:65},
+      {num:56, sym:'Ba', kr:'바륨',     en:'Barium',        valence:2, group:'alkaline',    row:6, col:2,  electrons:[2,8,18,18,8,2],electronegativity:0.89, radius:60},
+      // La placeholder at row:6,col:3 — actual La is in lanthanide row
+      {num:57, sym:'La', kr:'란타넘',   en:'Lanthanum',     valence:3, group:'lanthanide',  row:9, col:3,  electrons:[2,8,18,18,9,2],electronegativity:1.10, radius:50},
+      {num:58, sym:'Ce', kr:'세륨',     en:'Cerium',        valence:3, group:'lanthanide',  row:9, col:4,  electrons:[2,8,18,19,9,2],electronegativity:1.12, radius:48},
+      {num:59, sym:'Pr', kr:'프라세오디뮴',en:'Praseodymium',valence:3, group:'lanthanide', row:9, col:5,  electrons:[2,8,18,21,8,2],electronegativity:1.13, radius:48},
+      {num:60, sym:'Nd', kr:'네오디뮴', en:'Neodymium',     valence:3, group:'lanthanide',  row:9, col:6,  electrons:[2,8,18,22,8,2],electronegativity:1.14, radius:48},
+      {num:61, sym:'Pm', kr:'프로메튬', en:'Promethium',    valence:3, group:'lanthanide',  row:9, col:7,  electrons:[2,8,18,23,8,2],electronegativity:1.13, radius:46},
+      {num:62, sym:'Sm', kr:'사마륨',   en:'Samarium',      valence:3, group:'lanthanide',  row:9, col:8,  electrons:[2,8,18,24,8,2],electronegativity:1.17, radius:46},
+      {num:63, sym:'Eu', kr:'유로퓸',   en:'Europium',      valence:2, group:'lanthanide',  row:9, col:9,  electrons:[2,8,18,25,8,2],electronegativity:1.20, radius:46},
+      {num:64, sym:'Gd', kr:'가돌리늄', en:'Gadolinium',    valence:3, group:'lanthanide',  row:9, col:10, electrons:[2,8,18,25,9,2],electronegativity:1.20, radius:46},
+      {num:65, sym:'Tb', kr:'터븀',     en:'Terbium',       valence:3, group:'lanthanide',  row:9, col:11, electrons:[2,8,18,27,8,2],electronegativity:1.20, radius:44},
+      {num:66, sym:'Dy', kr:'디스프로슘',en:'Dysprosium',   valence:3, group:'lanthanide',  row:9, col:12, electrons:[2,8,18,28,8,2],electronegativity:1.22, radius:44},
+      {num:67, sym:'Ho', kr:'홀뮴',     en:'Holmium',       valence:3, group:'lanthanide',  row:9, col:13, electrons:[2,8,18,29,8,2],electronegativity:1.23, radius:44},
+      {num:68, sym:'Er', kr:'어븀',     en:'Erbium',        valence:3, group:'lanthanide',  row:9, col:14, electrons:[2,8,18,30,8,2],electronegativity:1.24, radius:44},
+      {num:69, sym:'Tm', kr:'툴륨',     en:'Thulium',       valence:3, group:'lanthanide',  row:9, col:15, electrons:[2,8,18,31,8,2],electronegativity:1.25, radius:42},
+      {num:70, sym:'Yb', kr:'이터븀',   en:'Ytterbium',     valence:2, group:'lanthanide',  row:9, col:16, electrons:[2,8,18,32,8,2],electronegativity:1.10, radius:42},
+      {num:71, sym:'Lu', kr:'루테튬',   en:'Lutetium',      valence:3, group:'lanthanide',  row:9, col:17, electrons:[2,8,18,32,9,2],electronegativity:1.27, radius:42},
+      {num:72, sym:'Hf', kr:'하프늄',   en:'Hafnium',       valence:4, group:'transition',  row:6, col:4,  electrons:[2,8,18,32,10,2],electronegativity:1.30, radius:44},
+      {num:73, sym:'Ta', kr:'탄탈럼',   en:'Tantalum',      valence:5, group:'transition',  row:6, col:5,  electrons:[2,8,18,32,11,2],electronegativity:1.50, radius:42},
+      {num:74, sym:'W',  kr:'텅스텐',   en:'Tungsten',      valence:6, group:'transition',  row:6, col:6,  electrons:[2,8,18,32,12,2],electronegativity:2.36, radius:42},
+      {num:75, sym:'Re', kr:'레늄',     en:'Rhenium',       valence:4, group:'transition',  row:6, col:7,  electrons:[2,8,18,32,13,2],electronegativity:1.90, radius:40},
+      {num:76, sym:'Os', kr:'오스뮴',   en:'Osmium',        valence:4, group:'transition',  row:6, col:8,  electrons:[2,8,18,32,14,2],electronegativity:2.20, radius:40},
+      {num:77, sym:'Ir', kr:'이리듐',   en:'Iridium',       valence:4, group:'transition',  row:6, col:9,  electrons:[2,8,18,32,15,2],electronegativity:2.20, radius:38},
+      {num:78, sym:'Pt', kr:'백금',     en:'Platinum',      valence:2, group:'transition',  row:6, col:10, electrons:[2,8,18,32,17,1],electronegativity:2.28, radius:38},
+      {num:79, sym:'Au', kr:'금',       en:'Gold',          valence:3, group:'transition',  row:6, col:11, electrons:[2,8,18,32,18,1],electronegativity:2.54, radius:38},
+      {num:80, sym:'Hg', kr:'수은',     en:'Mercury',       valence:2, group:'transition',  row:6, col:12, electrons:[2,8,18,32,18,2],electronegativity:2.00, radius:40},
+      {num:81, sym:'Tl', kr:'탈륨',     en:'Thallium',      valence:1, group:'post_trans',   row:6, col:13, electrons:[2,8,18,32,18,3],electronegativity:1.62, radius:40},
+      {num:82, sym:'Pb', kr:'납',       en:'Lead',          valence:2, group:'post_trans',   row:6, col:14, electrons:[2,8,18,32,18,4],electronegativity:2.33, radius:40},
+      {num:83, sym:'Bi', kr:'비스무트', en:'Bismuth',       valence:3, group:'post_trans',   row:6, col:15, electrons:[2,8,18,32,18,5],electronegativity:2.02, radius:38},
+      {num:84, sym:'Po', kr:'폴로늄',   en:'Polonium',      valence:2, group:'post_trans',   row:6, col:16, electrons:[2,8,18,32,18,6],electronegativity:2.00, radius:36},
+      {num:85, sym:'At', kr:'아스타틴', en:'Astatine',      valence:1, group:'halogen',     row:6, col:17, electrons:[2,8,18,32,18,7],electronegativity:2.20, radius:36},
+      {num:86, sym:'Rn', kr:'라돈',     en:'Radon',         valence:0, group:'noble',       row:6, col:18, electrons:[2,8,18,32,18,8],electronegativity:2.20, radius:32},
+      {num:87, sym:'Fr', kr:'프랑슘',   en:'Francium',      valence:1, group:'alkali',      row:7, col:1,  electrons:[2,8,18,32,18,8,1],electronegativity:0.70,radius:68},
+      {num:88, sym:'Ra', kr:'라듐',     en:'Radium',        valence:2, group:'alkaline',    row:7, col:2,  electrons:[2,8,18,32,18,8,2],electronegativity:0.90,radius:62},
+      // Ac placeholder at row:7,col:3 — actual Ac is in actinide row
+      {num:89, sym:'Ac', kr:'악티늄',   en:'Actinium',      valence:3, group:'actinide',    row:10,col:3,  electrons:[2,8,18,32,18,9,2],electronegativity:1.10,radius:50},
+      {num:90, sym:'Th', kr:'토륨',     en:'Thorium',       valence:4, group:'actinide',    row:10,col:4,  electrons:[2,8,18,32,18,10,2],electronegativity:1.30,radius:48},
+      {num:91, sym:'Pa', kr:'프로트악티늄',en:'Protactinium',valence:5, group:'actinide',   row:10,col:5,  electrons:[2,8,18,32,20,9,2],electronegativity:1.50,radius:46},
+      {num:92, sym:'U',  kr:'우라늄',   en:'Uranium',       valence:6, group:'actinide',    row:10,col:6,  electrons:[2,8,18,32,21,9,2],electronegativity:1.38,radius:46},
+      {num:93, sym:'Np', kr:'넵투늄',   en:'Neptunium',     valence:5, group:'actinide',    row:10,col:7,  electrons:[2,8,18,32,22,9,2],electronegativity:1.36,radius:46},
+      {num:94, sym:'Pu', kr:'플루토늄', en:'Plutonium',     valence:4, group:'actinide',    row:10,col:8,  electrons:[2,8,18,32,24,8,2],electronegativity:1.28,radius:46},
+      {num:95, sym:'Am', kr:'아메리슘', en:'Americium',     valence:3, group:'actinide',    row:10,col:9,  electrons:[2,8,18,32,25,8,2],electronegativity:1.30,radius:44},
+      {num:96, sym:'Cm', kr:'퀴륨',     en:'Curium',        valence:3, group:'actinide',    row:10,col:10, electrons:[2,8,18,32,25,9,2],electronegativity:1.30,radius:44},
+      {num:97, sym:'Bk', kr:'버클륨',   en:'Berkelium',     valence:3, group:'actinide',    row:10,col:11, electrons:[2,8,18,32,27,8,2],electronegativity:1.30,radius:44},
+      {num:98, sym:'Cf', kr:'캘리포늄', en:'Californium',   valence:3, group:'actinide',    row:10,col:12, electrons:[2,8,18,32,28,8,2],electronegativity:1.30,radius:42},
+      {num:99, sym:'Es', kr:'아인슈타이늄',en:'Einsteinium',valence:3, group:'actinide',   row:10,col:13, electrons:[2,8,18,32,29,8,2],electronegativity:1.30,radius:42},
+      {num:100,sym:'Fm', kr:'페르뮴',   en:'Fermium',       valence:3, group:'actinide',    row:10,col:14, electrons:[2,8,18,32,30,8,2],electronegativity:1.30,radius:42},
+      {num:101,sym:'Md', kr:'멘델레븀', en:'Mendelevium',   valence:2, group:'actinide',    row:10,col:15, electrons:[2,8,18,32,31,8,2],electronegativity:1.30,radius:42},
+      {num:102,sym:'No', kr:'노벨륨',   en:'Nobelium',      valence:2, group:'actinide',    row:10,col:16, electrons:[2,8,18,32,32,8,2],electronegativity:1.30,radius:42},
+      {num:103,sym:'Lr', kr:'로렌슘',   en:'Lawrencium',    valence:3, group:'actinide',    row:10,col:17, electrons:[2,8,18,32,32,8,3],electronegativity:1.30,radius:42},
+      {num:104,sym:'Rf', kr:'러더포듐', en:'Rutherfordium',  valence:4, group:'transition', row:7, col:4,  electrons:[2,8,18,32,32,10,2],electronegativity:0,  radius:42},
+      {num:105,sym:'Db', kr:'더브늄',   en:'Dubnium',        valence:5, group:'transition', row:7, col:5,  electrons:[2,8,18,32,32,11,2],electronegativity:0,  radius:40},
+      {num:106,sym:'Sg', kr:'시보귬',   en:'Seaborgium',     valence:6, group:'transition', row:7, col:6,  electrons:[2,8,18,32,32,12,2],electronegativity:0,  radius:40},
+      {num:107,sym:'Bh', kr:'보륨',     en:'Bohrium',        valence:7, group:'transition', row:7, col:7,  electrons:[2,8,18,32,32,13,2],electronegativity:0,  radius:40},
+      {num:108,sym:'Hs', kr:'하슘',     en:'Hassium',        valence:8, group:'transition', row:7, col:8,  electrons:[2,8,18,32,32,14,2],electronegativity:0,  radius:40},
+      {num:109,sym:'Mt', kr:'마이트너륨',en:'Meitnerium',    valence:3, group:'transition', row:7, col:9,  electrons:[2,8,18,32,32,15,2],electronegativity:0,  radius:38},
+      {num:110,sym:'Ds', kr:'다름슈타튬',en:'Darmstadtium',  valence:2, group:'transition', row:7, col:10, electrons:[2,8,18,32,32,17,1],electronegativity:0,  radius:38},
+      {num:111,sym:'Rg', kr:'뢴트게늄', en:'Roentgenium',    valence:1, group:'transition', row:7, col:11, electrons:[2,8,18,32,32,18,1],electronegativity:0,  radius:38},
+      {num:112,sym:'Cn', kr:'코페르니슘',en:'Copernicium',   valence:2, group:'transition', row:7, col:12, electrons:[2,8,18,32,32,18,2],electronegativity:0,  radius:38},
+      {num:113,sym:'Nh', kr:'니호늄',   en:'Nihonium',       valence:1, group:'post_trans',  row:7, col:13, electrons:[2,8,18,32,32,18,3],electronegativity:0,  radius:38},
+      {num:114,sym:'Fl', kr:'플레로븀', en:'Flerovium',      valence:2, group:'post_trans',  row:7, col:14, electrons:[2,8,18,32,32,18,4],electronegativity:0,  radius:38},
+      {num:115,sym:'Mc', kr:'모스코븀', en:'Moscovium',      valence:1, group:'post_trans',  row:7, col:15, electrons:[2,8,18,32,32,18,5],electronegativity:0,  radius:36},
+      {num:116,sym:'Lv', kr:'리버모륨', en:'Livermorium',    valence:2, group:'post_trans',  row:7, col:16, electrons:[2,8,18,32,32,18,6],electronegativity:0,  radius:36},
+      {num:117,sym:'Ts', kr:'테네신',   en:'Tennessine',     valence:1, group:'halogen',    row:7, col:17, electrons:[2,8,18,32,32,18,7],electronegativity:0,  radius:36},
+      {num:118,sym:'Og', kr:'오가네손', en:'Oganesson',      valence:0, group:'noble',      row:7, col:18, electrons:[2,8,18,32,32,18,8],electronegativity:0,  radius:34},
+    ];
+
+    // Add color property based on group for backward compat
+    ELEMENTS.forEach(el => {
+        el.color = groupColor(el.group);
+        el.legacyGroup = groupToLegacy(el.group);
+    });
+
+    // Key elements for 초등 difficulty
+    const ELEMENTARY_ELEMENTS = new Set([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]);
+
+    // ---- Fallback Molecules (if molecule-db.js fails to load) ----
+    const FALLBACK_MOLECULES = [
+        { formula:'H₂O', kr:'물', en:'Water', atoms:{H:2,O:1}, points:10, angle:104.5, geometry:'bent',
+          level:'초등1', category:'일상', emoji:'💧',
+          info:'물은 지구 표면의 71%를 덮고 있어요!',
+          structure:'H-O-H (굽은형, 104.5°)', bondType:'covalent',
+          coords3d:[{sym:'O',x:0,y:0,z:0},{sym:'H',x:-0.76,y:0.59,z:0},{sym:'H',x:0.76,y:0.59,z:0}],
+          bonds3d:[{a:0,b:1,order:1},{a:0,b:2,order:1}]
+        },
+        { formula:'CO₂', kr:'이산화탄소', en:'Carbon Dioxide', atoms:{C:1,O:2}, points:15, angle:180, geometry:'linear',
+          level:'초등2', category:'자연', emoji:'🌿',
+          info:'식물이 광합성할 때 CO₂를 흡수해요!',
+          structure:'O=C=O (직선형, 180°)', bondType:'covalent',
+          coords3d:[{sym:'C',x:0,y:0,z:0},{sym:'O',x:-1.16,y:0,z:0},{sym:'O',x:1.16,y:0,z:0}],
+          bonds3d:[{a:0,b:1,order:2},{a:0,b:2,order:2}]
+        },
+        { formula:'NaCl', kr:'소금', en:'Sodium Chloride', atoms:{Na:1,Cl:1}, points:10, angle:180, geometry:'linear',
+          level:'초등2', category:'일상', emoji:'🧂',
+          info:'바닷물에는 약 3.5%의 소금이 녹아있어요!',
+          structure:'Na-Cl (이온 결합)', bondType:'ionic',
+          coords3d:[{sym:'Na',x:-1.0,y:0,z:0},{sym:'Cl',x:1.0,y:0,z:0}],
+          bonds3d:[{a:0,b:1,order:1}]
+        },
+        { formula:'CH₄', kr:'메탄', en:'Methane', atoms:{C:1,H:4}, points:20, angle:109.5, geometry:'tetrahedral',
+          level:'초등3', category:'자연', emoji:'🐄',
+          info:'소의 트림에서 나오는 온실가스예요!',
+          structure:'정사면체형 (109.5°)', bondType:'covalent',
+          coords3d:[{sym:'C',x:0,y:0,z:0},{sym:'H',x:0.63,y:0.63,z:0.63},{sym:'H',x:-0.63,y:-0.63,z:0.63},{sym:'H',x:-0.63,y:0.63,z:-0.63},{sym:'H',x:0.63,y:-0.63,z:-0.63}],
+          bonds3d:[{a:0,b:1,order:1},{a:0,b:2,order:1},{a:0,b:3,order:1},{a:0,b:4,order:1}]
+        },
+        { formula:'NH₃', kr:'암모니아', en:'Ammonia', atoms:{N:1,H:3}, points:15, angle:107.3, geometry:'trigonal_pyramidal',
+          level:'초등3', category:'산업', emoji:'🌾',
+          info:'비료의 주요 성분이에요!',
+          structure:'N-H₃ (삼각뿔형, 107.3°)', bondType:'covalent',
+          coords3d:[{sym:'N',x:0,y:0.37,z:0},{sym:'H',x:0.94,y:-0.12,z:0},{sym:'H',x:-0.47,y:-0.12,z:0.81},{sym:'H',x:-0.47,y:-0.12,z:-0.81}],
+          bonds3d:[{a:0,b:1,order:1},{a:0,b:2,order:1},{a:0,b:3,order:1}]
+        },
+        { formula:'O₂', kr:'산소', en:'Oxygen Gas', atoms:{O:2}, points:10, angle:180, geometry:'linear',
+          level:'초등1', category:'자연', emoji:'🌬️',
+          info:'우리가 숨 쉴 때 필요한 기체예요!',
+          structure:'O=O (이중결합)', bondType:'covalent',
+          coords3d:[{sym:'O',x:-0.6,y:0,z:0},{sym:'O',x:0.6,y:0,z:0}],
+          bonds3d:[{a:0,b:1,order:2}]
+        },
+        { formula:'H₂', kr:'수소 기체', en:'Hydrogen Gas', atoms:{H:2}, points:5, angle:180, geometry:'linear',
+          level:'초등1', category:'자연', emoji:'🎈',
+          info:'가장 가벼운 기체예요!',
+          structure:'H-H (단일결합)', bondType:'covalent',
+          coords3d:[{sym:'H',x:-0.37,y:0,z:0},{sym:'H',x:0.37,y:0,z:0}],
+          bonds3d:[{a:0,b:1,order:1}]
+        },
+        { formula:'N₂', kr:'질소 기체', en:'Nitrogen Gas', atoms:{N:2}, points:10, angle:180, geometry:'linear',
+          level:'초등1', category:'자연', emoji:'💨',
+          info:'공기의 78%를 차지해요!',
+          structure:'N≡N (삼중결합)', bondType:'covalent',
+          coords3d:[{sym:'N',x:-0.55,y:0,z:0},{sym:'N',x:0.55,y:0,z:0}],
+          bonds3d:[{a:0,b:1,order:3}]
+        },
+        { formula:'CaCO₃', kr:'탄산칼슘', en:'Calcium Carbonate', atoms:{Ca:1,C:1,O:3}, points:30, angle:120, geometry:'caco3',
+          level:'중등', category:'자연', emoji:'🐚',
+          info:'조개껍데기와 대리석의 주성분이에요!',
+          structure:'Ca-[CO₃] (삼각 평면, 120°)', bondType:'ionic',
+          coords3d:[{sym:'C',x:0,y:0,z:0},{sym:'O',x:0,y:1.28,z:0},{sym:'O',x:-1.11,y:-0.64,z:0},{sym:'O',x:1.11,y:-0.64,z:0},{sym:'Ca',x:2.0,y:1.5,z:0}],
+          bonds3d:[{a:0,b:1,order:2},{a:0,b:2,order:1},{a:0,b:3,order:1},{a:3,b:4,order:1}]
+        },
+        { formula:'H₂O₂', kr:'과산화수소', en:'Hydrogen Peroxide', atoms:{H:2,O:2}, points:20, angle:94.8, geometry:'h2o2',
+          level:'중등', category:'일상', emoji:'🏥',
+          info:'상처 소독할 때 쓰는 옥시돌이에요!',
+          structure:'H-O-O-H (94.8°)', bondType:'covalent',
+          coords3d:[{sym:'O',x:-0.37,y:0.2,z:0},{sym:'O',x:0.37,y:-0.2,z:0},{sym:'H',x:-0.88,y:0.74,z:0.5},{sym:'H',x:0.88,y:-0.74,z:-0.5}],
+          bonds3d:[{a:0,b:1,order:1},{a:0,b:2,order:1},{a:1,b:3,order:1}]
+        },
+    ];
+
+    // ---- Load molecules: external DB or fallback ----
+    const MOLECULES = (typeof MOLECULE_DB !== 'undefined' && Array.isArray(MOLECULE_DB) && MOLECULE_DB.length > 0)
+        ? MOLECULE_DB : FALLBACK_MOLECULES;
+
+    // ---- CPK Colors & Atomic Radii (for 3D viewer) ----
+    const CPK_COLORS = {
+        H: 0xffffff, C: 0x404040, N: 0x3050f8, O: 0xff0d0d,
+        F: 0x90e050, Cl: 0x1ff01f, Br: 0xa62929, I: 0x940094,
+        S: 0xffff30, P: 0xff8000, Na: 0xab5cf2, K: 0x8f40d4,
+        Ca: 0x3dff00, Mg: 0x8aff00, Fe: 0xe06633, Al: 0xbfa6a6,
+        Si: 0xf0c8a0, Li: 0xcc80ff, Be: 0xc2ff00, B: 0xffb5b5,
+        Ne: 0xb3e3f5, Ar: 0x80d1e3, default: 0xcccccc,
+    };
+    const ATOMIC_RADII = {
+        H: 0.31, He: 0.28, Li: 1.28, Be: 0.96, B: 0.84, C: 0.76,
+        N: 0.71, O: 0.66, F: 0.57, Ne: 0.58, Na: 1.66, Mg: 1.41,
+        Al: 1.21, Si: 1.11, P: 1.07, S: 1.05, Cl: 0.99, Ar: 1.06,
+        K: 2.03, Ca: 1.76, default: 1.0,
+    };
+
+    // ---- Bond lengths (px) by atom pair ----
+    const BOND_LENGTHS = {
+        'H-H': 50, 'O-H': 60, 'C-O': 55, 'C-H': 55, 'N-H': 55, 'Na-Cl': 80,
+        'O-O': 60, 'N-N': 55, 'Ca-O': 70, 'C-C': 55, 'S-H': 65, 'S-O': 60,
+        'P-H': 60, 'P-Cl': 70, 'B-F': 55, 'B-Cl': 60, 'Be-H': 55, 'Be-Cl': 65,
+        'Al-Cl': 70, 'Al-F': 60, 'C-Cl': 60, 'C-S': 60, 'Si-H': 60, 'Si-O': 60,
+        'Cl-F': 55, 'S-Cl': 65, 'Li-F': 60, 'Na-F': 65, 'K-Cl': 85, 'Na-O': 70,
+        'N-O': 55, 'H-Cl': 60, 'H-F': 55, 'Ca-C': 70, 'Mg-O': 65, 'Ca-O': 70,
+    };
+    function getBondLength(sym1, sym2) {
+        return BOND_LENGTHS[sym1+'-'+sym2] || BOND_LENGTHS[sym2+'-'+sym1] || 65;
+    }
+
+    // ---- Level / Category Filter State ----
+    let selectedLevel = '전체';
+    let selectedCategory = '전체';
+    let filteredMolecules = [...MOLECULES];
+    let completedMissions = new Set();
+    let currentMissionIdx = 0;  // index into filteredMolecules
+    let missionQueue = [];
+
+    // ---- Game State ----
+    let score = 0;
+    let fieldAtoms = [];
+    let bonds = [];
+    let atomIdCounter = 0;
+    let mol3dCleanup = null; // cleanup function for 3D viewer
+
+    // DOM refs
+    const buildField = document.getElementById('buildField');
+    const bondSvg = document.getElementById('bondSvg');
+    const periodicGrid = document.getElementById('periodicGrid');
+    const missionText = document.getElementById('missionText');
+    const missionHint = document.getElementById('missionHint');
+    const missionEmoji = document.getElementById('missionEmoji');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const missionCounter = document.getElementById('missionCounter');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const moleculeCard = document.getElementById('moleculeCard');
+    const levelBar = document.getElementById('levelBar');
+
+    // ---- Level / Category Filter ----
+    function applyFilters() {
+        filteredMolecules = MOLECULES.filter(m => {
+            const lvl = selectedLevel === '전체' || m.level === selectedLevel;
+            const cat = selectedCategory === '전체' || m.category === selectedCategory;
+            return lvl && cat;
+        });
+        if (filteredMolecules.length === 0) filteredMolecules = [...MOLECULES];
+        buildMissionQueue();
+        currentMissionIdx = 0;
+        clearField();
+        updateMissionUI();
+        applyDifficultyFilter();
+    }
+
+    function buildMissionQueue() {
+        // Shuffle filtered molecules
+        missionQueue = filteredMolecules.map((m, i) => i);
+        for (let i = missionQueue.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [missionQueue[i], missionQueue[j]] = [missionQueue[j], missionQueue[i]];
+        }
+    }
+
+    levelBar.addEventListener('click', (e) => {
+        const levelBtn = e.target.closest('.level-btn');
+        const catBtn = e.target.closest('.cat-btn');
+        if (levelBtn) {
+            levelBar.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+            levelBtn.classList.add('active');
+            selectedLevel = levelBtn.dataset.level;
+            playSound('click');
+            applyFilters();
+        }
+        if (catBtn) {
+            levelBar.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            catBtn.classList.add('active');
+            selectedCategory = catBtn.dataset.cat;
+            playSound('click');
+            applyFilters();
+        }
+    });
+
+    function getCurrentMolecule() {
+        if (missionQueue.length === 0) return filteredMolecules[0] || MOLECULES[0];
+        const idx = missionQueue[currentMissionIdx % missionQueue.length];
+        return filteredMolecules[idx] || filteredMolecules[0];
+    }
+
+    function skipMission() {
+        playSound('click');
+        currentMissionIdx++;
+        clearField();
+        updateMissionUI();
+    }
+
+    // ---- Build Periodic Table (real 18-col layout) ----
+    const elTooltip = document.getElementById('elTooltip');
+    const guidePopup = document.getElementById('guidePopup');
+    let removeMode = false;
+
+    function buildPeriodicTable() {
+        periodicGrid.innerHTML = '';
+
+        // Build a 2D map: key = "row-col" -> element index
+        const cellMap = {};
+        ELEMENTS.forEach((el, idx) => {
+            cellMap[el.row + '-' + el.col] = idx;
+        });
+
+        // Main rows 1-7: only place actual elements and La/Ac placeholders
+        for (let r = 1; r <= 7; r++) {
+            for (let c = 1; c <= 18; c++) {
+                const key = r + '-' + c;
+                if (cellMap[key] !== undefined) {
+                    const idx = cellMap[key];
+                    const el = ELEMENTS[idx];
+                    periodicGrid.appendChild(createPTCell(el, idx));
+                } else if (r === 6 && c === 3) {
+                    const ph = document.createElement('div');
+                    ph.className = 'ptable-cell pt-label-cell';
+                    ph.style.gridRow = r; ph.style.gridColumn = c;
+                    ph.style.background = GROUP_COLORS.lanthanide + '15';
+                    ph.style.border = '1px dashed ' + GROUP_COLORS.lanthanide + '40';
+                    ph.style.fontSize = '7px'; ph.style.color = GROUP_COLORS.lanthanide;
+                    ph.textContent = 'La-Lu';
+                    periodicGrid.appendChild(ph);
+                } else if (r === 7 && c === 3) {
+                    const ph = document.createElement('div');
+                    ph.className = 'ptable-cell pt-label-cell';
+                    ph.style.gridRow = r; ph.style.gridColumn = c;
+                    ph.style.background = GROUP_COLORS.actinide + '15';
+                    ph.style.border = '1px dashed ' + GROUP_COLORS.actinide + '40';
+                    ph.style.fontSize = '7px'; ph.style.color = GROUP_COLORS.actinide;
+                    ph.textContent = 'Ac-Lr';
+                    periodicGrid.appendChild(ph);
+                }
+            }
+        }
+
+        // Gap row between main table and lanthanide/actinide
+        const gap = document.createElement('div');
+        gap.className = 'pt-gap';
+        gap.style.gridRow = 8;
+        gap.style.gridColumn = '1 / -1';
+        periodicGrid.appendChild(gap);
+
+        // Lanthanide row (row 9 in data)
+        // Label
+        const lnLabel = document.createElement('div');
+        lnLabel.className = 'pt-label-cell';
+        lnLabel.style.gridRow = 9; lnLabel.style.gridColumn = '1 / 3';
+        lnLabel.style.color = GROUP_COLORS.lanthanide;
+        lnLabel.textContent = 'Ln';
+        periodicGrid.appendChild(lnLabel);
+        for (let c = 3; c <= 17; c++) {
+            const key = '9-' + c;
+            if (cellMap[key] !== undefined) {
+                const idx = cellMap[key];
+                const el = ELEMENTS[idx];
+                const cell = createPTCell(el, idx);
+                cell.style.gridRow = 9;
+                cell.style.gridColumn = c;
+                periodicGrid.appendChild(cell);
+            }
+        }
+
+        // Actinide row (row 10 in data)
+        const acLabel = document.createElement('div');
+        acLabel.className = 'pt-label-cell';
+        acLabel.style.gridRow = 10; acLabel.style.gridColumn = '1 / 3';
+        acLabel.style.color = GROUP_COLORS.actinide;
+        acLabel.textContent = 'Ac';
+        periodicGrid.appendChild(acLabel);
+        for (let c = 3; c <= 17; c++) {
+            const key = '10-' + c;
+            if (cellMap[key] !== undefined) {
+                const idx = cellMap[key];
+                const el = ELEMENTS[idx];
+                const cell = createPTCell(el, idx);
+                cell.style.gridRow = 10;
+                cell.style.gridColumn = c;
+                periodicGrid.appendChild(cell);
+            }
+        }
+
+        applyDifficultyFilter();
+    }
+
+    function createPTCell(el, idx) {
+        const cell = document.createElement('div');
+        cell.className = 'ptable-cell' + (el.group === 'noble' ? ' noble' : '');
+        cell.style.gridRow = el.row;
+        cell.style.gridColumn = el.col;
+        cell.style.background = el.color + '20';
+        cell.innerHTML = `
+            <span class="el-num">${el.num}</span>
+            <span class="el-sym" style="color:${el.color}">${el.sym}</span>
+            <span class="el-kr">${el.kr}</span>
+        `;
+        cell.dataset.idx = idx;
+        cell.addEventListener('pointerdown', onCellPointerDown);
+        // Tooltip on hover
+        cell.addEventListener('pointerenter', (e) => showElementTooltip(e, el));
+        cell.addEventListener('pointerleave', hideElementTooltip);
+        return cell;
+    }
+
+    // ---- Element Descriptions (118 elements) ----
+    const ELEMENT_DESCS = {
+        H: '가장 가벼운 원소. 우주의 75%를 차지해요. 물(H₂O)의 구성 성분!',
+        He: '풍선을 띄우는 가벼운 기체. 태양에서 핵융합으로 만들어져요.',
+        Li: '가장 가벼운 금속. 스마트폰 배터리에 들어있어요!',
+        Be: '매우 단단하고 가벼운 금속. 우주선 창문에 사용해요.',
+        B: '붕사(세제)의 재료. 내열 유리(파이렉스)에 들어있어요.',
+        C: '생명의 기본 원소! 다이아몬드도, 연필심도 탄소예요.',
+        N: '공기의 78%! 비료의 핵심 성분이에요.',
+        O: '숨 쉴 때 필요한 원소. 지구 대기의 21%예요.',
+        F: '치약에 들어있는 원소. 가장 반응성이 높아요!',
+        Ne: '네온사인의 빨간 빛! 결합을 전혀 안 해요.',
+        Na: '소금(NaCl)의 구성 원소. 물에 넣으면 폭발!',
+        Mg: '불꽃놀이의 하얀 빛! 가볍고 강한 금속이에요.',
+        Al: '음료수 캔, 비행기 동체의 재료. 가볍고 녹슬지 않아요.',
+        Si: '반도체의 핵심! 컴퓨터 칩이 실리콘으로 만들어져요.',
+        P: '성냥의 불꽃! DNA의 구성 성분이기도 해요.',
+        S: '노란색 분말. 화약과 고무의 재료예요.',
+        Cl: '수영장 소독제! 소금의 구성 원소예요.',
+        Ar: '형광등 안에 들어있는 기체. 용접할 때도 사용해요.',
+        K: '바나나에 많이 들어있어요! 근육 수축에 필수적이에요.',
+        Ca: '뼈와 치아의 주성분! 우유에 많아요.',
+        Sc: '가볍고 강한 금속. 야구 배트에 사용되기도 해요.',
+        Ti: '매우 강하고 가벼운 금속. 비행기와 인공관절에 사용해요.',
+        V: '철에 섞으면 매우 강해져요. 공구 강철의 비밀!',
+        Cr: '반짝이는 크롬 도금! 스테인리스 스틸의 핵심.',
+        Mn: '건전지와 철강에 사용되는 금속이에요.',
+        Fe: '가장 많이 쓰는 금속! 혈액 속 헤모글로빈에도 있어요.',
+        Co: '파란색 안료. 스마트폰 배터리에도 들어있어요.',
+        Ni: '동전과 스테인리스에 사용. 니켈 알레르기가 있는 사람도 있어요.',
+        Cu: '전기선의 재료! 자유의 여신상이 구리로 만들어졌어요.',
+        Zn: '아연 도금(갈바니). 감기약에도 들어있어요.',
+        Ga: '손 위에서 녹는 금속! 녹는점이 29.8°C예요.',
+        Ge: '초기 트랜지스터의 재료. 반도체에 사용했어요.',
+        As: '독약으로 유명하지만, 반도체에도 사용해요.',
+        Se: '셀레늄. 복사기 드럼에 사용되는 반금속이에요.',
+        Br: '상온에서 액체인 비금속! 빨간 갈색 증기가 나와요.',
+        Kr: '크립톤! 슈퍼맨의 행성 이름이죠. 카메라 플래시에 사용.',
+        Rb: '물에 넣으면 폭발! 원자시계에 사용되는 금속.',
+        Sr: '불꽃놀이의 빨간 색! 야광 시계에도 들어있었어요.',
+        Y: 'LED TV의 빨간 형광체에 사용돼요.',
+        Zr: '인공 다이아몬드(큐빅)의 재료! 핵연료봉에도 사용.',
+        Nb: '초전도체와 제트 엔진에 사용되는 금속.',
+        Mo: '매우 높은 녹는점! 철강을 강하게 해줘요.',
+        Tc: '최초의 인공 원소! 의료 영상에 사용해요.',
+        Ru: '만년필 펜촉에 사용되는 귀금속.',
+        Rh: '자동차 배기가스 정화 촉매. 매우 비싸요!',
+        Pd: '촉매 변환기와 치과 재료에 사용해요.',
+        Ag: '가장 전기를 잘 통하는 금속! 은반지, 거울에 사용.',
+        Cd: '니카드 배터리의 재료. 독성이 있어 주의!',
+        In: '터치스크린(ITO)의 핵심 원소예요!',
+        Sn: '주석. 통조림 캔의 코팅에 사용해요.',
+        Sb: '납땜과 배터리에 사용되는 금속이에요.',
+        Te: 'DVD/블루레이 디스크의 기록층에 사용해요.',
+        I: '소독약(요오드팅크)! 갑상선에 필수적인 원소.',
+        Xe: '자동차 HID 헤드라이트의 기체. 마취제로도 사용!',
+        Cs: '세계에서 가장 정확한 시계(세슘 원자시계)에 사용.',
+        Ba: '위장 X-ray 찍을 때 마시는 바륨 용액!',
+        La: '카메라 렌즈에 사용. 희토류의 시작!',
+        Ce: '라이터 부싯돌의 재료. 자동차 촉매에도 사용.',
+        Pr: '강력한 자석(네오디뮴 자석)의 재료 중 하나.',
+        Nd: '세계에서 가장 강한 영구자석! 이어폰 스피커에 사용.',
+        Pm: '방사성 원소. 야광 페인트에 사용했어요.',
+        Sm: '사마리움-코발트 자석. 고온에서도 자력 유지!',
+        Eu: '유로 지폐의 위조 방지 형광 잉크에 사용!',
+        Gd: 'MRI 조영제에 사용되는 희토류 원소.',
+        Tb: '녹색 형광체. 에너지 절약형 전구에 사용.',
+        Dy: '전기자동차 모터의 자석에 필수적인 원소.',
+        Ho: '가장 강한 자기장을 만드는 원소!',
+        Er: '광섬유 통신에 사용. 레이저 재료로도!',
+        Tm: '가장 희귀한 란탄족 원소. X-ray 장치에 사용.',
+        Yb: '스트레스 게이지와 레이저에 사용해요.',
+        Lu: 'PET 스캔 검출기에 사용되는 원소.',
+        Hf: '원자로 제어봉과 플라즈마 토치에 사용.',
+        Ta: '스마트폰 콘덴서(축전기)에 필수! 분쟁 광물.',
+        W: '녹는점이 가장 높은 금속! 전구 필라멘트에 사용했어요.',
+        Re: '제트 엔진 블레이드에 사용되는 초내열 금속.',
+        Os: '가장 밀도가 높은 원소! 만년필 펜촉에 사용.',
+        Ir: '운석에 많이 포함. 공룡 멸종의 증거가 된 원소!',
+        Pt: '자동차 촉매, 항암제(시스플라틴)에 사용하는 귀금속.',
+        Au: '금! 전자기기 접점과 우주 헬멧 바이저에 사용.',
+        Hg: '유일하게 상온에서 액체인 금속! 체온계에 사용했어요.',
+        Tl: '매우 독성이 강한 금속. 추리소설의 독약으로 유명.',
+        Pb: '납. 방사선 차폐와 배터리에 사용. 독성 주의!',
+        Bi: '위장약(펩토비스몰)에 들어있어요! 무지개빛 결정.',
+        Po: '마리 퀴리가 발견! 매우 강한 방사성 원소.',
+        At: '지구에서 가장 희귀한 원소. 약 28g만 존재!',
+        Rn: '라돈. 무색무취의 방사성 기체. 환기가 중요!',
+        Fr: '가장 불안정한 알칼리 금속. 반감기 22분!',
+        Ra: '마리 퀴리가 발견한 방사성 원소. 야광 시계에 사용했었어요.',
+        Ac: '악티늄. 방사성 원소의 시작!',
+        Th: '과거 가스등 맨틀에 사용. 미래 원자력 연료 후보.',
+        Pa: '매우 희귀한 방사성 원소. 연구용으로만 사용.',
+        U: '원자력 발전의 연료! 핵무기의 재료이기도.',
+        Np: '넵투늄. 우라늄 뒤의 초우라늄 원소.',
+        Pu: '핵무기와 우주 탐사선의 전원(RTG)에 사용.',
+        Am: '가정용 연기 감지기에 들어있어요!',
+        Cm: '마리 퀴리의 이름을 딴 원소.',
+        Bk: 'UC 버클리에서 만든 인공 원소.',
+        Cf: '캘리포르늄. 금속 탐지와 원자로 시동에 사용.',
+        Es: '아인슈타인의 이름을 딴 원소!',
+        Fm: '페르미의 이름을 딴 원소. 수소 폭탄 낙진에서 발견.',
+        Md: '멘델레예프의 이름을 딴 원소!',
+        No: '노벨의 이름을 딴 원소.',
+        Lr: '로렌스의 이름을 딴 원소. 입자 가속기로 생성.',
+        Rf: '러더포드의 이름을 딴 초중량 원소.',
+        Db: '더브나(러시아 연구소)의 이름을 딴 원소.',
+        Sg: '시보그의 이름을 딴 원소. 살아있을 때 명명된 유일한 원소!',
+        Bh: '닐스 보어의 이름을 딴 원소.',
+        Hs: '하셈(독일 주)의 이름을 딴 원소.',
+        Mt: '마이트너(핵분열 공동발견자)의 이름.',
+        Ds: '다름슈타트(독일 도시)의 이름.',
+        Rg: '뢴트겐(X-ray 발견자)의 이름.',
+        Cn: '코페르니쿠스의 이름을 딴 원소.',
+        Nh: '니호늄. 일본에서 만든 첫 원소!',
+        Fl: '플레로프(러시아 물리학자)의 이름.',
+        Mc: '모스크바의 이름을 딴 원소.',
+        Lv: '리버모어(미국 연구소)의 이름.',
+        Ts: '테네신(미국 주)의 이름.',
+        Og: '오가네손. 주기율표의 마지막 원소! 가장 무거워요.',
+    };
+
+    // ---- Element Tooltip ----
+    function showElementTooltip(e, el) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const desc = ELEMENT_DESCS[el.sym] || '';
+        elTooltip.innerHTML = `
+            <div><span class="tt-sym" style="color:${el.color}">${el.sym}</span> <span class="tt-kr">${el.kr}</span> <span class="tt-en">(${el.en})</span></div>
+            <div class="tt-info">${t('atomicNum')}: ${el.num} &nbsp;|&nbsp; ${t('valence')}: ${el.valence > 0 ? el.valence : '-'}</div>
+            ${desc ? `<div class="tt-desc">${getElDesc(el.sym)}</div>` : ''}
+        `;
+        // Position above the cell
+        let left = rect.left + rect.width / 2;
+        let top = rect.top - 8;
+        elTooltip.style.left = left + 'px';
+        elTooltip.style.top = top + 'px';
+        elTooltip.style.transform = 'translate(-50%, -100%)';
+        elTooltip.classList.add('show');
+    }
+    function hideElementTooltip() {
+        elTooltip.classList.remove('show');
+    }
+
+    // ---- Difficulty Filter ----
+    function applyDifficultyFilter() {
+        const cells = periodicGrid.querySelectorAll('.ptable-cell[data-idx]');
+        cells.forEach(cell => {
+            const idx = parseInt(cell.dataset.idx);
+            const el = ELEMENTS[idx];
+            cell.classList.remove('dimmed', 'highlighted');
+            if (selectedLevel.startsWith('초등')) {
+                if (ELEMENTARY_ELEMENTS.has(el.num)) {
+                    cell.classList.add('highlighted');
+                } else if (el.group !== 'noble') {
+                    cell.classList.add('dimmed');
+                }
+            }
+        });
+    }
+
+    // ---- Remove Mode ----
+    function toggleRemoveMode() {
+        removeMode = !removeMode;
+        const btn = document.getElementById('removeBtn');
+        btn.classList.toggle('active', removeMode);
+        buildField.classList.toggle('remove-mode', removeMode);
+        playSound('click');
+    }
+
+    function deactivateRemoveMode() {
+        removeMode = false;
+        const btn = document.getElementById('removeBtn');
+        btn.classList.remove('active');
+        buildField.classList.remove('remove-mode');
+    }
+
+    function removeAtom(atomData) {
+        // Remove bonds connected to this atom
+        bonds = bonds.filter(b => {
+            if (b.a1id === atomData.id || b.a2id === atomData.id) {
+                const other = fieldAtoms.find(a => a.id === (b.a1id === atomData.id ? b.a2id : b.a1id));
+                if (other) {
+                    other.usedBonds = Math.max(0, other.usedBonds - b.count);
+                    updateValenceDots(other);
+                }
+                return false;
+            }
+            return true;
+        });
+        // Remove bond electrons for this atom
+        buildField.querySelectorAll('.bond-electron, .metallic-electron').forEach(el => {
+            if (el.dataset.a1id == atomData.id || el.dataset.a2id == atomData.id) el.remove();
+        });
+        buildField.querySelectorAll('.charge-label').forEach(el => el.remove());
+        // Remove atom element
+        atomData.el.remove();
+        fieldAtoms = fieldAtoms.filter(a => a.id !== atomData.id);
+        if (fieldAtoms.length === 0) buildField.classList.remove('has-atoms');
+        renderBonds();
+        playSound('click');
+        deactivateRemoveMode();
+    }
+
+    // ---- Guide Popup ----
+    function showGuide() {
+        playSound('click');
+        const mol = getCurrentMolecule();
+        if (!mol) return;
+
+        // Generate steps from atoms
+        const atomEntries = Object.entries(mol.atoms);
+        // Sort: center atom first (highest valence or most connected)
+        atomEntries.sort((a, b) => {
+            const elA = ELEMENTS.find(e => e.sym === a[0]);
+            const elB = ELEMENTS.find(e => e.sym === b[0]);
+            return (elB ? elB.valence : 0) - (elA ? elA.valence : 0);
+        });
+
+        let stepsHTML = '';
+        let stepNum = 1;
+        atomEntries.forEach(([sym, count]) => {
+            const el = ELEMENTS.find(e => e.sym === sym);
+            const name = el ? getElName(el) : sym;
+            const placeCenter = currentLang === 'en' ? `Place 1 ${sym} (${name}) in the center` : `${sym} (${name}) 1개를 가운데에 놓기`;
+            const placeNear = currentLang === 'en' ? `Place 1 ${sym} (${name}) nearby` : `${sym} (${name}) 1개를 근처에 놓기`;
+            if (stepNum === 1 && count === 1) {
+                stepsHTML += `<div class="guide-step"><div class="step-num">${stepNum}</div><div>${placeCenter}</div></div>`;
+                stepNum++;
+            } else {
+                for (let i = 0; i < count; i++) {
+                    stepsHTML += `<div class="guide-step"><div class="step-num">${stepNum}</div><div>${placeNear}</div></div>`;
+                    stepNum++;
+                }
+            }
+        });
+
+        const guideTitle = currentLang === 'en' ? `💡 How to build ${mol.formula}` : `💡 ${mol.formula} 만드는 법`;
+        const guideTip = currentLang === 'en' ? '💡 Tip: Place atoms close together and they bond automatically!' : '💡 팁: 원자를 가까이 놓으면 자동으로 결합돼요!';
+        guidePopup.innerHTML = `
+            <h3>${guideTitle}</h3>
+            ${stepsHTML}
+            <div class="guide-tip">${guideTip}</div>
+            <button class="guide-close" onclick="closeGuide()">${t('close')}</button>
+        `;
+        guidePopup.classList.add('show');
+    }
+
+    function closeGuide() {
+        guidePopup.classList.remove('show');
+    }
+
+    // ---- Drag from Periodic Table ----
+    let dragging = null;
+
+    function onCellPointerDown(e) {
+        e.preventDefault();
+        const idx = parseInt(e.currentTarget.dataset.idx);
+        const elData = ELEMENTS[idx];
+        playSound('pick');
+
+        const ghost = document.createElement('div');
+        ghost.className = 'ghost-atom';
+        ghost.style.background = elData.color + '40';
+        ghost.style.boxShadow = `0 0 20px ${elData.color}60, inset 0 0 15px ${elData.color}30`;
+        ghost.innerHTML = `
+            <span class="atom-sym" style="color:${elData.color}">${elData.sym}</span>
+            <span class="atom-kr">${elData.kr}</span>
+        `;
+        document.body.appendChild(ghost);
+
+        const cx = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+        const cy = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+        ghost.style.left = (cx - 27) + 'px';
+        ghost.style.top = (cy - 27) + 'px';
+
+        dragging = { elData, ghost };
+
+        document.addEventListener('pointermove', onDragMove);
+        document.addEventListener('pointerup', onDragEnd);
+        document.addEventListener('pointercancel', onDragEnd);
+    }
+
+    function onDragMove(e) {
+        if (!dragging) return;
+        e.preventDefault();
+        const cx = e.clientX || 0;
+        const cy = e.clientY || 0;
+        dragging.ghost.style.left = (cx - 27) + 'px';
+        dragging.ghost.style.top = (cy - 27) + 'px';
+
+        const rect = buildField.getBoundingClientRect();
+        const over = cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom;
+        buildField.classList.toggle('drag-over', over);
+    }
+
+    function onDragEnd(e) {
+        if (!dragging) return;
+        const cx = e.clientX || 0;
+        const cy = e.clientY || 0;
+
+        document.removeEventListener('pointermove', onDragMove);
+        document.removeEventListener('pointerup', onDragEnd);
+        document.removeEventListener('pointercancel', onDragEnd);
+
+        buildField.classList.remove('drag-over');
+        dragging.ghost.remove();
+
+        const rect = buildField.getBoundingClientRect();
+        if (cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom) {
+            const r = dragging.elData.radius || 27;
+            const x = cx - rect.left - r;
+            const y = cy - rect.top - r;
+            addAtomToField(dragging.elData, x, y);
+        }
+
+        dragging = null;
+    }
+
+    // ---- Field Atoms ----
+    function addAtomToField(elData, x, y) {
+        const isNoble = (elData.valence === 0 || elData.group === 'noble');
+        const r = elData.radius || 27;
+        const d = r * 2;
+        const fw = buildField.clientWidth;
+        const fh = buildField.clientHeight;
+        x = Math.max(4, Math.min(x, fw - d - 4));
+        y = Math.max(4, Math.min(y, fh - d - 4));
+
+        const id = ++atomIdCounter;
+        const atom = document.createElement('div');
+        atom.className = 'field-atom';
+        atom.style.width = d + 'px';
+        atom.style.height = d + 'px';
+        atom.style.left = x + 'px';
+        atom.style.top = y + 'px';
+        atom.style.background = elData.color + '30';
+        atom.style.boxShadow = `0 0 16px ${elData.color}50, inset 0 0 10px ${elData.color}20`;
+        atom.dataset.atomId = id;
+
+        const fontSize = Math.max(10, Math.min(22, r * 0.7));
+        atom.innerHTML = `
+            <span class="atom-sym" style="color:${elData.color};font-size:${fontSize}px">${elData.sym}</span>
+            <span class="atom-kr">${elData.kr}</span>
+        `;
+
+        // Valence dots
+        const positions = getValenceDotPositions(elData.valence, r);
+        positions.forEach((pos, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'valence-dot';
+            dot.dataset.dotIdx = i;
+            dot.style.left = pos.x + 'px';
+            dot.style.top = pos.y + 'px';
+            atom.appendChild(dot);
+        });
+
+        // Electron shells
+        if (elData.electrons) {
+            addElectronShells(atom, elData.electrons, r);
+        }
+
+        buildField.appendChild(atom);
+        buildField.classList.add('has-atoms');
+
+        const atomData = {
+            id, sym: elData.sym, kr: elData.kr, color: elData.color,
+            valence: elData.valence, usedBonds: 0,
+            radius: r, group: elData.group, legacyGroup: elData.legacyGroup || elData.group, electronegativity: elData.electronegativity || 0,
+            x: x + r, y: y + r, el: atom
+        };
+        fieldAtoms.push(atomData);
+
+        atom.addEventListener('pointerdown', (ev) => onFieldAtomDown(ev, atomData));
+
+        playSound('click');
+
+        if (isNoble) {
+            showNobleGasFieldEffect(atomData, elData);
+            setTimeout(checkMolecule, 300);
+        } else {
+            tryAutoConnect(atomData);
+            // 단일 원소 미션 체크 (연결 없이도 클리어 가능)
+            setTimeout(checkMolecule, 500);
+        }
+    }
+
+    function addElectronShells(atomEl, electrons, atomRadius) {
+        const shellGap = 10;
+        const speeds = [2, 3.5, 5.5, 8, 11, 14.5, 18];
+        // Limit to first 4 shells for performance
+        const maxShells = Math.min(electrons.length, 4);
+        electrons.slice(0, maxShells).forEach((count, shellIdx) => {
+            const shellR = atomRadius + shellGap * (shellIdx + 1);
+            const shellSize = shellR * 2;
+            const shell = document.createElement('div');
+            shell.className = 'electron-shell';
+            shell.style.width = shellSize + 'px';
+            shell.style.height = shellSize + 'px';
+            shell.style.animationDuration = (speeds[shellIdx] || 10) + 's';
+            const maxDots = Math.min(count, 8); // limit dots per shell
+            for (let i = 0; i < maxDots; i++) {
+                const angle = (2 * Math.PI * i) / count;
+                const ex = shellR + Math.cos(angle) * shellR - 1.5;
+                const ey = shellR + Math.sin(angle) * shellR - 1.5;
+                const dot = document.createElement('div');
+                dot.className = 'electron-dot';
+                dot.style.left = ex + 'px';
+                dot.style.top = ey + 'px';
+                shell.appendChild(dot);
+            }
+            atomEl.appendChild(shell);
+        });
+    }
+
+    function getValenceDotPositions(valence, atomRadius) {
+        const r = atomRadius + 4;
+        const center = atomRadius;
+        const positions = [];
+        for (let i = 0; i < valence; i++) {
+            const angle = (Math.PI * 2 * i / Math.max(valence, 1)) - Math.PI / 2;
+            positions.push({
+                x: center + Math.cos(angle) * r - 3.5,
+                y: center + Math.sin(angle) * r - 3.5
+            });
+        }
+        return positions;
+    }
+
+    // ---- Drag field atoms ----
+    let fieldDrag = null;
+
+    function onFieldAtomDown(e, atomData) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Remove mode: click to remove this atom
+        if (removeMode) {
+            removeAtom(atomData);
+            return;
+        }
+
+        const cx = e.clientX, cy = e.clientY;
+        const rect = buildField.getBoundingClientRect();
+        const r = atomData.radius || 27;
+        const offsetX = cx - rect.left - (atomData.x - r);
+        const offsetY = cy - rect.top - (atomData.y - r);
+
+        fieldDrag = { atomData, offsetX, offsetY };
+        const trashEl = document.getElementById('trashCan');
+
+        const moveHandler = (ev) => {
+            ev.preventDefault();
+            const mx = ev.clientX, my = ev.clientY;
+            const fx = mx - rect.left - offsetX;
+            const fy = my - rect.top - offsetY;
+            const d = r * 2;
+            const clamped_x = Math.max(4, Math.min(fx, buildField.clientWidth - d - 4));
+            const clamped_y = Math.max(4, Math.min(fy, buildField.clientHeight - d - 4));
+            atomData.el.style.left = clamped_x + 'px';
+            atomData.el.style.top = clamped_y + 'px';
+            atomData.x = clamped_x + r;
+            atomData.y = clamped_y + r;
+            renderBonds();
+            updateBondElectrons();
+
+            // Trash can hover check
+            const trashRect = trashEl.getBoundingClientRect();
+            const fieldRect = buildField.getBoundingClientRect();
+            const trashCX = trashRect.left - fieldRect.left + trashRect.width / 2;
+            const trashCY = trashRect.top - fieldRect.top + trashRect.height / 2;
+            const dist = Math.sqrt((atomData.x - trashCX) ** 2 + (atomData.y - trashCY) ** 2);
+            trashEl.classList.toggle('hover', dist < 60);
+        };
+
+        const upHandler = (ev) => {
+            document.removeEventListener('pointermove', moveHandler);
+            document.removeEventListener('pointerup', upHandler);
+            fieldDrag = null;
+
+            // Trash can drop check
+            const trashRect = trashEl.getBoundingClientRect();
+            const fieldRect = buildField.getBoundingClientRect();
+            const trashCX = trashRect.left - fieldRect.left + trashRect.width / 2;
+            const trashCY = trashRect.top - fieldRect.top + trashRect.height / 2;
+            const dist = Math.sqrt((atomData.x - trashCX) ** 2 + (atomData.y - trashCY) ** 2);
+            trashEl.classList.remove('hover');
+
+            if (dist < 50) {
+                // Shrink animation then remove
+                atomData.el.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+                atomData.el.style.transform = 'scale(0)';
+                atomData.el.style.opacity = '0';
+                setTimeout(() => removeAtom(atomData), 200);
+                playSound('click');
+                return;
+            }
+
+            tryAutoConnect(atomData);
+        };
+
+        document.addEventListener('pointermove', moveHandler);
+        document.addEventListener('pointerup', upHandler);
+    }
+
+    // ---- Bond System ----
+    const BOND_DISTANCE = 110;
+
+    function determineBondType(atom1, atom2) {
+        const en1 = atom1.electronegativity || 0;
+        const en2 = atom2.electronegativity || 0;
+        const diff = Math.abs(en1 - en2);
+        if (diff > 1.7) return 'ionic';
+        const g1 = atom1.legacyGroup || atom1.group;
+        const g2 = atom2.legacyGroup || atom2.group;
+        if (g1 === 'metal' && g2 === 'metal') return 'metallic';
+        return 'covalent';
+    }
+
+    function tryAutoConnect(newAtom) {
+        let madeConnection = false;
+        for (const other of fieldAtoms) {
+            if (other.id === newAtom.id) continue;
+            const dist = Math.hypot(other.x - newAtom.x, other.y - newAtom.y);
+            if (dist > BOND_DISTANCE) continue;
+
+            const existing = bonds.find(b =>
+                (b.a1id === newAtom.id && b.a2id === other.id) ||
+                (b.a1id === other.id && b.a2id === newAtom.id)
+            );
+            const existingCount = existing ? existing.count : 0;
+
+            const newAvail = newAtom.valence - newAtom.usedBonds;
+            const otherAvail = other.valence - other.usedBonds;
+
+            if (newAvail > 0 && otherAvail > 0) {
+                const bondType = determineBondType(newAtom, other);
+                if (existing) {
+                    existing.count += 1;
+                } else {
+                    bonds.push({ a1id: newAtom.id, a2id: other.id, count: 1, type: bondType });
+                }
+                newAtom.usedBonds += 1;
+                other.usedBonds += 1;
+                madeConnection = true;
+                playSound('connect');
+                updateValenceDots(newAtom);
+                updateValenceDots(other);
+
+                // Green glow + check mark feedback
+                showBondFeedback(newAtom, other, true);
+                animateBondFormation(newAtom, other, bondType);
+            } else if (dist <= BOND_DISTANCE) {
+                // Red glow + X feedback (can't bond)
+                showBondFeedback(newAtom, other, false);
+            }
+        }
+        renderBonds();
+        if (madeConnection) {
+            setTimeout(checkMolecule, 300);
+        }
+    }
+
+    // ---- Bond Feedback (green ✓ / red ✗) ----
+    function showBondFeedback(atom1, atom2, success) {
+        const mx = (atom1.x + atom2.x) / 2;
+        const my = (atom1.y + atom2.y) / 2;
+        const color = success ? 'rgba(16,185,129,0.5)' : 'rgba(239,68,68,0.5)';
+
+        // Glow on atoms
+        atom1.el.style.transition = 'box-shadow 0.15s';
+        atom2.el.style.transition = 'box-shadow 0.15s';
+        atom1.el.style.boxShadow = `0 0 20px 8px ${color}`;
+        atom2.el.style.boxShadow = `0 0 20px 8px ${color}`;
+        setTimeout(() => {
+            atom1.el.style.boxShadow = '';
+            atom2.el.style.boxShadow = '';
+        }, 500);
+
+        // Icon between atoms
+        const icon = document.createElement('div');
+        icon.className = 'bond-feedback ' + (success ? 'success' : 'fail');
+        icon.textContent = success ? '✓' : '✗';
+        icon.style.left = (mx - 14) + 'px';
+        icon.style.top = (my - 14) + 'px';
+        buildField.appendChild(icon);
+        setTimeout(() => icon.remove(), 600);
+
+        if (!success) {
+            playSound('fail');
+            // Push atom away slightly
+            const dx = atom1.x - atom2.x;
+            const dy = atom1.y - atom2.y;
+            const dist = Math.hypot(dx, dy) || 1;
+            const pushDist = 15;
+            const r = atom1.radius || 27;
+            const newX = atom1.x + (dx / dist) * pushDist;
+            const newY = atom1.y + (dy / dist) * pushDist;
+            const clampedX = Math.max(r + 4, Math.min(newX, buildField.clientWidth - r - 4));
+            const clampedY = Math.max(r + 4, Math.min(newY, buildField.clientHeight - r - 4));
+            atom1.x = clampedX;
+            atom1.y = clampedY;
+            atom1.el.style.left = (clampedX - r) + 'px';
+            atom1.el.style.top = (clampedY - r) + 'px';
+        }
+    }
+
+    // ---- Bond Formation Animations ----
+    function animateBondFormation(atom1, atom2, bondType) {
+        if (bondType === 'ionic') {
+            animateIonicBond(atom1, atom2);
+        } else if (bondType === 'metallic') {
+            animateMetallicBond(atom1, atom2);
+        } else {
+            animateCovalentBond(atom1, atom2);
+        }
+    }
+
+    function animateCovalentBond(atom1, atom2) {
+        // Create shared electron dot that oscillates between atoms
+        const elec = document.createElement('div');
+        elec.className = 'bond-electron covalent';
+        // Position using offset-path
+        const mx = (atom1.x + atom2.x) / 2;
+        const my = (atom1.y + atom2.y) / 2;
+        elec.style.left = (mx - 2.5) + 'px';
+        elec.style.top = (my - 2.5) + 'px';
+        // Determine which atom is more electronegative for asymmetric oscillation
+        const en1 = atom1.electronegativity || 0;
+        const en2 = atom2.electronegativity || 0;
+        const bias = en2 > en1 ? 0.65 : (en1 > en2 ? 0.35 : 0.5);
+        elec.dataset.a1id = atom1.id;
+        elec.dataset.a2id = atom2.id;
+        elec.dataset.bias = bias;
+        buildField.appendChild(elec);
+    }
+
+    function animateIonicBond(atom1, atom2) {
+        // Determine metal (donor) and nonmetal (acceptor)
+        const g1 = atom1.legacyGroup || atom1.group;
+        const g2 = atom2.legacyGroup || atom2.group;
+        const metal = g1 === 'metal' ? atom1 : atom2;
+        const nonmetal = g1 === 'metal' ? atom2 : atom1;
+
+        playSound('sizzle');
+
+        // Create electron that launches from metal to nonmetal
+        const elec = document.createElement('div');
+        elec.className = 'bond-electron ionic-launch';
+        elec.style.left = (metal.x - 3) + 'px';
+        elec.style.top = (metal.y - 3) + 'px';
+
+        // Trail particles
+        const trailCount = 8;
+        const dx = nonmetal.x - metal.x;
+        const dy = nonmetal.y - metal.y;
+        for (let i = 0; i < trailCount; i++) {
+            setTimeout(() => {
+                const trail = document.createElement('div');
+                trail.className = 'electron-trail';
+                const t = i / trailCount;
+                trail.style.left = (metal.x + dx * t - 1.5) + 'px';
+                trail.style.top = (metal.y + dy * t - 1.5) + 'px';
+                buildField.appendChild(trail);
+                setTimeout(() => trail.remove(), 500);
+            }, i * 80);
+        }
+
+        // Animate the electron moving
+        const startTime = performance.now();
+        const duration = 600;
+        function animElec(now) {
+            const t = Math.min((now - startTime) / duration, 1);
+            const ease = t * t * (3 - 2 * t); // smoothstep
+            elec.style.left = (metal.x + dx * ease - 3) + 'px';
+            elec.style.top = (metal.y + dy * ease - 3) + 'px';
+            elec.style.transform = `scale(${1 + 0.5 * Math.sin(t * Math.PI)})`;
+            if (t < 1) {
+                requestAnimationFrame(animElec);
+            } else {
+                elec.remove();
+                // Flash on impact
+                const flash = document.createElement('div');
+                flash.className = 'ionic-flash';
+                flash.style.left = (nonmetal.x - 15) + 'px';
+                flash.style.top = (nonmetal.y - 15) + 'px';
+                flash.style.width = '30px';
+                flash.style.height = '30px';
+                buildField.appendChild(flash);
+                setTimeout(() => flash.remove(), 500);
+
+                // Add charge glows and labels
+                metal.el.classList.add('charge-glow-pos');
+                nonmetal.el.classList.add('charge-glow-neg');
+
+                const posLabel = document.createElement('div');
+                posLabel.className = 'charge-label';
+                posLabel.style.color = '#ef4444';
+                posLabel.textContent = metal.sym + '⁺';
+                posLabel.style.left = (metal.x - 15) + 'px';
+                posLabel.style.top = (metal.y - metal.radius - 20) + 'px';
+                buildField.appendChild(posLabel);
+
+                const negLabel = document.createElement('div');
+                negLabel.className = 'charge-label';
+                negLabel.style.color = '#06b6d4';
+                negLabel.textContent = nonmetal.sym + '⁻';
+                negLabel.style.left = (nonmetal.x - 15) + 'px';
+                negLabel.style.top = (nonmetal.y - nonmetal.radius - 20) + 'px';
+                buildField.appendChild(negLabel);
+            }
+        }
+        buildField.appendChild(elec);
+        requestAnimationFrame(animElec);
+    }
+
+    function animateMetallicBond(atom1, atom2) {
+        // Floating "sea" electrons between metal atoms
+        const mx = (atom1.x + atom2.x) / 2;
+        const my = (atom1.y + atom2.y) / 2;
+        for (let i = 0; i < 3; i++) {
+            const me = document.createElement('div');
+            me.className = 'metallic-electron';
+            me.style.left = (mx + (Math.random() - 0.5) * 30 - 2) + 'px';
+            me.style.top = (my + (Math.random() - 0.5) * 30 - 2) + 'px';
+            me.style.setProperty('--mx1', (Math.random() * 20 - 10) + 'px');
+            me.style.setProperty('--my1', (Math.random() * 20 - 10) + 'px');
+            me.style.setProperty('--mx2', (Math.random() * 20 - 10) + 'px');
+            me.style.setProperty('--my2', (Math.random() * 20 - 10) + 'px');
+            me.style.setProperty('--mx3', (Math.random() * 20 - 10) + 'px');
+            me.style.setProperty('--my3', (Math.random() * 20 - 10) + 'px');
+            me.style.animationDelay = (i * 0.7) + 's';
+            me.dataset.a1id = atom1.id;
+            me.dataset.a2id = atom2.id;
+            buildField.appendChild(me);
+        }
+    }
+
+    function updateBondElectrons() {
+        // Update positions of covalent shared electrons
+        buildField.querySelectorAll('.bond-electron.covalent').forEach(elec => {
+            const a1 = fieldAtoms.find(a => a.id == elec.dataset.a1id);
+            const a2 = fieldAtoms.find(a => a.id == elec.dataset.a2id);
+            if (a1 && a2) {
+                const mx = (a1.x + a2.x) / 2;
+                const my = (a1.y + a2.y) / 2;
+                elec.style.left = (mx - 2.5) + 'px';
+                elec.style.top = (my - 2.5) + 'px';
+            }
+        });
+        // Update metallic electrons
+        buildField.querySelectorAll('.metallic-electron').forEach(elec => {
+            const a1 = fieldAtoms.find(a => a.id == elec.dataset.a1id);
+            const a2 = fieldAtoms.find(a => a.id == elec.dataset.a2id);
+            if (a1 && a2) {
+                const mx = (a1.x + a2.x) / 2;
+                const my = (a1.y + a2.y) / 2;
+                elec.style.left = (mx + parseFloat(elec.style.left) * 0 - 2) + 'px';
+                elec.style.top = (my - 2) + 'px';
+            }
+        });
+    }
+
+    function updateValenceDots(atomData) {
+        const dots = atomData.el.querySelectorAll('.valence-dot');
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('used', i < atomData.usedBonds);
+        });
+    }
+
+    function renderBonds() {
+        bondSvg.innerHTML = '';
+        bondSvg.classList.toggle('scissor-mode', bonds.length > 0);
+        for (const bond of bonds) {
+            const a1 = fieldAtoms.find(a => a.id === bond.a1id);
+            const a2 = fieldAtoms.find(a => a.id === bond.a2id);
+            if (!a1 || !a2) continue;
+
+            const dx = a2.x - a1.x;
+            const dy = a2.y - a1.y;
+            const len = Math.hypot(dx, dy);
+            const nx = -dy / len;
+            const ny = dx / len;
+
+            for (let i = 0; i < bond.count; i++) {
+                const offset = (i - (bond.count - 1) / 2) * 5;
+                const x1 = a1.x + nx * offset, y1 = a1.y + ny * offset;
+                const x2 = a2.x + nx * offset, y2 = a2.y + ny * offset;
+
+                // Visible bond line
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+                line.setAttribute('class', 'bond-line cuttable-visible');
+                if (bond.type === 'ionic') {
+                    line.style.stroke = '#f59e0b';
+                    line.style.strokeDasharray = '6 3';
+                    line.style.filter = 'drop-shadow(0 0 4px rgba(245,158,11,0.5))';
+                }
+                bondSvg.appendChild(line);
+
+                // Wider invisible hit area for scissors click
+                const hitLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                hitLine.setAttribute('x1', x1); hitLine.setAttribute('y1', y1);
+                hitLine.setAttribute('x2', x2); hitLine.setAttribute('y2', y2);
+                hitLine.setAttribute('class', 'bond-line cuttable');
+                hitLine.dataset.a1id = bond.a1id;
+                hitLine.dataset.a2id = bond.a2id;
+                hitLine.addEventListener('click', onBondCut);
+                bondSvg.appendChild(hitLine);
+            }
+        }
+    }
+
+    // ---- Scissors: Cut Bond ----
+    function onBondCut(e) {
+        e.stopPropagation();
+        const a1id = parseInt(e.target.dataset.a1id);
+        const a2id = parseInt(e.target.dataset.a2id);
+        const bondIdx = bonds.findIndex(b => b.a1id === a1id && b.a2id === a2id);
+        if (bondIdx === -1) return;
+
+        const bond = bonds[bondIdx];
+        const atom1 = fieldAtoms.find(a => a.id === a1id);
+        const atom2 = fieldAtoms.find(a => a.id === a2id);
+
+        // Decrease bond count
+        bond.count -= 1;
+        if (atom1) { atom1.usedBonds = Math.max(0, atom1.usedBonds - 1); updateValenceDots(atom1); }
+        if (atom2) { atom2.usedBonds = Math.max(0, atom2.usedBonds - 1); updateValenceDots(atom2); }
+
+        if (bond.count <= 0) {
+            bonds.splice(bondIdx, 1);
+        }
+
+        // Remove associated bond electrons
+        buildField.querySelectorAll('.bond-electron, .metallic-electron').forEach(el => {
+            if ((el.dataset.a1id == a1id && el.dataset.a2id == a2id) ||
+                (el.dataset.a1id == a2id && el.dataset.a2id == a1id)) {
+                el.remove();
+            }
+        });
+
+        // Snip visual flash
+        if (atom1 && atom2) {
+            const mx = (atom1.x + atom2.x) / 2;
+            const my = (atom1.y + atom2.y) / 2;
+            const snipIcon = document.createElement('div');
+            snipIcon.style.cssText = `
+                position:absolute; left:${mx - 14}px; top:${my - 14}px;
+                font-size:24px; z-index:20; pointer-events:none;
+                animation:bondFeedbackPop 0.5s ease-out forwards;
+            `;
+            snipIcon.textContent = '✂️';
+            buildField.appendChild(snipIcon);
+            setTimeout(() => snipIcon.remove(), 500);
+        }
+
+        playSound('click');
+        renderBonds();
+        updateBondElectrons();
+    }
+
+    // ---- Molecule Check ----
+    function checkMolecule() {
+        const counts = {};
+        fieldAtoms.forEach(a => {
+            counts[a.sym] = (counts[a.sym] || 0) + 1;
+        });
+
+        const target = getCurrentMolecule();
+        if (!target) return;
+
+        const targetKeys = Object.keys(target.atoms);
+        const fieldKeys = Object.keys(counts);
+
+        if (targetKeys.length !== fieldKeys.length) return;
+
+        for (const key of targetKeys) {
+            if (counts[key] !== target.atoms[key]) return;
+        }
+
+        if (fieldAtoms.length > 1) {
+            const unconnected = fieldAtoms.filter(a => a.usedBonds === 0);
+            if (unconnected.length > 0) return;
+
+            const visited = new Set();
+            const queue = [fieldAtoms[0].id];
+            visited.add(fieldAtoms[0].id);
+            while (queue.length > 0) {
+                const curr = queue.shift();
+                for (const bond of bonds) {
+                    let neighbor = null;
+                    if (bond.a1id === curr) neighbor = bond.a2id;
+                    else if (bond.a2id === curr) neighbor = bond.a1id;
+                    if (neighbor !== null && !visited.has(neighbor)) {
+                        visited.add(neighbor);
+                        queue.push(neighbor);
+                    }
+                }
+            }
+            if (visited.size !== fieldAtoms.length) return;
+        }
+
+        // SUCCESS!
+        arrangeMoleculeShape(target).then(() => onMoleculeSuccess(target));
+    }
+
+    // ---- 분자 구조 각도에 맞게 원자 재배치 애니메이션 ----
+    function arrangeMoleculeShape(mol) {
+        return new Promise(resolve => {
+            if (fieldAtoms.length <= 1) { resolve(); return; }
+
+            const fieldW = buildField.clientWidth;
+            const fieldH = buildField.clientHeight;
+            const cx = fieldW / 2;
+            const cy = fieldH / 2;
+
+            const targets = computeMoleculeTargets(mol, fieldAtoms, cx, cy);
+
+            const duration = 1500;
+            const startTime = performance.now();
+            const startPositions = targets.map(t => ({ x: t.atom.x, y: t.atom.y }));
+
+            function animateArrange(now) {
+                const elapsed = now - startTime;
+                const t = Math.min(elapsed / duration, 1);
+                const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+                targets.forEach((tgt, i) => {
+                    const r = tgt.atom.radius || 27;
+                    tgt.atom.x = startPositions[i].x + (tgt.tx - startPositions[i].x) * ease;
+                    tgt.atom.y = startPositions[i].y + (tgt.ty - startPositions[i].y) * ease;
+                    tgt.atom.el.style.left = (tgt.atom.x - r) + 'px';
+                    tgt.atom.el.style.top = (tgt.atom.y - r) + 'px';
+                });
+                renderBonds();
+                updateBondElectrons();
+
+                if (t > 0.7) {
+                    const glow = (t - 0.7) / 0.3;
+                    fieldAtoms.forEach(a => {
+                        a.el.style.boxShadow = `0 0 ${20 * glow}px ${10 * glow}px rgba(6,182,212,${0.5 * glow})`;
+                    });
+                }
+
+                if (t < 1) {
+                    requestAnimationFrame(animateArrange);
+                } else {
+                    setTimeout(resolve, 600);
+                }
+            }
+            requestAnimationFrame(animateArrange);
+        });
+    }
+
+    function computeMoleculeTargets(mol, atoms, cx, cy) {
+        const targets = [];
+        const geo = mol.geometry || 'linear';
+
+        function findBySymbol(sym) { return atoms.filter(a => a.sym === sym); }
+        function findCenter() {
+            const sorted = [...atoms].sort((a, b) => b.valence - a.valence);
+            return sorted[0];
+        }
+
+        if (geo === 'linear' && atoms.length === 2) {
+            const bl = getBondLength(atoms[0].sym, atoms[1].sym);
+            targets.push({ atom: atoms[0], tx: cx - bl / 2, ty: cy });
+            targets.push({ atom: atoms[1], tx: cx + bl / 2, ty: cy });
+        }
+        else if (geo === 'linear' && atoms.length === 3) {
+            const center = findBySymbol('C')[0] || findBySymbol('Be')[0] || findBySymbol('Si')[0] || findCenter();
+            const others = atoms.filter(a => a.id !== center.id);
+            const bl = getBondLength(center.sym, others[0].sym);
+            targets.push({ atom: center, tx: cx, ty: cy });
+            targets.push({ atom: others[0], tx: cx - bl, ty: cy });
+            targets.push({ atom: others[1], tx: cx + bl, ty: cy });
+        }
+        else if (geo === 'bent') {
+            const centerSym = Object.keys(mol.atoms).find(s => {
+                const el = ELEMENTS.find(e => e.sym === s);
+                return el && el.valence >= 2;
+            }) || findCenter().sym;
+            const centerAtom = findBySymbol(centerSym)[0] || findCenter();
+            const others = atoms.filter(a => a.id !== centerAtom.id);
+            const bl = getBondLength(centerAtom.sym, others[0].sym);
+            const halfAngle = ((mol.angle || 104.5) / 2) * Math.PI / 180;
+            targets.push({ atom: centerAtom, tx: cx, ty: cy - 15 });
+            if (others[0]) targets.push({ atom: others[0], tx: cx - Math.sin(halfAngle) * bl, ty: cy - 15 + Math.cos(halfAngle) * bl });
+            if (others[1]) targets.push({ atom: others[1], tx: cx + Math.sin(halfAngle) * bl, ty: cy - 15 + Math.cos(halfAngle) * bl });
+        }
+        else if (geo === 'tetrahedral') {
+            const centerAtom = findCenter();
+            const others = atoms.filter(a => a.id !== centerAtom.id);
+            const bl = getBondLength(centerAtom.sym, others[0].sym);
+            targets.push({ atom: centerAtom, tx: cx, ty: cy });
+            for (let i = 0; i < others.length && i < 4; i++) {
+                const a = (i * 90 - 45) * Math.PI / 180;
+                targets.push({ atom: others[i], tx: cx + Math.cos(a) * bl, ty: cy + Math.sin(a) * bl });
+            }
+        }
+        else if (geo === 'trigonal_pyramidal') {
+            const centerAtom = findCenter();
+            const others = atoms.filter(a => a.id !== centerAtom.id);
+            const bl = getBondLength(centerAtom.sym, others[0].sym);
+            targets.push({ atom: centerAtom, tx: cx, ty: cy - 10 });
+            for (let i = 0; i < others.length && i < 3; i++) {
+                const a = (i * 120 + 30) * Math.PI / 180;
+                targets.push({ atom: others[i], tx: cx + Math.cos(a) * bl, ty: cy - 10 + Math.sin(a) * bl });
+            }
+        }
+        else if (geo === 'trigonal_planar') {
+            const centerAtom = findCenter();
+            const others = atoms.filter(a => a.id !== centerAtom.id);
+            const bl = getBondLength(centerAtom.sym, others[0].sym);
+            targets.push({ atom: centerAtom, tx: cx, ty: cy });
+            for (let i = 0; i < others.length && i < 3; i++) {
+                const a = (i * 120 - 90) * Math.PI / 180;
+                targets.push({ atom: others[i], tx: cx + Math.cos(a) * bl, ty: cy + Math.sin(a) * bl });
+            }
+        }
+        else if (geo === 'caco3') {
+            const cAtom = findBySymbol('C')[0];
+            const oAtoms = findBySymbol('O');
+            const caAtom = findBySymbol('Ca')[0];
+            const blCO = getBondLength('C', 'O');
+            const blCaO = getBondLength('Ca', 'O');
+            targets.push({ atom: cAtom, tx: cx, ty: cy });
+            for (let i = 0; i < 3; i++) {
+                const a = (i * 120 - 90) * Math.PI / 180;
+                targets.push({ atom: oAtoms[i], tx: cx + Math.cos(a) * blCO, ty: cy + Math.sin(a) * blCO });
+            }
+            const oTarget = targets[3];
+            targets.push({ atom: caAtom, tx: oTarget.tx + blCaO * 0.7, ty: oTarget.ty + blCaO * 0.7 });
+        }
+        else if (geo === 'h2o2') {
+            const oAtoms = findBySymbol('O');
+            const hAtoms = findBySymbol('H');
+            const blOO = getBondLength('O', 'O');
+            const blOH = getBondLength('O', 'H');
+            const hooAngle = (mol.angle || 94.8) * Math.PI / 180;
+            targets.push({ atom: oAtoms[0], tx: cx - blOO / 2, ty: cy });
+            targets.push({ atom: oAtoms[1], tx: cx + blOO / 2, ty: cy });
+            targets.push({ atom: hAtoms[0], tx: cx - blOO / 2 - Math.cos(hooAngle) * blOH, ty: cy - Math.sin(hooAngle) * blOH });
+            targets.push({ atom: hAtoms[1], tx: cx + blOO / 2 + Math.cos(hooAngle) * blOH, ty: cy + Math.sin(hooAngle) * blOH });
+        }
+        else {
+            const center = findCenter();
+            const others = atoms.filter(a => a.id !== center.id);
+            targets.push({ atom: center, tx: cx, ty: cy });
+            for (let i = 0; i < others.length; i++) {
+                const a = (i / others.length) * Math.PI * 2 - Math.PI / 2;
+                const bl = getBondLength(center.sym, others[i].sym);
+                targets.push({ atom: others[i], tx: cx + Math.cos(a) * bl, ty: cy + Math.sin(a) * bl });
+            }
+        }
+
+        return targets;
+    }
+
+    // ---- 3D Molecule Viewer ----
+    function show3DMolecule(mol, containerEl) {
+        if (!mol.coords3d || !mol.bonds3d) return;
+        if (typeof THREE === 'undefined') return;
+
+        const w = containerEl.clientWidth || 300;
+        const h = containerEl.clientHeight || 300;
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 100);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(w, h);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        containerEl.appendChild(renderer.domElement);
+
+        // OrbitControls
+        let controls = null;
+        if (THREE.OrbitControls) {
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.08;
+            controls.enablePan = false;
+            controls.minDistance = 2;
+            controls.maxDistance = 15;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 2.5;
+        }
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404060, 1.5);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(3, 5, 4);
+        scene.add(dirLight);
+        const pointLight = new THREE.PointLight(0x06b6d4, 0.8, 20);
+        pointLight.position.set(-2, 3, 2);
+        scene.add(pointLight);
+
+        // Calculate center and scale
+        const coords = mol.coords3d;
+        let cx = 0, cy = 0, cz = 0;
+        coords.forEach(c => { cx += c.x; cy += c.y; cz += c.z; });
+        cx /= coords.length; cy /= coords.length; cz /= coords.length;
+
+        let maxDist = 0;
+        coords.forEach(c => {
+            const d = Math.sqrt((c.x-cx)**2 + (c.y-cy)**2 + (c.z-cz)**2);
+            if (d > maxDist) maxDist = d;
+        });
+        const scale = maxDist > 0 ? 2.0 / maxDist : 1;
+
+        // Create atoms (spheres)
+        const atomMeshes = [];
+        coords.forEach((coord, i) => {
+            const color = CPK_COLORS[coord.sym] || CPK_COLORS.default;
+            const radius = ((ATOMIC_RADII[coord.sym] || ATOMIC_RADII.default) * 0.35) * scale;
+
+            // Main sphere
+            const geo = new THREE.SphereGeometry(Math.max(radius, 0.15), 32, 32);
+            const mat = new THREE.MeshPhongMaterial({
+                color: color,
+                shininess: 80,
+                specular: 0x444444,
+                transparent: true,
+                opacity: 0.92,
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(
+                (coord.x - cx) * scale,
+                (coord.y - cy) * scale,
+                (coord.z - cz) * scale
+            );
+            scene.add(mesh);
+            atomMeshes.push(mesh);
+
+            // Glow sphere
+            const glowGeo = new THREE.SphereGeometry(Math.max(radius, 0.15) * 1.4, 16, 16);
+            const glowMat = new THREE.MeshBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.12,
+            });
+            const glowMesh = new THREE.Mesh(glowGeo, glowMat);
+            glowMesh.position.copy(mesh.position);
+            scene.add(glowMesh);
+
+            // Electron cloud particles
+            const particleCount = Math.min(coord.sym === 'H' ? 4 : 8, 12);
+            const pGeo = new THREE.BufferGeometry();
+            const pPositions = new Float32Array(particleCount * 3);
+            for (let j = 0; j < particleCount; j++) {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const pr = (Math.max(radius, 0.15) + 0.1 + Math.random() * 0.15);
+                pPositions[j*3] = pr * Math.sin(phi) * Math.cos(theta);
+                pPositions[j*3+1] = pr * Math.sin(phi) * Math.sin(theta);
+                pPositions[j*3+2] = pr * Math.cos(phi);
+            }
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+            const pMat = new THREE.PointsMaterial({ color: 0x06b6d4, size: 0.04, transparent: true, opacity: 0.6 });
+            const pMesh = new THREE.Points(pGeo, pMat);
+            pMesh.position.copy(mesh.position);
+            pMesh.userData = { basePositions: pPositions.slice(), center: mesh.position.clone() };
+            scene.add(pMesh);
+        });
+
+        // Create bonds (cylinders)
+        mol.bonds3d.forEach(bond => {
+            const p1 = atomMeshes[bond.a].position;
+            const p2 = atomMeshes[bond.b].position;
+            const order = bond.order || 1;
+
+            const dir = new THREE.Vector3().subVectors(p2, p1);
+            const length = dir.length();
+            const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+
+            // Calculate perpendicular for multi-bond offset
+            const up = new THREE.Vector3(0, 1, 0);
+            const cross = new THREE.Vector3().crossVectors(dir, up).normalize();
+            if (cross.length() < 0.01) cross.set(1, 0, 0);
+
+            const bondSpacing = 0.08;
+
+            for (let i = 0; i < order; i++) {
+                const offset = (i - (order - 1) / 2) * bondSpacing;
+                const bondGeo = new THREE.CylinderGeometry(0.04, 0.04, length, 8);
+                const bondMat = new THREE.MeshPhongMaterial({
+                    color: 0x88ccdd,
+                    shininess: 30,
+                    transparent: true,
+                    opacity: 0.7,
+                });
+                const bondMesh = new THREE.Mesh(bondGeo, bondMat);
+
+                // Position and orient
+                const offsetVec = cross.clone().multiplyScalar(offset);
+                bondMesh.position.copy(mid).add(offsetVec);
+
+                // Orient cylinder to point from p1 to p2
+                const axis = new THREE.Vector3(0, 1, 0);
+                const quaternion = new THREE.Quaternion().setFromUnitVectors(axis, dir.clone().normalize());
+                bondMesh.quaternion.copy(quaternion);
+
+                scene.add(bondMesh);
+            }
+
+            // Shared electron particles on bond
+            if (order >= 1) {
+                const ePCount = order * 2;
+                const eGeo = new THREE.BufferGeometry();
+                const ePos = new Float32Array(ePCount * 3);
+                for (let j = 0; j < ePCount; j++) {
+                    const t = (j + 0.5) / ePCount;
+                    ePos[j*3] = p1.x + dir.x * t;
+                    ePos[j*3+1] = p1.y + dir.y * t;
+                    ePos[j*3+2] = p1.z + dir.z * t;
+                }
+                eGeo.setAttribute('position', new THREE.BufferAttribute(ePos, 3));
+                const eMat = new THREE.PointsMaterial({ color: 0x06b6d4, size: 0.06, transparent: true, opacity: 0.5 });
+                const eMesh = new THREE.Points(eGeo, eMat);
+                eMesh.userData = { bondStart: p1.clone(), bondDir: dir.clone(), count: ePCount };
+                scene.add(eMesh);
+            }
+        });
+
+        // Camera position
+        camera.position.set(0, 0, maxDist * scale * 3 + 3);
+        camera.lookAt(0, 0, 0);
+
+        // Animation loop
+        let animId = null;
+        let isDisposed = false;
+        const clock = new THREE.Clock();
+
+        function animate() {
+            if (isDisposed) return;
+            animId = requestAnimationFrame(animate);
+
+            const elapsed = clock.getElapsedTime();
+
+            // Animate electron cloud particles (orbit)
+            scene.traverse(obj => {
+                if (obj.isPoints && obj.userData.basePositions) {
+                    const positions = obj.geometry.attributes.position.array;
+                    const base = obj.userData.basePositions;
+                    for (let i = 0; i < positions.length; i += 3) {
+                        const angle = elapsed * 1.5 + i;
+                        const r = 0.03;
+                        positions[i] = base[i] + Math.sin(angle) * r;
+                        positions[i+1] = base[i+1] + Math.cos(angle * 0.7) * r;
+                        positions[i+2] = base[i+2] + Math.sin(angle * 1.3) * r;
+                    }
+                    obj.geometry.attributes.position.needsUpdate = true;
+                }
+                // Animate bond electrons (oscillate)
+                if (obj.isPoints && obj.userData.bondStart) {
+                    const positions = obj.geometry.attributes.position.array;
+                    const { bondStart, bondDir, count } = obj.userData;
+                    for (let j = 0; j < count; j++) {
+                        const baseT = (j + 0.5) / count;
+                        const oscillation = Math.sin(elapsed * 2 + j * 1.5) * 0.1;
+                        const t = baseT + oscillation;
+                        positions[j*3] = bondStart.x + bondDir.x * t;
+                        positions[j*3+1] = bondStart.y + bondDir.y * t;
+                        positions[j*3+2] = bondStart.z + bondDir.z * t;
+                    }
+                    obj.geometry.attributes.position.needsUpdate = true;
+                }
+            });
+
+            if (controls) controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Stop auto-rotate on user interaction
+        if (controls) {
+            renderer.domElement.addEventListener('pointerdown', () => {
+                controls.autoRotate = false;
+            });
+            renderer.domElement.addEventListener('pointerup', () => {
+                setTimeout(() => { controls.autoRotate = true; }, 3000);
+            });
+        }
+
+        // Return cleanup function
+        return () => {
+            isDisposed = true;
+            if (animId) cancelAnimationFrame(animId);
+            renderer.dispose();
+            scene.traverse(obj => {
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+                    else obj.material.dispose();
+                }
+            });
+            if (renderer.domElement.parentElement) {
+                renderer.domElement.remove();
+            }
+        };
+    }
+
+    // ---- Success Handler ----
+    function onMoleculeSuccess(mol) {
+        fieldAtoms.forEach(a => a.el.style.boxShadow = '');
+        score += mol.points;
+        scoreDisplay.textContent = 'SCORE: ' + score;
+        completedMissions.add(mol.formula);
+        updateMissionCounter();
+        playSound('success');
+        spawnParticles();
+        screenFlash();
+
+        // Cleanup previous 3D viewer
+        if (mol3dCleanup) { mol3dCleanup(); mol3dCleanup = null; }
+
+        const has3D = mol.coords3d && mol.bonds3d && typeof THREE !== 'undefined';
+        const hasAdvanced = mol.hybridization || mol.vsepr;
+
+        const bondTypeStr = mol.bondType === 'ionic' ? t('ionicBond') : mol.bondType === 'metallic' ? t('metallicBond') : t('covalentBond');
+        moleculeCard.innerHTML = `
+            <div class="card-emoji">${mol.emoji}</div>
+            <div class="card-mol-name">${getMolName(mol)} (${currentLang === 'en' ? mol.kr : mol.en})</div>
+            <div class="card-mol-en">${mol.formula}</div>
+            <div class="card-points">+${mol.points}${t('points')}</div>
+            ${has3D ? `<div class="mol3d-container" id="mol3dContainer"><div class="mol3d-label">${t('drag3d')}</div></div>` : ''}
+            ${hasAdvanced ? `
+            <div class="detail-toggle" id="detailToggle">
+                <button class="active" data-mode="basic">${t('basic')}</button>
+                <button data-mode="advanced">${t('advanced')}</button>
+            </div>` : ''}
+            <div class="card-details" id="cardDetailsBasic">
+                <strong>${t('formula')}:</strong> ${mol.formula}<br>
+                <strong>${t('structure')}:</strong> ${mol.structure || '-'}<br>
+                <strong>${t('bondType')}:</strong> ${bondTypeStr}
+                ${mol.molarMass ? `<br><strong>${t('molarMass')}:</strong> ${mol.molarMass} g/mol` : ''}
+            </div>
+            ${hasAdvanced ? `
+            <div class="card-details" id="cardDetailsAdvanced" style="display:none;">
+                <strong>${t('formula')}:</strong> ${mol.formula}<br>
+                <strong>${t('structure')}:</strong> ${mol.structure || '-'}<br>
+                <strong>${t('bondType')}:</strong> ${bondTypeStr}<br>
+                <strong>${t('vsepr')}:</strong> ${mol.vsepr || '-'}<br>
+                <strong>${t('hybridization')}:</strong> ${mol.hybridization || '-'}<br>
+                <strong>${t('polarity')}:</strong> ${mol.polarity || '-'}<br>
+                <strong>${t('enDiff')}:</strong> ${mol.electronegativityDiff != null ? mol.electronegativityDiff : '-'}<br>
+                <strong>${t('bondEnergy')}:</strong> ${mol.bondEnergy ? mol.bondEnergy + ' kJ/mol' : '-'}<br>
+                <strong>${t('molarMass')}:</strong> ${mol.molarMass ? mol.molarMass + ' g/mol' : '-'}<br>
+                <strong>${t('mp')}:</strong> ${mol.mp != null ? mol.mp + '°C' : '-'}<br>
+                <strong>${t('bp')}:</strong> ${mol.bp != null ? mol.bp + '°C' : '-'}<br>
+                <strong>${t('state')}:</strong> ${mol.state || '-'}<br>
+                <strong>${t('color')}:</strong> ${mol.color || '-'}
+            </div>` : ''}
+            <div class="card-info">💡 ${mol.info}</div>
+            <button class="next-btn" onclick="nextMission()">${t('nextMission')}</button>
+        `;
+        modalOverlay.classList.add('show');
+
+        // Initialize 3D viewer
+        if (has3D) {
+            setTimeout(() => {
+                const container = document.getElementById('mol3dContainer');
+                if (container) {
+                    mol3dCleanup = show3DMolecule(mol, container);
+                }
+            }, 100);
+        }
+
+        // Detail toggle
+        if (hasAdvanced) {
+            const toggle = document.getElementById('detailToggle');
+            if (toggle) {
+                toggle.addEventListener('click', (e) => {
+                    const btn = e.target.closest('button');
+                    if (!btn) return;
+                    playSound('click');
+                    toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const mode = btn.dataset.mode;
+                    const basic = document.getElementById('cardDetailsBasic');
+                    const adv = document.getElementById('cardDetailsAdvanced');
+                    if (basic) basic.style.display = mode === 'basic' ? 'block' : 'none';
+                    if (adv) adv.style.display = mode === 'advanced' ? 'block' : 'none';
+                });
+            }
+        }
+    }
+
+    function nextMission() {
+        playSound('click');
+        modalOverlay.classList.remove('show');
+        if (mol3dCleanup) { mol3dCleanup(); mol3dCleanup = null; }
+
+        currentMissionIdx++;
+
+        if (currentMissionIdx >= missionQueue.length) {
+            showComplete();
+            return;
+        }
+
+        playSound('levelup');
+        clearField();
+        updateMissionUI();
+    }
+
+    function showComplete() {
+        playSound('levelup');
+        if (mol3dCleanup) { mol3dCleanup(); mol3dCleanup = null; }
+        moleculeCard.innerHTML = `
+            <div class="card-emoji">🎉</div>
+            <div class="complete-title">${t('allComplete')}</div>
+            <div class="complete-sub">${t('greatChemist')}</div>
+            <div class="final-score">${score}</div>
+            <div style="font-size:13px;color:var(--text-dim);margin-bottom:20px;">${t('totalScore')}</div>
+            <button class="next-btn" onclick="restartGame()">${t('restart')}</button>
+        `;
+        modalOverlay.classList.add('show');
+    }
+
+    function restartGame() {
+        playSound('click');
+        modalOverlay.classList.remove('show');
+        if (mol3dCleanup) { mol3dCleanup(); mol3dCleanup = null; }
+        score = 0;
+        currentMissionIdx = 0;
+        completedMissions.clear();
+        scoreDisplay.textContent = 'SCORE: 0';
+        buildMissionQueue();
+        clearField();
+        updateMissionUI();
+    }
+
+    // ---- Mission UI ----
+    function updateMissionUI() {
+        const mol = getCurrentMolecule();
+        if (!mol) return;
+
+        const formulaDisplay = mol.formula;
+        missionText.innerHTML = `${t('makeMission')(getMolName(mol))} <span class="formula">(${formulaDisplay})</span>`;
+        missionEmoji.textContent = mol.emoji;
+
+        let hintHTML = '';
+        for (const [sym, count] of Object.entries(mol.atoms)) {
+            const el = ELEMENTS.find(e => e.sym === sym);
+            if (el) {
+                hintHTML += `<span class="hint-atom" style="color:${el.color};border-color:${el.color}30">${sym} ×${count}</span>`;
+            }
+        }
+        missionHint.innerHTML = hintHTML;
+        updateMissionCounter();
+    }
+
+    function updateMissionCounter() {
+        const total = missionQueue.length || filteredMolecules.length;
+        missionCounter.textContent = `${completedMissions.size}/${total} ${t('missionOf')}`;
+    }
+
+    // ---- Noble Gas Field Effect (placed on field) ----
+    function showNobleGasFieldEffect(atomData, elData) {
+        playSound('success');
+        atomData.el.classList.add('noble-glow');
+
+        const popup = document.createElement('div');
+        const px = atomData.x, py = atomData.y - (atomData.radius || 27) - 50;
+        popup.style.cssText = `
+            position:absolute; left:${Math.min(Math.max(10, px - 110), buildField.clientWidth - 240)}px; top:${Math.max(10, py)}px;
+            background:rgba(139,92,246,0.95); color:#fff;
+            padding:14px 18px; border-radius:14px; z-index:100;
+            font-family:'Jua',sans-serif; font-size:14px; line-height:1.5;
+            white-space:pre-line; max-width:220px;
+            box-shadow:0 0 30px rgba(139,92,246,0.4);
+            animation:noblePopIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            pointer-events:none;
+        `;
+        popup.textContent = t('nobleMsg');
+
+        // 파티클 이펙트 (반짝이)
+        for (let i = 0; i < 8; i++) {
+            const spark = document.createElement('div');
+            const angle = (i / 8) * Math.PI * 2;
+            const dist = 40 + Math.random() * 30;
+            spark.style.cssText = `
+                position:absolute; width:6px; height:6px; border-radius:50%;
+                background:${elData.color || '#8b5cf6'};
+                box-shadow:0 0 8px ${elData.color || '#8b5cf6'};
+                left:${atomData.x + Math.cos(angle) * dist}px;
+                top:${atomData.y + Math.sin(angle) * dist}px;
+                z-index:99; pointer-events:none;
+                animation:sparkFly 0.6s ease-out forwards;
+                opacity:0.8;
+            `;
+            buildField.appendChild(spark);
+            setTimeout(() => spark.remove(), 600);
+        }
+
+        buildField.appendChild(popup);
+        setTimeout(() => {
+            popup.style.transition = 'opacity 0.3s';
+            popup.style.opacity = '0';
+            setTimeout(() => popup.remove(), 300);
+        }, 2500);
+    }
+
+    // ---- Clear Field ----
+    function clearField() {
+        playSound('click');
+        fieldAtoms.forEach(a => a.el.remove());
+        fieldAtoms = [];
+        bonds = [];
+        atomIdCounter = 0;
+        bondSvg.innerHTML = '';
+        // Remove bond electron animations
+        buildField.querySelectorAll('.bond-electron, .metallic-electron, .charge-label, .ionic-flash, .electron-trail').forEach(el => el.remove());
+        buildField.classList.remove('has-atoms');
+        deactivateRemoveMode();
+    }
+
+    // ---- Particles ----
+    function spawnParticles() {
+        const colors = ['#06b6d4', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899'];
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = 4 + Math.random() * 8;
+            p.style.width = size + 'px';
+            p.style.height = size + 'px';
+            p.style.background = colors[Math.floor(Math.random() * colors.length)];
+            p.style.left = (window.innerWidth / 2 - 4) + 'px';
+            p.style.top = (window.innerHeight / 2 - 4) + 'px';
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 80 + Math.random() * 200;
+            p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+            p.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 900);
+        }
+    }
+
+    function screenFlash() {
+        const f = document.createElement('div');
+        f.className = 'screen-flash';
+        document.body.appendChild(f);
+        setTimeout(() => f.remove(), 500);
+    }
+
+    // ---- Legend tooltips ----
+    document.querySelectorAll('.legend-item[data-desc]').forEach(item => {
+        const desc = document.createElement('div');
+        desc.className = 'legend-desc';
+        desc.textContent = item.dataset.desc;
+        item.appendChild(desc);
+    });
+
+    // ---- Free Mode (자유 모드) ----
+    let freeMode = false;
+    function toggleFreeMode() {
+        freeMode = !freeMode;
+        const btn = document.getElementById('freeModeBtn');
+        if (freeMode) {
+            btn.style.background = 'rgba(16,185,129,0.3)';
+            btn.style.borderColor = '#10b981';
+            btn.textContent = t('freeModeOn');
+            document.getElementById('missionText').textContent = t('freeModeMsg');
+            document.getElementById('missionEmoji').textContent = '🧪';
+            document.getElementById('missionHint').innerHTML = '';
+        } else {
+            btn.style.background = '';
+            btn.style.borderColor = '';
+            btn.textContent = t('freeMode');
+            updateMissionUI();
+        }
+    }
+
+    // 자유 모드에서 분자 자동 인식
+    const origCheckMolecule = typeof checkMolecule === 'function' ? checkMolecule : null;
+    function checkFreeModeMolecule() {
+        if (!freeMode || fieldAtoms.length === 0) return;
+        // 현재 원자 카운트
+        const counts = {};
+        fieldAtoms.forEach(a => {
+            counts[a.el.sym] = (counts[a.el.sym] || 0) + 1;
+        });
+        // MOLECULE_DB에서 매칭
+        const db = typeof MOLECULE_DB !== 'undefined' ? MOLECULE_DB : [];
+        for (const mol of db) {
+            const mAtoms = mol.atoms;
+            const keys1 = Object.keys(counts).sort().join(',');
+            const keys2 = Object.keys(mAtoms).sort().join(',');
+            if (keys1 !== keys2) continue;
+            let match = true;
+            for (const k of Object.keys(mAtoms)) {
+                if (counts[k] !== mAtoms[k]) { match = false; break; }
+            }
+            if (match) {
+                // 발견!
+                playSound('success');
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position:fixed;top:20%;left:50%;transform:translateX(-50%);
+                    background:rgba(16,185,129,0.95);color:#fff;
+                    padding:16px 24px;border-radius:16px;z-index:200;
+                    font-family:'Jua',sans-serif;font-size:18px;text-align:center;
+                    box-shadow:0 0 40px rgba(16,185,129,0.4);
+                    animation:noblePopIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+                `;
+                toast.innerHTML = t('freeFound')(getMolName(mol), mol.formula, mol.info || '');
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.transition = 'opacity 0.5s';
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 500);
+                }, 4000);
+                return;
+            }
+        }
+    }
+
+    // ---- Init ----
+    buildPeriodicTable();
+    buildMissionQueue();
+    updateMissionUI();
+    applyI18n();
+
+    </script>
+</body>
+</html>

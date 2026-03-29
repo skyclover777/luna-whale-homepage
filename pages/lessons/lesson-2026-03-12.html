@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>반반 투시 해부학: 뼈 위에 피어나는 상상 | 루나웨일</title>
+<style>
+:root{--g0:#121212;--g1:#1e1e1e;--g2:#2e2e2e;--glow:#e0e0e0;--pale:#b0b0b0;--acc:#ff6b6b;--cream:#fafafa;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#000;color:var(--cream);user-select:none;}
+#sw{width:100%;height:100%;position:relative;overflow:hidden;}
+.slide{position:absolute;inset:0;opacity:0;transform:scale(.97);transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.4,0,.2,1);pointer-events:none;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.slide.active{opacity:1;transform:scale(1);pointer-events:auto;}
+.slide.exit-left{opacity:0;transform:scale(1.03);}
+.bg{position:absolute;inset:0;background:linear-gradient(135deg,var(--g0) 0%,var(--g1) 50%,var(--g2) 100%);}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:12px 28px;background:rgba(18,18,18,0.75);backdrop-filter:blur(20px);border-bottom:1px solid rgba(224,224,224,0.1);}
+.lcode{position:fixed;top:52px;left:28px;z-index:201;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);font-size:9px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,0.28);font-family:monospace;backdrop-filter:blur(8px);pointer-events:none;}
+.tlogo{font-size:14px;font-weight:700;color:var(--glow);cursor:pointer;transition:.2s;}.tlogo:hover{opacity:.7;}
+.tsc{font-size:13px;color:rgba(255,255,255,.4);}.tsc strong{color:rgba(255,255,255,.9);}
+.tbadges{display:flex;gap:8px;}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.bl{background:rgba(224,224,224,.12);color:var(--glow);border:1px solid rgba(224,224,224,.25);}
+.ba{background:rgba(255,107,107,.12);color:var(--acc);border:1px solid rgba(255,107,107,.25);}
+.dots{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;display:flex;gap:6px;align-items:center;}
+.dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.2);cursor:pointer;transition:all .3s;}
+.dot.active{width:22px;background:var(--glow);}
+.arr{position:fixed;top:50%;z-index:200;transform:translateY(-50%);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;transition:all .25s;backdrop-filter:blur(8px);}
+.arr:hover{background:rgba(224,224,224,.2);color:#fff;border-color:var(--glow);transform:translateY(-50%) scale(1.1);}
+.arr:disabled{opacity:.1;cursor:default;pointer-events:none;}
+#bp{left:16px;}#bn{right:16px;}
+@media(max-width:768px){.arr{display:none;}.tsc{display:none;}}
+.sc{position:relative;z-index:2;flex:1;min-height:0;display:flex;flex-direction:column;padding:80px 80px 60px;overflow:hidden;}
+@media(max-width:768px){.sc{padding:72px 24px 50px;}}
+
+/* === Cover Slide === */
+#s0 .bg{background:linear-gradient(135deg,#0a0a0a,var(--g1),var(--g2));}
+#s0 .bgimg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;animation:coverReveal 1.8s .3s cubic-bezier(.25,.46,.45,.94) forwards;}
+@keyframes coverReveal{0%{opacity:0;transform:scale(1.1);}100%{opacity:.5;transform:scale(1);}}
+#s0 .hov{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,10,.97) 0%,rgba(10,10,10,.6) 35%,rgba(10,10,10,.2) 70%,transparent 100%);}
+#s0 .sc{justify-content:flex-end;padding-bottom:90px;}
+#s0 .ew{opacity:0;animation:fadeUp .8s .8s forwards;}
+#s0 .stitle{opacity:0;animation:fadeUp .8s 1s forwards;}
+#s0 .ssub{opacity:0;animation:fadeUp .8s 1.2s forwards;}
+#s0 .metas{opacity:0;animation:fadeUp .8s 1.4s forwards;}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(25px);}100%{opacity:1;transform:translateY(0);}}
+
+.ew{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--pale);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.ew::before{content:'';display:block;width:20px;height:2px;background:var(--pale);}
+.stitle{font-size:clamp(34px,4.5vw,62px);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;background:linear-gradient(135deg,#fff 0%,var(--glow) 50%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.ssub{font-size:clamp(15px,1.6vw,20px);color:rgba(255,255,255,.55);font-style:italic;margin-bottom:28px;}
+.metas{display:flex;gap:14px;flex-wrap:wrap;}
+.mc{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:30px;padding:6px 14px;font-size:13px;color:rgba(255,255,255,.75);}
+
+/* === Particles === */
+.pt{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.p{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(224,224,224,.45),transparent);animation:pf linear infinite;}
+@keyframes pf{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:.7}90%{opacity:.25}100%{transform:translateY(-60px) scale(1);opacity:0}}
+
+/* === Objectives - Flip Cards === */
+.gg{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;align-content:start;margin-top:4px;perspective:1200px;}
+.gc-wrap{position:relative;cursor:pointer;height:clamp(160px,21vh,210px);}
+.gc-wrap.flipped .gc-inner{transform:rotateY(180deg);}
+.gc-inner{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;}
+.gc-front,.gc-back{position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;display:flex;flex-direction:column;}
+/* Front */
+.gc-front{background:rgba(46,46,46,.35);border:1px solid rgba(224,224,224,.18);transition:border-color .3s,box-shadow .3s;align-items:center;justify-content:center;gap:3px;text-align:center;padding:12px 14px;}
+.gc-wrap:hover .gc-front{border-color:rgba(224,224,224,.5);box-shadow:0 6px 24px rgba(224,224,224,.1);}
+.gc-front::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,var(--glow),var(--acc));opacity:0;transition:.3s;}
+.gc-wrap:hover .gc-front::before{opacity:1;}
+.gc-front .gci{font-size:28px;}
+.gc-front h3{font-size:clamp(16px,2vw,22px);font-weight:800;color:var(--glow);}
+.gc-front p{font-size:clamp(10px,1.1vw,12px);line-height:1.45;color:rgba(255,255,255,.55);}
+.gc-flip-hint{font-size:9px;color:rgba(255,255,255,.2);margin-top:auto;padding-top:2px;}
+/* Back */
+.gc-back{background:rgba(30,30,30,.95);border:1px solid rgba(224,224,224,.25);transform:rotateY(180deg);padding:12px 14px;gap:5px;overflow:hidden;}
+.gc-back::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,rgba(120,200,255,.8),rgba(255,200,120,.8));}
+.gc-back-title{font-size:11px;font-weight:800;color:#fff;display:flex;align-items:center;gap:4px;padding-top:2px;}
+.gc-sec{display:flex;flex-direction:column;gap:1px;}
+.gc-sec-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.gc-sec-label.research{color:rgba(120,200,255,.85);}
+.gc-sec-label.caution{color:rgba(255,200,120,.85);}
+.gc-sec p{font-size:10px;line-height:1.55;color:rgba(255,255,255,.6);margin:0;}
+.gc-sec .cite{font-size:8px;color:rgba(255,255,255,.25);font-style:italic;}
+.gc-back-hint{font-size:8px;color:rgba(255,255,255,.18);text-align:right;margin-top:auto;}
+
+/* === Materials === */
+.ml{display:grid;grid-template-columns:1fr 1fr;gap:28px;flex:1;align-items:center;}
+@media(max-width:768px){.ml{grid-template-columns:1fr;}}
+.mph{aspect-ratio:4/3;border-radius:20px;overflow:hidden;position:relative;}
+.mph img{width:100%;height:100%;object-fit:cover;transition:transform .6s;}
+.mph:hover img{transform:scale(1.05);}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.mi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.8);transition:all .2s;}
+.mi:hover{background:rgba(224,224,224,.08);border-color:rgba(224,224,224,.2);}
+
+/* === Steps === */
+.sl{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1;align-items:center;}
+@media(max-width:768px){.sl{grid-template-columns:1fr;}}
+.sph{aspect-ratio:4/3;border-radius:20px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.sph img{width:100%;height:100%;object-fit:cover;transition:transform 8s cubic-bezier(.25,.46,.45,.94);}
+.slide.active .sph img{transform:scale(1.08);}
+.snum{font-size:88px;font-weight:900;line-height:.9;background:linear-gradient(135deg,rgba(224,224,224,.15),transparent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;}
+.sb h3{font-size:clamp(20px,2.5vw,32px);font-weight:800;color:#fff;margin-bottom:12px;line-height:1.2;}
+.sb h3 em{color:var(--glow);font-style:normal;}
+.sb p{font-size:15px;line-height:1.85;color:rgba(255,255,255,.72);margin-bottom:14px;}
+.tip{background:rgba(255,107,107,.07);border:1px solid rgba(255,107,107,.2);border-radius:12px;padding:12px 16px;font-size:13px;color:rgba(255,107,107,.9);line-height:1.6;}
+
+/* === Gallery === */
+.gal-wrap{overflow-y:auto;flex:1;min-height:0;margin-top:6px;padding-bottom:8px;}
+.gal-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+@media(max-width:900px){.gal-grid{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:600px){.gal-grid{grid-template-columns:repeat(3,1fr);}}
+.gal-item{border-radius:10px;overflow:hidden;cursor:pointer;position:relative;aspect-ratio:1/1;background:rgba(255,255,255,.05);}
+.gal-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.25,.46,.45,.94);}
+.gal-item:hover img{transform:scale(1.12);}
+.gal-item::after{content:'';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);transition:.3s;}
+.gal-item:hover::after{opacity:1;}
+
+/* === Lightbox === */
+#lbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(20px);}
+#lbox.open{display:flex;}
+#lbox-img{max-width:90vw;max-height:72vh;object-fit:contain;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.8);}
+.lbox-actions{display:flex;gap:12px;margin-top:16px;}
+.lbox-dl{padding:10px 24px;background:var(--glow);color:#000;border-radius:10px;font-weight:700;text-decoration:none;font-size:13px;letter-spacing:.5px;transition:.2s;}
+.lbox-dl:hover{background:#fff;}
+.lbox-cl{padding:10px 24px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:10px;font-weight:700;cursor:pointer;border:none;font-size:13px;font-family:inherit;transition:.2s;}
+.lbox-cl:hover{background:rgba(255,255,255,.2);}
+
+/* === Teacher Note === */
+.tnote{position:absolute;bottom:16px;right:24px;z-index:10;max-width:260px;padding:10px 14px;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.06);border-radius:10px;backdrop-filter:blur(14px);font-size:11px;line-height:1.6;color:rgba(255,255,255,0.35);transition:opacity .3s;}
+.tnote strong{color:rgba(255,255,255,0.5);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;display:block;margin-bottom:3px;}
+.tnote ul{list-style:none;padding:0;margin:0;}
+.tnote ul li{margin-bottom:2px;}
+.tnote ul li::before{content:'·';margin-right:4px;color:var(--glow);opacity:.5;}
+@media(max-width:768px){.tnote{display:none;}}
+
+/* === Completion === */
+.done-center{align-items:center;justify-content:center;text-align:center;gap:20px;}
+.back-btn{margin-top:24px;background:rgba(224,224,224,.15);border:1px solid rgba(224,224,224,.4);color:var(--glow);border-radius:14px;padding:14px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.25s;}
+/* === Bottom Action Bar === */
+.end-bar{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:10px;flex-wrap:wrap;justify-content:center;z-index:20;}
+.end-bar .back-btn{margin-top:0;padding:11px 22px;font-size:13px;}
+.end-bar .ai-btn{background:linear-gradient(135deg,rgba(120,180,255,.2),rgba(200,140,255,.2));border:1px solid rgba(160,140,255,.4);color:rgba(200,180,255,.95);border-radius:14px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.25s;display:flex;align-items:center;gap:6px;}
+.end-bar .ai-btn:hover{background:linear-gradient(135deg,rgba(120,180,255,.35),rgba(200,140,255,.35));border-color:rgba(200,180,255,.6);}
+/* AI Report Panel */
+.ai-panel{display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);backdrop-filter:blur(16px);align-items:center;justify-content:center;padding:24px;}
+.ai-panel.open{display:flex;}
+.ai-box{background:rgba(22,36,50,.97);border:1px solid rgba(160,140,255,.2);border-radius:20px;max-width:640px;width:100%;max-height:85vh;overflow-y:auto;padding:28px 30px;position:relative;display:flex;flex-direction:column;gap:12px;box-shadow:0 40px 100px rgba(0,0,0,.6);animation:modalIn .4s cubic-bezier(.4,0,.2,1);}
+.ai-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0;background:linear-gradient(90deg,rgba(120,180,255,.8),rgba(200,140,255,.8));}
+.ai-box h3{font-size:18px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;}
+.ai-box .ai-desc{font-size:12px;color:rgba(255,255,255,.4);line-height:1.5;}
+.ai-msg{position:relative;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 50px 14px 16px;font-size:13px;line-height:1.7;color:rgba(255,255,255,.75);transition:border-color .2s;}
+.ai-msg:hover{border-color:rgba(160,140,255,.3);}
+.ai-copy{position:absolute;top:50%;right:10px;transform:translateY(-50%);background:rgba(160,140,255,.15);border:1px solid rgba(160,140,255,.3);color:rgba(200,180,255,.8);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;font-family:inherit;transition:.2s;white-space:nowrap;}
+.ai-copy:hover{background:rgba(160,140,255,.3);color:#fff;}
+.ai-copy.copied{background:rgba(100,200,140,.2);border-color:rgba(100,200,140,.4);color:rgba(150,230,170,.9);}
+.ai-close{position:absolute;top:16px;right:20px;background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;transition:.2s;padding:4px 8px;}
+.ai-close:hover{color:#fff;}
+.back-btn:hover{background:rgba(224,224,224,.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(224,224,224,.15);}
+
+/* === Slide entrance animation (skip s0 which has its own) === */
+.slide.active:not(#s0) .sc>*{animation:contentIn .6s both;}
+.slide.active:not(#s0) .sc>*:nth-child(1){animation-delay:.1s;}
+.slide.active:not(#s0) .sc>*:nth-child(2){animation-delay:.2s;}
+.slide.active:not(#s0) .sc>*:nth-child(3){animation-delay:.3s;}
+.slide.active:not(#s0) .sc>*:nth-child(4){animation-delay:.4s;}
+.slide.active:not(#s0) .sc>*:nth-child(5){animation-delay:.5s;}
+@keyframes contentIn{0%{opacity:0;transform:translateY(15px);}100%{opacity:1;transform:translateY(0);}}
+/* === L12: X-Ray Lab === */
+.scan-line{position:absolute;left:0;right:0;height:3px;pointer-events:none;z-index:3;background:linear-gradient(90deg,transparent,rgba(255,107,107,.4),rgba(255,107,107,.8),rgba(255,107,107,.4),transparent);box-shadow:0 0 20px rgba(255,107,107,.3),0 0 60px rgba(255,107,107,.1);animation:scanDown 4s linear infinite;}
+@keyframes scanDown{0%{top:-5px;opacity:0}5%{opacity:1}95%{opacity:1}100%{top:100%;opacity:0}}
+.xray-grid{position:absolute;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(224,224,224,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(224,224,224,.03) 1px,transparent 1px);background-size:30px 30px;}
+.scan-dot{position:absolute;border-radius:50%;pointer-events:none;animation:scanDot linear infinite;}
+@keyframes scanDot{0%{transform:translateX(-100vw);opacity:0}10%{opacity:.5}50%{opacity:.3}90%{opacity:.1}100%{transform:translateX(100vw);opacity:0}}
+.bone-line{position:absolute;pointer-events:none;z-index:1;opacity:.04;border:1px solid rgba(224,224,224,.3);border-radius:50%;}
+.heartbeat-line{position:absolute;bottom:60px;left:0;right:0;height:40px;pointer-events:none;z-index:1;overflow:hidden;opacity:.08;}
+.heartbeat-line svg{animation:heartScroll 3s linear infinite;}
+@keyframes heartScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.p{display:none;}
+
+/* === Reference Images === */
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;flex:1;overflow-y:auto;align-content:start;padding-bottom:10px;}
+.ref-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .3s;}
+.ref-grid img:hover{transform:scale(1.03);border-color:rgba(255,255,255,.3);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.ref-note{font-size:11px;color:rgba(255,255,255,.35);text-align:center;margin-top:4px;}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+<div class="topbar">
+  <span class="tlogo" onclick="typeof LunaApp!=='undefined'?LunaApp.navigate('monthlyDetail',{month:'2026-03'}):history.back()">&#127754; Luna Whale</span>
+  <div class="tsc"><strong id="cn">1</strong> / <span id="tn">8</span></div>
+  <div class="tbadges"><span class="badge bl">레벨 3</span><span class="badge ba">9~13세</span></div>
+</div>
+<button class="arr" id="bp" onclick="nav(-1)">&lsaquo;</button>
+<button class="arr" id="bn" onclick="nav(1)">&rsaquo;</button>
+<div class="dots" id="db"></div>
+<div id="sw">
+<div class="lcode">26M03A12</div>
+
+<!-- S0: COVER -->
+<div class="slide active" id="s0">
+  <div class="bg"></div>
+  <div class="bgimg" style="background-image:url('../../images/lessons/2026-03/l12-cover.jpg');"></div>
+  <div class="hov"></div>
+  <div class="pt" id="pt"></div>
+  <div class="scan-line"></div>
+  <div class="xray-grid"></div>
+  <div class="bone-line" style="width:150px;height:200px;top:15%;right:10%;transform:rotate(15deg);"></div>
+  <div class="bone-line" style="width:100px;height:120px;bottom:20%;left:12%;transform:rotate(-10deg);"></div>
+  <div class="heartbeat-line"><svg width="1200" height="40" viewBox="0 0 1200 40"><polyline points="0,20 80,20 100,20 110,5 120,35 130,10 140,30 150,20 200,20 280,20 300,20 310,5 320,35 330,10 340,30 350,20 400,20 480,20 500,20 510,5 520,35 530,10 540,30 550,20 600,20 680,20 700,20 710,5 720,35 730,10 740,30 750,20 800,20 880,20 900,20 910,5 920,35 930,10 940,30 950,20 1000,20 1080,20 1100,20 1110,5 1120,35 1130,10 1140,30 1150,20 1200,20" fill="none" stroke="rgba(255,107,107,.5)" stroke-width="1.5"/></svg></div>
+  <div class="sc">
+    <div class="ew">&#129460; 2026년 3월 &middot; 동물</div>
+    <h1 class="stitle">반반 투시 해부학:<br>뼈 위에 피어나는 상상</h1>
+    <p class="ssub">"동물의 반쪽은 뼈, 반쪽은 상상! 해부학 투시 드로잉에 도전해요"</p>
+    <div class="metas">
+      <div class="mc">&#128100; 레벨 3 &middot; 9~13세</div>
+      <div class="mc">&#9201;&#65039; 70분</div>
+      <div class="mc">&#128300; 해부학 투시 + 드로잉</div>
+    </div>
+  </div>
+</div>
+
+<!-- S1: OBJECTIVES -->
+<div class="slide" id="s1">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">수업 목표</div>
+    <h2 class="stitle">오늘 배우는 것들</h2>
+    <div class="gg">
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">&#129460;</div>
+            <h3>해부학 관찰</h3>
+            <p>동물의 뼈 구조를 관찰하고 형태를 이해해요</p>
+            <span class="gc-flip-hint">&#8635; 클릭해서 더 알아봐요</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">&#129460; 해부학 관찰</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; 교육적 효과</div>
+            <p>해부학적 드로잉은 <strong style="color:rgba(120,200,255,.9);">구조적 사고력</strong>과 과학-미술 통합 역량을 강화합니다.</p>
+            <p class="cite">Hetland et al. (2013)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; 유의점</div>
+            <p>무서워하는 아이 배려. 뼈를 "몸의 설계도"로 설명.</p></div>
+            <span class="gc-back-hint">&#8635; 다시 클릭</span>
+          </div>
+        </div>
+      </div>
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">&#9999;&#65039;</div>
+            <h3>트레이싱 기법</h3>
+            <p>트레이싱지를 활용해 정확한 형태를 따라 그려요</p>
+            <span class="gc-flip-hint">&#8635; 클릭해서 더 알아봐요</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">&#9999;&#65039; 트레이싱 기법</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; 교육적 효과</div>
+            <p>트레이싱은 비례와 구조 학습의 효과적 도구. <strong style="color:rgba(120,200,255,.9);">관찰 드로잉 능력</strong> 향상.</p>
+            <p class="cite">Edwards (1979)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; 유의점</div>
+            <p>트레이싱=베끼기가 아닌 학습 도구임을 설명.</p></div>
+            <span class="gc-back-hint">&#8635; 다시 클릭</span>
+          </div>
+        </div>
+      </div>
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">&#127912;</div>
+            <h3>반반 표현</h3>
+            <p>한쪽은 뼈, 한쪽은 살아있는 모습! 대비의 미학을 표현해요</p>
+            <span class="gc-flip-hint">&#8635; 클릭해서 더 알아봐요</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">&#127912; 반반 표현</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; 교육적 효과</div>
+            <p>대비적 표현은 <strong style="color:rgba(120,200,255,.9);">시각적 긴장감</strong>과 조형적 흥미를 유발. 비평적 사고력 발달.</p>
+            <p class="cite">Arnheim (1974)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; 유의점</div>
+            <p>정확한 반반 아니어도 OK. 비율은 자유롭게.</p></div>
+            <span class="gc-back-hint">&#8635; 다시 클릭</span>
+          </div>
+        </div>
+      </div>
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">&#128300;</div>
+            <h3>과학과 미술의 만남</h3>
+            <p>미술과 과학이 만나는 놀라운 경험을 해요!</p>
+            <span class="gc-flip-hint">&#8635; 클릭해서 더 알아봐요</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">&#128300; 과학과 미술의 만남</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; 교육적 효과</div>
+            <p>STEAM 교육은 <strong style="color:rgba(120,200,255,.9);">분야 간 연결 사고</strong>와 통합적 문제 해결 능력을 촉진합니다.</p>
+            <p class="cite">Yakman (2008)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; 유의점</div>
+            <p>과학 지식보다 관찰&middot;표현에 초점.</p></div>
+            <span class="gc-back-hint">&#8635; 다시 클릭</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>동물 X-ray/해부학 이미지 10장+</li>
+        <li>'몸의 설계도' 비유</li>
+        <li>무섭지 않게 호기심 유발</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S2: MATERIALS -->
+<div class="slide" id="s2">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">준비물</div>
+    <h2 class="stitle">수업 전에 준비해요</h2>
+    <div class="ml">
+      <div class="mph"><img src="../../images/lessons/2026-03/l12-materials.jpg" loading="lazy" alt="준비물"></div>
+      <div class="mg">
+        <div class="mi">&#128196; 도화지</div>
+        <div class="mi">&#128396;&#65039; 피그먼트 라이너 (0.1/0.3/0.5mm)</div>
+        <div class="mi">&#127912; 색연필</div>
+        <div class="mi">&#128196; 트레이싱지</div>
+        <div class="mi">&#9999;&#65039; 연필 (2B)</div>
+        <div class="mi">&#128295; 지우개</div>
+        <div class="mi">&#129460; 동물 해부학 참고 이미지</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>트레이싱지+연필(2B) 배분</li>
+        <li>동물 참고 이미지 선택</li>
+        <li>피그먼트 라이너 3종 준비</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!-- REF: REFERENCE IMAGES -->
+<div class="slide" id="s3">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">레퍼런스 이미지</div>
+    <h2 class="stitle" style="font-size:clamp(22px,2.8vw,36px);">참고 작품 살펴보기</h2>
+    <p style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:12px;">선생님용 — 필요시 프린트하여 수업에 활용하세요</p>
+    <div class="ref-grid">
+      <img src="../../images/lessons/2026-03/refs/l12-ref01.jpg" loading="lazy" alt="레퍼런스 1">
+      <img src="../../images/lessons/2026-03/refs/l12-ref02.jpg" loading="lazy" alt="레퍼런스 2">
+      <img src="../../images/lessons/2026-03/refs/l12-ref03.jpg" loading="lazy" alt="레퍼런스 3">
+      <img src="../../images/lessons/2026-03/refs/l12-ref04.jpg" loading="lazy" alt="레퍼런스 4">
+      <img src="../../images/lessons/2026-03/refs/l12-ref05.jpg" loading="lazy" alt="레퍼런스 5">
+      <img src="../../images/lessons/2026-03/refs/l12-ref06.jpg" loading="lazy" alt="레퍼런스 6">
+      <img src="../../images/lessons/2026-03/refs/l12-ref07.jpg" loading="lazy" alt="레퍼런스 7">
+      <img src="../../images/lessons/2026-03/refs/l12-ref08.jpg" loading="lazy" alt="레퍼런스 8">
+      <img src="../../images/lessons/2026-03/refs/l12-ref09.jpg" loading="lazy" alt="레퍼런스 9">
+      <img src="../../images/lessons/2026-03/refs/l12-ref10.jpg" loading="lazy" alt="레퍼런스 10">
+      <img src="../../images/lessons/2026-03/refs/l12-ref11.jpg" loading="lazy" alt="레퍼런스 11">
+      <img src="../../images/lessons/2026-03/refs/l12-ref12.jpg" loading="lazy" alt="레퍼런스 12">
+      <img src="../../images/lessons/2026-03/refs/l12-ref13.jpg" loading="lazy" alt="레퍼런스 13">
+      <img src="../../images/lessons/2026-03/refs/l12-ref14.jpg" loading="lazy" alt="레퍼런스 14">
+      <img src="../../images/lessons/2026-03/refs/l12-ref15.jpg" loading="lazy" alt="레퍼런스 15">
+      <img src="../../images/lessons/2026-03/refs/l12-ref16.jpg" loading="lazy" alt="레퍼런스 16">
+      <img src="../../images/lessons/2026-03/refs/l12-ref17.jpg" loading="lazy" alt="레퍼런스 17">
+      <img src="../../images/lessons/2026-03/refs/l12-ref18.jpg" loading="lazy" alt="레퍼런스 18">
+      <img src="../../images/lessons/2026-03/refs/l12-ref19.jpg" loading="lazy" alt="레퍼런스 19">
+      <img src="../../images/lessons/2026-03/refs/l12-ref20.jpg" loading="lazy" alt="레퍼런스 20">
+      <img src="../../images/lessons/2026-03/refs/l12-ref21.jpg" loading="lazy" alt="레퍼런스 21">
+      <img src="../../images/lessons/2026-03/refs/l12-ref22.jpg" loading="lazy" alt="레퍼런스 22">
+      <img src="../../images/lessons/2026-03/refs/l12-ref23.jpg" loading="lazy" alt="레퍼런스 23">
+      <img src="../../images/lessons/2026-03/refs/l12-ref24.jpg" loading="lazy" alt="레퍼런스 24">
+      <img src="../../images/lessons/2026-03/refs/l12-ref25.jpg" loading="lazy" alt="레퍼런스 25">
+      <img src="../../images/lessons/2026-03/refs/l12-ref26.jpg" loading="lazy" alt="레퍼런스 26">
+      <img src="../../images/lessons/2026-03/refs/l12-ref27.jpg" loading="lazy" alt="레퍼런스 27">
+      <img src="../../images/lessons/2026-03/refs/l12-ref28.jpg" loading="lazy" alt="레퍼런스 28">
+      <img src="../../images/lessons/2026-03/refs/l12-ref29.jpg" loading="lazy" alt="레퍼런스 29">
+      <img src="../../images/lessons/2026-03/refs/l12-ref30.jpg" loading="lazy" alt="레퍼런스 30">
+      <img src="../../images/lessons/2026-03/refs/l12-ref31.jpg" loading="lazy" alt="레퍼런스 31">
+      <img src="../../images/lessons/2026-03/refs/l12-ref32.jpg" loading="lazy" alt="레퍼런스 32">
+      <img src="../../images/lessons/2026-03/refs/l12-ref33.jpg" loading="lazy" alt="레퍼런스 33">
+      <img src="../../images/lessons/2026-03/refs/l12-ref34.jpg" loading="lazy" alt="레퍼런스 34">
+      <img src="../../images/lessons/2026-03/refs/l12-ref35.jpg" loading="lazy" alt="레퍼런스 35">
+      <img src="../../images/lessons/2026-03/refs/l12-ref36.jpg" loading="lazy" alt="레퍼런스 36">
+      <img src="../../images/lessons/2026-03/refs/l12-ref37.jpg" loading="lazy" alt="레퍼런스 37">
+      <img src="../../images/lessons/2026-03/refs/l12-ref38.jpg" loading="lazy" alt="레퍼런스 38">
+      <img src="../../images/lessons/2026-03/refs/l12-ref39.jpg" loading="lazy" alt="레퍼런스 39">
+      <img src="../../images/lessons/2026-03/refs/l12-ref40.jpg" loading="lazy" alt="레퍼런스 40">
+    </div>
+    <div class="ref-note">이미지를 클릭하면 크게 볼 수 있어요</div>
+  </div>
+</div>
+
+<!-- REF2: BONE REFERENCE IMAGES -->
+<div class="slide" id="s4">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">&#129460; 뼈 레퍼런스</div>
+    <h2 class="stitle" style="font-size:clamp(22px,2.8vw,36px);">동물 뼈 구조 참고 이미지</h2>
+    <p style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:12px;">선생님용 — 동물 해부학/골격 이미지 모음</p>
+    <div class="ref-grid">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref01.jpg" loading="lazy" alt="뼈 레퍼런스 1">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref02.jpg" loading="lazy" alt="뼈 레퍼런스 2">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref03.jpg" loading="lazy" alt="뼈 레퍼런스 3">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref04.jpg" loading="lazy" alt="뼈 레퍼런스 4">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref05.jpg" loading="lazy" alt="뼈 레퍼런스 5">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref06.jpg" loading="lazy" alt="뼈 레퍼런스 6">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref07.jpg" loading="lazy" alt="뼈 레퍼런스 7">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref08.jpg" loading="lazy" alt="뼈 레퍼런스 8">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref09.jpg" loading="lazy" alt="뼈 레퍼런스 9">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref10.jpg" loading="lazy" alt="뼈 레퍼런스 10">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref11.jpg" loading="lazy" alt="뼈 레퍼런스 11">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref12.jpg" loading="lazy" alt="뼈 레퍼런스 12">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref13.jpg" loading="lazy" alt="뼈 레퍼런스 13">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref14.jpg" loading="lazy" alt="뼈 레퍼런스 14">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref15.jpg" loading="lazy" alt="뼈 레퍼런스 15">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref16.jpg" loading="lazy" alt="뼈 레퍼런스 16">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref17.jpg" loading="lazy" alt="뼈 레퍼런스 17">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref18.jpg" loading="lazy" alt="뼈 레퍼런스 18">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref19.jpg" loading="lazy" alt="뼈 레퍼런스 19">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref20.jpg" loading="lazy" alt="뼈 레퍼런스 20">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref21.jpg" loading="lazy" alt="뼈 레퍼런스 21">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref22.jpg" loading="lazy" alt="뼈 레퍼런스 22">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref23.jpg" loading="lazy" alt="뼈 레퍼런스 23">
+      <img src="../../images/lessons/2026-03/refs/l12-bone-ref24.jpg" loading="lazy" alt="뼈 레퍼런스 24">
+    </div>
+    <div class="ref-note">이미지를 클릭하면 크게 볼 수 있어요</div>
+  </div>
+</div>
+
+<!-- REF3: ANIMAL REFERENCE IMAGES -->
+<div class="slide" id="s5">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">&#128062; 동물 레퍼런스</div>
+    <h2 class="stitle" style="font-size:clamp(22px,2.8vw,36px);">동물 사진 참고 이미지</h2>
+    <p style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:12px;">선생님용 — 실사 동물 사진 레퍼런스 모음</p>
+    <div class="ref-grid">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref01.jpg" loading="lazy" alt="동물 레퍼런스 1">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref02.jpg" loading="lazy" alt="동물 레퍼런스 2">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref03.jpg" loading="lazy" alt="동물 레퍼런스 3">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref04.jpg" loading="lazy" alt="동물 레퍼런스 4">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref05.jpg" loading="lazy" alt="동물 레퍼런스 5">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref06.jpg" loading="lazy" alt="동물 레퍼런스 6">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref07.jpg" loading="lazy" alt="동물 레퍼런스 7">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref08.jpg" loading="lazy" alt="동물 레퍼런스 8">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref09.jpg" loading="lazy" alt="동물 레퍼런스 9">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref10.jpg" loading="lazy" alt="동물 레퍼런스 10">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref11.jpg" loading="lazy" alt="동물 레퍼런스 11">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref12.jpg" loading="lazy" alt="동물 레퍼런스 12">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref13.jpg" loading="lazy" alt="동물 레퍼런스 13">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref14.jpg" loading="lazy" alt="동물 레퍼런스 14">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref15.jpg" loading="lazy" alt="동물 레퍼런스 15">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref16.jpg" loading="lazy" alt="동물 레퍼런스 16">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref17.jpg" loading="lazy" alt="동물 레퍼런스 17">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref18.jpg" loading="lazy" alt="동물 레퍼런스 18">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref19.jpg" loading="lazy" alt="동물 레퍼런스 19">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref20.jpg" loading="lazy" alt="동물 레퍼런스 20">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref21.jpg" loading="lazy" alt="동물 레퍼런스 21">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref22.jpg" loading="lazy" alt="동물 레퍼런스 22">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref23.jpg" loading="lazy" alt="동물 레퍼런스 23">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref24.jpg" loading="lazy" alt="동물 레퍼런스 24">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref25.jpg" loading="lazy" alt="동물 레퍼런스 25">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref26.jpg" loading="lazy" alt="동물 레퍼런스 26">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref27.jpg" loading="lazy" alt="동물 레퍼런스 27">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref28.jpg" loading="lazy" alt="동물 레퍼런스 28">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref29.jpg" loading="lazy" alt="동물 레퍼런스 29">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref30.jpg" loading="lazy" alt="동물 레퍼런스 30">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref31.jpg" loading="lazy" alt="동물 레퍼런스 31">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref32.jpg" loading="lazy" alt="동물 레퍼런스 32">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref33.jpg" loading="lazy" alt="동물 레퍼런스 33">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref34.jpg" loading="lazy" alt="동물 레퍼런스 34">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref35.jpg" loading="lazy" alt="동물 레퍼런스 35">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref36.jpg" loading="lazy" alt="동물 레퍼런스 36">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref37.jpg" loading="lazy" alt="동물 레퍼런스 37">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref38.jpg" loading="lazy" alt="동물 레퍼런스 38">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref39.jpg" loading="lazy" alt="동물 레퍼런스 39">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref40.jpg" loading="lazy" alt="동물 레퍼런스 40">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref41.jpg" loading="lazy" alt="동물 레퍼런스 41">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref42.jpg" loading="lazy" alt="동물 레퍼런스 42">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref43.jpg" loading="lazy" alt="동물 레퍼런스 43">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref44.jpg" loading="lazy" alt="동물 레퍼런스 44">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref45.jpg" loading="lazy" alt="동물 레퍼런스 45">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref46.jpg" loading="lazy" alt="동물 레퍼런스 46">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref47.jpg" loading="lazy" alt="동물 레퍼런스 47">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref48.jpg" loading="lazy" alt="동물 레퍼런스 48">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref49.jpg" loading="lazy" alt="동물 레퍼런스 49">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref50.jpg" loading="lazy" alt="동물 레퍼런스 50">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref51.jpg" loading="lazy" alt="동물 레퍼런스 51">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref52.jpg" loading="lazy" alt="동물 레퍼런스 52">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref53.jpg" loading="lazy" alt="동물 레퍼런스 53">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref54.jpg" loading="lazy" alt="동물 레퍼런스 54">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref55.jpg" loading="lazy" alt="동물 레퍼런스 55">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref56.jpg" loading="lazy" alt="동물 레퍼런스 56">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref57.jpg" loading="lazy" alt="동물 레퍼런스 57">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref58.jpg" loading="lazy" alt="동물 레퍼런스 58">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref59.jpg" loading="lazy" alt="동물 레퍼런스 59">
+      <img src="../../images/lessons/2026-03/refs/l12-animal-ref60.jpg" loading="lazy" alt="동물 레퍼런스 60">
+    </div>
+    <div class="ref-note">이미지를 클릭하면 크게 볼 수 있어요</div>
+  </div>
+</div>
+
+<!-- S3: STEP 1 -->
+<div class="slide" id="s6">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">단계별 가이드</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">차근차근 따라해요</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2026-03/l12-step1.jpg" loading="lazy" alt="Step 1"></div>
+      <div class="sb">
+        <div class="snum">01</div>
+        <h3>동물 <em>뼈 탐험!</em></h3>
+        <p>여러 동물의 X-ray/해부학 이미지를 보며 "뼈가 어떻게 생겼어?" "어떤 동물인지 알 수 있어?" 관찰해요</p>
+        <div class="tip">&#128161; 고양이, 새, 물고기 등 다양한 동물 뼈 이미지!</div>
+      </div>
+    </div>
+    <!-- Interactive: Animal Roulette -->
+    <div id="animal-roulette" style="display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:clamp(16px,2vw,28px);margin-top:12px;width:100%;max-width:420px;align-self:center;">
+      <div style="font-size:clamp(11px,1vw,14px);color:rgba(255,255,255,0.4);letter-spacing:3px;font-weight:700;margin-bottom:clamp(10px,1.2vw,16px);">&#129412; ANIMAL ROULETTE</div>
+      <div id="roul-display" style="width:clamp(140px,16vw,200px);height:clamp(140px,16vw,200px);background:linear-gradient(135deg,#1e293b,#334155);border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,0.1);margin-bottom:clamp(12px,1.5vw,20px);transition:all .3s;">
+        <span style="font-size:clamp(48px,6vw,72px);opacity:0.3;">?</span>
+      </div>
+      <div id="roul-name" style="font-size:clamp(18px,2vw,28px);font-weight:800;color:#fff;min-height:36px;margin-bottom:8px;"></div>
+      <div id="roul-hint" style="font-size:clamp(12px,1.1vw,15px);color:rgba(255,255,255,0.45);min-height:20px;margin-bottom:clamp(12px,1.5vw,20px);text-align:center;"></div>
+      <button id="roul-btn" onclick="spinAnimal()" style="background:linear-gradient(135deg,#059669,#0d9488);color:#fff;border:none;padding:clamp(12px,1.3vw,18px) clamp(32px,4vw,56px);border-radius:14px;font-size:clamp(15px,1.4vw,20px);font-weight:800;cursor:pointer;letter-spacing:1px;transition:all .2s;box-shadow:0 4px 20px rgba(5,150,105,0.3);">&#127920; 돌려!</button>
+    </div>
+      <div id="lbox" onclick="if(event.target===this)closeLb()">
+    <img id="lbox-img" src="" alt="">
+    <div class="lbox-actions">
+      <a class="lbox-dl" href="" download="">&#11015; 다운로드</a>
+      <button class="lbox-cl" onclick="closeLb()">&#10005; 닫기</button>
+    </div>
+  </div>
+
+<script>
+    (function(){
+      const animals=[
+        {n:'고양이',e:'&#128049;',h:'유연한 몸통과 긴 꼬리에 주목!'},
+        {n:'새',e:'&#128038;',h:'날개뼈와 가벼운 골격 관찰!'},
+        {n:'물고기',e:'&#128031;',h:'지느러미와 비늘 아래 뼈를 상상해봐!'},
+        {n:'개구리',e:'&#128056;',h:'긴 뒷다리 뼈가 특징!'},
+        {n:'토끼',e:'&#128048;',h:'긴 귀와 뒷다리 골격이 독특해!'},
+        {n:'뱀',e:'&#128013;',h:'갈비뼈가 엄청 많아요!'},
+        {n:'거북이',e:'&#128034;',h:'등딱지 안에 뼈가 숨어있어!'},
+        {n:'박쥐',e:'&#129415;',h:'날개 안에 손가락 뼈가!'},
+        {n:'공룡',e:'&#129430;',h:'거대한 뼈 구조를 상상해봐!'},
+        {n:'올빼미',e:'&#129417;',h:'목뼈가 특별해 - 270도 회전!'},
+        {n:'도마뱀',e:'&#129422;',h:'꼬리뼈가 분리되는 신기한 구조!'},
+        {n:'고래',e:'&#128011;',h:'지느러미 안에 손 뼈가 숨어있어!'}
+      ];
+      let spinning=false;
+      window.spinAnimal=function(){
+        if(spinning)return;spinning=true;
+        const btn=document.getElementById('roul-btn');btn.disabled=true;btn.style.opacity='0.5';
+        const disp=document.getElementById('roul-display');
+        const nm=document.getElementById('roul-name');
+        const hint=document.getElementById('roul-hint');
+        let count=0;const total=15+Math.floor(Math.random()*8);
+        const interval=setInterval(()=>{
+          const a=animals[count%animals.length];
+          disp.innerHTML='<span style="font-size:clamp(48px,6vw,72px);">'+a.e+'</span>';
+          disp.style.borderColor='rgba(255,255,255,0.2)';
+          nm.textContent=a.n;hint.textContent='';
+          count++;
+          if(count>=total){
+            clearInterval(interval);
+            const final=animals[Math.floor(Math.random()*animals.length)];
+            disp.innerHTML='<span style="font-size:clamp(56px,7vw,84px);">'+final.e+'</span>';
+            disp.style.borderColor='#10b981';disp.style.background='linear-gradient(135deg,#064e3b,#065f46)';
+            nm.innerHTML='<span style="color:#34d399;">'+final.n+'</span>';
+            hint.textContent=final.h;
+            setTimeout(()=>{disp.style.background='linear-gradient(135deg,#1e293b,#334155)';disp.style.borderColor='rgba(255,255,255,0.1)';btn.disabled=false;btn.style.opacity='1';spinning=false;},2000);
+          }
+        },80+count*8);
+      };
+    })();
+    </script>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>가볍게 따라 그리기</li>
+        <li>도화지로 전사 방법 안내</li>
+        <li>소요시간: 약 15분</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S4: STEP 2 -->
+<div class="slide" id="s7">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">단계별 가이드</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">차근차근 따라해요</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2026-03/l12-step2.jpg" loading="lazy" alt="Step 2"></div>
+      <div class="sb">
+        <div class="snum">02</div>
+        <h3><em>트레이싱</em>으로 윤곽 따기</h3>
+        <p>마음에 드는 동물을 고르고, 트레이싱지를 대고 연필로 윤곽선을 따라 그려요</p>
+        <div class="tip">&#128161; 힘 조절! 가볍게 따라 그린 뒤 도화지로 옮기기</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>가운데 선 긋기</li>
+        <li>한쪽은 라이너, 한쪽은 색연필</li>
+        <li>소요시간: 약 20분</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S5: STEP 3 -->
+<div class="slide" id="s8">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">단계별 가이드</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">차근차근 따라해요</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2026-03/l12-step3.jpg" loading="lazy" alt="Step 3"></div>
+      <div class="sb">
+        <div class="snum">03</div>
+        <h3><em>반반</em>으로 나누기</h3>
+        <p>동물의 한쪽은 피그먼트 라이너로 뼈 구조를, 다른 쪽은 살아있는 모습을 색연필로 그려요</p>
+        <div class="tip">&#128161; 얇은 라이너(0.1mm)로 뼈, 굵은 라이너(0.5mm)로 외곽</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>뼈: 얇은 선(0.1mm)</li>
+        <li>생체: 색연필 컬러</li>
+        <li>소요시간: 약 20분</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S6: STEP 4 -->
+<div class="slide" id="s9">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">단계별 가이드</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">차근차근 따라해요</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2026-03/l12-step4.jpg" loading="lazy" alt="Step 4"></div>
+      <div class="sb">
+        <div class="snum">04</div>
+        <h3>디테일 &amp; <em>완성!</em></h3>
+        <p>뼈 쪽에는 세밀한 관절&middot;결, 살아있는 쪽에는 털&middot;무늬를 추가해 완성!</p>
+        <div class="tip">&#128161; 양쪽의 대비가 핵심! 뼈=흑백, 생체=컬러</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>디테일 추가 시간</li>
+        <li>대비 효과 확인</li>
+        <li>소요시간: 약 15분</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S7: GALLERY -->
+<div class="slide" id="s10">
+  <div class="bg"></div>
+  <div class="sc" style="padding:50px 60px 16px;">
+    <div class="ew" style="margin-bottom:2px;">&#127912; 작품 갤러리</div>
+    <h2 class="stitle" style="font-size:clamp(20px,2.5vw,32px);margin-bottom:2px;">이런 작품들이 나와요!</h2>
+    <p style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:6px;">클릭하면 크게 볼 수 있어요</p>
+    <div class="gal-wrap">
+      <div class="gal-grid">
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal01.jpg','l12-gal01.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal01.jpg" loading="lazy" alt="작품1"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal02.jpg','l12-gal02.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal02.jpg" loading="lazy" alt="작품2"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal03.jpg','l12-gal03.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal03.jpg" loading="lazy" alt="작품3"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal04.jpg','l12-gal04.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal04.jpg" loading="lazy" alt="작품4"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal05.jpg','l12-gal05.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal05.jpg" loading="lazy" alt="작품5"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal06.jpg','l12-gal06.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal06.jpg" loading="lazy" alt="작품6"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal07.jpg','l12-gal07.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal07.jpg" loading="lazy" alt="작품7"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal08.jpg','l12-gal08.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal08.jpg" loading="lazy" alt="작품8"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal09.jpg','l12-gal09.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal09.jpg" loading="lazy" alt="작품9"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal10.jpg','l12-gal10.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal10.jpg" loading="lazy" alt="작품10"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal11.jpg','l12-gal11.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal11.jpg" loading="lazy" alt="작품11"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal12.jpg','l12-gal12.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal12.jpg" loading="lazy" alt="작품12"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal13.jpg','l12-gal13.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal13.jpg" loading="lazy" alt="작품13"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal14.jpg','l12-gal14.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal14.jpg" loading="lazy" alt="작품14"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal15.jpg','l12-gal15.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal15.jpg" loading="lazy" alt="작품15"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal16.jpg','l12-gal16.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal16.jpg" loading="lazy" alt="작품16"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal17.jpg','l12-gal17.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal17.jpg" loading="lazy" alt="작품17"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal18.jpg','l12-gal18.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal18.jpg" loading="lazy" alt="작품18"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal19.jpg','l12-gal19.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal19.jpg" loading="lazy" alt="작품19"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal20.jpg','l12-gal20.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal20.jpg" loading="lazy" alt="작품20"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal21.jpg','l12-gal21.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal21.jpg" loading="lazy" alt="작품21"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal22.jpg','l12-gal22.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal22.jpg" loading="lazy" alt="작품22"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal23.jpg','l12-gal23.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal23.jpg" loading="lazy" alt="작품23"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal24.jpg','l12-gal24.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal24.jpg" loading="lazy" alt="작품24"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal25.jpg','l12-gal25.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal25.jpg" loading="lazy" alt="작품25"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal26.jpg','l12-gal26.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal26.jpg" loading="lazy" alt="작품26"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal27.jpg','l12-gal27.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal27.jpg" loading="lazy" alt="작품27"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal28.jpg','l12-gal28.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal28.jpg" loading="lazy" alt="작품28"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal29.jpg','l12-gal29.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal29.jpg" loading="lazy" alt="작품29"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal30.jpg','l12-gal30.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal30.jpg" loading="lazy" alt="작품30"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal31.jpg','l12-gal31.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal31.jpg" loading="lazy" alt="작품31"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal32.jpg','l12-gal32.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal32.jpg" loading="lazy" alt="작품32"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal33.jpg','l12-gal33.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal33.jpg" loading="lazy" alt="작품33"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal34.jpg','l12-gal34.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal34.jpg" loading="lazy" alt="작품34"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal35.jpg','l12-gal35.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal35.jpg" loading="lazy" alt="작품35"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal36.jpg','l12-gal36.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal36.jpg" loading="lazy" alt="작품36"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal37.jpg','l12-gal37.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal37.jpg" loading="lazy" alt="작품37"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal38.jpg','l12-gal38.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal38.jpg" loading="lazy" alt="작품38"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal39.jpg','l12-gal39.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal39.jpg" loading="lazy" alt="작품39"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal40.jpg','l12-gal40.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal40.jpg" loading="lazy" alt="작품40"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal41.jpg','l12-gal41.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal41.jpg" loading="lazy" alt="작품41"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal42.jpg','l12-gal42.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal42.jpg" loading="lazy" alt="작품42"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal43.jpg','l12-gal43.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal43.jpg" loading="lazy" alt="작품43"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal44.jpg','l12-gal44.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal44.jpg" loading="lazy" alt="작품44"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal45.jpg','l12-gal45.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal45.jpg" loading="lazy" alt="작품45"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal46.jpg','l12-gal46.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal46.jpg" loading="lazy" alt="작품46"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal47.jpg','l12-gal47.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal47.jpg" loading="lazy" alt="작품47"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal48.jpg','l12-gal48.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal48.jpg" loading="lazy" alt="작품48"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal49.jpg','l12-gal49.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal49.jpg" loading="lazy" alt="작품49"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal50.jpg','l12-gal50.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal50.jpg" loading="lazy" alt="작품50"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal51.jpg','l12-gal51.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal51.jpg" loading="lazy" alt="작품51"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal52.jpg','l12-gal52.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal52.jpg" loading="lazy" alt="작품52"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal53.jpg','l12-gal53.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal53.jpg" loading="lazy" alt="작품53"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal54.jpg','l12-gal54.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal54.jpg" loading="lazy" alt="작품54"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal55.jpg','l12-gal55.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal55.jpg" loading="lazy" alt="작품55"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal56.jpg','l12-gal56.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal56.jpg" loading="lazy" alt="작품56"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal57.jpg','l12-gal57.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal57.jpg" loading="lazy" alt="작품57"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal58.jpg','l12-gal58.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal58.jpg" loading="lazy" alt="작품58"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal59.jpg','l12-gal59.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal59.jpg" loading="lazy" alt="작품59"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal60.jpg','l12-gal60.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal60.jpg" loading="lazy" alt="작품60"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal61.jpg','l12-gal61.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal61.jpg" loading="lazy" alt="작품61"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal62.jpg','l12-gal62.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal62.jpg" loading="lazy" alt="작품62"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal63.jpg','l12-gal63.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal63.jpg" loading="lazy" alt="작품63"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal64.jpg','l12-gal64.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal64.jpg" loading="lazy" alt="작품64"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal65.jpg','l12-gal65.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal65.jpg" loading="lazy" alt="작품65"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal66.jpg','l12-gal66.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal66.jpg" loading="lazy" alt="작품66"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal67.jpg','l12-gal67.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal67.jpg" loading="lazy" alt="작품67"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal68.jpg','l12-gal68.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal68.jpg" loading="lazy" alt="작품68"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal69.jpg','l12-gal69.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal69.jpg" loading="lazy" alt="작품69"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal70.jpg','l12-gal70.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal70.jpg" loading="lazy" alt="작품70"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal71.jpg','l12-gal71.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal71.jpg" loading="lazy" alt="작품71"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal72.jpg','l12-gal72.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal72.jpg" loading="lazy" alt="작품72"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal73.jpg','l12-gal73.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal73.jpg" loading="lazy" alt="작품73"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal74.jpg','l12-gal74.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal74.jpg" loading="lazy" alt="작품74"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal75.jpg','l12-gal75.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal75.jpg" loading="lazy" alt="작품75"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal76.jpg','l12-gal76.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal76.jpg" loading="lazy" alt="작품76"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal77.jpg','l12-gal77.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal77.jpg" loading="lazy" alt="작품77"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal78.jpg','l12-gal78.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal78.jpg" loading="lazy" alt="작품78"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal79.jpg','l12-gal79.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal79.jpg" loading="lazy" alt="작품79"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal80.jpg','l12-gal80.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal80.jpg" loading="lazy" alt="작품80"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal81.jpg','l12-gal81.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal81.jpg" loading="lazy" alt="작품81"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal82.jpg','l12-gal82.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal82.jpg" loading="lazy" alt="작품82"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal83.jpg','l12-gal83.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal83.jpg" loading="lazy" alt="작품83"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal84.jpg','l12-gal84.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal84.jpg" loading="lazy" alt="작품84"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal85.jpg','l12-gal85.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal85.jpg" loading="lazy" alt="작품85"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal86.jpg','l12-gal86.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal86.jpg" loading="lazy" alt="작품86"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal87.jpg','l12-gal87.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal87.jpg" loading="lazy" alt="작품87"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal88.jpg','l12-gal88.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal88.jpg" loading="lazy" alt="작품88"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-03/l12-gal89.jpg','l12-gal89.jpg')"><img src="../../images/lessons/2026-03/thumbs/l12-gal89.jpg" loading="lazy" alt="작품89"></div>
+      </div>
+
+    </div>
+    <!-- AI Report Panel -->
+    <div class="ai-panel" id="aiPanel" onclick="if(event.target===this)this.classList.remove('open')">
+      <div class="ai-box">
+        <button class="ai-close" onclick="document.getElementById('aiPanel').classList.remove('open')">&#10005;</button>
+        <h3>&#10024; 학부모 안내 문구</h3>
+        <p class="ai-desc">오늘 수업 후 학부모님께 보낼 메시지 예시입니다. 복사 버튼을 눌러 바로 사용하세요!</p>
+        <div class="ai-msg">안녕하세요! 오늘 아이들이 동물 해부학 드로잉에 도전했어요 &#129460; 한쪽은 뼈, 한쪽은 살아있는 모습을 그리는 "반반 투시" 활동이었답니다!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">&#128300; 과학과 미술이 만났어요! 오늘 아이들이 동물의 뼈 구조를 관찰하고 트레이싱 기법으로 정확하게 표현한 뒤, 반반으로 나눠 그리는 멋진 작품을 완성했어요!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">오늘은 피그먼트 라이너로 세밀한 뼈 드로잉에 도전했어요 &#9999;&#65039; 관찰력과 집중력이 한층 성장하는 시간이었답니다!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">&#129460; "뼈 위에 피어나는 상상" 오늘 아이들이 동물의 내부와 외부를 동시에 표현하는 놀라운 경험을 했어요. STEAM 교육의 진수였답니다!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">안녕하세요, 오늘은 트레이싱지를 활용한 해부학 드로잉 수업이었어요 &#127912; 한쪽은 흑백 뼈, 한쪽은 컬러 생체의 대비가 정말 멋졌답니다!<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+        <div class="ai-msg">&#128300;&#129460; 우리 반 해부학 아티스트들! 오늘 완성한 반반 투시 작품의 디테일이 정말 놀라워요. 집에서 꼭 자세히 감상해주세요 &#128522;<button class="ai-copy" onclick="copyMsg(this)">복사</button></div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; 수업 진행 노트</strong>
+      <ul>
+        <li>반반 투시 전시</li>
+        <li>'내 동물의 비밀' 발표</li>
+        <li>사진 촬영</li>
+      </ul>
+    </div>
+  </div>
+  <div class="end-bar">
+    <button class="back-btn" onclick="typeof LunaApp!=='undefined'?LunaApp.navigate('monthlyDetail',{month:'2026-03'}):history.back()">&#128218; 수업 홈</button>
+    <button class="back-btn" onclick="typeof LunaApp!=='undefined'?LunaApp.navigate('home'):location.href='../../index.html'">&#127968; 메인 페이지</button>
+    <button class="ai-btn" onclick="document.getElementById('aiPanel').classList.add('open')">&#10024; AI 리포트</button>
+  </div>
+</div>
+
+</div>
+<script>
+const total=11;let cur=0;
+function buildDots(){const db=document.getElementById('db');db.innerHTML='';for(let i=0;i<total;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=(()=>{const x=i;return()=>go(x);})();db.appendChild(d);}}
+function go(n){if(n===cur)return;const slides=document.querySelectorAll('.slide');slides[cur].classList.remove('active');slides[cur].classList.add('exit-left');slides[n].classList.remove('exit-left');slides[n].classList.add('active');document.querySelectorAll('.dot')[cur].classList.remove('active');document.querySelectorAll('.dot')[n].classList.add('active');cur=n;document.getElementById('cn').textContent=cur+1;document.getElementById('bp').disabled=cur===0;document.getElementById('bn').disabled=cur===total-1;setTimeout(()=>document.querySelectorAll('.slide').forEach(s=>{if(!s.classList.contains('active'))s.classList.remove('exit-left');}),700);}
+function nav(d){if(cur+d>=0&&cur+d<total)go(cur+d);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')nav(1);if(e.key==='ArrowLeft')nav(-1);if(e.key==='Escape')closeLb();});
+let tx=0;document.getElementById('sw').addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.getElementById('sw').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)nav(dx<0?1:-1);});
+(function(){
+  const pt=document.getElementById('pt');
+  // Scanning dots moving horizontally
+  for(let i=0;i<12;i++){
+    const d=document.createElement('div');d.className='scan-dot';
+    const s=3+Math.random()*5;
+    d.style.cssText='width:'+s+'px;height:'+s+'px;top:'+(Math.random()*90)+'%;background:rgba('+Math.round(200+Math.random()*55)+','+Math.round(200+Math.random()*55)+','+Math.round(200+Math.random()*55)+',.3);animation-duration:'+(4+Math.random()*6)+'s;animation-delay:'+Math.random()*8+'s;';
+    pt.appendChild(d);
+  }
+  // Add scan line to ALL slides (not just cover)
+  document.querySelectorAll('.slide').forEach((slide,idx)=>{
+    if(idx===0)return; // cover already has it
+    const sl=document.createElement('div');sl.className='scan-line';
+    sl.style.animationDelay=(idx*0.5)+'s';
+    slide.querySelector('.bg').appendChild(sl);
+  });
+  // Add xray grid to all slides
+  document.querySelectorAll('.slide:not(#s0) .bg').forEach(bg=>{
+    const g=document.createElement('div');g.className='xray-grid';
+    bg.appendChild(g);
+  });
+})();
+buildDots();document.getElementById('tn').textContent=total;document.getElementById('bp').disabled=true;
+
+function copyMsg(btn){var t=btn.parentElement.childNodes[0].textContent.trim();navigator.clipboard.writeText(t).then(function(){btn.textContent='복사됨!';btn.classList.add('copied');setTimeout(function(){btn.textContent='복사';btn.classList.remove('copied');},1500);});}
+function openLb(src,fn){var lb=document.getElementById('lbox');lb.querySelector('#lbox-img').src=src;var dl=lb.querySelector('.lbox-dl');dl.href=src;dl.download=fn;lb.classList.add('open');}
+function closeLb(){document.getElementById('lbox').classList.remove('open');}
+document.querySelectorAll(".ref-grid img").forEach(i=>i.addEventListener("click",()=>openLb(i.src,i.alt||"ref")));
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<!-- Recent Lessons -->
+<script src="../../assets/js/recent-lessons.js?v=0321"></script>
+<script>document.addEventListener("DOMContentLoaded",function(){if(typeof RecentLessons!=="undefined")RecentLessons.saveFromLessonPage();});</script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

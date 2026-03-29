@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>오일러의 다리 건너기 - Luna Math</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+:root {
+  --bg: #0f1729;
+  --card: #1a2640;
+  --accent: #ec4899;
+  --accent2: #db2777;
+  --gold: #f59e0b;
+  --green: #22c55e;
+  --red: #ef4444;
+  --text: #e2e8f0;
+  --dim: #94a3b8;
+  --border: rgba(236,72,153,0.2);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Pretendard Variable', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 32px;
+  background: linear-gradient(135deg, rgba(26,38,64,0.95), rgba(15,23,41,0.95));
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(12px);
+}
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 10px;
+  background: rgba(236,72,153,0.1);
+  border: 1px solid var(--border);
+  color: var(--accent); font-size: 14px; font-weight: 600;
+  text-decoration: none; transition: all 0.2s;
+  cursor: pointer;
+}
+.back-btn:hover { background: rgba(236,72,153,0.2); transform: translateX(-2px); }
+.header h1 { font-size: 22px; font-weight: 800; }
+.header h1 span { background: linear-gradient(135deg, var(--accent), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+.container { max-width: 960px; margin: 0 auto; padding: 24px 20px 60px; }
+
+/* Intro Card */
+.intro-card {
+  background: linear-gradient(135deg, var(--card), rgba(26,38,64,0.8));
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px 32px;
+  margin-bottom: 32px;
+  position: relative; overflow: hidden;
+}
+.intro-card::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(236,72,153,0.15), transparent 70%);
+  border-radius: 50%;
+}
+.intro-card h2 { font-size: 18px; color: var(--accent); margin-bottom: 12px; }
+.intro-card p { font-size: 15px; line-height: 1.7; color: var(--dim); }
+
+/* Scenario Grid */
+.grid-wrap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.scenario-card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.scenario-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(236,72,153,0.15);
+}
+.scenario-card.active {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(236,72,153,0.08), var(--card));
+}
+.scenario-card .emoji { font-size: 32px; margin-bottom: 8px; display: block; }
+.scenario-card .name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.scenario-card .desc { font-size: 13px; color: var(--dim); }
+.scenario-card .diff {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 12px; color: var(--gold);
+}
+.scenario-card .solved-badge {
+  position: absolute; top: 12px; left: 12px;
+  font-size: 18px; display: none;
+}
+.scenario-card.solved .solved-badge { display: block; }
+
+/* Game Area */
+.game-area {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+.game-area.visible { display: flex; }
+.canvas-wrap {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+}
+canvas#gameCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: pointer;
+}
+
+/* Info Panel */
+.info-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+.info-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 0;
+  font-size: 14px;
+}
+.info-label { color: var(--dim); min-width: 100px; font-weight: 600; }
+.info-val { color: var(--text); }
+.info-val.accent { color: var(--accent); font-weight: 700; font-size: 16px; }
+.info-formula {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(236,72,153,0.06);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--gold);
+  font-weight: 600;
+}
+.btn-row {
+  display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;
+}
+.action-btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+}
+.action-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(236,72,153,0.3); }
+.action-btn.secondary {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--dim);
+}
+.action-btn.secondary:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+.result-msg {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  display: none;
+}
+.result-msg.show { display: block; animation: fadeSlide 0.3s ease; }
+.result-msg.success { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: var(--green); }
+.result-msg.fail { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: var(--red); }
+.result-msg.warn { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: var(--gold); }
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .grid-wrap { grid-template-columns: repeat(2, 1fr); }
+  .header { padding: 14px 16px; }
+  .header h1 { font-size: 18px; }
+  .container { padding: 16px 12px 40px; }
+  .info-row { flex-direction: column; align-items: flex-start; gap: 2px; }
+}
+@media (max-width: 480px) {
+  .grid-wrap { grid-template-columns: 1fr; }
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-btn" href="index.html">← Luna Math</a>
+  <h1><span>🌉 오일러의 다리 건너기</span></h1>
+</div>
+
+<div class="container">
+  <div class="intro-card">
+    <h2>쾨니히스베르크의 다리 문제</h2>
+    <p>1736년, 프로이센의 도시 쾨니히스베르크에는 7개의 다리가 있었습니다. 시민들은 궁금했어요: "모든 다리를 정확히 한 번씩만 건너서 산책할 수 있을까?" 수학자 오일러는 이것이 불가능함을 증명했고, 이것이 그래프 이론의 시작이 되었습니다! 당신은 어떤 퍼즐을 풀 수 있을까요?</p>
+  </div>
+
+  <div class="grid-wrap" id="gridWrap"></div>
+
+  <div class="game-area" id="gameArea">
+    <div class="canvas-wrap">
+      <canvas id="gameCanvas" width="880" height="500"></canvas>
+    </div>
+    <div class="info-panel">
+      <div class="info-row">
+        <span class="info-label">규칙:</span>
+        <span class="info-val">모든 다리를 정확히 한 번씩만 건너세요!</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">건넌 다리:</span>
+        <span class="info-val accent" id="bridgeCount">0 / 0</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">각 섬의 차수:</span>
+        <span id="degreeInfo" class="info-val"></span>
+      </div>
+      <div class="info-formula">한붓그리기 조건: 홀수 차수 노드가 0개 또는 2개</div>
+      <div class="btn-row">
+        <button class="action-btn secondary" onclick="resetPath()">↩️ 다시 시작</button>
+        <button class="action-btn" onclick="declareImpossible()" id="impossibleBtn">🚫 불가능!</button>
+        <button class="action-btn secondary" onclick="showHint()">💡 힌트</button>
+      </div>
+      <div id="resultMsg" class="result-msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Scenarios ── */
+const SCENARIOS = [
+  {
+    id:0, emoji:'🔺', name:'삼각형', desc:'가장 쉬운 퍼즐',
+    difficulty:1, possible:true,
+    nodes:[
+      {id:'A',x:440,y:100,label:'A'},
+      {id:'B',x:240,y:380,label:'B'},
+      {id:'C',x:640,y:380,label:'C'}
+    ],
+    edges:[
+      {from:'A',to:'B',id:'e1'},
+      {from:'B',to:'C',id:'e2'},
+      {from:'A',to:'C',id:'e3'}
+    ]
+  },
+  {
+    id:1, emoji:'⬜', name:'사각형', desc:'4개의 섬, 4개의 다리',
+    difficulty:1, possible:true,
+    nodes:[
+      {id:'A',x:240,y:140,label:'A'},
+      {id:'B',x:640,y:140,label:'B'},
+      {id:'C',x:640,y:360,label:'C'},
+      {id:'D',x:240,y:360,label:'D'}
+    ],
+    edges:[
+      {from:'A',to:'B',id:'e1'},
+      {from:'B',to:'C',id:'e2'},
+      {from:'C',to:'D',id:'e3'},
+      {from:'D',to:'A',id:'e4'}
+    ]
+  },
+  {
+    id:2, emoji:'🌉', name:'쾨니히스베르크', desc:'역사적 불가능 문제!',
+    difficulty:3, possible:false,
+    nodes:[
+      {id:'A',x:440,y:100,label:'북섬'},
+      {id:'B',x:240,y:250,label:'서섬'},
+      {id:'C',x:640,y:250,label:'동섬'},
+      {id:'D',x:440,y:400,label:'남섬'}
+    ],
+    edges:[
+      {from:'A',to:'B',id:'e1'},
+      {from:'A',to:'C',id:'e2'},
+      {from:'A',to:'D',id:'e3'},
+      {from:'B',to:'D',id:'e4'},
+      {from:'B',to:'D',id:'e5',curve:40},
+      {from:'C',to:'D',id:'e6'},
+      {from:'C',to:'D',id:'e7',curve:40}
+    ]
+  },
+  {
+    id:3, emoji:'⭐', name:'별 모양', desc:'5개의 꼭짓점',
+    difficulty:2, possible:true,
+    nodes:[
+      {id:'A',x:440,y:80,label:'A'},
+      {id:'B',x:600,y:220,label:'B'},
+      {id:'C',x:540,y:400,label:'C'},
+      {id:'D',x:340,y:400,label:'D'},
+      {id:'E',x:280,y:220,label:'E'}
+    ],
+    edges:[
+      {from:'A',to:'C',id:'e1'},
+      {from:'C',to:'E',id:'e2'},
+      {from:'E',to:'B',id:'e3'},
+      {from:'B',to:'D',id:'e4'},
+      {from:'D',to:'A',id:'e5'}
+    ]
+  },
+  {
+    id:4, emoji:'🏠', name:'집 모양', desc:'한붓그리기 클래식',
+    difficulty:2, possible:true,
+    nodes:[
+      {id:'A',x:290,y:380,label:'A'},
+      {id:'B',x:590,y:380,label:'B'},
+      {id:'C',x:590,y:200,label:'C'},
+      {id:'D',x:290,y:200,label:'D'},
+      {id:'E',x:440,y:80,label:'E'}
+    ],
+    edges:[
+      {from:'A',to:'B',id:'e1'},
+      {from:'B',to:'C',id:'e2'},
+      {from:'C',to:'D',id:'e3'},
+      {from:'D',to:'A',id:'e4'},
+      {from:'A',to:'C',id:'e5'},
+      {from:'B',to:'D',id:'e6'},
+      {from:'C',to:'E',id:'e7'},
+      {from:'D',to:'E',id:'e8'}
+    ]
+  },
+  {
+    id:5, emoji:'🏙️', name:'복잡한 도시', desc:'6개의 섬, 불가능?',
+    difficulty:3, possible:false,
+    nodes:[
+      {id:'A',x:240,y:140,label:'A'},
+      {id:'B',x:440,y:80,label:'B'},
+      {id:'C',x:640,y:140,label:'C'},
+      {id:'D',x:240,y:360,label:'D'},
+      {id:'E',x:440,y:420,label:'E'},
+      {id:'F',x:640,y:360,label:'F'}
+    ],
+    edges:[
+      {from:'A',to:'B',id:'e1'},
+      {from:'B',to:'C',id:'e2'},
+      {from:'A',to:'D',id:'e3'},
+      {from:'B',to:'E',id:'e4'},
+      {from:'C',to:'F',id:'e5'},
+      {from:'D',to:'E',id:'e6'},
+      {from:'E',to:'F',id:'e7'},
+      {from:'A',to:'E',id:'e8'},
+      {from:'B',to:'D',id:'e9'},
+      {from:'C',to:'E',id:'e10'}
+    ]
+  }
+];
+
+/* ── State ── */
+let currentScenario = -1;
+let currentNode = null;
+let traversedEdges = [];
+let path = [];
+let solved = JSON.parse(localStorage.getItem('euler_solved') || '[]');
+let hoverNode = null;
+let time = 0;
+let animFrame;
+let gameDone = false;
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = 880, H = 500;
+
+/* ── Audio ── */
+const actx = new (window.AudioContext || window.webkitAudioContext)();
+function playTone(freq, dur, type='sine', vol=0.1) {
+  try {
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.value = vol;
+    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + dur);
+  } catch(e) {}
+}
+function sndCross() { playTone(400,0.1,'sine',0.08); setTimeout(()=>playTone(500,0.1),100); }
+function sndSuccess() { playTone(523,0.15); setTimeout(()=>playTone(659,0.15),150); setTimeout(()=>playTone(784,0.3),300); }
+function sndFail() { playTone(200,0.3,'square',0.08); }
+function sndClick() { playTone(600,0.05,'sine',0.06); }
+
+/* ── Build Cards ── */
+function buildCards() {
+  const wrap = document.getElementById('gridWrap');
+  wrap.innerHTML = '';
+  SCENARIOS.forEach((sc, i) => {
+    const div = document.createElement('div');
+    div.className = 'scenario-card' + (solved.includes(sc.id) ? ' solved' : '') + (i === currentScenario ? ' active' : '');
+    div.innerHTML = `
+      <span class="solved-badge">✅</span>
+      <span class="diff">${'⭐'.repeat(sc.difficulty)}</span>
+      <span class="emoji">${sc.emoji}</span>
+      <span class="name">${sc.name}</span>
+      <span class="desc">${sc.desc}</span>`;
+    div.onclick = () => selectScenario(i);
+    wrap.appendChild(div);
+  });
+}
+
+/* ── Select Scenario ── */
+function selectScenario(idx) {
+  currentScenario = idx;
+  currentNode = null;
+  traversedEdges = [];
+  path = [];
+  hoverNode = null;
+  gameDone = false;
+  document.getElementById('gameArea').classList.add('visible');
+  buildCards();
+  updateInfo();
+  hideResult();
+  document.getElementById('gameArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  sndClick();
+}
+
+/* ── Helpers ── */
+function getNode(id) {
+  return SCENARIOS[currentScenario].nodes.find(n => n.id === id);
+}
+function getNodeDegree(nodeId) {
+  const sc = SCENARIOS[currentScenario];
+  return sc.edges.filter(e => e.from === nodeId || e.to === nodeId).length;
+}
+function getOddDegreeNodes(sc) {
+  const deg = {};
+  sc.nodes.forEach(n => deg[n.id] = 0);
+  sc.edges.forEach(e => { deg[e.from]++; deg[e.to]++; });
+  return Object.entries(deg).filter(([k,v]) => v % 2 !== 0).map(([k]) => k);
+}
+function findAvailableEdge(from, to) {
+  const sc = SCENARIOS[currentScenario];
+  return sc.edges.find(e =>
+    !traversedEdges.includes(e.id) &&
+    ((e.from === from && e.to === to) || (e.from === to && e.to === from))
+  );
+}
+function isStuck(nodeId) {
+  const sc = SCENARIOS[currentScenario];
+  return !sc.edges.some(e =>
+    !traversedEdges.includes(e.id) &&
+    (e.from === nodeId || e.to === nodeId)
+  );
+}
+
+/* ── Update Info Panel ── */
+function updateInfo() {
+  const sc = SCENARIOS[currentScenario];
+  document.getElementById('bridgeCount').textContent = `${traversedEdges.length} / ${sc.edges.length}`;
+  const deg = {};
+  sc.nodes.forEach(n => deg[n.id] = 0);
+  sc.edges.forEach(e => { deg[e.from]++; deg[e.to]++; });
+  document.getElementById('degreeInfo').innerHTML = sc.nodes.map(n => {
+    const d = deg[n.id];
+    const color = d % 2 === 0 ? 'var(--green)' : 'var(--red)';
+    return `<span style="color:${color};font-weight:700">${n.label}:${d}</span>`;
+  }).join('&nbsp;&nbsp;');
+}
+
+/* ── Results ── */
+function showResult(type, msg) {
+  const el = document.getElementById('resultMsg');
+  el.className = 'result-msg show ' + type;
+  el.textContent = msg;
+}
+function hideResult() {
+  const el = document.getElementById('resultMsg');
+  el.className = 'result-msg';
+}
+
+/* ── Game Actions ── */
+function clickNode(nodeId) {
+  if (gameDone) return;
+  if (currentNode === null) {
+    currentNode = nodeId;
+    path = [nodeId];
+    sndClick();
+    updateInfo();
+    return;
+  }
+  if (nodeId === currentNode) return;
+
+  const edge = findAvailableEdge(currentNode, nodeId);
+  if (!edge) {
+    sndFail();
+    showResult('warn', '그 섬으로 가는 건너지 않은 다리가 없어요!');
+    return;
+  }
+
+  traversedEdges.push(edge.id);
+  currentNode = nodeId;
+  path.push(nodeId);
+  sndCross();
+  updateInfo();
+  hideResult();
+
+  const sc = SCENARIOS[currentScenario];
+  if (traversedEdges.length === sc.edges.length) {
+    gameDone = true;
+    sndSuccess();
+    if (!solved.includes(sc.id)) { solved.push(sc.id); localStorage.setItem('euler_solved', JSON.stringify(solved)); }
+    showResult('success', '완벽해요! 모든 다리를 한 번씩 건넜어요! 🎉');
+    buildCards();
+    return;
+  }
+
+  if (isStuck(currentNode)) {
+    gameDone = true;
+    sndFail();
+    showResult('fail', `막혔어요! ${traversedEdges.length}/${sc.edges.length} 다리만 건넜어요. 다시 시도하세요!`);
+  }
+}
+
+function resetPath() {
+  if (currentScenario < 0) return;
+  currentNode = null;
+  traversedEdges = [];
+  path = [];
+  gameDone = false;
+  hideResult();
+  updateInfo();
+  sndClick();
+}
+
+function declareImpossible() {
+  if (currentScenario < 0 || gameDone) return;
+  const sc = SCENARIOS[currentScenario];
+  if (!sc.possible) {
+    gameDone = true;
+    sndSuccess();
+    if (!solved.includes(sc.id)) { solved.push(sc.id); localStorage.setItem('euler_solved', JSON.stringify(solved)); }
+    const oddNodes = getOddDegreeNodes(sc);
+    showResult('success', `정답! 홀수 차수 노드가 ${oddNodes.length}개라서 한붓그리기 불가능! 🧠`);
+    buildCards();
+  } else {
+    sndFail();
+    showResult('fail', '이 퍼즐은 가능해요! 다시 시도해보세요.');
+  }
+}
+
+function showHint() {
+  if (currentScenario < 0) return;
+  const sc = SCENARIOS[currentScenario];
+  const oddNodes = getOddDegreeNodes(sc);
+  let msg;
+  if (oddNodes.length === 0) {
+    msg = `힌트: 모든 노드의 차수가 짝수! 어디서 시작해도 한붓그리기 가능해요.`;
+  } else if (oddNodes.length === 2) {
+    msg = `힌트: 홀수 차수 노드가 2개 (${oddNodes.join(', ')}). 이 중 하나에서 시작하세요!`;
+  } else {
+    msg = `힌트: 홀수 차수 노드가 ${oddNodes.length}개. 한붓그리기가 가능할까요? 🤔`;
+  }
+  showResult('warn', msg);
+}
+
+/* ── Canvas Drawing ── */
+function getEdgePath(edge) {
+  const from = getNode(edge.from);
+  const to = getNode(edge.to);
+  if (edge.curve) {
+    const mx = (from.x + to.x) / 2;
+    const my = (from.y + to.y) / 2;
+    const dx = to.x - from.x, dy = to.y - from.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const nx = -dy / len, ny = dx / len;
+    return { from, to, ctrl: { x: mx + nx * edge.curve, y: my + ny * edge.curve }, curved: true };
+  }
+  return { from, to, curved: false };
+}
+
+function drawWater(t) {
+  /* deep water gradient */
+  const grd = ctx.createLinearGradient(0, 0, 0, H);
+  grd.addColorStop(0, '#0c1220');
+  grd.addColorStop(0.5, '#101b33');
+  grd.addColorStop(1, '#0e1a30');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, W, H);
+
+  /* subtle horizontal wave lines across entire canvas */
+  for (let y = 30; y < H; y += 18) {
+    ctx.beginPath();
+    for (let x = 0; x < W; x += 4) {
+      const wave = Math.sin(x * 0.015 + t * 1.5 + y * 0.08) * 2.5 + Math.sin(x * 0.008 + t * 0.7) * 1.5;
+      if (x === 0) ctx.moveTo(x, y + wave);
+      else ctx.lineTo(x, y + wave);
+    }
+    const alpha = 0.025 + Math.sin(y * 0.02 + t) * 0.01;
+    ctx.strokeStyle = `rgba(100,160,255,${Math.max(0, alpha)})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  /* brighter wave band near bottom */
+  for (let y = H - 60; y < H; y += 3) {
+    ctx.beginPath();
+    for (let x = 0; x < W; x += 5) {
+      const wave = Math.sin(x * 0.02 + t * 2 + y * 0.1) * 3;
+      if (x === 0) ctx.moveTo(x, y + wave);
+      else ctx.lineTo(x, y + wave);
+    }
+    ctx.strokeStyle = `rgba(59,130,246,${0.04 + (y - H + 60) / 800})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+}
+
+function drawEdge(edge, state, t) {
+  const p = getEdgePath(edge);
+  ctx.save();
+
+  /* shadow / outline */
+  ctx.lineWidth = state === 'traversed' ? 12 : 10;
+  ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  if (p.curved) { ctx.moveTo(p.from.x, p.from.y); ctx.quadraticCurveTo(p.ctrl.x, p.ctrl.y, p.to.x, p.to.y); }
+  else { ctx.moveTo(p.from.x, p.from.y); ctx.lineTo(p.to.x, p.to.y); }
+  ctx.stroke();
+
+  /* main bridge line */
+  ctx.lineWidth = state === 'traversed' ? 8 : 6;
+  if (state === 'traversed') {
+    ctx.strokeStyle = '#f59e0b';
+    ctx.shadowColor = '#f59e0b';
+    ctx.shadowBlur = 14;
+  } else if (state === 'current') {
+    ctx.strokeStyle = '#ec4899';
+    ctx.shadowColor = '#ec4899';
+    ctx.shadowBlur = 10 + Math.sin(t * 6) * 4;
+  } else {
+    ctx.strokeStyle = '#8B7355';
+    ctx.shadowBlur = 0;
+  }
+  ctx.beginPath();
+  if (p.curved) { ctx.moveTo(p.from.x, p.from.y); ctx.quadraticCurveTo(p.ctrl.x, p.ctrl.y, p.to.x, p.to.y); }
+  else { ctx.moveTo(p.from.x, p.from.y); ctx.lineTo(p.to.x, p.to.y); }
+  ctx.stroke();
+
+  /* plank marks for default bridges */
+  if (state === 'default') {
+    const steps = 6;
+    ctx.strokeStyle = 'rgba(60,40,20,0.5)';
+    ctx.lineWidth = 1.5;
+    for (let i = 1; i < steps; i++) {
+      const frac = i / steps;
+      let px, py, nx, ny;
+      if (p.curved) {
+        const q = 1 - frac;
+        px = q*q*p.from.x + 2*q*frac*p.ctrl.x + frac*frac*p.to.x;
+        py = q*q*p.from.y + 2*q*frac*p.ctrl.y + frac*frac*p.to.y;
+        const tx = 2*(1-frac)*(p.ctrl.x-p.from.x) + 2*frac*(p.to.x-p.ctrl.x);
+        const ty = 2*(1-frac)*(p.ctrl.y-p.from.y) + 2*frac*(p.to.y-p.ctrl.y);
+        const tl = Math.sqrt(tx*tx+ty*ty) || 1;
+        nx = -ty/tl; ny = tx/tl;
+      } else {
+        px = p.from.x + (p.to.x - p.from.x) * frac;
+        py = p.from.y + (p.to.y - p.from.y) * frac;
+        const dx = p.to.x - p.from.x, dy = p.to.y - p.from.y;
+        const dl = Math.sqrt(dx*dx+dy*dy) || 1;
+        nx = -dy/dl; ny = dx/dl;
+      }
+      ctx.beginPath();
+      ctx.moveTo(px + nx*5, py + ny*5);
+      ctx.lineTo(px - nx*5, py - ny*5);
+      ctx.stroke();
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawNode(node, isActive, isHoverable, t) {
+  ctx.save();
+  const r = 28;
+
+  /* glow for active */
+  if (isActive) {
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, r + 10, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(236,72,153,0.12)';
+    ctx.fill();
+    ctx.shadowColor = '#ec4899';
+    ctx.shadowBlur = 20 + Math.sin(t * 5) * 6;
+  }
+
+  /* island circle */
+  const ig = ctx.createRadialGradient(node.x - 6, node.y - 8, 4, node.x, node.y, r);
+  ig.addColorStop(0, '#2d8a4e');
+  ig.addColorStop(0.6, '#1a5632');
+  ig.addColorStop(1, '#134128');
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+  ctx.fillStyle = ig;
+  ctx.fill();
+
+  /* terrain dots */
+  ctx.shadowBlur = 0;
+  const seed = node.id.charCodeAt(0);
+  for (let i = 0; i < 8; i++) {
+    const a = (seed * 37 + i * 47) % 360 * Math.PI / 180;
+    const d = ((seed * 13 + i * 23) % 18) + 4;
+    if (d < r - 4) {
+      ctx.beginPath();
+      ctx.arc(node.x + Math.cos(a) * d, node.y + Math.sin(a) * d, 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(100,200,100,0.25)';
+      ctx.fill();
+    }
+  }
+
+  /* border */
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+  ctx.lineWidth = isActive ? 3.5 : 2;
+  ctx.strokeStyle = isActive ? '#ec4899' : isHoverable ? 'rgba(236,72,153,0.5)' : 'rgba(255,255,255,0.15)';
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+
+  /* label */
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 15px "Pretendard Variable", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(node.label, node.x, node.y);
+
+  /* degree badge */
+  const deg = getNodeDegree(node.id);
+  const dc = deg % 2 === 0 ? '#22c55e' : '#ef4444';
+  ctx.font = '11px "Pretendard Variable", sans-serif';
+  ctx.fillStyle = dc;
+  ctx.fillText(`(${deg})`, node.x, node.y - r - 12);
+
+  ctx.restore();
+}
+
+function drawPlayer(t) {
+  if (!currentNode) return;
+  const n = getNode(currentNode);
+  const bounce = Math.sin(t * 4) * 3;
+  ctx.save();
+  ctx.shadowColor = '#ec4899';
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.arc(n.x, n.y - 28 - 14 + bounce, 6, 0, Math.PI * 2);
+  ctx.fillStyle = '#ec4899';
+  ctx.fill();
+  /* small glow ring */
+  ctx.beginPath();
+  ctx.arc(n.x, n.y - 28 - 14 + bounce, 9, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(236,72,153,0.4)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawPathLine() {
+  if (path.length < 2) return;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(236,72,153,0.35)';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([6, 6]);
+  ctx.beginPath();
+  for (let i = 0; i < path.length; i++) {
+    const n = getNode(path[i]);
+    if (i === 0) ctx.moveTo(n.x, n.y);
+    else ctx.lineTo(n.x, n.y);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+/* start message */
+function drawStartMsg(t) {
+  if (currentNode !== null) return;
+  ctx.save();
+  const alpha = 0.5 + Math.sin(t * 3) * 0.3;
+  ctx.fillStyle = `rgba(226,232,240,${alpha})`;
+  ctx.font = '16px "Pretendard Variable", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('섬을 클릭하여 시작하세요!', W / 2, H / 2);
+  ctx.restore();
+}
+
+/* ── Main Loop ── */
+function frame(ts) {
+  time = ts / 1000;
+  if (currentScenario < 0) { animFrame = requestAnimationFrame(frame); return; }
+  const sc = SCENARIOS[currentScenario];
+
+  drawWater(time);
+
+  /* edges */
+  sc.edges.forEach(e => {
+    let state = 'default';
+    if (traversedEdges.includes(e.id)) state = 'traversed';
+    drawEdge(e, state, time);
+  });
+
+  /* path */
+  drawPathLine();
+
+  /* nodes */
+  const hoverable = currentNode ? sc.edges
+    .filter(e => !traversedEdges.includes(e.id) && (e.from === currentNode || e.to === currentNode))
+    .map(e => e.from === currentNode ? e.to : e.from) : sc.nodes.map(n => n.id);
+
+  sc.nodes.forEach(n => {
+    const isActive = n.id === currentNode;
+    const isHov = !gameDone && (hoverable.includes(n.id) || n.id === hoverNode);
+    drawNode(n, isActive, isHov, time);
+  });
+
+  drawPlayer(time);
+  drawStartMsg(time);
+
+  animFrame = requestAnimationFrame(frame);
+}
+
+/* ── Canvas Interaction ── */
+function getCanvasPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = W / rect.width;
+  const scaleY = H / rect.height;
+  const cx = (e.clientX - rect.left) * scaleX;
+  const cy = (e.clientY - rect.top) * scaleY;
+  return { x: cx, y: cy };
+}
+
+function findNodeAt(px, py) {
+  if (currentScenario < 0) return null;
+  const sc = SCENARIOS[currentScenario];
+  for (const n of sc.nodes) {
+    const dx = n.x - px, dy = n.y - py;
+    if (dx * dx + dy * dy < 35 * 35) return n.id;
+  }
+  return null;
+}
+
+canvas.addEventListener('click', e => {
+  if (currentScenario < 0) return;
+  if (actx.state === 'suspended') actx.resume();
+  const { x, y } = getCanvasPos(e);
+  const nid = findNodeAt(x, y);
+  if (nid) clickNode(nid);
+});
+
+canvas.addEventListener('mousemove', e => {
+  const { x, y } = getCanvasPos(e);
+  const nid = findNodeAt(x, y);
+  hoverNode = nid;
+  canvas.style.cursor = nid ? 'pointer' : 'default';
+});
+
+/* Touch support */
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (currentScenario < 0) return;
+  if (actx.state === 'suspended') actx.resume();
+  const touch = e.touches[0];
+  const { x, y } = getCanvasPos(touch);
+  const nid = findNodeAt(x, y);
+  if (nid) clickNode(nid);
+}, { passive: false });
+
+/* ── Init ── */
+buildCards();
+animFrame = requestAnimationFrame(frame);
+</script>
+</body>
+</html>

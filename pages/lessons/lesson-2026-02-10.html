@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>&#53888;&#50612;&#45208;&#50724;&#45716; &#45208;&#47564;&#51032; &#51060;&#47492;&#54364; (&#54045;&#50629; &#51088;&#54868;&#49345;) | &#47336;&#45208;&#50920;&#51068;</title>
+<style>
+:root{--g0:#1a0a28;--g1:#2d1450;--g2:#4a2080;--glow:#ff6eb4;--pale:#e85da0;--acc:#ffd700;--cream:#fefaf2;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#000;color:var(--cream);user-select:none;}
+#sw{width:100%;height:100%;position:relative;overflow:hidden;}
+.slide{position:absolute;inset:0;opacity:0;transform:scale(.97);transition:opacity .6s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.4,0,.2,1);pointer-events:none;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.slide.active{opacity:1;transform:scale(1);pointer-events:auto;}
+.slide.exit-left{opacity:0;transform:scale(1.03);}
+.bg{position:absolute;inset:0;background:linear-gradient(135deg,var(--g0) 0%,var(--g1) 50%,var(--g2) 100%);}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:12px 28px;background:rgba(26,10,40,0.75);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,110,180,0.1);}
+.lcode{position:fixed;top:52px;left:28px;z-index:201;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);font-size:9px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,0.28);font-family:monospace;backdrop-filter:blur(8px);pointer-events:none;}
+.tlogo{font-size:14px;font-weight:700;color:var(--glow);cursor:pointer;transition:.2s;}.tlogo:hover{opacity:.7;}
+.tsc{font-size:13px;color:rgba(255,255,255,.4);}.tsc strong{color:rgba(255,255,255,.9);}
+.tbadges{display:flex;gap:8px;}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.bl{background:rgba(255,110,180,.12);color:var(--glow);border:1px solid rgba(255,110,180,.25);}
+.ba{background:rgba(255,215,0,.12);color:var(--acc);border:1px solid rgba(255,215,0,.25);}
+.dots{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;display:flex;gap:6px;align-items:center;}
+.dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.2);cursor:pointer;transition:all .3s;}
+.dot.active{width:22px;background:var(--glow);}
+.arr{position:fixed;top:50%;z-index:200;transform:translateY(-50%);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;transition:all .25s;backdrop-filter:blur(8px);}
+.arr:hover{background:rgba(255,110,180,.2);color:#fff;border-color:var(--glow);transform:translateY(-50%) scale(1.1);}
+.arr:disabled{opacity:.1;cursor:default;pointer-events:none;}
+#bp{left:16px;}#bn{right:16px;}
+@media(max-width:768px){.arr{display:none;}.tsc{display:none;}}
+.sc{position:relative;z-index:2;flex:1;min-height:0;display:flex;flex-direction:column;padding:80px 80px 60px;overflow:hidden;}
+@media(max-width:768px){.sc{padding:72px 24px 50px;}}
+
+/* === Cover Slide === */
+#s0 .bg{background:linear-gradient(135deg,#120220,#2d1450,#4a2080);}
+#s0 .bgimg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;animation:coverReveal 1.8s .3s cubic-bezier(.25,.46,.45,.94) forwards;}
+@keyframes coverReveal{0%{opacity:0;transform:scale(1.1);}100%{opacity:.5;transform:scale(1);}}
+#s0 .hov{position:absolute;inset:0;background:linear-gradient(to top,rgba(18,2,32,.97) 0%,rgba(18,2,32,.6) 35%,rgba(18,2,32,.2) 70%,transparent 100%);}
+#s0 .sc{justify-content:flex-end;padding-bottom:90px;}
+#s0 .ew{opacity:0;animation:fadeUp .8s .8s forwards;}
+#s0 .stitle{opacity:0;animation:fadeUp .8s 1s forwards;}
+#s0 .ssub{opacity:0;animation:fadeUp .8s 1.2s forwards;}
+#s0 .metas{opacity:0;animation:fadeUp .8s 1.4s forwards;}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(25px);}100%{opacity:1;transform:translateY(0);}}
+
+.ew{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--pale);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.ew::before{content:'';display:block;width:20px;height:2px;background:var(--pale);}
+.stitle{font-size:clamp(34px,4.5vw,62px);font-weight:900;line-height:1.08;letter-spacing:-1.5px;margin-bottom:10px;background:linear-gradient(135deg,#fff 0%,var(--glow) 50%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.ssub{font-size:clamp(15px,1.6vw,20px);color:rgba(255,255,255,.55);font-style:italic;margin-bottom:28px;}
+.metas{display:flex;gap:14px;flex-wrap:wrap;}
+.mc{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:30px;padding:6px 14px;font-size:13px;color:rgba(255,255,255,.75);}
+
+/* === Particles === */
+.pt{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.p{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,110,180,.45),transparent);animation:pf linear infinite;}
+@keyframes pf{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:.7}90%{opacity:.25}100%{transform:translateY(-60px) scale(1);opacity:0}}
+
+
+/* === L10: Confetti/Sparkle Effect === */
+.confetti{position:absolute;pointer-events:none;animation:confettiFall linear infinite;}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg) scale(.6);opacity:0;}10%{opacity:.8;}50%{transform:translateY(50vh) rotate(180deg) scale(1);}90%{opacity:.3;}100%{transform:translateY(100vh) rotate(360deg) scale(.4);opacity:0;}}
+.sparkle-star{position:absolute;pointer-events:none;animation:starTwinkle ease-in-out infinite;}
+@keyframes starTwinkle{0%,100%{opacity:.1;transform:scale(.5) rotate(0deg);}50%{opacity:.7;transform:scale(1.2) rotate(180deg);}}
+.popup-glow{position:absolute;border-radius:50%;filter:blur(45px);pointer-events:none;animation:popGlow 5s ease-in-out infinite alternate;}
+@keyframes popGlow{0%{opacity:.08;transform:scale(.85);}100%{opacity:.22;transform:scale(1.2);}}
+
+
+/* === Objectives - Flip Cards === */
+.gg{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:1;align-content:start;margin-top:4px;perspective:1200px;}
+.gc-wrap{position:relative;cursor:pointer;height:clamp(160px,21vh,210px);}
+.gc-wrap.flipped .gc-inner{transform:rotateY(180deg);}
+.gc-inner{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;}
+.gc-front,.gc-back{position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;display:flex;flex-direction:column;}
+.gc-front{background:rgba(74,32,128,.35);border:1px solid rgba(255,110,180,.18);transition:border-color .3s,box-shadow .3s;align-items:center;justify-content:center;gap:3px;text-align:center;padding:12px 14px;}
+.gc-wrap:hover .gc-front{border-color:rgba(255,110,180,.5);box-shadow:0 6px 24px rgba(255,110,180,.1);}
+.gc-front::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,var(--glow),var(--acc));opacity:0;transition:.3s;}
+.gc-wrap:hover .gc-front::before{opacity:1;}
+.gc-front .gci{font-size:28px;}
+.gc-front h3{font-size:clamp(16px,2vw,22px);font-weight:800;color:var(--glow);}
+.gc-front p{font-size:clamp(10px,1.1vw,12px);line-height:1.45;color:rgba(255,255,255,.55);}
+.gc-flip-hint{font-size:9px;color:rgba(255,255,255,.2);margin-top:auto;padding-top:2px;}
+.gc-back{background:rgba(21,20,50,.95);border:1px solid rgba(255,110,180,.25);transform:rotateY(180deg);padding:12px 14px;gap:5px;overflow:hidden;}
+.gc-back::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,rgba(120,200,255,.8),rgba(255,200,120,.8));}
+.gc-back-title{font-size:11px;font-weight:800;color:#fff;display:flex;align-items:center;gap:4px;padding-top:2px;}
+.gc-sec{display:flex;flex-direction:column;gap:1px;}
+.gc-sec-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.gc-sec-label.research{color:rgba(120,200,255,.85);}
+.gc-sec-label.caution{color:rgba(255,200,120,.85);}
+.gc-sec p{font-size:10px;line-height:1.55;color:rgba(255,255,255,.6);margin:0;}
+.gc-sec .cite{font-size:8px;color:rgba(255,255,255,.25);font-style:italic;}
+.gc-back-hint{font-size:8px;color:rgba(255,255,255,.18);text-align:right;margin-top:auto;}
+
+/* === Materials === */
+.ml{display:grid;grid-template-columns:1fr 1fr;gap:28px;flex:1;align-items:center;}
+@media(max-width:768px){.ml{grid-template-columns:1fr;}}
+.mph{aspect-ratio:4/3;border-radius:20px;overflow:hidden;position:relative;}
+.mph img{width:100%;height:100%;object-fit:cover;transition:transform .6s;}
+.mph:hover img{transform:scale(1.05);}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.mi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.8);transition:all .2s;}
+.mi:hover{background:rgba(255,110,180,.08);border-color:rgba(255,110,180,.2);}
+
+/* === Steps === */
+.sl{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1;align-items:center;}
+@media(max-width:768px){.sl{grid-template-columns:1fr;}}
+.sph{aspect-ratio:4/3;border-radius:20px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.sph img{width:100%;height:100%;object-fit:cover;transition:transform 8s cubic-bezier(.25,.46,.45,.94);}
+.slide.active .sph img{transform:scale(1.08);}
+.snum{font-size:88px;font-weight:900;line-height:.9;background:linear-gradient(135deg,rgba(255,110,180,.15),transparent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;}
+.sb h3{font-size:clamp(20px,2.5vw,32px);font-weight:800;color:#fff;margin-bottom:12px;line-height:1.2;}
+.sb h3 em{color:var(--glow);font-style:normal;}
+.sb p{font-size:15px;line-height:1.85;color:rgba(255,255,255,.72);margin-bottom:14px;}
+.tip{background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);border-radius:12px;padding:12px 16px;font-size:13px;color:rgba(255,215,0,.9);line-height:1.6;}
+
+/* === Gallery === */
+.gal-wrap{overflow-y:auto;flex:1;min-height:0;margin-top:6px;padding-bottom:8px;}
+.gal-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+@media(max-width:900px){.gal-grid{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:600px){.gal-grid{grid-template-columns:repeat(3,1fr);}}
+.gal-item{border-radius:10px;overflow:hidden;cursor:pointer;position:relative;aspect-ratio:1/1;background:rgba(255,255,255,.05);}
+.gal-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.25,.46,.45,.94);}
+.gal-item:hover img{transform:scale(1.12);}
+.gal-item::after{content:'';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);transition:.3s;}
+.gal-item:hover::after{opacity:1;}
+
+/* === Lightbox === */
+#lbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(20px);}
+#lbox.open{display:flex;}
+#lbox-img{max-width:90vw;max-height:72vh;object-fit:contain;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.8);}
+.lbox-actions{display:flex;gap:12px;margin-top:16px;}
+.lbox-dl{padding:10px 24px;background:var(--glow);color:#000;border-radius:10px;font-weight:700;text-decoration:none;font-size:13px;letter-spacing:.5px;transition:.2s;}
+.lbox-dl:hover{background:#fff;}
+.lbox-cl{padding:10px 24px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:10px;font-weight:700;cursor:pointer;border:none;font-size:13px;font-family:inherit;transition:.2s;}
+.lbox-cl:hover{background:rgba(255,255,255,.2);}
+
+/* === Teacher Note === */
+.tnote{position:absolute;bottom:16px;right:24px;z-index:10;max-width:260px;padding:10px 14px;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.06);border-radius:10px;backdrop-filter:blur(14px);font-size:11px;line-height:1.6;color:rgba(255,255,255,0.35);transition:opacity .3s;}
+.tnote strong{color:rgba(255,255,255,0.5);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;display:block;margin-bottom:3px;}
+.tnote ul{list-style:none;padding:0;margin:0;}
+.tnote ul li{margin-bottom:2px;}
+.tnote ul li::before{content:'\00b7';margin-right:4px;color:var(--glow);opacity:.5;}
+@media(max-width:768px){.tnote{display:none;}}
+
+/* === Completion === */
+.done-center{align-items:center;justify-content:center;text-align:center;gap:20px;}
+.back-btn{margin-top:24px;background:rgba(255,110,180,.15);border:1px solid rgba(255,110,180,.4);color:var(--glow);border-radius:14px;padding:14px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.25s;}
+/* === Bottom Action Bar === */
+.end-bar{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:10px;flex-wrap:wrap;justify-content:center;z-index:20;}
+.end-bar .back-btn{margin-top:0;padding:11px 22px;font-size:13px;}
+.end-bar .ai-btn{background:linear-gradient(135deg,rgba(120,180,255,.2),rgba(200,140,255,.2));border:1px solid rgba(160,140,255,.4);color:rgba(200,180,255,.95);border-radius:14px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.25s;display:flex;align-items:center;gap:6px;}
+.end-bar .ai-btn:hover{background:linear-gradient(135deg,rgba(120,180,255,.35),rgba(200,140,255,.35));border-color:rgba(200,180,255,.6);}
+/* AI Report Panel */
+.ai-panel{display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);backdrop-filter:blur(16px);align-items:center;justify-content:center;padding:24px;}
+.ai-panel.open{display:flex;}
+.ai-box{background:rgba(22,36,50,.97);border:1px solid rgba(160,140,255,.2);border-radius:20px;max-width:640px;width:100%;max-height:85vh;overflow-y:auto;padding:28px 30px;position:relative;display:flex;flex-direction:column;gap:12px;box-shadow:0 40px 100px rgba(0,0,0,.6);animation:modalIn .4s cubic-bezier(.4,0,.2,1);}
+.ai-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0;background:linear-gradient(90deg,rgba(120,180,255,.8),rgba(200,140,255,.8));}
+.ai-box h3{font-size:18px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;}
+.ai-box .ai-desc{font-size:12px;color:rgba(255,255,255,.4);line-height:1.5;}
+.ai-msg{position:relative;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 50px 14px 16px;font-size:13px;line-height:1.7;color:rgba(255,255,255,.75);transition:border-color .2s;}
+.ai-msg:hover{border-color:rgba(160,140,255,.3);}
+.ai-copy{position:absolute;top:50%;right:10px;transform:translateY(-50%);background:rgba(160,140,255,.15);border:1px solid rgba(160,140,255,.3);color:rgba(200,180,255,.8);border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;font-family:inherit;transition:.2s;white-space:nowrap;}
+.ai-copy:hover{background:rgba(160,140,255,.3);color:#fff;}
+.ai-copy.copied{background:rgba(100,200,140,.2);border-color:rgba(100,200,140,.4);color:rgba(150,230,170,.9);}
+.ai-close{position:absolute;top:16px;right:20px;background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;transition:.2s;padding:4px 8px;}
+.ai-close:hover{color:#fff;}
+.back-btn:hover{background:rgba(255,110,180,.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,110,180,.15);}
+
+/* === Slide entrance animation (skip s0 which has its own) === */
+.slide.active:not(#s0) .sc>*{animation:contentIn .6s both;}
+.slide.active:not(#s0) .sc>*:nth-child(1){animation-delay:.1s;}
+.slide.active:not(#s0) .sc>*:nth-child(2){animation-delay:.2s;}
+.slide.active:not(#s0) .sc>*:nth-child(3){animation-delay:.3s;}
+.slide.active:not(#s0) .sc>*:nth-child(4){animation-delay:.4s;}
+.slide.active:not(#s0) .sc>*:nth-child(5){animation-delay:.5s;}
+@keyframes contentIn{0%{opacity:0;transform:translateY(15px);}100%{opacity:1;transform:translateY(0);}}
+
+/* === Reference Images === */
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;flex:1;overflow-y:auto;align-content:start;padding-bottom:10px;}
+.ref-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .3s;}
+.ref-grid img:hover{transform:scale(1.03);border-color:rgba(255,255,255,.3);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.ref-note{font-size:11px;color:rgba(255,255,255,.35);text-align:center;margin-top:4px;}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+<div class="topbar">
+  <span class="tlogo" onclick="typeof LunaApp!=='undefined'?LunaApp.navigate('monthlyDetail',{month:'2026-02'}):history.back()">&#127754; Luna Whale</span>
+  <div class="tsc"><strong id="cn">1</strong> / <span id="tn">8</span></div>
+  <div class="tbadges"><span class="badge bl">&#47112;&#48296; 1</span><span class="badge ba">5~8&#49464;</span></div>
+</div>
+<button class="arr" id="bp" onclick="nav(-1)">&lsaquo;</button>
+<button class="arr" id="bn" onclick="nav(1)">&rsaquo;</button>
+<div class="dots" id="db"></div>
+<div id="sw">
+<div class="lcode">26M02A10</div>
+
+<!-- S0: COVER -->
+<div class="slide active" id="s0">
+  <div class="bg"></div>
+  <div class="bgimg" style="background-image:url('../../images/lessons/2026-02/l10-cover.jpg');"></div>
+  <div class="hov"></div>
+  <div class="pt" id="pt"></div>
+
+  <div class="popup-glow" style="width:280px;height:280px;background:rgba(255,110,180,.15);bottom:15%;left:-40px;"></div>
+  <div class="popup-glow" style="width:200px;height:200px;background:rgba(255,215,0,.1);top:20%;right:-30px;animation-delay:2.5s;"></div>
+
+  <div class="sc">
+    <div class="ew">&#128204; 2026&#45380; 2&#50900; &#183; &#51088;&#54868;&#49345;</div>
+    <h1 class="stitle">&#53888;&#50612;&#45208;&#50724;&#45716; &#45208;&#47564;&#51032; &#51060;&#47492;&#54364;<br>(&#54045;&#50629; &#51088;&#54868;&#49345;)</h1>
+    <p class="ssub">"&#52852;&#46300;&#47484; &#50676;&#47732; &#45208;&#51032; &#50620;&#44404;&#51060; &#53888;&#50612;&#45208;&#50752;&#50836;!"</p>
+    <div class="metas">
+      <div class="mc">&#128100; &#47112;&#48296; 1 &middot; 5~8&#49464;</div>
+      <div class="mc">&#9201;&#65039; 60&#48516;</div>
+      <div class="mc">&#9995; &#54045;&#50629; &#52852;&#46300; + &#51088;&#54868;&#49345;</div>
+    </div>
+  </div>
+</div>
+
+<!-- S1: OBJECTIVES -->
+<div class="slide" id="s1">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">&#49688;&#50629; &#47785;&#54364;</div>
+    <h2 class="stitle">&#50724;&#45720; &#48176;&#50864;&#45716; &#44163;&#46308;</h2>
+    <div class="gg">
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">&#128100;</div>
+            <h3>&#51088;&#44592; &#51064;&#49885;</h3>
+            <p>&#44144;&#50872;&#51012; &#48372;&#47728; &#45208;&#51032; &#50620;&#44404; &#53945;&#51669;&#51012; &#44288;&#52272;&#54644;&#50836;.</p>
+            <span class="gc-flip-hint">&#8635; &#53364;&#47533;&#54644;&#49436; &#45908; &#50508;&#50500;&#48400;&#50836;</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">&#128100; &#51088;&#44592; &#51064;&#49885;</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; &#44368;&#50977;&#51201; &#54952;&#44284;</div>
+            <p>&#51088;&#54868;&#49345; &#54876;&#46041;&#51008; &#51088;&#50500; &#51064;&#49885;&#44284; &#51221;&#52404;&#49457; &#48156;&#45804;&#51032; &#54645;&#49900;&#51077;&#45768;&#45796;.</p>
+            <p class="cite">Gardner (1980)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; &#50976;&#51032;&#51216;</div>
+            <p>&#50808;&#47784; &#54217;&#44032; &#44552;&#51648;. &#53945;&#51669; &#44288;&#52272;&#50640; &#51665;&#51473;.</p></div>
+            <span class="gc-back-hint">&#8635; &#45796;&#49884; &#53364;&#47533;</span>
+          </div>
+        </div>
+      </div>
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">&#128208;</div>
+            <h3>&#54045;&#50629; &#44396;&#51312; &#51060;&#54644;</h3>
+            <p>&#51217;&#44256; &#50724;&#47532;&#47732; &#53888;&#50612;&#45208;&#50724;&#45716; &#44036;&#45800;&#54620; &#54045;&#50629; &#50896;&#47532;&#47484; &#48176;&#50892;&#50836;.</p>
+            <span class="gc-flip-hint">&#8635; &#53364;&#47533;&#54644;&#49436; &#45908; &#50508;&#50500;&#48400;&#50836;</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">&#128208; &#54045;&#50629; &#44396;&#51312; &#51060;&#54644;</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; &#44368;&#50977;&#51201; &#54952;&#44284;</div>
+            <p>&#54045;&#50629; &#51228;&#51089;&#51008; &#44277;&#44036;&#51201; &#49324;&#44256;&#50752; &#51064;&#44284;&#44288;&#44228; &#51060;&#54644; &#48156;&#45804;&#50640; &#44592;&#50668;&#54633;&#45768;&#45796;.</p>
+            <p class="cite">Piaget (1952)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; &#50976;&#51032;&#51216;</div>
+            <p>&#51217;&#44592;&#183;&#50724;&#47532;&#44592; &#49884;&#48276; &#54596;&#49688;. &#45800;&#44228;&#48324; &#50504;&#45236;.</p></div>
+            <span class="gc-back-hint">&#8635; &#45796;&#49884; &#53364;&#47533;</span>
+          </div>
+        </div>
+      </div>
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">&#9986;&#65039;</div>
+            <h3>&#51333;&#51060; &#44277;&#54617;</h3>
+            <p>&#51088;&#47476;&#44256; &#51217;&#50612;&#49436; &#51077;&#52404; &#44396;&#51312;&#47484; &#47564;&#46300;&#45716; &#51333;&#51060; &#44592;&#49696;&#51012; &#48176;&#50892;&#50836;.</p>
+            <span class="gc-flip-hint">&#8635; &#53364;&#47533;&#54644;&#49436; &#45908; &#50508;&#50500;&#48400;&#50836;</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">&#9986;&#65039; &#51333;&#51060; &#44277;&#54617;</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; &#44368;&#50977;&#51201; &#54952;&#44284;</div>
+            <p>&#51333;&#51060; &#44277;&#54617;&#51008; &#49548;&#44540;&#50977; &#48156;&#45804;&#44284; 3D &#44277;&#44036; &#52628;&#47200;&#51012; &#52489;&#51652;&#54633;&#45768;&#45796;.</p>
+            <p class="cite">Case-Smith (2005)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; &#50976;&#51032;&#51216;</div>
+            <p>&#44032;&#50948; &#50504;&#51204; &#51452;&#51032;. &#51217;&#45716; &#48169;&#54693; &#47749;&#54869;&#55176; &#50504;&#45236;.</p></div>
+            <span class="gc-back-hint">&#8635; &#45796;&#49884; &#53364;&#47533;</span>
+          </div>
+        </div>
+      </div>
+      <div class="gc-wrap" onclick="this.classList.toggle('flipped')">
+        <div class="gc-inner">
+          <div class="gc-front">
+            <div class="gci">&#127912;</div>
+            <h3>&#51088;&#44592; &#54364;&#54788;</h3>
+            <p>&#45208;&#47484; &#45824;&#54364;&#54616;&#45716; &#49353;&#183;&#47784;&#50577;&#183;&#44544;&#51088;&#47196; &#51060;&#47492;&#54364;&#47484; &#44984;&#47728;&#50836;.</p>
+            <span class="gc-flip-hint">&#8635; &#53364;&#47533;&#54644;&#49436; &#45908; &#50508;&#50500;&#48400;&#50836;</span>
+          </div>
+          <div class="gc-back">
+            <div class="gc-back-title">&#127912; &#51088;&#44592; &#54364;&#54788;</div>
+            <div class="gc-sec"><div class="gc-sec-label research">&#128218; &#44368;&#50977;&#51201; &#54952;&#44284;</div>
+            <p>&#51088;&#44592; &#54364;&#54788; &#48120;&#49696;&#51008; &#51088;&#51316;&#44048;&#44284; &#44557;&#51221;&#51201; &#51088;&#50500;&#49345; &#54805;&#49457;&#50640; &#44592;&#50668;&#54633;&#45768;&#45796;.</p>
+            <p class="cite">Malchiodi (2011)</p></div>
+            <div class="gc-sec"><div class="gc-sec-label caution">&#9888;&#65039; &#50976;&#51032;&#51216;</div>
+            <p>&#51088;&#50976;&#47196;&#50868; &#54364;&#54788; &#44201;&#47140;. &#48708;&#44368; &#44552;&#51648;.</p></div>
+            <span class="gc-back-hint">&#8635; &#45796;&#49884; &#53364;&#47533;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; &#49688;&#50629; &#51652;&#54665; &#45432;&#53944;</strong>
+      <ul>
+        <li>"&#45208;&#45716; &#50612;&#46500; &#49324;&#46988;&#51068;&#44620;?" &#51656;&#47928;&#51004;&#47196; &#49884;&#51089;</li>
+        <li>&#44144;&#50872; &#48372;&#44592; &#51204; &#51088;&#44592;&#49548;&#44060; &#49884;&#44036;</li>
+        <li>&#47785;&#54364; &#52852;&#46300; &#49548;&#44060; (1&#48516;)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S2: MATERIALS -->
+<div class="slide" id="s2">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">&#51456;&#48708;&#47932;</div>
+    <h2 class="stitle">&#49688;&#50629; &#51204;&#50640; &#51456;&#48708;&#54644;&#50836;</h2>
+    <div class="ml">
+      <div class="mph" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;aspect-ratio:auto;height:auto;max-height:280px">
+        <img src="../../images/lessons/2026-02/l10-mat01.jpg" loading="lazy" alt="준비물 1" style="border-radius:12px;width:100%;height:auto;object-fit:cover;aspect-ratio:1/1">
+        <img src="../../images/lessons/2026-02/l10-mat02.jpg" loading="lazy" alt="준비물 2" style="border-radius:12px;width:100%;height:auto;object-fit:cover;aspect-ratio:1/1">
+        <img src="../../images/lessons/2026-02/l10-mat03.jpg" loading="lazy" alt="준비물 3" style="border-radius:12px;width:100%;height:auto;object-fit:cover;aspect-ratio:1/1">
+        <img src="../../images/lessons/2026-02/l10-mat04.jpg" loading="lazy" alt="준비물 4" style="border-radius:12px;width:100%;height:auto;object-fit:cover;aspect-ratio:1/1">
+      </div>
+      <div class="mg">
+        <div class="mi">&#128196; A4 &#49353;&#46020;&#54868;&#51648;</div>
+        <div class="mi">&#128373;&#65039; &#44144;&#50872;</div>
+        <div class="mi">&#128396;&#65039; &#49353;&#50672;&#54596; / &#47560;&#52852;</div>
+        <div class="mi">&#9986;&#65039; &#44032;&#50948;</div>
+        <div class="mi">&#128295; &#54400;</div>
+        <div class="mi">&#10024; &#48152;&#51677;&#51060; &#49828;&#54000;&#52964;</div>
+        <div class="mi">&#127872; &#47532;&#48376; / &#47784;&#47336;</div>
+        <div class="mi">&#127800; &#49353;&#51333;&#51060;</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; &#49688;&#50629; &#51652;&#54665; &#45432;&#53944;</strong>
+      <ul>
+        <li>&#44144;&#50872;&#51008; 1&#51064; 1&#44060; &#51456;&#48708;</li>
+        <li>&#44032;&#50948;&#45716; &#50504;&#51204;&#44032;&#50948; &#49324;&#50857;</li>
+        <li>&#49353;&#51333;&#51060; &#45796;&#50577;&#54620; &#49353; &#51456;&#48708;</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!-- REF: REFERENCE IMAGES -->
+<div class="slide" id="s3">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">레퍼런스 이미지</div>
+    <h2 class="stitle" style="font-size:clamp(22px,2.8vw,36px);">참고 작품 살펴보기</h2>
+    <p style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:12px;">선생님용 — 필요시 프린트하여 수업에 활용하세요</p>
+    <div class="ref-grid"><img src="../../images/lessons/2026-02/refs/l10-ref01.jpg" loading="lazy" alt="레퍼런스 01"><img src="../../images/lessons/2026-02/refs/l10-ref02.jpg" loading="lazy" alt="레퍼런스 02"><img src="../../images/lessons/2026-02/refs/l10-ref03.jpg" loading="lazy" alt="레퍼런스 03"><img src="../../images/lessons/2026-02/refs/l10-ref04.jpg" loading="lazy" alt="레퍼런스 04"><img src="../../images/lessons/2026-02/refs/l10-ref05.jpg" loading="lazy" alt="레퍼런스 05"><img src="../../images/lessons/2026-02/refs/l10-ref06.jpg" loading="lazy" alt="레퍼런스 06"><img src="../../images/lessons/2026-02/refs/l10-ref07.jpg" loading="lazy" alt="레퍼런스 07"><img src="../../images/lessons/2026-02/refs/l10-ref08.jpg" loading="lazy" alt="레퍼런스 08"><img src="../../images/lessons/2026-02/refs/l10-ref09.jpg" loading="lazy" alt="레퍼런스 09"><img src="../../images/lessons/2026-02/refs/l10-ref10.jpg" loading="lazy" alt="레퍼런스 10"><img src="../../images/lessons/2026-02/refs/l10-ref11.jpg" loading="lazy" alt="레퍼런스 11"><img src="../../images/lessons/2026-02/refs/l10-ref12.jpg" loading="lazy" alt="레퍼런스 12"><img src="../../images/lessons/2026-02/refs/l10-ref13.jpg" loading="lazy" alt="레퍼런스 13"><img src="../../images/lessons/2026-02/refs/l10-ref14.jpg" loading="lazy" alt="레퍼런스 14"><img src="../../images/lessons/2026-02/refs/l10-ref15.jpg" loading="lazy" alt="레퍼런스 15"><img src="../../images/lessons/2026-02/refs/l10-ref16.jpg" loading="lazy" alt="레퍼런스 16"><img src="../../images/lessons/2026-02/refs/l10-ref17.jpg" loading="lazy" alt="레퍼런스 17"><img src="../../images/lessons/2026-02/refs/l10-ref18.jpg" loading="lazy" alt="레퍼런스 18"><img src="../../images/lessons/2026-02/refs/l10-ref19.jpg" loading="lazy" alt="레퍼런스 19"><img src="../../images/lessons/2026-02/refs/l10-ref20.jpg" loading="lazy" alt="레퍼런스 20"></div>
+    <div class="ref-note">이미지를 클릭하면 크게 볼 수 있어요</div>
+  </div>
+</div>
+
+<!-- S3: STEP 1 -->
+<div class="slide" id="s4">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">&#45800;&#44228;&#48324; &#44032;&#51060;&#46300;</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">&#52264;&#44540;&#52264;&#44540; &#46384;&#46972;&#54644;&#50836;</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2026-02/l10-step1.jpg" loading="lazy" alt="Step 1"></div>
+      <div class="sb">
+        <div class="snum">01</div>
+        <h3>&#45208;&#47484; <em>&#44288;&#52272;&#54644;&#50836;!</em></h3>
+        <p>&#44144;&#50872;&#51012; &#48372;&#47728; &#45236; &#50620;&#44404;&#51032; &#53945;&#51669;&#51012; &#52286;&#50500;&#50836;. &#45576; &#47784;&#50577;, &#47672;&#47532;&#52852;&#46973;, &#51339;&#50500;&#54616;&#45716; &#54364;&#51221;! &#45208;&#47564;&#51032; &#53945;&#48324;&#54620; &#51216;&#51012; 3&#44032;&#51648; &#52286;&#50500;&#48400;&#50836;.</p>
+        <div class="tip">&#128161; "&#45208;&#47564;&#51032; &#53945;&#48324;&#54620; &#51216;&#51012; 3&#44032;&#51648; &#52286;&#50500;&#48400;&#50836;!" &#51656;&#47928;&#51004;&#47196; &#49884;&#51089;!</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; &#49688;&#50629; &#51652;&#54665; &#45432;&#53944;</strong>
+      <ul>
+        <li>&#44144;&#50872; &#44288;&#52272; &#49884;&#44036; &#52649;&#48516;&#55176;</li>
+        <li>"&#45576;&#51008; &#50612;&#46500; &#47784;&#50577;?" &#51656;&#47928;</li>
+        <li>&#49548;&#50836;&#49884;&#44036;: &#50557; 10&#48516;</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S4: STEP 2 -->
+<div class="slide" id="s5">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">&#45800;&#44228;&#48324; &#44032;&#51060;&#46300;</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">&#52264;&#44540;&#52264;&#44540; &#46384;&#46972;&#54644;&#50836;</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2026-02/l10-step2.jpg" loading="lazy" alt="Step 2"></div>
+      <div class="sb">
+        <div class="snum">02</div>
+        <h3>&#54045;&#50629; &#44396;&#51312; <em>&#47564;&#46308;&#44592;!</em></h3>
+        <p>&#46020;&#54868;&#51648;&#47484; &#48152;&#51004;&#47196; &#51217;&#44256;, &#44032;&#50868;&#45936;&#47484; &#51096;&#46972; &#51217;&#51004;&#47732; &#54045;&#50629; &#44396;&#51312; &#50756;&#49457;! &#49440;&#49373;&#45784;&#51060; &#47676;&#51200; &#49884;&#48276;&#51012; &#48372;&#50668;&#51460;&#44172;&#50836;.</p>
+        <div class="tip">&#128161; &#49440;&#49373;&#45784;&#51060; &#47676;&#51200; &#49884;&#48276;&#51012; &#48372;&#50668;&#51460;&#44172;&#50836;!</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; &#49688;&#50629; &#51652;&#54665; &#45432;&#53944;</strong>
+      <ul>
+        <li>&#51217;&#44592; &#49884;&#48276; &#54596;&#49688;!</li>
+        <li>&#44032;&#50948; &#49324;&#50857; &#48372;&#51312;</li>
+        <li>&#49548;&#50836;&#49884;&#44036;: &#50557; 15&#48516;</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S5: STEP 3 -->
+<div class="slide" id="s6">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">&#45800;&#44228;&#48324; &#44032;&#51060;&#46300;</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">&#52264;&#44540;&#52264;&#44540; &#46384;&#46972;&#54644;&#50836;</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2026-02/l10-step3.jpg" loading="lazy" alt="Step 3"></div>
+      <div class="sb">
+        <div class="snum">03</div>
+        <h3>&#45236; &#50620;&#44404; <em>&#54045;&#50629; &#47564;&#46308;&#44592;!</em></h3>
+        <p>&#54045;&#50629; &#48512;&#48516;&#50640; &#45236; &#50620;&#44404;&#51012; &#44536;&#47532;&#44256;, &#51452;&#48320;&#50640; &#51339;&#50500;&#54616;&#45716; &#44163;&#46308;&#51012; &#44984;&#47728;&#50836;. &#47672;&#47532;&#52852;&#46973;&#51008; &#49353;&#51333;&#51060;&#47484; &#50724;&#47140; &#48537;&#50668;&#46020; &#50696;&#48848;&#50836;!</p>
+        <div class="tip">&#128161; &#47672;&#47532;&#52852;&#46973;&#51008; &#49353;&#51333;&#51060;&#47484; &#50724;&#47140; &#48537;&#50668;&#46020; &#50696;&#48848;&#50836;!</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; &#49688;&#50629; &#51652;&#54665; &#45432;&#53944;</strong>
+      <ul>
+        <li>&#51088;&#50976;&#47196;&#50868; &#44984;&#48120;&#44592; &#44201;&#47140;</li>
+        <li>&#50808;&#47784; &#48708;&#44368; &#44552;&#51648; &#50504;&#45236;</li>
+        <li>&#49548;&#50836;&#49884;&#44036;: &#50557; 20&#48516;</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S6: STEP 4 -->
+<div class="slide" id="s7">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew">&#45800;&#44228;&#48324; &#44032;&#51060;&#46300;</div>
+    <h2 class="stitle" style="font-size:clamp(24px,3vw,42px);">&#52264;&#44540;&#52264;&#44540; &#46384;&#46972;&#54644;&#50836;</h2>
+    <div class="sl">
+      <div class="sph"><img src="../../images/lessons/2026-02/l10-step4.jpg" loading="lazy" alt="Step 4"></div>
+      <div class="sb">
+        <div class="snum">04</div>
+        <h3>&#51060;&#47492;&#54364; <em>&#50756;&#49457;!</em></h3>
+        <p>&#54364;&#51648;&#50640; &#51060;&#47492;&#51012; &#50696;&#49240;&#44172; &#50416;&#44256;, &#49828;&#54000;&#52964;&#50752; &#47532;&#48376;&#51004;&#47196; &#44984;&#47728; &#50756;&#49457;&#54644;&#50836;! &#52852;&#46300;&#47484; &#50676;&#47732; &#45236; &#50620;&#44404;&#51060; &#53888;&#50612;&#45208;&#50752;&#50836;!</p>
+        <div class="tip">&#128161; "&#51060; &#51060;&#47492;&#54364;&#47484; &#52293;&#49345;&#50640; &#49464;&#50892;&#45459;&#51088;!" &#50756;&#49457;&#51032; &#44592;&#49256;!</div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; &#49688;&#50629; &#51652;&#54665; &#45432;&#53944;</strong>
+      <ul>
+        <li>&#49828;&#54000;&#52964;&#183;&#47532;&#48376;&#51004;&#47196; &#47560;&#47924;&#47532;</li>
+        <li>&#51060;&#47492; &#50416;&#44592; &#46020;&#50880;</li>
+        <li>&#49548;&#50836;&#49884;&#44036;: &#50557; 15&#48516;</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- S7: GALLERY -->
+<div class="slide" id="s8">
+  <div class="bg"></div>
+  <div class="sc" style="padding:50px 60px 16px;">
+    <div class="ew" style="margin-bottom:2px;">&#127912; &#51089;&#54408; &#44068;&#47084;&#47532;</div>
+    <h2 class="stitle" style="font-size:clamp(20px,2.5vw,32px);margin-bottom:2px;">&#51060;&#47088; &#51089;&#54408;&#46308;&#51060; &#45208;&#50752;&#50836;!</h2>
+    <p style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:6px;">&#53364;&#47533;&#54616;&#47732; &#53356;&#44172; &#48380; &#49688; &#51080;&#50612;&#50836;</p>
+    <div class="gal-wrap">
+      <div class="gal-grid">
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal01.jpg','gal01.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal01.jpg" loading="lazy" alt="&#51089;&#54408;1"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal02.jpg','gal02.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal02.jpg" loading="lazy" alt="&#51089;&#54408;2"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal03.jpg','gal03.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal03.jpg" loading="lazy" alt="&#51089;&#54408;3"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal04.jpg','gal04.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal04.jpg" loading="lazy" alt="&#51089;&#54408;4"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal05.jpg','gal05.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal05.jpg" loading="lazy" alt="&#51089;&#54408;5"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal06.jpg','gal06.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal06.jpg" loading="lazy" alt="&#51089;&#54408;6"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal07.jpg','gal07.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal07.jpg" loading="lazy" alt="&#51089;&#54408;7"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal08.jpg','gal08.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal08.jpg" loading="lazy" alt="&#51089;&#54408;8"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal09.jpg','gal09.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal09.jpg" loading="lazy" alt="&#51089;&#54408;9"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal10.jpg','gal10.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal10.jpg" loading="lazy" alt="&#51089;&#54408;10"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal11.jpg','gal11.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal11.jpg" loading="lazy" alt="&#51089;&#54408;11"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal12.jpg','gal12.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal12.jpg" loading="lazy" alt="&#51089;&#54408;12"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal13.jpg','gal13.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal13.jpg" loading="lazy" alt="&#51089;&#54408;13"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal14.jpg','gal14.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal14.jpg" loading="lazy" alt="&#51089;&#54408;14"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal15.jpg','gal15.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal15.jpg" loading="lazy" alt="&#51089;&#54408;15"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal16.jpg','gal16.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal16.jpg" loading="lazy" alt="&#51089;&#54408;16"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal17.jpg','gal17.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal17.jpg" loading="lazy" alt="&#51089;&#54408;17"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal18.jpg','gal18.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal18.jpg" loading="lazy" alt="&#51089;&#54408;18"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal19.jpg','gal19.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal19.jpg" loading="lazy" alt="&#51089;&#54408;19"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal20.jpg','gal20.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal20.jpg" loading="lazy" alt="&#51089;&#54408;20"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal21.jpg','gal21.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal21.jpg" loading="lazy" alt="&#51089;&#54408;21"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal22.jpg','gal22.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal22.jpg" loading="lazy" alt="&#51089;&#54408;22"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal23.jpg','gal23.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal23.jpg" loading="lazy" alt="&#51089;&#54408;23"></div>
+        <div class="gal-item" onclick="openLb('../../images/lessons/2026-02/l10-gal24.jpg','gal24.jpg')"><img src="../../images/lessons/2026-02/thumbs/l10-gal24.jpg" loading="lazy" alt="&#51089;&#54408;24"></div>
+      </div>
+
+    </div>
+    <!-- AI Report Panel -->
+    <div class="ai-panel" id="aiPanel" onclick="if(event.target===this)this.classList.remove('open')">
+      <div class="ai-box">
+        <button class="ai-close" onclick="document.getElementById('aiPanel').classList.remove('open')">&#10005;</button>
+        <h3>&#10024; &#54617;&#48512;&#47784; &#50504;&#45236; &#47928;&#44396;</h3>
+        <p class="ai-desc">&#50724;&#45720; &#49688;&#50629; &#54980; &#54617;&#48512;&#47784;&#45784;&#44760; &#48372;&#45244; &#47700;&#49884;&#51648; &#50696;&#49884;&#51077;&#45768;&#45796;. &#48373;&#49324; &#48260;&#53948;&#51012; &#45580;&#47084; &#48148;&#47196; &#49324;&#50857;&#54616;&#49464;&#50836;!</p>
+        <div class="ai-msg">&#50504;&#45397;&#54616;&#49464;&#50836;! &#50724;&#45720; &#50500;&#51060;&#46308;&#51060; &#44144;&#50872;&#51012; &#48372;&#47728; &#51088;&#44592; &#50620;&#44404;&#51012; &#44288;&#52272;&#54616;&#44256; &#54045;&#50629; &#51060;&#47492;&#54364;&#47484; &#47564;&#46308;&#50632;&#50612;&#50836; &#128204; &#52852;&#46300;&#47484; &#50676;&#47732; &#45236; &#50620;&#44404;&#51060; &#53888;&#50612;&#45208;&#50724;&#45716; &#49888;&#44592;&#54620; &#51089;&#54408;&#51060;&#46989;&#45768;&#45796;!<button class="ai-copy" onclick="copyMsg(this)">&#48373;&#49324;</button></div>
+        <div class="ai-msg">&#127912; &#50724;&#45720;&#51032; &#53945;&#48324;&#54620; &#51089;&#54408;! &#50500;&#51060;&#46308;&#51060; &#51088;&#44592;&#47564;&#51032; &#54045;&#50629; &#51088;&#54868;&#49345; &#51060;&#47492;&#54364;&#47484; &#50756;&#49457;&#54664;&#50612;&#50836;. &#51333;&#51060;&#47484; &#51217;&#44256; &#50724;&#47532;&#47732; &#51077;&#52404;&#44032; &#46104;&#45716; &#47560;&#48277; &#44057;&#51008; &#44221;&#54744;&#51012; &#54664;&#45813;&#45768;&#45796;!<button class="ai-copy" onclick="copyMsg(this)">&#48373;&#49324;</button></div>
+        <div class="ai-msg">"&#45208;&#47564;&#51032; &#53945;&#48324;&#54620; &#51216; 3&#44032;&#51648;!" &#50724;&#45720; &#50500;&#51060;&#46308;&#51060; &#44144;&#50872; &#49549; &#51088;&#44592; &#47784;&#49845;&#51012; &#44288;&#52272;&#54616;&#47728; &#51088;&#44592; &#51064;&#49885; &#54876;&#46041;&#51012; &#54664;&#50612;&#50836; &#128100; &#50808;&#47784;&#44032; &#50500;&#45772; &#45208;&#47564;&#51032; &#53945;&#48324;&#54632;&#51012; &#52286;&#45716; &#49884;&#44036;&#51060;&#50632;&#45813;&#45768;&#45796;!<button class="ai-copy" onclick="copyMsg(this)">&#48373;&#49324;</button></div>
+        <div class="ai-msg">&#9986;&#65039; &#51217;&#44256;, &#51088;&#47476;&#44256;, &#48537;&#51060;&#44256;! &#50724;&#45720; &#51333;&#51060; &#44277;&#54617;&#51032; &#44592;&#52488;&#47484; &#48176;&#50864;&#47728; &#54045;&#50629; &#44396;&#51312;&#47484; &#47564;&#46308;&#50632;&#50612;&#50836;. &#49548;&#44540;&#50977; &#48156;&#45804;&#44284; &#44277;&#44036; &#49324;&#44256;&#47141;&#51060; &#50277;&#50277; &#51088;&#46972;&#45716; &#49884;&#44036;&#51060;&#50632;&#50612;&#50836;!<button class="ai-copy" onclick="copyMsg(this)">&#48373;&#49324;</button></div>
+        <div class="ai-msg">&#49464;&#49345;&#50640; &#54616;&#45208;&#49104;&#51064; &#45208;&#47564;&#51032; &#51060;&#47492;&#54364;! &#10024; &#50500;&#51060;&#46308;&#51060; &#51088;&#44592;&#47484; &#54364;&#54788;&#54616;&#45716; &#49353;&#183;&#47784;&#50577;&#183;&#49828;&#54000;&#52964;&#47196; &#51060;&#47492;&#54364;&#47484; &#44984;&#47728; &#50756;&#49457;&#54664;&#50612;&#50836;. &#52293;&#49345;&#50640; &#49464;&#50892;&#45459;&#51012; &#49688; &#51080;&#45716; &#50696;&#49244; &#51089;&#54408;&#51060;&#46989;&#45768;&#45796;!<button class="ai-copy" onclick="copyMsg(this)">&#48373;&#49324;</button></div>
+        <div class="ai-msg">&#127775; &#50724;&#45720; &#54045;&#50629; &#51088;&#54868;&#49345; &#51060;&#47492;&#54364; &#50756;&#49457;! &#52852;&#46300;&#47484; &#50676;&#47732; &#45208;&#51032; &#50620;&#44404;&#51060; &#53888;&#50612;&#45208;&#50724;&#45716; &#53945;&#48324;&#54620; &#51089;&#54408;&#51060;&#50640;&#50836;. &#51665;&#50640;&#49436; &#44032;&#51313;&#50640;&#44172; &#48372;&#50668;&#51452;&#47732; &#44636;&#51677; &#45440;&#46980; &#44144;&#50696;&#50836;! &#51089;&#54408; &#49324;&#51652; &#54632;&#44760; &#48372;&#45236;&#46300;&#47140;&#50836;!<button class="ai-copy" onclick="copyMsg(this)">&#48373;&#49324;</button></div>
+      </div>
+    </div>
+    <div class="tnote">
+      <strong>&#128203; &#49688;&#50629; &#51652;&#54665; &#45432;&#53944;</strong>
+      <ul>
+        <li>&#51060;&#47492;&#54364; &#49464;&#50892;&#45459;&#44592; & &#51204;&#49884;</li>
+        <li>"&#45208;&#47484; &#49548;&#44060;&#54644;&#50836;" &#48156;&#54364;</li>
+        <li>&#51089;&#54408; &#49324;&#51652; &#52524;&#50689;</li>
+      </ul>
+    </div>
+  </div>
+  <div class="end-bar">
+    <button class="back-btn" onclick="typeof LunaApp!=='undefined'?LunaApp.navigate('monthlyDetail',{month:'2026-02'}):history.back()">&#128218; &#49688;&#50629; &#54856;</button>
+    <button class="back-btn" onclick="typeof LunaApp!=='undefined'?LunaApp.navigate('home'):location.href='../../index.html'">&#127968; &#47700;&#51064; &#54168;&#51060;&#51648;</button>
+    <button class="ai-btn" onclick="document.getElementById('aiPanel').classList.add('open')">&#10024; AI &#47532;&#54252;&#53944;</button>
+  </div>
+</div>
+
+</div>
+  <div id="lbox" onclick="if(event.target===this)closeLb()">
+    <img id="lbox-img" src="" alt="">
+    <div class="lbox-actions">
+      <a class="lbox-dl" href="" download="">&#11015; &#45796;&#50868;&#47196;&#46300;</a>
+      <button class="lbox-cl" onclick="closeLb()">&#10005; &#45803;&#44592;</button>
+    </div>
+  </div>
+
+<script>
+const total=9;let cur=0;
+function buildDots(){const db=document.getElementById('db');db.innerHTML='';for(let i=0;i<total;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=(()=>{const x=i;return()=>go(x);})();db.appendChild(d);}}
+function go(n){if(n===cur)return;const slides=document.querySelectorAll('.slide');slides[cur].classList.remove('active');slides[cur].classList.add('exit-left');slides[n].classList.remove('exit-left');slides[n].classList.add('active');document.querySelectorAll('.dot')[cur].classList.remove('active');document.querySelectorAll('.dot')[n].classList.add('active');cur=n;document.getElementById('cn').textContent=cur+1;document.getElementById('bp').disabled=cur===0;document.getElementById('bn').disabled=cur===total-1;setTimeout(()=>document.querySelectorAll('.slide').forEach(s=>{if(!s.classList.contains('active'))s.classList.remove('exit-left');}),700);}
+function nav(d){if(cur+d>=0&&cur+d<total)go(cur+d);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')nav(1);if(e.key==='ArrowLeft')nav(-1);if(e.key==='Escape')closeLb();});
+let tx=0;document.getElementById('sw').addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.getElementById('sw').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)nav(dx<0?1:-1);});
+(function(){
+  const pt=document.getElementById('pt');
+  for(let i=0;i<10;i++){const p=document.createElement('div');p.className='p';const s=15+Math.random()*30;p.style.cssText='width:'+s+'px;height:'+s+'px;left:'+Math.random()*100+'%25;animation-duration:'+(8+Math.random()*14)+'s;animation-delay:'+Math.random()*10+'s;';pt.appendChild(p);}
+
+  const confettiColors=['#ff6eb4','#ffd700','#e85da0','#ff9ff3','#48dbfb','#feca57','#ff6348'];
+  for(let i=0;i<18;i++){
+    const c=document.createElement('div');c.className='confetti';
+    const w=4+Math.random()*8,h=4+Math.random()*8;
+    const col=confettiColors[Math.floor(Math.random()*confettiColors.length)];
+    const shapes=['50%','0','30%'];
+    c.style.cssText='width:'+w+'px;height:'+h+'px;background:'+col+';left:'+Math.random()*95+'%;animation-duration:'+(5+Math.random()*10)+'s;animation-delay:'+Math.random()*8+'s;border-radius:'+shapes[Math.floor(Math.random()*shapes.length)]+';opacity:.6;';
+    pt.appendChild(c);
+  }
+  for(let i=0;i<10;i++){
+    const s=document.createElement('div');s.className='sparkle-star';
+    s.textContent='\u2728';
+    s.style.cssText='font-size:'+(8+Math.random()*12)+'px;left:'+Math.random()*90+'%;top:'+Math.random()*85+'%;animation-duration:'+(2+Math.random()*3)+'s;animation-delay:'+Math.random()*4+'s;';
+    pt.appendChild(s);
+  }
+
+})();
+buildDots();document.getElementById('tn').textContent=total;document.getElementById('bp').disabled=true;
+
+function copyMsg(btn){var t=btn.parentElement.childNodes[0].textContent.trim();navigator.clipboard.writeText(t).then(function(){btn.textContent='\ubcf5\uc0ac\ub428!';btn.classList.add('copied');setTimeout(function(){btn.textContent='\ubcf5\uc0ac';btn.classList.remove('copied');},1500);});}
+function openLb(src,fn){var lb=document.getElementById('lbox');lb.querySelector('#lbox-img').src=src;var dl=lb.querySelector('.lbox-dl');dl.href=src;dl.download=fn;lb.classList.add('open');}
+function closeLb(){document.getElementById('lbox').classList.remove('open');}
+document.querySelectorAll(".ref-grid img").forEach(i=>i.addEventListener("click",()=>openLb(i.src,i.alt||"ref")));
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<!-- Recent Lessons -->
+<script src="../../assets/js/recent-lessons.js?v=0321"></script>
+<script>document.addEventListener("DOMContentLoaded",function(){if(typeof RecentLessons!=="undefined")RecentLessons.saveFromLessonPage();});</script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

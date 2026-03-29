@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html class="dark" lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <title>해바라기 - Luna Whale</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f2b90d",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#221e10",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #221e10;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(242, 185, 13, 0.3);
+            border-radius: 10px;
+        }
+
+        .parchment-gradient {
+            background: linear-gradient(to bottom, #f8f8f5, #f1f1e6);
+        }
+
+        .glass-icon {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Audio visualizer effect on stamp */
+        @keyframes stamp-pop {
+            0% {
+                transform: scale(3) rotate(-20deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(0.8) rotate(-5deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1) rotate(-10deg);
+                opacity: 1;
+            }
+        }
+
+        .animate-stamp {
+            animation: stamp-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+    </style>
+
+    <!-- React & Dependencies -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="../../assets/js/firebase-auth.js"></script>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="font-display text-slate-100 antialiased h-[100dvh] w-screen overflow-hidden">
+    <div id="root" class="w-full h-full"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+        const { motion, AnimatePresence } = window.Motion;
+
+        // Sounds setup
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        const playTone = (freq, type, duration, vol = 0.1) => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        };
+
+        const playAppearSound = () => {
+            playTone(440, 'sine', 0.5, 0.05);
+            setTimeout(() => playTone(660, 'sine', 0.8, 0.05), 100);
+        };
+        const playClickSound = () => playTone(880, 'triangle', 0.1, 0.05);
+        const playStampSound = () => {
+            playTone(220, 'square', 0.2, 0.1);
+            setTimeout(() => playTone(110, 'sawtooth', 0.4, 0.15), 150);
+        };
+
+        // 큐레이터 페이지 네비게이션
+        const NAVIGATOR = {
+            prev: { url: "curator-renoir-moulin.html", title: "물랭 드 라 갈레트" },
+            next: { url: "curator-vangogh-cafe.html", title: "밤의 카페 테라스" }
+        };
+
+        // Standard dummy data in case DB fails
+        const DUMMY_DATA = {
+            en: {
+                title: "Sunflowers",
+                artist: "Vincent van Gogh, 1888",
+                dialogue_script: [{"title": "Shades of Yellow", "text": "\"How many different shades of yellow can you spot? Warm gold, pale lemon, burnt orange... how many kinds of yellow are hiding here?\""}, {"title": "The Signature", "text": "\"Van Gogh signed his name right on the vase — can you find it? It says 'Vincent'. Look closely!\""}, {"title": "Happy or Sad?", "text": "\"Some flowers are drooping, starting to wilt. Does this painting make you feel cheerful, or a little melancholy?\""}],
+                qa_pairs: [{"q": "Why did Van Gogh paint sunflowers so many times?", "a": "He was decorating a room for his friend Paul Gauguin in the 'Yellow House' in Arles. Van Gogh adored sunflowers as a symbol of gratitude and happiness — he created at least 11 sunflower paintings in his lifetime."}, {"q": "Why is it painted almost entirely in yellow?", "a": "Van Gogh was in his 'yellow period', fascinated by the warmth and energy of yellow. He wrote that yellow was the color of friendship and sunshine — the feeling he wanted his paintings to radiate."}, {"q": "How much is this painting worth today?", "a": "In 1987, one version of the Sunflowers series sold for $39.9 million — then a world record at auction. It was bought by a Japanese insurance company. Today it would be worth several times that amount."}],
+                ui: {"curator": "1-Min Curator", "guide": "Conversation Guide", "qa": "Curiosity Q&A", "save": "Save to My Collection", "saved": "Saved", "collected": "COLLECTED"}
+            },
+            ko: {
+                title: "해바라기",
+                artist: "빈센트 반 고흐, 1888",
+                dialogue_script: [{"title": "노란색 찾기", "text": "\"노란색이 몇 가지나 있나요? 따뜻한 금빛, 연한 레몬색, 진한 황토색... 몇 가지 노란색이 숨어있나요?\""}, {"title": "사인 찾기", "text": "\"반 고흐는 꽃병 위에 자기 이름을 썼어요 — 'Vincent'라고. 찾을 수 있나요? 잘 보세요!\""}, {"title": "행복할까, 슬플까?", "text": "\"꽃잎이 시들고 고개를 숙인 꽃들도 있어요. 이 그림을 보면 어떤 기분이 드나요?\""}],
+                qa_pairs: [{"q": "반 고흐는 왜 해바라기를 그렇게 많이 그렸나요?", "a": "친구 폴 고갱의 방을 꾸미기 위해서였어요. 반 고흐는 해바라기를 감사와 행복의 상징으로 여겼고, 평생 11점 이상의 해바라기 그림을 그렸습니다."}, {"q": "왜 온통 노란색인가요?", "a": "반 고흐는 이 시기에 노란색에 완전히 매료되어 있었어요. 그는 편지에서 노란색은 우정과 햇빛의 색이라고 썼습니다. 그 따뜻함을 그림에 담고 싶었던 거예요."}, {"q": "이 그림의 가치는 얼마나 되나요?", "a": "1987년 해바라기 시리즈 중 하나가 3,990만 달러에 팔려 당시 세계 최고가 기록을 세웠어요. 일본의 한 보험회사가 구매했고, 지금은 그 몇 배의 가치를 지닐 거예요."}],
+                ui: {"curator": "1분 큐레이터", "guide": "대화 가이드", "qa": "호기심 Q&A", "save": "내 컬렉션에 저장", "saved": "저장 완료", "collected": "수집 완료"}
+            },
+            image_url: "../../images/masterpiece/large/impr_004.jpg",
+            thumbnail_url: "../../images/masterpiece/thumbnails/impr_004.jpg",
+            collection_id: "m_sunflowers_1888",
+            zoom_points: [{"x": "50%", "y": "30%"}, {"x": "25%", "y": "60%"}, {"x": "75%", "y": "65%"}]
+        };
+
+        const ProgressiveImage = ({ src, placeholderSrc, alt, isZoomed, zoomPos }) => {
+            const [imgSrc, setImgSrc] = useState(placeholderSrc || src);
+            const [isLoaded, setIsLoaded] = useState(false);
+
+            useEffect(() => {
+                const img = new Image();
+                img.onload = () => {
+                    setImgSrc(src);
+                    setIsLoaded(true);
+                };
+                img.onerror = () => {
+                    console.error("High-res image load failed, reverting to placeholder without blur.");
+                    setIsLoaded(true); // Remove blur even if high-res failed
+                };
+                img.src = src;
+            }, [src]);
+
+            return (
+                <div className="absolute inset-0 bg-background-dark overflow-hidden">
+                    <motion.img
+                        src={imgSrc}
+                        alt={alt}
+                        className={`w-full h-full object-contain transition-all duration-700 ${isLoaded ? 'blur-0 scale-100' : 'blur-xl scale-105'}`}
+                        animate={{
+                            scale: isZoomed ? 2.5 : 1,
+                            transformOrigin: isZoomed ? `${zoomPos.x} ${zoomPos.y}` : "center center"
+                        }}
+                        transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent opacity-60 pointer-events-none"></div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [user, setUser] = useState(null);
+            const [isZoomed, setIsZoomed] = useState(false);
+            const [zoomPos, setZoomPos] = useState({ x: "50%", y: "50%" });
+            const [openQA, setOpenQA] = useState(null);
+            const [isSaved, setIsSaved] = useState(false);
+            const [showStamp, setShowStamp] = useState(false);
+            const [lang, setLang] = useState('ko');
+
+            // Fetch Data
+            useEffect(() => {
+                const unsubscribe = firebase.auth().onAuthStateChanged(usr => {
+                    setUser(usr);
+                });
+
+                const fetchData = async () => {
+                    try {
+                        // For now we lock to Starry Night DUMMY_DATA as requested by user to perfect it.
+                        setData(DUMMY_DATA);
+                    } catch (err) {
+                        console.error("Error fetching masterpiece:", err);
+                        setData(DUMMY_DATA);
+                    } finally {
+                        setLoading(false);
+                        playAppearSound();
+                    }
+                };
+
+                fetchData();
+                return () => unsubscribe();
+            }, []);
+
+            const handleZoom = (x, y) => {
+                if (isZoomed && zoomPos.x === x && zoomPos.y === y) {
+                    setIsZoomed(false);
+                } else {
+                    setZoomPos({ x, y });
+                    setIsZoomed(true);
+                }
+                playClickSound();
+            };
+
+            const toggleQA = (idx) => {
+                setOpenQA(openQA === idx ? null : idx);
+                if (openQA !== idx) playClickSound();
+            };
+
+            const handleSave = async () => {
+                if (!user) {
+                    alert(lang === 'ko' ? "로그인이 필요합니다." : "Login required.");
+                    return;
+                }
+                try {
+                    playClickSound();
+                    await firebase.firestore().collection('users').doc(user.uid).collection('cards').doc(data.collection_id || 'masterpiece_daily').set({
+                        cardId: data.collection_id || 'masterpiece_daily',
+                        acquiredAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        type: 'masterpiece'
+                    });
+
+                    setShowStamp(true);
+                    playStampSound();
+                    setIsSaved(true);
+                    setTimeout(() => setShowStamp(false), 2000);
+                } catch (e) {
+                    console.error("Save error:", e);
+                    alert(lang === 'ko' ? "저장에 실패했습니다." : "Failed to save.");
+                }
+            };
+
+            if (loading || !data) {
+                return <div className="flex h-full w-full items-center justify-center bg-background-dark"><div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div></div>;
+            }
+
+            const langData = data[lang];
+
+            return (
+                <div className="flex flex-col lg:flex-row h-[100dvh] w-full bg-background-dark relative overflow-hidden">
+                    {/* LEFT HALF: Artwork Area (75% on lg+) */}
+                    <div className="relative h-[45%] lg:h-full w-full lg:w-3/4 flex-shrink-0 bg-black z-10 shadow-[5px_0_25px_rgba(0,0,0,0.5)]">
+                        <ProgressiveImage src={data.image_url} placeholderSrc={data.thumbnail_url} alt={langData.title} isZoomed={isZoomed} zoomPos={zoomPos} />
+
+                        {/* Header Controls */}
+                        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
+                            <button onClick={() => window.location.href = '../../index.html'} className="bg-black/50 backdrop-blur-md p-3 rounded-full text-white border border-white/20 hover:bg-black/70 transition flex items-center">
+                                <span className="material-symbols-outlined text-[30px]">home</span>
+                            </button>
+                            <div className="flex items-center gap-2">
+                                {/* 이전/다음 큐레이터 화살표 */}
+                                <button
+                                    onClick={() => window.location.href = NAVIGATOR.prev.url}
+                                    title={NAVIGATOR.prev.title}
+                                    className="bg-black/50 backdrop-blur-md p-1.5 rounded-full text-white border border-white/20 hover:bg-white/20 transition flex items-center group relative"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                                    <span className="absolute right-full mr-2 bg-black/80 text-white text-[10px] font-bold py-1 px-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                        {NAVIGATOR.prev.title}
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => window.location.href = NAVIGATOR.next.url}
+                                    title={NAVIGATOR.next.title}
+                                    className="bg-black/50 backdrop-blur-md p-1.5 rounded-full text-white border border-white/20 hover:bg-white/20 transition flex items-center group relative"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                                    <span className="absolute right-full mr-2 bg-black/80 text-white text-[10px] font-bold py-1 px-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                        {NAVIGATOR.next.title}
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')}
+                                    className="bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-white border border-white/20 hover:bg-black/70 transition text-sm font-bold uppercase"
+                                >
+                                    {lang === 'ko' ? 'EN' : 'KR'}
+                                </button>
+                                <div className="bg-primary/90 backdrop-blur px-3 py-1 rounded-full text-background-dark text-xs flex items-center justify-center font-bold uppercase tracking-wider shadow-lg">
+                                    {langData.ui.curator}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Interactive Zoom Points */}
+                        {data.zoom_points && data.zoom_points.map((pt, i) => (
+                            <button
+                                key={i}
+                                onClick={() => handleZoom(pt.x, pt.y)}
+                                className="absolute z-20 glass-icon text-white rounded-full p-2 hover:scale-110 transition-transform hover:bg-white/30 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                                style={{ top: pt.y, left: pt.x, transform: 'translate(-50%, -50%)' }}
+                            >
+                                <span className="material-symbols-outlined">{isZoomed && zoomPos.x === pt.x ? 'zoom_out' : 'search'}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* RIGHT HALF: Information Sidebar (25% on lg+) */}
+                    <div className="relative flex-1 lg:w-1/4 h-[55%] lg:h-full flex flex-col parchment-gradient text-slate-900 lg:rounded-l-3xl rounded-t-3xl lg:rounded-tr-none -mt-4 lg:mt-0 z-30 shadow-[-10px_0_30px_rgba(0,0,0,0.4)] min-h-0">
+                        <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar pb-60 min-h-0">
+                            {/* Title & Artist */}
+                            <div className="mb-8">
+                                <h1 className="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900">{langData.title}</h1>
+                                <p className="text-base text-slate-600 font-medium mt-1">{langData.artist}</p>
+                                <div className="w-12 h-1 bg-primary mt-4 rounded-full"></div>
+                            </div>
+
+                            {/* Dialogue Guides */}
+                            <div className="mb-8">
+                                <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-slate-400 mb-4 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary text-sm">forum</span>
+                                    {langData.ui.guide}
+                                </h3>
+                                <div className="grid grid-cols-1 gap-3">
+                                    {langData.dialogue_script && langData.dialogue_script.map((dlg, i) => (
+                                        <div key={i} className="bg-white/60 p-4 rounded-xl border border-background-dark/5 shadow-sm relative">
+                                            <span className="material-symbols-outlined absolute -top-2 -right-2 text-primary bg-background-dark rounded-full p-1 text-[10px]">format_quote</span>
+                                            <h4 className="font-bold text-sm mb-1 text-slate-800">{dlg.title}</h4>
+                                            <p className="text-xs text-slate-600 italic leading-relaxed">{dlg.text}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Curiosity Q&A */}
+                            <div className="mb-4">
+                                <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-slate-400 mb-4 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary text-sm">lightbulb</span>
+                                    {langData.ui.qa}
+                                </h3>
+                                <div className="grid gap-3">
+                                    {langData.qa_pairs && langData.qa_pairs.map((qa, i) => (
+                                        <div key={i} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                            <button
+                                                onClick={() => toggleQA(i)}
+                                                className="flex items-center justify-between w-full p-4 text-left hover:bg-slate-50 transition-colors"
+                                            >
+                                                <span className="text-sm font-semibold text-slate-800 pr-4">{qa.q}</span>
+                                                <span className={`material-symbols-outlined text-primary transition-transform duration-300 ${openQA === i ? 'rotate-90' : ''}`}>
+                                                    chevron_right
+                                                </span>
+                                            </button>
+                                            <AnimatePresence>
+                                                {openQA === i && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        className="px-4 pb-4 overflow-hidden"
+                                                    >
+                                                        <div className="pt-2 border-t border-slate-100 text-sm text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-lg mt-1">
+                                                            {qa.a}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Floating Action Button at Bottom Right of Sidebar */}
+                        <div className="absolute bottom-5 right-5 z-40">
+                            <button
+                                onClick={handleSave}
+                                disabled={isSaved}
+                                className={`group flex items-center justify-center ${isSaved ? 'w-12 h-12 bg-green-500 rounded-full cursor-default' : 'w-14 h-14 bg-primary hover:bg-yellow-400 hover:scale-110 active:scale-95 rounded-full'} text-background-dark shadow-[0_8px_25px_rgba(0,0,0,0.3)] transition-all duration-300 border border-white/20`}
+                                title={isSaved ? langData.ui.saved : langData.ui.save}
+                            >
+                                <span className={`material-symbols-outlined ${isSaved ? 'text-white text-2xl' : 'text-3xl'}`}>
+                                    {isSaved ? 'check' : 'star'}
+                                </span>
+
+                                {/* Hover Label for better UX */}
+                                {!isSaved && (
+                                    <span className="absolute right-16 bg-background-dark text-white text-xs font-bold py-2 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl border border-white/10">
+                                        {langData.ui.save}
+                                    </span>
+                                )}
+                            </button>
+
+                            {/* Stamp Animation Alert inside Sidebar */}
+                            {showStamp && (
+                                <div className="absolute bottom-20 right-0 pointer-events-none z-50 animate-stamp">
+                                    <div className="border-4 border-red-500 rounded-lg p-2 flex flex-col items-center justify-center w-28 h-28 text-red-500 bg-white/90 backdrop-blur shadow-2xl rotate-[-12deg]">
+                                        <span className="font-extrabold text-lg uppercase tracking-widest border-b-2 border-red-500 mb-1">{langData.ui.collected}</span>
+                                        <span className="material-symbols-outlined text-3xl">verified</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

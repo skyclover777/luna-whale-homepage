@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <title>Beloved — 북커버 디자인 분석 - Luna Whale</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; background: #0d0404; font-family: 'Plus Jakarta Sans', sans-serif; color: #f0e8e8; }
+
+        .layout { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+
+        .panel-left {
+            width: 42%; flex-shrink: 0;
+            position: relative; overflow: hidden;
+            background: #0a0202;
+        }
+        .panel-left-bg {
+            position: absolute; inset: -20px;
+            background-image: url('../../images/book-covers/full/book_0002_beloved.jpg');
+            background-size: cover; background-position: center;
+            filter: blur(24px) brightness(0.3) saturate(1.5);
+            transform: scale(1.1);
+        }
+        /* Red glow pulse */
+        @keyframes redGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+        .red-ambient {
+            position: absolute; inset: 0; z-index: 1;
+            background: radial-gradient(ellipse at 50% 40%, rgba(160,0,0,0.35), transparent 65%);
+            animation: redGlow 4s ease-in-out infinite;
+        }
+
+        .cover-wrap {
+            position: relative; z-index: 2; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 80px 24px 32px; gap: 20px;
+        }
+
+        .cover-img-wrap { position: relative; width: 100%; max-width: 200px; }
+        .cover-img-wrap img {
+            width: 100%; display: block;
+            border-radius: 3px 10px 10px 3px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.7), 10px 20px 50px rgba(0,0,0,0.9), 0 0 60px rgba(180,0,0,0.25);
+        }
+        .cover-img-wrap::before {
+            content: ''; position: absolute;
+            left: 0; top: 0; bottom: 0; width: 8px;
+            background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.1));
+            border-radius: 3px 0 0 3px; z-index: 1;
+        }
+        .cover-placeholder {
+            width: 100%; max-width: 200px; aspect-ratio: 2/3;
+            background: #8b0000;
+            border-radius: 3px 12px 12px 3px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 10px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.7), 10px 20px 50px rgba(0,0,0,0.9);
+        }
+
+        @keyframes floatBook {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .book-float { animation: floatBook 4s ease-in-out infinite; }
+
+        .panel-right {
+            flex: 1; height: 100vh;
+            overflow-y: auto; overflow-x: hidden;
+            background: #0e0606;
+            border-left: 1px solid rgba(180,40,40,0.15);
+        }
+        .panel-right::-webkit-scrollbar { width: 3px; }
+        .panel-right::-webkit-scrollbar-thumb { background: rgba(180,60,60,0.3); border-radius: 10px; }
+        .panel-right::-webkit-scrollbar-track { background: transparent; }
+
+        .right-inner { padding: 20px 28px 60px; max-width: 560px; }
+
+        .top-nav {
+            position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 18px;
+            background: linear-gradient(to bottom, rgba(13,4,4,0.9), transparent);
+        }
+        .nav-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; color: #f0d0d0;
+        }
+        .nav-btn:hover { background: rgba(220,60,60,0.2); border-color: rgba(220,60,60,0.4); }
+
+        .feature-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(180,60,60,0.12);
+            border-radius: 14px; padding: 16px 18px; margin-bottom: 10px; transition: all 0.25s;
+        }
+        .feature-card:hover {
+            background: rgba(180,40,40,0.07); border-color: rgba(220,80,80,0.25);
+            transform: translateX(3px);
+        }
+        .divider { height: 1px; background: linear-gradient(to right, rgba(180,60,60,0.25), transparent); margin: 24px 0; }
+
+        body::after {
+            content: ''; position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 9999;
+        }
+
+        @media (max-width: 600px) {
+            html, body { overflow: auto; }
+            .layout { flex-direction: column; height: auto; }
+            .panel-left { width: 100%; height: 55vh; min-height: 320px; }
+            .panel-right { height: auto; overflow-y: visible; border-left: none; border-top: 1px solid rgba(180,60,60,0.2); }
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+<div class="layout">
+
+    <!-- LEFT: Fixed cover -->
+    <div class="panel-left">
+        <div class="panel-left-bg"></div>
+        <div class="red-ambient"></div>
+
+        <div class="top-nav">
+            <div style="display:flex;gap:8px;">
+                <button class="nav-btn" onclick="window.location.href='../../index.html'">
+                    <span class="material-symbols-outlined" style="font-size:17px;">home</span>
+                </button>
+                <button class="nav-btn" onclick="window.location.href='book-covers.html'">
+                    <span class="material-symbols-outlined" style="font-size:17px;">grid_view</span>
+                </button>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button class="nav-btn" onclick="window.location.href='book-detail-gatsby.html'">
+                    <span class="material-symbols-outlined" style="font-size:17px;">chevron_left</span>
+                </button>
+                <button class="nav-btn" onclick="window.location.href='book-detail-belljar.html'">
+                    <span class="material-symbols-outlined" style="font-size:17px;">chevron_right</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="cover-wrap">
+            <div class="book-float" style="width:100%;max-width:190px;">
+                <div class="cover-img-wrap">
+                    <img src="../../images/book-covers/full/book_0002_beloved.jpg" alt="Beloved"
+                        onerror="this.style.display='none';document.getElementById('beloved-ph').style.display='flex';" />
+                </div>
+                <div class="cover-placeholder" id="beloved-ph" style="display:none;">
+                    <span style="font-size:36px;">📕</span>
+                    <span style="font-size:13px;font-weight:800;color:rgba(255,255,255,0.9);text-align:center;padding:0 12px;line-height:1.3;">Beloved</span>
+                    <span style="font-size:9px;color:rgba(255,180,180,0.5);">이미지 준비 중</span>
+                </div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:11px;font-weight:700;color:rgba(220,100,100,0.6);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">No.002</div>
+                <h2 style="font-family:'Playfair Display',serif;font-size:22px;color:#ffe8e8;font-weight:700;margin-bottom:4px;">Beloved</h2>
+                <p style="font-size:12px;color:rgba(220,180,180,0.6);font-style:italic;margin-bottom:12px;">베러브드</p>
+                <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:5px;">
+                    <span style="padding:3px 10px;background:rgba(220,0,0,0.2);border:1px solid rgba(220,60,60,0.35);border-radius:20px;font-size:10px;color:#ff9999;">1987</span>
+                    <span style="padding:3px 10px;background:rgba(255,255,255,0.05);border-radius:20px;font-size:10px;color:rgba(220,190,190,0.7);">Toni Morrison</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="position:absolute;bottom:20px;right:16px;font-size:9px;color:rgba(200,100,100,0.3);letter-spacing:0.5px;writing-mode:vertical-rl;pointer-events:none;">← 오른쪽을 스크롤하세요</div>
+    </div>
+
+    <!-- RIGHT: Scrollable info -->
+    <div class="panel-right">
+        <div class="right-inner">
+            <div style="height:24px;"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 11px;background:rgba(180,0,0,0.12);border:1px solid rgba(220,60,60,0.25);border-radius:20px;font-size:10px;font-weight:700;color:#ff9090;letter-spacing:1px;text-transform:uppercase;">
+                    ✦ 북커버 아카이브
+                </div>
+                <button id="lang-btn" onclick="toggleLang()"
+                    style="padding:4px 13px;background:rgba(180,0,0,0.1);border:1.5px solid rgba(220,60,60,0.25);border-radius:20px;font-size:11px;font-weight:700;color:#ff9090;cursor:pointer;">
+                    🌐 EN
+                </button>
+            </div>
+
+            <div style="margin-bottom:22px;">
+                <div style="width:28px;height:2px;background:linear-gradient(to right,#cc2222,transparent);margin-bottom:12px;"></div>
+                <h1 id="headline" style="font-family:'Playfair Display',serif;font-size:20px;color:#ffe8e8;line-height:1.45;font-style:italic;font-weight:400;"></h1>
+            </div>
+
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px;">
+                <span style="padding:4px 11px;background:rgba(255,255,255,0.04);border-radius:20px;font-size:11px;color:rgba(220,190,190,0.7);">Design: R.D. Scudellari</span>
+                <span style="padding:4px 11px;background:rgba(255,255,255,0.04);border-radius:20px;font-size:11px;color:rgba(220,190,190,0.7);">Alfred A. Knopf</span>
+            </div>
+
+            <p id="summary" style="font-size:13.5px;color:rgba(240,210,210,0.82);line-height:1.78;margin-bottom:24px;"></p>
+
+            <div class="divider"></div>
+
+            <div style="margin-bottom:24px;">
+                <h3 style="font-size:11px;font-weight:700;color:rgba(220,100,100,0.7);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;">✦ 디자인 분석</h3>
+                <div id="features"></div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div style="background:linear-gradient(135deg,rgba(80,10,10,0.35),rgba(30,5,5,0.2));border:1px solid rgba(180,60,60,0.15);border-radius:14px;padding:20px;margin-bottom:24px;">
+                <h3 style="font-size:11px;font-weight:700;color:rgba(220,100,100,0.65);letter-spacing:2px;text-transform:uppercase;margin-bottom:11px;">📖 책 소개</h3>
+                <p id="book-intro" style="font-size:12.5px;color:rgba(230,200,200,0.78);line-height:1.8;"></p>
+            </div>
+
+            <div style="display:flex;gap:10px;">
+                <a href="https://www.amazon.com/s?k=Beloved+Toni+Morrison" target="_blank"
+                    style="flex:1;padding:13px;background:linear-gradient(135deg,#cc2222,#ee4444);border-radius:12px;text-align:center;font-size:12.5px;font-weight:700;color:#fff;text-decoration:none;transition:all 0.2s;"
+                    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(200,0,0,0.4)'"
+                    onmouseout="this.style.transform='';this.style.boxShadow=''">
+                    📦 구매하기 · Amazon
+                </a>
+                <a href="https://bookcoverarchive.com" target="_blank"
+                    style="padding:13px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:12px;font-size:12.5px;font-weight:600;color:rgba(220,190,190,0.7);text-decoration:none;transition:all 0.2s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                    🔗 원본
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const DATA = {
+    ko: {
+        headline: '붉은 침묵 — 미니멀리즘이 공포와 슬픔을 말하는 방식',
+        summary: '강렬한 붉은 배경 위에 단 한 단어 \'Beloved\'. 과감한 여백과 최소한의 요소만으로 노예제의 트라우마와 모성애의 비극을 담아낸 이 표지는, 말하지 않음으로써 더 많은 것을 말하는 미니멀 디자인의 교과서입니다.',
+        features: [
+            { title: '붉은 여백의 무게', text: '화면의 90%를 차지하는 선명한 붉은색은 피, 분노, 사랑을 동시에 의미합니다. 텍스트를 향해 숨죽인 이 거대한 여백은 소설이 담은 침묵과 억압된 역사의 무게를 그대로 시각화합니다.' },
+            { title: '타이포그래피만으로 전부', text: '제목과 저자명 외에 어떤 이미지도 없습니다. 이 절제된 선택이 오히려 독자의 상상력을 극도로 자극합니다. \'Beloved\'라는 단어 하나가 깊은 비극을 암시합니다.' },
+            { title: '색상의 이중성', text: '붉은색은 동시에 사랑과 폭력을 뜻합니다. 노예 어머니가 딸을 죽인 이 소설의 핵심 역설 — 사랑으로 인한 살인 — 을 하나의 색으로 완벽하게 포착했습니다.' },
+            { title: '제목 위치의 의도', text: '제목이 중앙이 아닌 아래쪽에 배치되어 있습니다. 마치 수면 위로 조금밖에 드러나지 않은 빙산처럼, 표면 아래 숨겨진 엄청난 이야기의 존재를 암시합니다.' }
+        ],
+        book_intro: '노예제가 종식된 직후 미국 오하이오를 배경으로, 과거의 트라우마에서 벗어나지 못하는 한 여성의 이야기를 그린 토니 모리슨의 대표작입니다. 딸을 노예로 살게 하느니 차라리 죽이겠다는 처절한 선택을 한 어머니 세테의 이야기는 미국 노예제의 잔인한 현실을 가장 강렬하게 고발합니다. 1988년 퓰리처상을 수상했으며, 노예제의 심리적 상흔을 문학적으로 가장 깊이 파고든 작품으로 평가받습니다.'
+    },
+    en: {
+        headline: 'Red Silence — How Minimalism Speaks of Horror and Grief',
+        summary: 'A burning red background. A single word: Beloved. With bold negative space and minimal elements, this cover encapsulates the trauma of slavery and the tragedy of motherhood. It is a textbook example of minimalist design that says more by saying less.',
+        features: [
+            { title: 'The Weight of Red Space', text: 'The vivid red that fills 90% of the frame simultaneously means blood, rage, and love. This vast negative space visualizes the weight of suppression and unspoken history that the novel carries.' },
+            { title: 'Typography Alone Does Everything', text: 'There are no images — only the title and author name. This restrained choice powerfully stimulates the reader\'s imagination. The single word \'Beloved\' implies a deep tragedy that no illustration could match.' },
+            { title: 'The Duality of Color', text: 'Red simultaneously means love and violence. The core paradox of the novel — a mother killing her daughter out of love — is perfectly captured in one single color.' },
+            { title: 'Intentional Title Placement', text: 'The title is positioned toward the bottom rather than the center — like the tip of an iceberg barely visible above the water\'s surface, suggesting the enormous story hidden beneath.' }
+        ],
+        book_intro: 'Set in post-Civil War Ohio, this is Toni Morrison\'s defining masterpiece about a woman unable to escape the trauma of her past under slavery. The story of Sethe, a mother who chooses to kill her daughter rather than return her to a life of bondage, stands as the most searing indictment of American slavery\'s psychological wounds. Winner of the 1988 Pulitzer Prize, it is considered the most profound literary examination of slavery\'s enduring psychological scars.'
+    }
+};
+let lang = 'ko';
+function renderContent() {
+    const d = DATA[lang];
+    document.getElementById('headline').textContent = d.headline;
+    document.getElementById('summary').textContent = d.summary;
+    document.getElementById('book-intro').textContent = d.book_intro;
+    document.getElementById('lang-btn').textContent = lang === 'ko' ? '🌐 EN' : '🌐 KO';
+    document.getElementById('features').innerHTML = d.features.map(f => `
+        <div class="feature-card">
+            <div style="font-size:11px;font-weight:700;color:#ff8888;margin-bottom:6px;">✦ ${f.title}</div>
+            <p style="font-size:12.5px;color:rgba(230,200,200,0.75);line-height:1.7;">${f.text}</p>
+        </div>`).join('');
+}
+function toggleLang() { lang = lang === 'ko' ? 'en' : 'ko'; renderContent(); }
+renderContent();
+</script>
+</body>
+</html>

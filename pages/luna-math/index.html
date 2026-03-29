@@ -1,0 +1,3644 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luna Math — 수학은 우주의 언어입니다</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Jua&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --bg-deep: #0f1729;
+    --bg-card: rgba(15, 23, 42, 0.85);
+    --gold: #f59e0b;
+    --gold-light: #fbbf24;
+    --gold-dim: rgba(245, 158, 11, 0.15);
+    --gold-glow: rgba(245, 158, 11, 0.3);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --sidebar-w: 240px;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-kr: 'Jua', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+html {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) var(--bg-deep);
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+
+body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: var(--font-kr);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════════════
+   BACKGROUND
+   ═══════════════════════════════════════════════════ */
+#bg-canvas {
+    position: fixed; inset: 0;
+    z-index: 0; pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════════════ */
+.sidebar {
+    position: fixed; left: 0; top: 0;
+    width: var(--sidebar-w); height: 100vh;
+    background: linear-gradient(180deg, rgba(15,23,42,0.97) 0%, rgba(10,15,30,0.99) 100%);
+    border-right: 1px solid rgba(245,158,11,0.12);
+    z-index: 100; padding: 28px 20px;
+    display: flex; flex-direction: column;
+    backdrop-filter: blur(20px);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-logo {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 36px; padding-bottom: 20px;
+    border-bottom: 1px solid rgba(245,158,11,0.1);
+}
+.sidebar-logo .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--gold), #d97706);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 20px rgba(245,158,11,0.2);
+}
+.sidebar-logo .logo-text {
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 700;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+
+.nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: 10px;
+    color: var(--text-secondary);
+    text-decoration: none; font-size: 14px;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+.nav-item:hover {
+    background: var(--gold-dim);
+    color: var(--gold-light);
+    border-color: rgba(245,158,11,0.15);
+}
+.nav-item.active {
+    background: var(--gold-dim);
+    color: var(--gold);
+    border-color: rgba(245,158,11,0.2);
+}
+.nav-item .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+.nav-item .nav-label { font-family: var(--font-kr); }
+
+.sidebar-divider {
+    height: 1px; background: rgba(245,158,11,0.1);
+    margin: 16px 0;
+}
+
+.nav-item.back-btn {
+    margin-top: auto;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+.nav-item.back-btn:hover { color: var(--gold-light); }
+
+/* Mobile hamburger */
+.hamburger {
+    display: none; position: fixed; top: 14px; left: 14px;
+    width: 40px; height: 40px; z-index: 200;
+    background: rgba(15,23,42,0.9); border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 10px; cursor: pointer;
+    flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+}
+.hamburger span {
+    display: block; width: 20px; height: 2px;
+    background: var(--gold); border-radius: 2px;
+    transition: all 0.3s ease;
+}
+.hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+.sidebar-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 99;
+}
+
+/* ═══════════════════════════════════════════════════
+   MAIN CONTENT
+   ═══════════════════════════════════════════════════ */
+.main-content {
+    margin-left: var(--sidebar-w);
+    position: relative; z-index: 1;
+    min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════════════
+   HERO SECTION (compact hub)
+   ═══════════════════════════════════════════════════ */
+.hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    text-align: center; padding: 36px 32px 48px;
+    position: relative;
+}
+#hero-canvas {
+    position: absolute; inset: 0;
+    z-index: 0; pointer-events: none;
+}
+.hero-content {
+    position: relative; z-index: 1;
+    max-width: 900px;
+    width: 100%;
+}
+.hero-quote {
+    font-family: var(--font-display);
+    font-size: clamp(18px, 2.5vw, 28px);
+    font-weight: 700; font-style: italic;
+    line-height: 1.4;
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, #d97706 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 4px;
+}
+.hero-attribution {
+    font-family: var(--font-mono);
+    font-size: 11px; color: var(--text-muted);
+    margin-bottom: 24px; letter-spacing: 0.5px;
+}
+
+/* ── Section Label Row ── */
+.hub-section-label {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 12px;
+}
+.hub-section-label .label-icon { font-size: 14px; }
+.hub-section-label .label-text {
+    font-family: var(--font-mono);
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--gold); text-transform: uppercase;
+}
+.hub-section-label .label-line {
+    flex: 1; height: 1px;
+    background: rgba(245,158,11,0.12);
+}
+
+/* ── Daily Mission Banner ── */
+.daily-banner {
+    display: flex; align-items: center; gap: 14px;
+    background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(236,72,153,0.06));
+    border: 1px solid rgba(245,158,11,0.25);
+    border-radius: 14px;
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 24px;
+    text-align: left;
+}
+.daily-banner:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(245,158,11,0.12);
+    transform: translateY(-2px);
+}
+.daily-banner .banner-icon { font-size: 32px; flex-shrink: 0; }
+.daily-banner .banner-info { flex: 1; }
+.daily-banner .banner-title {
+    font-family: var(--font-kr); font-size: 15px; color: #fbbf24;
+}
+.daily-banner .banner-desc {
+    font-size: 11px; color: var(--text-secondary); margin-top: 2px;
+}
+.daily-banner .banner-badge {
+    font-family: var(--font-mono); font-size: 9px;
+    padding: 3px 10px; border-radius: 50px;
+    background: rgba(245,158,11,0.2); color: #fbbf24;
+    border: 1px solid rgba(245,158,11,0.3);
+    flex-shrink: 0;
+}
+
+/* ── Compact Icon Grid ── */
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.icon-btn {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(245,158,11,0.1);
+    border-radius: 14px;
+    padding: 16px 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    backdrop-filter: blur(8px);
+}
+.icon-btn:hover {
+    border-color: var(--gold);
+    background: rgba(245,158,11,0.08);
+    box-shadow: 0 0 20px rgba(245,158,11,0.1);
+    transform: translateY(-3px);
+}
+.icon-btn .ib-icon {
+    font-size: 32px; line-height: 1;
+}
+.icon-btn .ib-name {
+    font-family: var(--font-kr);
+    font-size: 15px;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+.icon-btn .ib-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+}
+.icon-btn.locked {
+    opacity: 0.35;
+    cursor: default;
+    filter: grayscale(0.3);
+}
+.icon-btn.locked:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(245,158,11,0.1);
+    background: rgba(15, 23, 42, 0.75);
+}
+.icon-btn.accent-cyan {
+    border-color: rgba(0,212,255,0.2);
+}
+.icon-btn.accent-cyan:hover {
+    border-color: rgba(0,212,255,0.5);
+    box-shadow: 0 0 20px rgba(0,212,255,0.1);
+}
+
+/* ── Legacy nav-card for sections ── */
+.nav-card-grid { display: none; }
+.nav-card { display: none; }
+
+/* ── Content sections: hidden by default ── */
+.content-section {
+    display: none;
+}
+.content-section.visible {
+    display: block;
+}
+
+/* ── Toast notification ── */
+.luna-toast {
+    position: fixed;
+    bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(245,158,11,0.3);
+    color: var(--gold-light);
+    font-family: var(--font-kr);
+    font-size: 14px;
+    padding: 12px 28px;
+    border-radius: 50px;
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.4s ease;
+    pointer-events: none;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.luna-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ── Back to hub button ── */
+.back-to-hub {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 20px;
+    border-radius: 50px;
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.2);
+    color: var(--gold);
+    font-family: var(--font-kr);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+}
+.back-to-hub:hover {
+    background: rgba(245,158,11,0.15);
+    border-color: var(--gold);
+    transform: translateX(-3px);
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION COMMON
+   ═══════════════════════════════════════════════════ */
+.section {
+    padding: 80px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.section-label {
+    font-family: var(--font-mono);
+    font-size: 11px; color: var(--gold);
+    text-transform: uppercase; letter-spacing: 3px;
+    margin-bottom: 8px;
+}
+.section-title {
+    font-family: var(--font-kr);
+    font-size: clamp(24px, 3vw, 34px);
+    color: var(--text-primary);
+    margin-bottom: 40px;
+}
+
+/* ═══════════════════════════════════════════════════
+   FEATURED STORY CARD
+   ═══════════════════════════════════════════════════ */
+.featured-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(245,158,11,0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    transition: all 0.4s ease;
+    cursor: pointer;
+}
+.featured-card:hover {
+    border-color: rgba(245,158,11,0.3);
+    box-shadow: 0 8px 40px rgba(245,158,11,0.1);
+    transform: translateY(-4px);
+}
+.featured-canvas-wrap {
+    flex: 0 0 420px; height: 320px;
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, rgba(245,158,11,0.05), rgba(15,23,42,1));
+}
+.featured-canvas-wrap canvas { width: 100%; height: 100%; }
+.featured-info {
+    padding: 40px; display: flex;
+    flex-direction: column; justify-content: center;
+    flex: 1;
+}
+.featured-chapter-label {
+    font-family: var(--font-mono);
+    font-size: 12px; color: var(--gold);
+    letter-spacing: 2px; margin-bottom: 12px;
+}
+.featured-title {
+    font-family: var(--font-kr);
+    font-size: 28px; color: var(--text-primary);
+    margin-bottom: 16px;
+}
+.featured-desc {
+    font-size: 15px; color: var(--text-secondary);
+    line-height: 1.7; margin-bottom: 24px;
+}
+.featured-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--gold); font-size: 14px;
+    text-decoration: none; font-family: var(--font-kr);
+    transition: gap 0.3s ease;
+}
+.featured-link:hover { gap: 14px; }
+
+/* ═══════════════════════════════════════════════════
+   CHAPTER GRID
+   ═══════════════════════════════════════════════════ */
+.chapter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+.chapter-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(245,158,11,0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.35s ease;
+    text-decoration: none;
+    display: block;
+}
+.chapter-card.unlocked {
+    cursor: pointer;
+}
+.chapter-card.unlocked:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 30px rgba(245,158,11,0.12);
+    transform: translateY(-6px);
+}
+.chapter-card.locked {
+    cursor: default;
+    opacity: 0.5;
+    filter: grayscale(0.5);
+}
+.chapter-canvas-wrap {
+    width: 100%; height: 120px;
+    position: relative; overflow: hidden;
+    background: linear-gradient(180deg, rgba(245,158,11,0.04) 0%, transparent 100%);
+}
+.chapter-canvas-wrap canvas { width: 100%; height: 100%; }
+.chapter-info { padding: 16px 18px 20px; }
+.chapter-num {
+    font-family: var(--font-mono);
+    font-size: 10px; color: var(--gold);
+    letter-spacing: 2px; margin-bottom: 6px;
+}
+.chapter-title {
+    font-family: var(--font-kr);
+    font-size: 16px; color: var(--text-primary);
+    margin-bottom: 8px;
+}
+.chapter-badges { display: flex; gap: 6px; }
+.badge {
+    font-size: 10px; padding: 3px 8px;
+    border-radius: 50px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.5px;
+}
+.badge-read {
+    background: rgba(245,158,11,0.15); color: var(--gold);
+    border: 1px solid rgba(245,158,11,0.2);
+}
+.badge-game {
+    background: rgba(16,185,129,0.15); color: #10b981;
+    border: 1px solid rgba(16,185,129,0.2);
+}
+.badge-lock {
+    background: rgba(100,116,139,0.15); color: var(--text-muted);
+    border: 1px solid rgba(100,116,139,0.2);
+}
+
+/* ═══════════════════════════════════════════════════
+   PYTHAGORAS STORY SECTION
+   ═══════════════════════════════════════════════════ */
+.pyth-story {
+    padding: 80px 48px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.pyth-story-inner {
+    background: var(--bg-card);
+    border: 1px solid rgba(245,158,11,0.12);
+    border-radius: 20px;
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    gap: 40px;
+    align-items: center;
+}
+.pyth-story-inner::before {
+    content: '';
+    position: absolute; top: -100px; right: -100px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%);
+    pointer-events: none;
+}
+.pyth-story-text { flex: 1; }
+.pyth-story h2 {
+    font-family: var(--font-kr);
+    font-size: 28px;
+    color: var(--gold-light);
+    margin-bottom: 28px;
+}
+.pyth-story p {
+    font-size: 17px;
+    color: var(--text-secondary);
+    line-height: 2;
+    margin-bottom: 16px;
+    max-width: 700px;
+}
+.pyth-story p strong {
+    color: var(--gold-light);
+    font-weight: normal;
+}
+.pyth-story .story-cta {
+    font-size: 20px;
+    color: var(--gold);
+    margin-top: 12px;
+}
+.pyth-story-mini-canvas {
+    flex: 0 0 300px;
+    height: 200px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(245,158,11,0.15);
+}
+.pyth-story-mini-canvas canvas {
+    width: 100%; height: 100%; display: block;
+}
+
+/* ═══════════════════════════════════════════════════
+   CABLE CAR GAME SECTION
+   ═══════════════════════════════════════════════════ */
+.game-section {
+    padding: 40px 48px 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.game-wrapper {
+    background: var(--bg-card);
+    border: 1px solid rgba(245,158,11,0.15);
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+}
+.game-header {
+    padding: 24px 32px;
+    border-bottom: 1px solid rgba(245,158,11,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.game-header h3 {
+    font-family: var(--font-kr);
+    font-size: 20px;
+    color: var(--text-primary);
+}
+.game-step-indicator {
+    display: flex; gap: 8px;
+}
+.step-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.15);
+    border: 1px solid rgba(245,158,11,0.3);
+    transition: all 0.4s ease;
+}
+.step-dot.active {
+    background: var(--gold);
+    box-shadow: 0 0 12px rgba(245,158,11,0.5);
+}
+.step-dot.done {
+    background: #10b981;
+    border-color: #10b981;
+}
+
+.game-canvas-container {
+    position: relative;
+    width: 100%;
+    height: 520px;
+    background: linear-gradient(180deg, #87CEEB 0%, #4a90d9 30%, #2d6ab0 100%);
+}
+#bridgeCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: default;
+}
+
+/* Controls below canvas - NEVER overlay */
+.game-controls {
+    padding: 20px 32px;
+    border-top: 1px solid rgba(245,158,11,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    min-height: 80px;
+}
+
+/* Common game button style */
+.game-action-btn {
+    padding: 14px 36px;
+    border-radius: 50px;
+    border: none;
+    background: linear-gradient(135deg, var(--gold), #d97706);
+    color: var(--bg-deep);
+    font-family: var(--font-kr);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(245,158,11,0.25);
+    display: none;
+}
+.game-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(245,158,11,0.4);
+}
+.game-action-btn.visible { display: inline-flex; align-items: center; gap: 8px; }
+.game-action-btn.secondary {
+    background: rgba(245,158,11,0.1);
+    border: 2px solid rgba(245,158,11,0.3);
+    color: var(--gold-light);
+    box-shadow: none;
+}
+.game-action-btn.secondary:hover {
+    background: rgba(245,158,11,0.2);
+    border-color: var(--gold);
+    box-shadow: 0 4px 20px rgba(245,158,11,0.15);
+}
+
+/* Quiz choices (below canvas) */
+.quiz-area {
+    display: none;
+    text-align: center;
+    width: 100%;
+}
+.quiz-area.visible { display: block; }
+.quiz-area h4 {
+    font-family: var(--font-kr);
+    font-size: 18px;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+.quiz-options {
+    display: flex; gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.quiz-btn {
+    padding: 14px 28px;
+    border-radius: 12px;
+    border: 2px solid rgba(245,158,11,0.2);
+    background: rgba(245,158,11,0.06);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 160px;
+}
+.quiz-btn:hover {
+    border-color: var(--gold);
+    background: rgba(245,158,11,0.12);
+    transform: translateY(-2px);
+}
+.quiz-btn.correct {
+    border-color: #10b981 !important;
+    background: rgba(16,185,129,0.2) !important;
+    color: #10b981 !important;
+    animation: pulseGreen 0.6s ease;
+}
+@keyframes pulseGreen {
+    0%, 100% { box-shadow: 0 0 0 rgba(16,185,129,0); }
+    50% { box-shadow: 0 0 30px rgba(16,185,129,0.4); }
+}
+.quiz-btn.wrong {
+    border-color: #ef4444 !important;
+    background: rgba(239,68,68,0.15) !important;
+    color: #ef4444 !important;
+    animation: shakeBtn 0.5s ease;
+}
+@keyframes shakeBtn {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+}
+.quiz-hint {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #ef4444;
+    min-height: 20px;
+    font-family: var(--font-kr);
+}
+
+/* Answer input area */
+.answer-area {
+    display: none;
+    text-align: center;
+    width: 100%;
+}
+.answer-area.visible { display: block; }
+.answer-area h4 {
+    font-family: var(--font-kr);
+    font-size: 18px;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+.answer-input-row {
+    display: flex; align-items: center; gap: 12px;
+    justify-content: center;
+}
+.answer-input-row span {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    color: var(--gold);
+}
+#answerInput {
+    width: 100px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 2px solid rgba(245,158,11,0.3);
+    background: rgba(245,158,11,0.06);
+    color: var(--gold-light);
+    font-family: var(--font-mono);
+    font-size: 20px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.3s;
+}
+#answerInput:focus {
+    border-color: var(--gold);
+}
+#answerInput.correct-flash {
+    border-color: #10b981;
+    background: rgba(16,185,129,0.15);
+    color: #10b981;
+}
+#answerInput.wrong-flash {
+    border-color: #ef4444;
+    background: rgba(239,68,68,0.1);
+    animation: shakeBtn 0.5s ease;
+}
+.answer-submit-btn {
+    padding: 10px 24px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--gold), #d97706);
+    color: var(--bg-deep);
+    font-family: var(--font-kr);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.answer-submit-btn:hover { transform: translateY(-2px); }
+.answer-hint {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: var(--font-kr);
+}
+
+/* Info box */
+.info-box {
+    display: none;
+    width: 100%;
+    text-align: center;
+    padding: 16px 24px;
+    background: rgba(245,158,11,0.06);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 12px;
+    font-family: var(--font-kr);
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+.info-box.visible { display: block; }
+.info-box strong { color: var(--gold-light); }
+
+/* Slider controls (below canvas) */
+.slider-area {
+    display: none;
+    width: 100%;
+    text-align: center;
+}
+.slider-area.visible { display: block; }
+.slider-area h4 {
+    font-family: var(--font-kr);
+    font-size: 17px;
+    color: var(--gold-light);
+    margin-bottom: 16px;
+}
+.slider-row {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 10px;
+    justify-content: center;
+}
+.slider-row label {
+    font-family: var(--font-kr);
+    font-size: 14px;
+    color: var(--text-secondary);
+    width: 50px;
+    text-align: right;
+}
+.slider-row input[type="range"] {
+    width: 200px;
+    accent-color: var(--gold);
+    cursor: pointer;
+}
+.slider-row .slider-val {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--gold);
+    width: 50px;
+}
+.slider-result {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--gold);
+    margin: 8px 0 12px;
+}
+.slider-msg {
+    font-family: var(--font-kr);
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+/* Tool palette */
+.tool-palette {
+    padding: 16px 32px;
+    border-top: 1px solid rgba(245,158,11,0.08);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.tool-palette-label {
+    font-family: var(--font-kr);
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-right: 4px;
+}
+.tool-item {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(245,158,11,0.15);
+    background: rgba(245,158,11,0.04);
+    font-family: var(--font-kr);
+    font-size: 13px;
+    color: var(--text-secondary);
+    transition: all 0.3s;
+    cursor: default;
+}
+.tool-item.active {
+    border-color: rgba(16,185,129,0.4);
+    background: rgba(16,185,129,0.08);
+    color: #10b981;
+    cursor: pointer;
+}
+.tool-item.active:hover {
+    background: rgba(16,185,129,0.15);
+    transform: translateY(-1px);
+}
+.tool-item.active.selected {
+    border-color: #10b981;
+    background: rgba(16,185,129,0.2);
+    box-shadow: 0 0 12px rgba(16,185,129,0.3);
+}
+.tool-item.locked {
+    opacity: 0.4;
+    border-color: rgba(100,116,139,0.15);
+}
+
+/* Pop animation for measurements */
+@keyframes popIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    60% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════
+   USE CASES SECTION
+   ═══════════════════════════════════════════════════ */
+.usecases {
+    padding: 40px 48px 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.usecases h3 {
+    font-family: var(--font-kr);
+    font-size: 22px;
+    color: var(--text-primary);
+    margin-bottom: 28px;
+    text-align: center;
+}
+.usecase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+.usecase-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(245,158,11,0.08);
+    border-radius: 16px;
+    padding: 28px 24px;
+    text-align: center;
+    transition: all 0.35s ease;
+}
+.usecase-card:hover {
+    border-color: rgba(245,158,11,0.2);
+    transform: translateY(-3px);
+}
+.usecase-icon { font-size: 40px; margin-bottom: 14px; }
+.usecase-title {
+    font-family: var(--font-kr);
+    font-size: 16px; color: var(--text-primary);
+    margin-bottom: 8px;
+}
+.usecase-desc {
+    font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════
+   WHAT-IF CARDS
+   ═══════════════════════════════════════════════════ */
+.whatif-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+.whatif-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(245,158,11,0.08);
+    border-radius: 16px;
+    padding: 28px 24px;
+    cursor: default;
+    transition: all 0.35s ease;
+    text-decoration: none; display: block;
+    position: relative; overflow: hidden;
+}
+.whatif-card::before {
+    content: '?';
+    position: absolute; top: -20px; right: -10px;
+    font-family: var(--font-display);
+    font-size: 120px; font-weight: 700;
+    color: rgba(245,158,11,0.04);
+    pointer-events: none;
+}
+.whatif-card:hover {
+    border-color: rgba(245,158,11,0.3);
+    box-shadow: 0 0 30px rgba(245,158,11,0.08);
+    transform: translateY(-4px);
+}
+.whatif-icon { font-size: 32px; margin-bottom: 16px; }
+.whatif-title {
+    font-family: var(--font-kr);
+    font-size: 17px; color: var(--text-primary);
+    margin-bottom: 10px;
+}
+.whatif-desc {
+    font-size: 13px; color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════
+   FORMULA CODEX
+   ═══════════════════════════════════════════════════ */
+.codex-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+.codex-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(245,158,11,0.08);
+    border-radius: 16px;
+    padding: 24px 20px;
+    text-align: center;
+    transition: all 0.35s ease;
+}
+.codex-card:hover {
+    border-color: rgba(245,158,11,0.2);
+    transform: translateY(-3px);
+}
+.codex-formula {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--gold);
+    margin-bottom: 10px;
+}
+.codex-name {
+    font-family: var(--font-kr);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════════ */
+.math-footer {
+    text-align: center;
+    padding: 48px 40px 32px;
+    border-top: 1px solid rgba(245,158,11,0.06);
+}
+.footer-formula {
+    font-family: var(--font-mono);
+    font-size: 14px; color: var(--text-muted);
+    letter-spacing: 1px;
+}
+.footer-formula span { color: var(--gold); }
+
+/* ═══════════════════════════════════════════════════
+   BACK TRANSITION OVERLAY
+   ═══════════════════════════════════════════════════ */
+.math-transition-overlay {
+    position: fixed; inset: 0; z-index: 10000;
+    background: var(--bg-deep);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+.math-transition-overlay.active { opacity: 1; pointer-events: all; }
+.math-transition-overlay canvas { position: absolute; inset: 0; }
+.math-transition-text {
+    position: relative; z-index: 1;
+    font-family: var(--font-display);
+    font-size: 18px; color: var(--gold);
+    letter-spacing: 2px;
+    opacity: 0; transition: opacity 0.5s ease 0.8s;
+}
+.math-transition-overlay.active .math-transition-text { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+    .chapter-grid { grid-template-columns: repeat(2, 1fr); }
+    .codex-grid { grid-template-columns: repeat(2, 1fr); }
+    .featured-canvas-wrap { flex: 0 0 300px; }
+    .game-canvas-container { height: 460px; }
+    .pyth-story-inner { flex-direction: column; }
+    .pyth-story-mini-canvas { flex: none; width: 100%; height: 180px; }
+}
+
+@media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-overlay.open { display: block; }
+    .hamburger { display: flex; }
+    .main-content { margin-left: 0; }
+    .section { padding: 60px 20px; }
+    .hero { padding: 24px 16px 32px; }
+    .hero-quote { font-size: clamp(16px, 5vw, 22px); margin-bottom: 2px; }
+    .hero-attribution { margin-bottom: 16px; }
+    .icon-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .icon-btn { padding: 12px 4px 10px; border-radius: 12px; }
+    .icon-btn .ib-icon { font-size: 26px; }
+    .icon-btn .ib-name { font-size: 12px; }
+    .icon-btn .ib-sub { font-size: 9px; }
+    .daily-banner { padding: 10px 14px; gap: 10px; }
+    .daily-banner .banner-icon { font-size: 26px; }
+    .daily-banner .banner-title { font-size: 13px; }
+    .featured-card { flex-direction: column; }
+    .featured-canvas-wrap { flex: none; width: 100%; height: 200px; }
+    .featured-info { padding: 24px; }
+    .featured-title { font-size: 22px; }
+    .chapter-grid { grid-template-columns: repeat(2, 1fr); }
+    .whatif-grid { grid-template-columns: 1fr; }
+    .usecase-grid { grid-template-columns: 1fr; }
+    .codex-grid { grid-template-columns: repeat(2, 1fr); }
+    .pyth-story { padding: 60px 20px 20px; }
+    .pyth-story-inner { padding: 28px; flex-direction: column; }
+    .pyth-story-mini-canvas { flex: none; width: 100%; height: 160px; }
+    .game-section { padding: 20px 20px 60px; }
+    .game-canvas-container { height: 380px; }
+    .game-controls { padding: 16px 20px; }
+    .quiz-options { flex-direction: column; }
+    .quiz-btn { min-width: auto; }
+    .tool-palette { padding: 12px 16px; gap: 8px; }
+    .tool-item { padding: 4px 10px; font-size: 12px; }
+}
+
+@media (max-width: 480px) {
+    .icon-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .icon-btn .ib-sub { display: none; }
+    .chapter-grid { grid-template-columns: 1fr; }
+    .codex-grid { grid-template-columns: 1fr; }
+    .game-canvas-container { height: 300px; }
+}
+</style>
+<!-- luna-nav.js 제거: global-nav.js가 대체 -->
+</head>
+<body>
+
+<!-- Background canvas -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- Sidebar -->
+<button class="hamburger" id="hamburger" aria-label="메뉴 열기">
+    <span></span><span></span><span></span>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon">🧮</div>
+        <div class="logo-text">Luna Math</div>
+    </div>
+
+    <div class="sidebar-nav">
+        <!-- Luna Tech link removed: global-nav handles navigation -->
+        <a class="nav-item" onclick="showSection('hub')" data-sfx="click" data-section="hub">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">홈</span>
+        </a>
+        <a class="nav-item" onclick="showSection('chapters')" data-sfx="click" data-section="chapters">
+            <span class="nav-icon">📖</span>
+            <span class="nav-label">수학자의 서재</span>
+        </a>
+        <a class="nav-item" onclick="showSection('game')" data-sfx="click" data-section="game">
+            <span class="nav-icon">🎮</span>
+            <span class="nav-label">수학 게임</span>
+        </a>
+        <a class="nav-item" onclick="showSection('codex')" data-sfx="click" data-section="codex">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">공식 도감</span>
+        </a>
+        <a class="nav-item" onclick="showSection('whatif')" data-sfx="click" data-section="whatif">
+            <span class="nav-icon">🌌</span>
+            <span class="nav-label">공식이 없다면?</span>
+        </a>
+
+        <div class="sidebar-divider"></div>
+
+        <a class="nav-item" href="formula-gacha.html" style="color:#f59e0b">
+            <span class="nav-icon">🎴</span>
+            <span class="nav-label">공식 카드뽑기</span>
+        </a>
+        <a class="nav-item" onclick="showToast('⚔️ Math Wars — 준비 중입니다!')" style="opacity:0.4; cursor:default;">
+            <span class="nav-icon">⚔️</span>
+            <span class="nav-label">Math Wars 🔒</span>
+        </a>
+        <a class="nav-item" href="math-pigs.html">
+            <span class="nav-icon">🐷</span>
+            <span class="nav-label">Math Pigs</span>
+        </a>
+        <a class="nav-item" href="math-canvas.html">
+            <span class="nav-icon">📐</span>
+            <span class="nav-label">수학 그림판</span>
+        </a>
+        <a class="nav-item" href="mental-math.html" style="color:#00d4ff">
+            <span class="nav-icon">⚡</span>
+            <span class="nav-label">번개암산</span>
+        </a>
+
+        <div class="sidebar-divider"></div>
+        <div style="padding:4px 16px;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:2px;text-transform:uppercase">수학자 게임</div>
+        <a class="nav-item" href="pythagorean.html">
+            <span class="nav-icon">📐</span>
+            <span class="nav-label">피타고라스</span>
+        </a>
+        <a class="nav-item" href="archimedes.html">
+            <span class="nav-icon">🛁</span>
+            <span class="nav-label">아르키메데스</span>
+        </a>
+        <a class="nav-item" href="galileo.html">
+            <span class="nav-icon">🏗️</span>
+            <span class="nav-label">갈릴레이</span>
+        </a>
+        <a class="nav-item" href="newton.html">
+            <span class="nav-icon">🍎</span>
+            <span class="nav-label">뉴턴</span>
+        </a>
+        <a class="nav-item" href="alkhwarizmi.html">
+            <span class="nav-icon">🔢</span>
+            <span class="nav-label">알콰리즈미</span>
+        </a>
+        <a class="nav-item" href="euler.html">
+            <span class="nav-icon">🌉</span>
+            <span class="nav-label">오일러</span>
+        </a>
+        <a class="nav-item" href="gauss.html">
+            <span class="nav-icon">⚡</span>
+            <span class="nav-label">가우스</span>
+        </a>
+        <a class="nav-item" href="turing.html">
+            <span class="nav-icon">🔐</span>
+            <span class="nav-label">튜링</span>
+        </a>
+
+        <!-- back button removed: global-nav handles navigation -->
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content">
+
+    <!-- HERO HUB (single screen) -->
+    <section class="hero" id="hero">
+        <canvas id="hero-canvas"></canvas>
+        <div class="hero-content">
+            <p class="hero-quote">"수학은 우주의 언어입니다"</p>
+            <p class="hero-attribution">— Galileo Galilei</p>
+
+            <!-- Daily Mission Banner -->
+            <div class="daily-banner" onclick="location.href='formula-gacha.html'" data-sfx="click">
+                <span class="banner-icon">🎴</span>
+                <div class="banner-info">
+                    <div class="banner-title">오늘의 공식 카드 뽑기</div>
+                    <div class="banner-desc">매일 공식 카드를 모아보세요!</div>
+                </div>
+                <span class="banner-badge">DAILY</span>
+            </div>
+
+            <!-- 수학자 게임 -->
+            <div class="hub-section-label">
+                <span class="label-icon">🎮</span>
+                <span class="label-text">Mathematician Games</span>
+                <span class="label-line"></span>
+            </div>
+            <div class="icon-grid">
+                <a class="icon-btn" href="pythagorean.html" data-sfx="click">
+                    <span class="ib-icon">📐</span>
+                    <span class="ib-name">피타고라스</span>
+                    <span class="ib-sub">a²+b²=c²</span>
+                </a>
+                <a class="icon-btn" href="archimedes.html" data-sfx="click">
+                    <span class="ib-icon">🛁</span>
+                    <span class="ib-name">아르키메데스</span>
+                    <span class="ib-sub">F=ρVg</span>
+                </a>
+                <a class="icon-btn" href="galileo.html" data-sfx="click">
+                    <span class="ib-icon">🏗️</span>
+                    <span class="ib-name">갈릴레이</span>
+                    <span class="ib-sub">포물선</span>
+                </a>
+                <a class="icon-btn" href="newton.html" data-sfx="click">
+                    <span class="ib-icon">🍎</span>
+                    <span class="ib-name">뉴턴</span>
+                    <span class="ib-sub">F=ma</span>
+                </a>
+                <a class="icon-btn" href="alkhwarizmi.html" data-sfx="click">
+                    <span class="ib-icon">🔢</span>
+                    <span class="ib-name">알콰리즈미</span>
+                    <span class="ib-sub">방정식</span>
+                </a>
+                <a class="icon-btn" href="euler.html" data-sfx="click">
+                    <span class="ib-icon">🌉</span>
+                    <span class="ib-name">오일러</span>
+                    <span class="ib-sub">그래프</span>
+                </a>
+                <a class="icon-btn" href="gauss.html" data-sfx="click">
+                    <span class="ib-icon">⚡</span>
+                    <span class="ib-name">가우스</span>
+                    <span class="ib-sub">n(n+1)/2</span>
+                </a>
+                <a class="icon-btn" href="turing.html" data-sfx="click">
+                    <span class="ib-icon">🔐</span>
+                    <span class="ib-name">튜링</span>
+                    <span class="ib-sub">암호</span>
+                </a>
+            </div>
+
+            <!-- 추가 게임 -->
+            <div class="hub-section-label">
+                <span class="label-icon">🕹️</span>
+                <span class="label-text">More Games</span>
+                <span class="label-line"></span>
+            </div>
+            <div class="icon-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+                <a class="icon-btn accent-cyan" href="mental-math.html" data-sfx="click">
+                    <span class="ib-icon">⚡</span>
+                    <span class="ib-name">번개암산</span>
+                    <span class="ib-sub">12 레벨</span>
+                </a>
+                <a class="icon-btn" href="math-pigs.html" data-sfx="click">
+                    <span class="ib-icon">🐷</span>
+                    <span class="ib-name">Math Pigs</span>
+                    <span class="ib-sub">물리 퍼즐</span>
+                </a>
+                <div class="icon-btn locked" onclick="showToast('⚔️ Math Wars — 준비 중입니다!')">
+                    <span class="ib-icon">⚔️</span>
+                    <span class="ib-name">Math Wars</span>
+                    <span class="ib-sub">🔒 준비중</span>
+                </div>
+            </div>
+
+            <!-- 학습 & 탐험 -->
+            <div class="hub-section-label">
+                <span class="label-icon">📚</span>
+                <span class="label-text">Learn & Explore</span>
+                <span class="label-line"></span>
+            </div>
+            <div class="icon-grid">
+                <div class="icon-btn" onclick="showSection('chapters')" data-sfx="click" data-section="chapters">
+                    <span class="ib-icon">📖</span>
+                    <span class="ib-name">수학자의 서재</span>
+                    <span class="ib-sub">8 챕터</span>
+                </div>
+                <div class="icon-btn" onclick="showSection('codex')" data-sfx="click" data-section="codex">
+                    <span class="ib-icon">📊</span>
+                    <span class="ib-name">공식 도감</span>
+                    <span class="ib-sub">8개 공식</span>
+                </div>
+                <div class="icon-btn" onclick="showSection('whatif')" data-sfx="click" data-section="whatif">
+                    <span class="ib-icon">🌌</span>
+                    <span class="ib-name">공식이 없다면?</span>
+                    <span class="ib-sub">What If?</span>
+                </div>
+                <a class="icon-btn" href="math-canvas.html" data-sfx="click">
+                    <span class="ib-icon">✏️</span>
+                    <span class="ib-name">수학 그림판</span>
+                    <span class="ib-sub">캔버스</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════ -->
+    <!-- CONTENT SECTIONS (hidden by default, shown on card click) -->
+    <!-- ════════════════════════════════════════════════ -->
+
+    <!-- 수학자의 서재 -->
+    <div class="content-section" id="sec-chapters">
+        <div style="padding: 20px 48px 0; max-width: 1200px; margin: 0 auto;">
+            <button class="back-to-hub" onclick="showSection('hub')">← 홈으로</button>
+        </div>
+        <!-- 오늘의 발견 -->
+        <section class="section" id="discovery">
+            <p class="section-label">Today's Discovery</p>
+            <h2 class="section-title">오늘의 발견</h2>
+            <div class="featured-card" onclick="showSection('game')" data-sfx="pageFlip">
+                <div class="featured-canvas-wrap">
+                    <canvas id="featured-anim" width="420" height="320"></canvas>
+                </div>
+                <div class="featured-info">
+                    <p class="featured-chapter-label">CHAPTER 01</p>
+                    <h3 class="featured-title">피타고라스의 비밀</h3>
+                    <p class="featured-desc">
+                        기원전 570년, 사모스 섬의 한 소년이<br>
+                        신전 바닥에서 발견한 놀라운 패턴...<br>
+                        그것은 세상 모든 직각삼각형의 비밀이었습니다.
+                    </p>
+                    <span class="featured-link">게임으로 체험하기 <span>→</span></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="chapters">
+        <p class="section-label">Math Chapters</p>
+        <h2 class="section-title">수학자의 서재</h2>
+        <div class="chapter-grid" id="chapterGrid"></div>
+    </section>
+    </div><!-- /sec-chapters -->
+
+    <!-- 수학 게임 -->
+    <div class="content-section" id="sec-game">
+        <div style="padding: 20px 48px 0; max-width: 1200px; margin: 0 auto;">
+            <button class="back-to-hub" onclick="showSection('hub')">← 홈으로</button>
+        </div>
+    <!-- Pythagoras Story -->
+    <section class="pyth-story" id="pythStory">
+        <div class="pyth-story-inner">
+            <div class="pyth-story-text">
+                <h2>📖 피타고라스의 비밀</h2>
+                <p>기원전 570년, 그리스 사모스 섬.<br>소년 피타고라스는 신전 바닥의 타일을 바라보다 놀라운 패턴을 발견합니다.</p>
+                <p><strong>"직각삼각형의 세 변에 각각 정사각형을 그리면...<br>짧은 두 변의 정사각형 넓이를 더한 것이<br>긴 변의 정사각형 넓이와 같다!"</strong></p>
+                <p>이 발견은 2,600년이 지난 오늘날에도<br>GPS, 건축, 게임에서 매일 사용됩니다.</p>
+                <p class="story-cta">지금, 직접 체험해보세요! 👇</p>
+            </div>
+            <div class="pyth-story-mini-canvas">
+                <canvas id="storyMiniCanvas"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Archimedes Story -->
+    <section class="pyth-story" style="margin-top:24px">
+        <div class="pyth-story-inner">
+            <div class="pyth-story-text">
+                <h2>🛁 아르키메데스의 발견</h2>
+                <p>기원전 287년, 그리스 시라쿠사.<br>아르키메데스는 목욕탕에서 놀라운 사실을 발견합니다.</p>
+                <p><strong>"물에 잠긴 물체는 밀어낸 물의 무게만큼<br>위로 뜨는 힘(부력)을 받는다!"</strong></p>
+                <p>이 발견은 2,300년이 지난 오늘날에도<br>배, 잠수함, 열기구에서 매일 사용됩니다.</p>
+                <p class="story-cta"><a href="archimedes.html" style="color:#06b6d4;text-decoration:none;font-weight:700;">지금, 직접 체험해보세요! 👇</a></p>
+            </div>
+            <div class="pyth-story-mini-canvas" style="display:flex;align-items:center;justify-content:center;font-size:72px;">
+                🛁
+            </div>
+        </div>
+    </section>
+
+    <!-- Cable Car Game -->
+    <section class="game-section" id="bridgeGame">
+        <div class="game-wrapper">
+            <div class="game-header">
+                <h3>🚡 피타고라스 케이블카</h3>
+                <div class="game-step-indicator">
+                    <div class="step-dot active" id="dot0"></div>
+                    <div class="step-dot" id="dot1"></div>
+                    <div class="step-dot" id="dot2"></div>
+                    <div class="step-dot" id="dot3"></div>
+                    <div class="step-dot" id="dot4"></div>
+                    <div class="step-dot" id="dot5"></div>
+                </div>
+            </div>
+            <div class="game-canvas-container">
+                <canvas id="bridgeCanvas"></canvas>
+            </div>
+
+            <!-- Controls BELOW canvas -->
+            <div class="game-controls" id="gameControls">
+                <!-- Step 0: Start measuring -->
+                <button class="game-action-btn visible" id="btnStart" onclick="window.GAME.startMeasure()">📏 줄자로 측정하기</button>
+
+                <!-- Step 1: Next after measuring -->
+                <button class="game-action-btn" id="btnAfterMeasure" onclick="window.GAME.goToQuiz()">다음 →</button>
+
+                <!-- Step 2: Quiz -->
+                <div class="quiz-area" id="quizArea">
+                    <h4>🤔 높이와 거리를 알고 있으니... 어떤 공식을 써야 할까?</h4>
+                    <div class="quiz-options">
+                        <button class="quiz-btn" data-answer="wrong1" onclick="window.GAME.answerQuiz(this)">v = d / t</button>
+                        <button class="quiz-btn" data-answer="correct" onclick="window.GAME.answerQuiz(this)">a² + b² = c²</button>
+                        <button class="quiz-btn" data-answer="wrong2" onclick="window.GAME.answerQuiz(this)">F = ma</button>
+                    </div>
+                    <p class="quiz-hint" id="quizHint"></p>
+                </div>
+                <button class="game-action-btn" id="btnAfterQuiz" onclick="window.GAME.startProof()">확인 →</button>
+
+                <!-- Step 3a/3b/3c: Proof steps -->
+                <button class="game-action-btn" id="btnProofNext" onclick="window.GAME.nextProofStep()">다음 →</button>
+
+                <!-- Step 3c: Answer input -->
+                <div class="answer-area" id="answerArea">
+                    <h4>√2500 = ?</h4>
+                    <div class="answer-input-row">
+                        <span>c =</span>
+                        <input type="number" id="answerInput" placeholder="?" min="1" max="999">
+                        <span>m</span>
+                        <button class="answer-submit-btn" onclick="window.GAME.submitAnswer()">확인</button>
+                    </div>
+                    <p class="answer-hint" id="answerHint"></p>
+                </div>
+                <button class="game-action-btn" id="btnBuildCable" onclick="window.GAME.buildCable()">🚡 케이블카 설치!</button>
+
+                <!-- Step 4: Info box + next -->
+                <div class="info-box" id="infoBox">
+                    📌 <strong>기억하세요!</strong> 이 공식은 <strong>직각(90°)</strong>일 때만 사용할 수 있어요.<br>
+                    직각이 아니면 a² + b² = c²는 성립하지 않아요!
+                </div>
+                <button class="game-action-btn" id="btnExplore" onclick="window.GAME.startSliders()">다른 값으로 해보기 →</button>
+
+                <!-- Step 5: Sliders -->
+                <div class="slider-area" id="sliderArea">
+                    <h4>다른 값으로도 해볼까요?</h4>
+                    <div class="slider-row">
+                        <label>높이(a):</label>
+                        <input type="range" id="sliderA" min="10" max="100" value="30">
+                        <span class="slider-val" id="valA">30m</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>거리(b):</label>
+                        <input type="range" id="sliderB" min="10" max="100" value="40">
+                        <span class="slider-val" id="valB">40m</span>
+                    </div>
+                    <div class="slider-result" id="sliderResult">케이블카 줄(c) = 50.0m</div>
+                    <p class="slider-msg" id="sliderMsg">이번에는 높이가 30m이고 거리가 40m라면, 케이블카 줄은 50.0m 필요해요!</p>
+                </div>
+                <button class="game-action-btn secondary" id="btnRestart" onclick="window.GAME.resetGame()">🔄 처음부터 다시하기</button>
+            </div>
+
+            <!-- Tool Palette -->
+            <div class="tool-palette" id="toolPalette"></div>
+        </div>
+    </section>
+
+    <!-- Use Cases -->
+    <section class="usecases" id="usecases">
+        <h3>오늘날 이 공식은</h3>
+        <div class="usecase-grid">
+            <div class="usecase-card">
+                <div class="usecase-icon">📱</div>
+                <h4 class="usecase-title">GPS 위치 추적</h4>
+                <p class="usecase-desc">당신의 위치를 삼각측량으로 찾습니다</p>
+            </div>
+            <div class="usecase-card">
+                <div class="usecase-icon">🎮</div>
+                <h4 class="usecase-title">게임 물리엔진</h4>
+                <p class="usecase-desc">캐릭터의 대각선 이동 거리를 계산합니다</p>
+            </div>
+            <div class="usecase-card">
+                <div class="usecase-icon">🏗️</div>
+                <h4 class="usecase-title">건축 구조 설계</h4>
+                <p class="usecase-desc">건물의 대각선 보강재 길이를 구합니다</p>
+            </div>
+        </div>
+    </section>
+    </div><!-- /sec-game -->
+
+    <!-- 공식 도감 -->
+    <div class="content-section" id="sec-codex">
+        <div style="padding: 20px 48px 0; max-width: 1200px; margin: 0 auto;">
+            <button class="back-to-hub" onclick="showSection('hub')">← 홈으로</button>
+        </div>
+    <section class="section" id="codex">
+        <p class="section-label">Formula Codex</p>
+        <h2 class="section-title">공식 도감</h2>
+        <div class="codex-grid">
+            <div class="codex-card">
+                <div class="codex-formula">a² + b² = c²</div>
+                <div class="codex-name">피타고라스 정리</div>
+            </div>
+            <div class="codex-card">
+                <div class="codex-formula">F = ρVg</div>
+                <div class="codex-name">아르키메데스 원리</div>
+            </div>
+            <div class="codex-card">
+                <div class="codex-formula">F = ma</div>
+                <div class="codex-name">뉴턴 제2법칙</div>
+            </div>
+            <div class="codex-card">
+                <div class="codex-formula">e<sup>iπ</sup> + 1 = 0</div>
+                <div class="codex-name">오일러 항등식</div>
+            </div>
+            <div class="codex-card">
+                <div class="codex-formula">n(n+1)/2</div>
+                <div class="codex-name">가우스 합</div>
+            </div>
+            <div class="codex-card">
+                <div class="codex-formula">v = d / t</div>
+                <div class="codex-name">속도 공식</div>
+            </div>
+            <div class="codex-card">
+                <div class="codex-formula">E = mc²</div>
+                <div class="codex-name">질량-에너지 등가</div>
+            </div>
+            <div class="codex-card">
+                <div class="codex-formula">A = πr²</div>
+                <div class="codex-name">원의 넓이</div>
+            </div>
+        </div>
+    </section>
+    </div><!-- /sec-codex -->
+
+    <!-- 수학이 없는 세상 -->
+    <div class="content-section" id="sec-whatif">
+        <div style="padding: 20px 48px 0; max-width: 1200px; margin: 0 auto;">
+            <button class="back-to-hub" onclick="showSection('hub')">← 홈으로</button>
+        </div>
+    <section class="section" id="whatif">
+        <p class="section-label">What If?</p>
+        <h2 class="section-title">수학이 없는 세상</h2>
+        <div class="whatif-grid">
+            <div class="whatif-card">
+                <div class="whatif-icon">🛰️</div>
+                <h3 class="whatif-title">GPS 없는 세상</h3>
+                <p class="whatif-desc">삼변측량이 사라지면, 택시도 배달도 비행기도 길을 잃습니다.</p>
+            </div>
+            <div class="whatif-card">
+                <div class="whatif-icon">🚢</div>
+                <h3 class="whatif-title">잠수함이 뜨지 않는 세상</h3>
+                <p class="whatif-desc">아르키메데스의 원리가 없다면, 배도 잠수함도 존재하지 않습니다.</p>
+            </div>
+            <div class="whatif-card">
+                <div class="whatif-icon">🎮</div>
+                <h3 class="whatif-title">게임이 작동 안 하는 세상</h3>
+                <p class="whatif-desc">벡터, 행렬, 물리엔진 — 수학 없이 게임은 한 프레임도 못 그립니다.</p>
+            </div>
+        </div>
+    </section>
+    </div><!-- /sec-whatif -->
+
+    <!-- Footer -->
+    <footer class="math-footer">
+        <p class="footer-formula"><span>e</span><sup><span>iπ</span></sup> + 1 = 0 &nbsp;&nbsp;·&nbsp;&nbsp; <span>a² + b² = c²</span> &nbsp;&nbsp;·&nbsp;&nbsp; <span>F = ma</span></p>
+    </footer>
+
+</main>
+
+<!-- Toast notification -->
+<div class="luna-toast" id="lunaToast"></div>
+
+<!-- Back-to-Art transition overlay -->
+<div class="math-transition-overlay" id="backOverlay">
+    <canvas id="backCanvas"></canvas>
+    <span class="math-transition-text">Returning to Art Lab...</span>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   GLOBAL: Section Navigation & Toast
+   ═══════════════════════════════════════════════════ */
+var _currentSection = null;
+
+function showSection(id) {
+    // Hide all content sections
+    document.querySelectorAll('.content-section').forEach(function(s) {
+        s.classList.remove('visible');
+    });
+
+    // Update nav-card active states
+    document.querySelectorAll('.nav-card').forEach(function(c) {
+        c.classList.remove('active-card');
+    });
+
+    // Update sidebar active states
+    document.querySelectorAll('.sidebar .nav-item').forEach(function(item) {
+        item.classList.remove('active');
+    });
+
+    var footer = document.querySelector('.math-footer');
+
+    if (id === 'hub') {
+        // Show hero, hide all sections
+        document.getElementById('hero').style.display = '';
+        if (footer) footer.style.display = 'none';
+        _currentSection = null;
+        // Set hub sidebar active
+        var hubNav = document.querySelector('.nav-item[data-section="hub"]');
+        if (hubNav) hubNav.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+    }
+
+    // Hide hero, show footer
+    document.getElementById('hero').style.display = 'none';
+    if (footer) footer.style.display = '';
+
+    // Show target section
+    var target = document.getElementById('sec-' + id);
+    if (target) {
+        target.classList.add('visible');
+        // Make inner sections visible (override scroll reveal)
+        target.querySelectorAll('.section, .pyth-story, .game-section, .usecases').forEach(function(sec) {
+            sec.style.opacity = '1';
+            sec.style.transform = 'translateY(0)';
+        });
+    }
+
+    // Highlight active nav card
+    var activeCard = document.querySelector('.nav-card[data-section="' + id + '"]');
+    if (activeCard) activeCard.classList.add('active-card');
+
+    // Highlight active sidebar item
+    var activeSidebar = document.querySelector('.sidebar .nav-item[data-section="' + id + '"]');
+    if (activeSidebar) activeSidebar.classList.add('active');
+
+    _currentSection = id;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Resize game canvas if showing game section
+    if (id === 'game') {
+        setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 100);
+    }
+}
+
+function showToast(msg) {
+    var toast = document.getElementById('lunaToast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 2500);
+}
+
+(function () {
+'use strict';
+
+/* ═══════════════════════════════════════════════════
+   SOUND EFFECTS
+   ═══════════════════════════════════════════════════ */
+var SFX = {
+    click:     '../../assets/sounds/SonSounds/DA - Digital Click - 1.mp3',
+    pageFlip:  '../../assets/sounds/SonSounds/DA - Paper Turn - 3.mp3',
+    discover:  '../../assets/sounds/SonSounds/080_깨달음.mp3',
+    draw:      '../../assets/sounds/SonSounds/DA - Pencil - 3.mp3',
+    correct:   '../../assets/sounds/SonSounds/049_띠룽 (슈퍼마리오 코인먹).mp3',
+    wrong:     '../../assets/sounds/SonSounds/063_삐삑 (오답 -짧은).mp3',
+    build:     '../../assets/sounds/SonSounds/KF - Transforming Element - 4.mp3',
+    celebrate: '../../assets/sounds/SonSounds/080_깨달음.mp3',
+    walk:      '../../assets/sounds/SonSounds/DA - Pop - 3.mp3',
+};
+
+function playSound(key) {
+    try {
+        var a = new Audio(SFX[key] || SFX.click);
+        a.volume = 0.25;
+        a.play().catch(function(){});
+    } catch (e) {}
+}
+
+document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-sfx]');
+    if (el) playSound(el.dataset.sfx);
+});
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR MOBILE
+   ═══════════════════════════════════════════════════ */
+var hamburger = document.getElementById('hamburger');
+var sidebar = document.getElementById('sidebar');
+var sidebarOverlay = document.getElementById('sidebarOverlay');
+
+function toggleSidebar() {
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('open');
+    hamburger.classList.toggle('open');
+}
+hamburger.addEventListener('click', toggleSidebar);
+sidebarOverlay.addEventListener('click', toggleSidebar);
+
+/* mobile sidebar close moved to bottom */
+
+/* ═══════════════════════════════════════════════════
+   BACK TO ART LAB
+   ═══════════════════════════════════════════════════ */
+var _backToArt = document.getElementById('backToArt');
+if (_backToArt) _backToArt.addEventListener('click', function (e) {
+    e.preventDefault();
+    playSound('discover');
+    var ov = document.getElementById('backOverlay');
+    var cv = document.getElementById('backCanvas');
+    var W = cv.width = window.innerWidth;
+    var H = cv.height = window.innerHeight;
+    var ctx = cv.getContext('2d');
+    ov.classList.add('active');
+    var particles = [];
+    for (var i = 0; i < 80; i++) {
+        particles.push({ x: Math.random()*W, y: H+Math.random()*100, size: Math.random()*3+1, speed: Math.random()*3+1.5, alpha: Math.random()*0.6+0.3, drift: (Math.random()-0.5)*1.5 });
+    }
+    var frame = 0;
+    function animate() {
+        ctx.fillStyle = 'rgba(15,23,41,0.15)';
+        ctx.fillRect(0,0,W,H);
+        particles.forEach(function(p){ p.y-=p.speed; p.x+=p.drift; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fillStyle='rgba(245,158,11,'+p.alpha+')'; ctx.fill(); });
+        frame++;
+        if (frame < 90) requestAnimationFrame(animate);
+        else window.location.href = '../../index.html';
+    }
+    animate();
+});
+
+/* ═══════════════════════════════════════════════════
+   BACKGROUND CANVAS
+   ═══════════════════════════════════════════════════ */
+(function bgCanvas() {
+    var cv = document.getElementById('bg-canvas');
+    var ctx = cv.getContext('2d');
+    var W, H;
+    function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    var symbols = '∑ ∫ π √ ∞ Δ θ λ φ Ω ∂ ∇ ε ≈ ≠ ≤ ≥ ± × ÷'.split(' ');
+    var floaters = [];
+    for (var i = 0; i < 25; i++) {
+        floaters.push({ x: Math.random()*2000, y: Math.random()*5000, char: symbols[Math.random()*symbols.length|0], size: Math.random()*16+10, alpha: Math.random()*0.04+0.015, speed: Math.random()*0.3+0.1, drift: (Math.random()-0.5)*0.2 });
+    }
+    function draw() {
+        ctx.clearRect(0,0,W,H);
+        ctx.strokeStyle = 'rgba(245,158,11,0.025)'; ctx.lineWidth = 0.5;
+        var grid = 60;
+        for (var x = 0; x < W; x += grid) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+        for (var y = 0; y < H; y += grid) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+        floaters.forEach(function(f){
+            f.y -= f.speed; f.x += f.drift;
+            if (f.y < -50) { f.y = H+50; f.x = Math.random()*W; }
+            ctx.font = f.size+'px "JetBrains Mono", monospace';
+            ctx.fillStyle = 'rgba(245,158,11,'+f.alpha+')';
+            ctx.fillText(f.char, f.x%W, ((f.y%(H+100))+H+100)%(H+100));
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+/* ═══════════════════════════════════════════════════
+   HERO CANVAS
+   ═══════════════════════════════════════════════════ */
+(function heroCanvas() {
+    var cv = document.getElementById('hero-canvas');
+    var ctx = cv.getContext('2d');
+    var W, H;
+    function resize() { var rect = cv.parentElement.getBoundingClientRect(); W = cv.width = rect.width; H = cv.height = rect.height; }
+    resize(); window.addEventListener('resize', resize);
+    var t = 0;
+    function draw() {
+        ctx.clearRect(0,0,W,H); t += 0.005;
+        ctx.strokeStyle = 'rgba(245,158,11,0.06)'; ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        var cx = W*0.5, cy = H*0.5;
+        for (var a = 0; a < Math.PI*8; a += 0.02) {
+            var r = 4*Math.pow(1.15,a)*(1+0.08*Math.sin(t*2+a*0.5));
+            var x = cx+r*Math.cos(a+t*0.3), y = cy+r*Math.sin(a+t*0.3);
+            if (a===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(245,158,11,0.04)'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (var x2 = 0; x2 < W; x2 += 2) {
+            var y2 = cy+Math.sin(x2*0.008+t*2)*80+Math.sin(x2*0.02+t*3)*20;
+            if (x2===0) ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2);
+        }
+        ctx.stroke();
+        for (var i = 0; i < 3; i++) {
+            var r2 = 60+i*50+Math.sin(t+i)*15;
+            ctx.strokeStyle = 'rgba(245,158,11,'+(0.03-i*0.008)+')';
+            ctx.beginPath();
+            ctx.arc(cx+Math.cos(t*0.5+i)*100, cy+Math.sin(t*0.7+i)*60, r2, 0, Math.PI*2);
+            ctx.stroke();
+        }
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+/* ═══════════════════════════════════════════════════
+   CHAPTER DATA (Ch1 unlocked, 2-8 locked)
+   ═══════════════════════════════════════════════════ */
+var CHAPTERS = [
+    { n:1, title:'피타고라스', sub:'Pythagoras', badges:['read','game'], locked:false, gameUrl:'pythagorean.html' },
+    { n:2, title:'아르키메데스', sub:'Archimedes', badges:['read','game'], locked:false, gameUrl:'archimedes.html' },
+    { n:3, title:'갈릴레이', sub:'Galileo', badges:['read','game'], locked:false, gameUrl:'galileo.html' },
+    { n:4, title:'뉴턴', sub:'Newton', badges:['read','game'], locked:false, gameUrl:'newton.html' },
+    { n:5, title:'알콰리즈미', sub:'Al-Khwarizmi', badges:['read','game'], locked:false, gameUrl:'alkhwarizmi.html' },
+    { n:6, title:'오일러', sub:'Euler', badges:['read','game'], locked:false, gameUrl:'euler.html' },
+    { n:7, title:'가우스', sub:'Gauss', badges:['read','game'], locked:false, gameUrl:'gauss.html' },
+    { n:8, title:'튜링', sub:'Turing', badges:['read','game'], locked:false, gameUrl:'turing.html' },
+];
+
+var chGrid = document.getElementById('chapterGrid');
+CHAPTERS.forEach(function(ch) {
+    var card = document.createElement('div');
+    card.className = 'chapter-card ' + (ch.locked ? 'locked' : 'unlocked');
+    var canvasId = 'ch-canvas-' + ch.n;
+    var badgesHTML = '';
+    if (ch.locked) {
+        badgesHTML = '<span class="badge badge-lock">🔒 잠김</span>';
+    } else {
+        ch.badges.forEach(function(b) {
+            badgesHTML += '<span class="badge badge-'+b+'">'+(b==='read'?'읽기':'게임')+'</span>';
+        });
+    }
+    card.innerHTML =
+        '<div class="chapter-canvas-wrap"><canvas id="'+canvasId+'" width="300" height="200"></canvas></div>' +
+        '<div class="chapter-info">' +
+            '<p class="chapter-num">CHAPTER '+String(ch.n).padStart(2,'0')+'</p>' +
+            '<h3 class="chapter-title">'+ ch.title + (ch.locked ? ' 🔒' : '') +'</h3>' +
+            '<div class="chapter-badges">'+badgesHTML+'</div>' +
+        '</div>';
+
+    if (!ch.locked) {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', (function(chapter) {
+            return function() {
+                playSound('pageFlip');
+                if (chapter.gameUrl) {
+                    location.href = chapter.gameUrl;
+                } else {
+                    showSection('game');
+                }
+            };
+        })(ch));
+    }
+    chGrid.appendChild(card);
+});
+
+/* ─── Mini-animation renderers ────────────────────── */
+var GOLD = '#f59e0b';
+var GOLD_DIM = 'rgba(245,158,11,0.3)';
+
+function getChCtx(n) {
+    var c = document.getElementById('ch-canvas-'+n);
+    if (!c) return null;
+    return c.getContext('2d');
+}
+
+// Ch.1 Pythagoras
+(function(){
+    var ctx = getChCtx(1); if (!ctx) return;
+    var cw=300, ch=200, t=0;
+    function draw(){
+        ctx.clearRect(0,0,cw,ch); t=(t+0.008)%1;
+        var prog = t < 0.5 ? t*2 : 1;
+        var ax=80, ay=150, bx=200, by=150, cx2=200, cy2=70;
+        ctx.strokeStyle=GOLD; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(ax,ay);
+        if(prog>0){ var p1=Math.min(prog*3,1); ctx.lineTo(ax+(bx-ax)*p1, ay+(by-ay)*p1); }
+        if(prog>0.33){ var p2=Math.min((prog-0.33)*3,1); ctx.lineTo(bx+(cx2-bx)*p2, by+(cy2-by)*p2); }
+        if(prog>0.66){ var p3=Math.min((prog-0.66)*3,1); ctx.lineTo(cx2+(ax-cx2)*p3, cy2+(ay-cy2)*p3); }
+        ctx.stroke();
+        if(prog>0.5){ ctx.strokeStyle=GOLD_DIM; ctx.strokeRect(bx-12,by-12,12,12); }
+        if(t>0.6){ var alpha=Math.min((t-0.6)*5,1); ctx.font='12px "JetBrains Mono", monospace'; ctx.fillStyle='rgba(245,158,11,'+alpha+')'; ctx.fillText('a² + b² = c²',90,40); }
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// Ch.2 Archimedes
+(function(){
+    var ctx=getChCtx(2); if(!ctx) return;
+    var cw=300,ch=200,t=0;
+    function draw(){
+        ctx.clearRect(0,0,cw,ch); t=(t+0.006)%1;
+        ctx.strokeStyle=GOLD_DIM; ctx.lineWidth=1.5; ctx.strokeRect(100,50,100,120);
+        var baseLevel=130, objectY=50+(1-Math.abs(t*2-1))*80, displacement=Math.max(0,(objectY+30-baseLevel+40)*0.3), waterTop=baseLevel-displacement;
+        ctx.fillStyle='rgba(59,130,246,0.2)'; ctx.fillRect(101,waterTop,98,170-waterTop);
+        ctx.strokeStyle='rgba(59,130,246,0.4)'; ctx.beginPath();
+        for(var x=101;x<199;x++){ var wy=waterTop+Math.sin(x*0.15+t*20)*2; if(x===101)ctx.moveTo(x,wy);else ctx.lineTo(x,wy); }
+        ctx.stroke();
+        ctx.fillStyle=GOLD; ctx.beginPath(); ctx.arc(150,objectY,15,0,Math.PI*2); ctx.fill();
+        ctx.font='10px "JetBrains Mono", monospace'; ctx.fillStyle=GOLD_DIM; ctx.fillText('F = ρVg',120,190);
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// Ch.3 Galileo
+(function(){
+    var ctx=getChCtx(3); if(!ctx) return;
+    var cw=300,ch=200,t=0;
+    function draw(){
+        ctx.clearRect(0,0,cw,ch); t=(t+0.008)%1;
+        ctx.strokeStyle=GOLD_DIM; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(40,60); ctx.lineTo(120,140); ctx.lineTo(260,140); ctx.stroke();
+        ctx.setLineDash([3,4]); ctx.strokeStyle='rgba(245,158,11,0.15)'; ctx.beginPath();
+        for(var p=0;p<=1;p+=0.02){ var bx2=120+p*140,by2=140-(p*100-p*p*100); if(p===0)ctx.moveTo(bx2,by2);else ctx.lineTo(bx2,by2); }
+        ctx.stroke(); ctx.setLineDash([]);
+        var phase=t, bx, by;
+        if(phase<0.4){ var pp=phase/0.4; bx=40+pp*80; by=60+pp*80; } else { var pp2=(phase-0.4)/0.6; bx=120+pp2*140; by=140-(pp2*100-pp2*pp2*100); }
+        ctx.fillStyle=GOLD; ctx.beginPath(); ctx.arc(bx,by-6,6,0,Math.PI*2); ctx.fill();
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// Ch.4 Newton
+(function(){
+    var ctx=getChCtx(4); if(!ctx) return;
+    var cw=300,ch=200,t=0;
+    function draw(){
+        ctx.clearRect(0,0,cw,ch); t=(t+0.005)%1;
+        var cx=150;
+        ctx.fillStyle='rgba(139,90,43,0.4)'; ctx.fillRect(cx-6,80,12,90);
+        ctx.fillStyle='rgba(34,139,34,0.2)'; ctx.beginPath(); ctx.arc(cx,55,40,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx-25,70,25,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx+25,70,25,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle=GOLD_DIM; ctx.beginPath(); ctx.moveTo(60,170); ctx.lineTo(240,170); ctx.stroke();
+        var applePhase=t<0.6?0:(t-0.6)/0.4, appleY=60+applePhase*applePhase*100;
+        ctx.fillStyle='#ef4444'; ctx.beginPath(); ctx.arc(cx+20,Math.min(appleY,162),7,0,Math.PI*2); ctx.fill();
+        if(applePhase>0&&applePhase<1){ ctx.strokeStyle=GOLD; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(cx+20,Math.min(appleY,160)+10); ctx.lineTo(cx+20,Math.min(appleY,160)+30); ctx.stroke(); }
+        ctx.font='12px "JetBrains Mono", monospace'; ctx.fillStyle='rgba(245,158,11,0.4)'; ctx.textAlign='center'; ctx.fillText('F = ma',cx,190); ctx.textAlign='start';
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// Ch.5 Al-Khwarizmi
+(function(){
+    var ctx=getChCtx(5); if(!ctx) return;
+    var cw=300,ch=200,t=0;
+    function draw(){
+        ctx.clearRect(0,0,cw,ch); t=(t+0.006)%1;
+        var cx=150,baseY=160, tilt=Math.sin(t*Math.PI*2)*12;
+        ctx.fillStyle=GOLD_DIM; ctx.fillRect(cx-4,baseY-60,8,60);
+        ctx.beginPath(); ctx.moveTo(cx-30,baseY); ctx.lineTo(cx+30,baseY); ctx.lineTo(cx+20,baseY+8); ctx.lineTo(cx-20,baseY+8); ctx.closePath(); ctx.fill();
+        ctx.save(); ctx.translate(cx,baseY-60); ctx.rotate(tilt*Math.PI/180);
+        ctx.strokeStyle=GOLD; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-80,0); ctx.lineTo(80,0); ctx.stroke();
+        ctx.strokeStyle=GOLD_DIM; ctx.beginPath(); ctx.moveTo(-80,0); ctx.lineTo(-90,20); ctx.lineTo(-70,20); ctx.closePath(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(80,0); ctx.lineTo(70,20); ctx.lineTo(90,20); ctx.closePath(); ctx.stroke();
+        ctx.font='italic 16px "Playfair Display", serif'; ctx.fillStyle=GOLD; ctx.textAlign='center'; ctx.fillText('x',-80,-8);
+        ctx.font='16px "JetBrains Mono", monospace'; ctx.fillText('5',80,-8);
+        ctx.restore();
+        ctx.font='11px "JetBrains Mono", monospace'; ctx.fillStyle='rgba(245,158,11,0.4)'; ctx.textAlign='center'; ctx.fillText('2x + 3 = 13',cx,190); ctx.textAlign='start';
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// Ch.6 Euler
+(function(){
+    var ctx=getChCtx(6); if(!ctx) return;
+    var cw=300,ch=200,t=0;
+    function draw(){
+        ctx.clearRect(0,0,cw,ch); t+=0.008;
+        var cx=150,cy=100,r=55;
+        ctx.strokeStyle=GOLD_DIM; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
+        ctx.strokeStyle='rgba(245,158,11,0.1)'; ctx.beginPath(); ctx.moveTo(cx-80,cy); ctx.lineTo(cx+80,cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx,cy-80); ctx.lineTo(cx,cy+80); ctx.stroke();
+        var angle=t%(Math.PI*2), px=cx+r*Math.cos(angle), py=cy-r*Math.sin(angle);
+        ctx.strokeStyle=GOLD; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px,py); ctx.stroke();
+        ctx.fillStyle=GOLD; ctx.beginPath(); ctx.arc(px,py,4,0,Math.PI*2); ctx.fill();
+        ctx.font='13px "JetBrains Mono", monospace'; ctx.fillStyle=GOLD; ctx.textAlign='center'; ctx.fillText('e^{iπ} + 1 = 0',cx,cy+r+30); ctx.textAlign='start';
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// Ch.7 Gauss
+(function(){
+    var ctx=getChCtx(7); if(!ctx) return;
+    var cw=300,ch=200,t=0;
+    function draw(){
+        ctx.clearRect(0,0,cw,ch); t=(t+0.004)%1;
+        var count=10, topY=55, botY=135, startX=40, endX=260;
+        for(var i=0;i<count;i++){
+            var x=startX+(endX-startX)*i/(count-1);
+            ctx.fillStyle=GOLD; ctx.beginPath(); ctx.arc(x,topY,4,0,Math.PI*2); ctx.fill();
+            ctx.font='9px "JetBrains Mono", monospace'; ctx.fillStyle=GOLD_DIM; ctx.textAlign='center'; ctx.fillText(String(i+1),x,topY-10);
+            ctx.fillStyle=GOLD; ctx.beginPath(); ctx.arc(x,botY,4,0,Math.PI*2); ctx.fill();
+            ctx.fillStyle=GOLD_DIM; ctx.fillText(String(100-i),x,botY+16);
+        }
+        var pairsShown=Math.floor(t*(count+2));
+        for(var j=0;j<Math.min(pairsShown,count);j++){
+            var x2=startX+(endX-startX)*j/(count-1);
+            ctx.strokeStyle='rgba(245,158,11,'+(0.15+(j===pairsShown-1?0.35:0))+')'; ctx.lineWidth=1;
+            ctx.beginPath(); ctx.moveTo(x2,topY+5); ctx.lineTo(x2,botY-5); ctx.stroke();
+        }
+        if(t>0.6){ var alpha=Math.min((t-0.6)*4,1); ctx.font='11px "JetBrains Mono", monospace'; ctx.fillStyle='rgba(245,158,11,'+alpha+')'; ctx.fillText('n(n+1)/2 = 5050',150,180); }
+        ctx.textAlign='start';
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// Ch.8 Turing
+(function(){
+    var ctx=getChCtx(8); if(!ctx) return;
+    var cw=300,ch=200, cells=[1,0,1,1,0,0,1,0], t=0, flipIdx=0, flipTimer=0;
+    function draw(){
+        ctx.clearRect(0,0,cw,ch); t+=1; flipTimer++;
+        if(flipTimer>40){ flipTimer=0; cells[flipIdx]=cells[flipIdx]?0:1; flipIdx=(flipIdx+1)%cells.length; }
+        var cellW=26,cellH=34, totalW=cells.length*(cellW+4), startX=(cw-totalW)/2;
+        ctx.strokeStyle=GOLD_DIM; ctx.lineWidth=1; ctx.strokeRect(startX-8,70,totalW+12,cellH+12);
+        cells.forEach(function(val,i){
+            var x=startX+i*(cellW+4), y=76;
+            ctx.fillStyle=val?'rgba(245,158,11,0.15)':'rgba(245,158,11,0.03)'; ctx.fillRect(x,y,cellW,cellH);
+            ctx.strokeStyle=GOLD_DIM; ctx.strokeRect(x,y,cellW,cellH);
+            ctx.font='16px "JetBrains Mono", monospace'; ctx.fillStyle=val?GOLD:'rgba(245,158,11,0.3)'; ctx.textAlign='center'; ctx.fillText(String(val),x+cellW/2,y+cellH/2+6);
+        });
+        var headX=startX+flipIdx*(cellW+4)+cellW/2;
+        ctx.fillStyle=GOLD; ctx.beginPath(); ctx.moveTo(headX-6,62); ctx.lineTo(headX+6,62); ctx.lineTo(headX,70); ctx.closePath(); ctx.fill();
+        ctx.font='11px "JetBrains Mono", monospace'; ctx.fillStyle='rgba(245,158,11,0.4)'; ctx.fillText('Turing Machine',150,140);
+        ctx.textAlign='start';
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+/* ═══════════════════════════════════════════════════
+   FEATURED CARD ANIMATION (Pythagoras — c² OUTWARD)
+   ═══════════════════════════════════════════════════ */
+(function(){
+    var cv = document.getElementById('featured-anim');
+    if (!cv) return;
+    var ctx = cv.getContext('2d');
+    var W = 420, H = 320;
+    var t = 0;
+
+    function draw(){
+        ctx.clearRect(0,0,W,H);
+        t = (t + 0.003) % 1;
+
+        var prog = t < 0.4 ? t/0.4 : 1;
+        var sqProg = t < 0.4 ? 0 : Math.min((t-0.4)/0.3, 1);
+        var labelProg = t < 0.7 ? 0 : Math.min((t-0.7)/0.2, 1);
+
+        // Right triangle: right angle at B (bottom-right)
+        var a = 90, b = 68;
+        var Ax = W/2-60, Ay = H/2+40;
+        var Bx = Ax+a, By = Ay;
+        var Cx = Bx, Cy = Ay-b;
+
+        ctx.strokeStyle = GOLD; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(Ax,Ay);
+        ctx.lineTo(Ax+a*Math.min(prog*3,1), Ay);
+        if(prog>0.33){ var p2=Math.min((prog-0.33)*3,1); ctx.moveTo(Bx,By); ctx.lineTo(Bx, By-b*p2); }
+        if(prog>0.66){ var p3=Math.min((prog-0.66)*3,1); ctx.moveTo(Cx,Cy); ctx.lineTo(Cx+(Ax-Cx)*p3, Cy+(Ay-Cy)*p3); }
+        ctx.stroke();
+
+        if(prog>0.5){ ctx.strokeStyle='rgba(245,158,11,0.4)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(Bx-10,By); ctx.lineTo(Bx-10,By-10); ctx.lineTo(Bx,By-10); ctx.stroke(); }
+
+        if(sqProg>0){
+            var sp = sqProg;
+            ctx.globalAlpha = sp*0.35;
+            // a² square downward
+            ctx.fillStyle='rgba(59,130,246,0.3)'; ctx.strokeStyle='rgba(59,130,246,0.5)'; ctx.lineWidth=1.5;
+            ctx.fillRect(Ax,Ay,a*sp,a*sp); ctx.strokeRect(Ax,Ay,a*sp,a*sp);
+            // b² square to the right
+            ctx.fillStyle='rgba(16,185,129,0.3)'; ctx.strokeStyle='rgba(16,185,129,0.5)';
+            ctx.fillRect(Bx,Cy,b*sp,b*sp); ctx.strokeRect(Bx,Cy,b*sp,b*sp);
+            // c² square OUTWARD from hypotenuse (away from right angle B)
+            var cLen = Math.sqrt(a*a+b*b);
+            var dx=Cx-Ax, dy=Cy-Ay;
+            // Perpendicular: choose direction AWAY from B
+            var px=-dy/cLen, py=dx/cLen;
+            // Check: if normal points toward B, flip it
+            var midHx=(Ax+Cx)/2, midHy=(Ay+Cy)/2;
+            var toBx=Bx-midHx, toBy=By-midHy;
+            if(px*toBx+py*toBy>0){ px=-px; py=-py; }
+            var s=cLen*sp, ratio=s/cLen;
+            var P1x=Ax,P1y=Ay, P2x=Ax+dx*ratio,P2y=Ay+dy*ratio, P3x=P2x+px*s,P3y=P2y+py*s, P4x=P1x+px*s,P4y=P1y+py*s;
+            ctx.fillStyle='rgba(245,158,11,0.2)'; ctx.strokeStyle='rgba(245,158,11,0.4)';
+            ctx.beginPath(); ctx.moveTo(P1x,P1y); ctx.lineTo(P2x,P2y); ctx.lineTo(P3x,P3y); ctx.lineTo(P4x,P4y); ctx.closePath();
+            ctx.fill(); ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
+
+        if(labelProg>0){
+            ctx.globalAlpha = labelProg;
+            ctx.font='italic 14px "Playfair Display", serif';
+            ctx.fillStyle='rgba(59,130,246,0.8)'; ctx.textAlign='center'; ctx.fillText('a²',(Ax+Bx)/2,Ay+a/2+5);
+            ctx.fillStyle='rgba(16,185,129,0.8)'; ctx.fillText('b²',Bx+b/2,(Cy+By)/2);
+            ctx.fillStyle=GOLD; ctx.fillText('c²',(Ax+Cx)/2-25,(Ay+Cy)/2-15);
+            ctx.font='20px "JetBrains Mono", monospace'; ctx.fillStyle='rgba(245,158,11,'+labelProg+')';
+            ctx.fillText('a² + b² = c²',W/2,30);
+            ctx.globalAlpha = 1; ctx.textAlign='start';
+        }
+
+        [[Ax,Ay],[Bx,By],[Cx,Cy]].forEach(function(pt){ ctx.fillStyle=GOLD; ctx.beginPath(); ctx.arc(pt[0],pt[1],3,0,Math.PI*2); ctx.fill(); });
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+/* ═══════════════════════════════════════════════════
+   STORY MINI CANVAS (looping proof animation)
+   ═══════════════════════════════════════════════════ */
+(function StoryMini(){
+    var cv = document.getElementById('storyMiniCanvas');
+    if (!cv) return;
+    var ctx = cv.getContext('2d');
+    var W = 300, H = 200;
+    cv.width = W * 2; cv.height = H * 2;
+    ctx.setTransform(2, 0, 0, 2, 0, 0);
+    var t = 0;
+    function draw(){
+        ctx.clearRect(0,0,W,H);
+        ctx.fillStyle = 'rgba(15,23,42,0.95)';
+        ctx.fillRect(0,0,W,H);
+        t = (t + 0.004) % 1;
+        var prog = t < 0.3 ? t/0.3 : 1;
+        var sqProg = t < 0.3 ? 0 : Math.min((t-0.3)/0.35, 1);
+        var labelProg = t < 0.65 ? 0 : Math.min((t-0.65)/0.2, 1);
+        var a = 60, b = 45;
+        var Ax = W/2-40, Ay = H/2+30;
+        var Bx = Ax+a, By = Ay;
+        var Cx = Bx, Cy = Ay-b;
+        ctx.strokeStyle = GOLD; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(Ax,Ay); ctx.lineTo(Ax+a*Math.min(prog*3,1), Ay);
+        if(prog>0.33){ var p2=Math.min((prog-0.33)*3,1); ctx.moveTo(Bx,By); ctx.lineTo(Bx, By-b*p2); }
+        if(prog>0.66){ var p3=Math.min((prog-0.66)*3,1); ctx.moveTo(Cx,Cy); ctx.lineTo(Cx+(Ax-Cx)*p3, Cy+(Ay-Cy)*p3); }
+        ctx.stroke();
+        if(prog>0.5){ ctx.strokeStyle='rgba(245,158,11,0.4)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(Bx-8,By); ctx.lineTo(Bx-8,By-8); ctx.lineTo(Bx,By-8); ctx.stroke(); }
+        if(sqProg>0){
+            var sp = easeOutCubic(sqProg);
+            ctx.globalAlpha = sp*0.35;
+            ctx.fillStyle='rgba(59,130,246,0.4)'; ctx.strokeStyle='rgba(59,130,246,0.6)'; ctx.lineWidth=1;
+            ctx.fillRect(Ax,Ay,a*sp,a*sp); ctx.strokeRect(Ax,Ay,a*sp,a*sp);
+            ctx.fillStyle='rgba(16,185,129,0.4)'; ctx.strokeStyle='rgba(16,185,129,0.6)';
+            ctx.fillRect(Bx,Cy,b*sp,b*sp); ctx.strokeRect(Bx,Cy,b*sp,b*sp);
+            var cLen=Math.sqrt(a*a+b*b), dx=Cx-Ax, dy=Cy-Ay;
+            // Perpendicular AWAY from right angle B
+            var px=-dy/cLen, py=dx/cLen;
+            var midHx2=(Ax+Cx)/2, midHy2=(Ay+Cy)/2;
+            var toBx2=Bx-midHx2, toBy2=By-midHy2;
+            if(px*toBx2+py*toBy2>0){ px=-px; py=-py; }
+            var s2=cLen*sp, ratio=s2/cLen;
+            var P1x=Ax,P1y=Ay,P2x=Ax+dx*ratio,P2y=Ay+dy*ratio,P3x=P2x+px*s2,P3y=P2y+py*s2,P4x=P1x+px*s2,P4y=P1y+py*s2;
+            ctx.fillStyle='rgba(245,158,11,0.25)'; ctx.strokeStyle='rgba(245,158,11,0.5)';
+            ctx.beginPath(); ctx.moveTo(P1x,P1y); ctx.lineTo(P2x,P2y); ctx.lineTo(P3x,P3y); ctx.lineTo(P4x,P4y); ctx.closePath();
+            ctx.fill(); ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
+        if(labelProg>0){
+            ctx.globalAlpha = labelProg;
+            ctx.font = 'bold 16px "JetBrains Mono", monospace';
+            ctx.fillStyle = GOLD; ctx.textAlign = 'center';
+            ctx.fillText('a\u00B2 + b\u00B2 = c\u00B2', W/2, 24);
+            ctx.globalAlpha = 1; ctx.textAlign = 'start';
+        }
+        requestAnimationFrame(draw);
+    }
+    function easeOutCubic(t){ return 1-Math.pow(1-t,3); }
+    draw();
+})();
+
+/* ═══════════════════════════════════════════════════
+   MATH TOOL PALETTE (reusable)
+   ═══════════════════════════════════════════════════ */
+function buildToolPalette(containerId, activeTools, onSelect) {
+    var ALL_TOOLS = [
+        { id: 'ruler',      icon: '📏', name: '줄자' },
+        { id: 'protractor', icon: '📐', name: '각도기' },
+        { id: 'scale',      icon: '\u2696\uFE0F', name: '저울' },
+        { id: 'pulley',     icon: '🪝', name: '도르래' },
+        { id: 'water',      icon: '💧', name: '물' },
+        { id: 'stone',      icon: '🪨', name: '돌' },
+        { id: 'timer',      icon: '\u23F1\uFE0F', name: '타이머' },
+    ];
+    var el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = '<span class="tool-palette-label">도구함:</span>';
+    ALL_TOOLS.forEach(function(tool) {
+        var isActive = activeTools.indexOf(tool.id) >= 0;
+        var item = document.createElement('span');
+        item.className = 'tool-item ' + (isActive ? 'active' : 'locked');
+        item.dataset.toolId = tool.id;
+        item.textContent = tool.icon + ' ' + tool.name + ' ' + (isActive ? '\u2705' : '🔒');
+        if (isActive && onSelect) {
+            item.addEventListener('click', function(){ onSelect(tool.id, item); });
+        }
+        el.appendChild(item);
+    });
+    return el;
+}
+buildToolPalette('toolPalette', ['ruler'], function(id){ if(window.GAME && window.GAME.selectTool) window.GAME.selectTool(id); });
+
+/* ═══════════════════════════════════════════════════
+   ★★★ PYTHAGORAS CABLE CAR GAME ★★★
+   Mountain scene: left mountain (tall), flat ground (right), blue sky
+   Ruler tool: drag to measure height & distance
+   ═══════════════════════════════════════════════════ */
+(function CableCarGame(){
+    var cv = document.getElementById('bridgeCanvas');
+    if (!cv) return;
+    var ctx = cv.getContext('2d');
+    var W, H;
+    var dpr = window.devicePixelRatio || 1;
+
+    function resizeCanvas(){
+        var rect = cv.parentElement.getBoundingClientRect();
+        W = rect.width;
+        H = rect.height;
+        cv.width = W * dpr;
+        cv.height = H * dpr;
+        cv.style.width = W + 'px';
+        cv.style.height = H + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    /* ── GAME STATE ── */
+    var STATE = {
+        step: 0,
+        // 0=intro, 1=ruler measuring, 2=quiz, 3=proof(a,b,c substeps), 4=cable car build, 5=sliders
+        sideA: 30,
+        sideB: 40,
+        heightMeasured: false,
+        distanceMeasured: false,
+        diagonalAttempted: false,
+        rulerActive: false,
+        rulerDragging: false,
+        rulerStart: null,
+        rulerEnd: null,
+        rulerResult: null,   // {type:'height'|'distance'|'diagonal', value:number}
+        measurements: [],    // stored measurement labels [{type, x, y, text, time}]
+        proofSubStep: 0,
+        proofSquareA: 0,
+        proofSquareB: 0,
+        proofSquareC: 0,
+        answered: false,
+        cableProgress: 0,
+        cableCarPos: 0,
+        cableCarMoving: false,
+        confetti: [],
+        celebrating: false,
+        isSliderMode: false,
+        oldManExpr: 'think',
+        oldManMsg: '',
+        cableBuilt: false,
+    };
+
+    function getC(){ return Math.sqrt(STATE.sideA*STATE.sideA + STATE.sideB*STATE.sideB); }
+
+    /* ── SCENE GEOMETRY ── */
+    // Mountain on left, flat ground on right
+    // Mountain top = friend's house, ground right = my house
+    // Right angle where mountain wall meets ground
+    var SCENE = {};
+    function updateScene(){
+        var mountainW = W * 0.28;           // mountain width (left 28%)
+        var mountainTop = H * 0.12;         // top of mountain
+        var groundY = H * 0.78;             // ground level (where mountain meets ground)
+        var myHouseX = W * 0.82;            // my house position on flat ground
+        SCENE = {
+            mountainW: mountainW,
+            mountainTop: mountainTop,
+            groundY: groundY,
+            myHouseX: myHouseX,
+            // Triangle vertices:
+            // A = mountain top (friend's house)
+            A: { x: mountainW, y: mountainTop },
+            // B = mountain base (right angle vertex) - where mountain wall meets ground
+            B: { x: mountainW, y: groundY },
+            // C = my house on flat ground
+            C: { x: myHouseX, y: groundY },
+        };
+    }
+
+    /* ── UI ELEMENT REFS ── */
+    var btnStart = document.getElementById('btnStart');
+    var btnAfterMeasure = document.getElementById('btnAfterMeasure');
+    var quizArea = document.getElementById('quizArea');
+    var quizHint = document.getElementById('quizHint');
+    var btnAfterQuiz = document.getElementById('btnAfterQuiz');
+    var btnProofNext = document.getElementById('btnProofNext');
+    var answerArea = document.getElementById('answerArea');
+    var answerInput = document.getElementById('answerInput');
+    var answerHintEl = document.getElementById('answerHint');
+    var btnBuildCable = document.getElementById('btnBuildCable');
+    var btnExplore = document.getElementById('btnExplore');
+    var infoBox = document.getElementById('infoBox');
+    var sliderAreaEl = document.getElementById('sliderArea');
+    var sliderMsg = document.getElementById('sliderMsg');
+    var btnRestart = document.getElementById('btnRestart');
+    var sliderA = document.getElementById('sliderA');
+    var sliderB = document.getElementById('sliderB');
+    var valA = document.getElementById('valA');
+    var valB = document.getElementById('valB');
+    var sliderResult = document.getElementById('sliderResult');
+
+    function hideAllControls(){
+        [btnStart, btnAfterMeasure, btnAfterQuiz, btnProofNext, btnBuildCable, btnExplore, btnRestart].forEach(function(b){ if(b) b.classList.remove('visible'); });
+        if(quizArea) quizArea.classList.remove('visible');
+        if(answerArea) answerArea.classList.remove('visible');
+        if(sliderAreaEl) sliderAreaEl.classList.remove('visible');
+        if(infoBox) infoBox.classList.remove('visible');
+    }
+    function showBtn(btn){ if(btn) btn.classList.add('visible'); }
+
+    function setStep(n){
+        STATE.step = n;
+        for(var i=0;i<6;i++){
+            var dot = document.getElementById('dot'+i);
+            if(dot) dot.className = 'step-dot' + (i<n ? ' done' : (i===n ? ' active' : ''));
+        }
+    }
+
+    function setOldMan(expr, msg){
+        STATE.oldManExpr = expr;
+        STATE.oldManMsg = msg;
+    }
+
+    /* ── SOUND ── */
+    SFX.measure = '../../assets/sounds/SonSounds/DA - Pencil - 3.mp3';
+    SFX.pop     = '../../assets/sounds/SonSounds/DA - Pop - 3.mp3';
+
+    /* ── EASING ── */
+    function easeOutCubic(t){ return 1-Math.pow(1-t,3); }
+    function easeInOutCubic(t){ return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; }
+
+    /* ── GAME API ── */
+    window.GAME = {};
+
+    /* Tool selection */
+    window.GAME.selectTool = function(id){
+        if(id === 'ruler' && STATE.step === 1){
+            STATE.rulerActive = true;
+            cv.style.cursor = 'crosshair';
+            playSound('click');
+        }
+    };
+
+    /* Step 0 -> 1: Start measuring with ruler */
+    window.GAME.startMeasure = function(){
+        playSound('click');
+        hideAllControls();
+        setStep(1);
+        STATE.rulerActive = true;
+        STATE.heightMeasured = false;
+        STATE.distanceMeasured = false;
+        STATE.diagonalAttempted = false;
+        STATE.measurements = [];
+        cv.style.cursor = 'crosshair';
+        setOldMan('think', '줄자를 사용해서 높이와 거리를 측정해보세요!');
+        // Highlight ruler in tool palette
+        var rulerTool = document.querySelector('[data-tool-id="ruler"]');
+        if(rulerTool) rulerTool.classList.add('selected');
+    };
+
+    /* Step 1 -> 2: Go to quiz */
+    window.GAME.goToQuiz = function(){
+        playSound('click');
+        hideAllControls();
+        setStep(2);
+        STATE.rulerActive = false;
+        cv.style.cursor = 'default';
+        quizArea.classList.add('visible');
+        setOldMan('think', '어떤 공식을 써야 할까?');
+        var rulerTool = document.querySelector('[data-tool-id="ruler"]');
+        if(rulerTool) rulerTool.classList.remove('selected');
+    };
+
+    /* Step 2: Answer quiz */
+    window.GAME.answerQuiz = function(btn){
+        if (btn.dataset.answer === 'correct') {
+            btn.classList.add('correct');
+            playSound('correct');
+            quizHint.textContent = '';
+            setOldMan('surprise', '그거다! 피타고라스 정리!');
+            setTimeout(function(){
+                hideAllControls();
+                showBtn(btnAfterQuiz);
+            }, 600);
+        } else {
+            btn.classList.add('wrong');
+            playSound('wrong');
+            setOldMan('dizzy', '아닌데...');
+            if (btn.dataset.answer === 'wrong1') {
+                quizHint.textContent = '속도가 아니라 거리를 구하는 거예요!';
+            } else {
+                quizHint.textContent = '힘이 아니라 길이를 구하는 공식이에요!';
+            }
+            setTimeout(function(){ btn.classList.remove('wrong'); }, 600);
+        }
+    };
+
+    /* Step 2 -> 3: Start proof */
+    window.GAME.startProof = function(){
+        playSound('click');
+        hideAllControls();
+        setStep(3);
+        STATE.proofSubStep = 0;
+        STATE.proofSquareA = 0;
+        STATE.proofSquareB = 0;
+        STATE.proofSquareC = 0;
+        STATE.answered = false;
+        setOldMan('think', '직각삼각형의 각 변에 정사각형을 그려보면...');
+    };
+
+    /* Step 3: Next proof sub-step */
+    window.GAME.nextProofStep = function(){
+        playSound('click');
+        hideAllControls();
+        STATE.proofSubStep++;
+        STATE.proofSquareA = (STATE.proofSubStep >= 1) ? 1 : 0;
+        if (STATE.proofSubStep === 1) {
+            setOldMan('think', 'b쪽에도 정사각형을 그리면...');
+        }
+        if (STATE.proofSubStep === 2) {
+            setOldMan('surprise', '두 넓이를 더하면... c는 얼마일까?');
+            answerArea.classList.add('visible');
+            var aS = STATE.sideA * STATE.sideA;
+            var bS = STATE.sideB * STATE.sideB;
+            answerArea.querySelector('h4').textContent = 'c\u00B2 = ' + (aS+bS) + ',  c = \u221A' + (aS + bS) + ' = ?';
+            answerInput.value = '';
+            answerInput.focus();
+            answerHintEl.textContent = '';
+        }
+    };
+
+    /* Step 3c: Submit answer */
+    window.GAME.submitAnswer = function(){
+        var val = parseInt(answerInput.value);
+        var correct = Math.round(getC());
+        if (val === correct) {
+            playSound('correct');
+            answerInput.classList.add('correct-flash');
+            STATE.answered = true;
+            setOldMan('eureka', '유레카! 케이블카 줄은 ' + correct + 'm가 필요해요!');
+            hideAllControls();
+            answerArea.classList.add('visible');
+            setTimeout(function(){
+                answerInput.classList.remove('correct-flash');
+                hideAllControls();
+                showBtn(btnBuildCable);
+            }, 1500);
+        } else {
+            playSound('wrong');
+            answerInput.classList.add('wrong-flash');
+            setOldMan('dizzy', '다시 계산해보자...');
+            var aS = STATE.sideA * STATE.sideA;
+            var bS = STATE.sideB * STATE.sideB;
+            answerHintEl.textContent = '2500의 제곱근은? 50 \u00D7 50 = ?';
+            setTimeout(function(){ answerInput.classList.remove('wrong-flash'); }, 600);
+        }
+    };
+    if(answerInput) answerInput.addEventListener('keydown', function(e){ if(e.key==='Enter') window.GAME.submitAnswer(); });
+
+    /* Step 3c -> 4: Build cable */
+    window.GAME.buildCable = function(){
+        playSound('build');
+        hideAllControls();
+        setStep(4);
+        STATE.cableProgress = 0;
+        STATE.cableCarPos = 0;
+        STATE.cableCarMoving = false;
+        STATE.celebrating = false;
+        STATE.confetti = [];
+        STATE.cableBuilt = false;
+        setOldMan('cool', '케이블카를 설치합니다!');
+    };
+
+    /* Step 4 -> 5: Start sliders */
+    window.GAME.startSliders = function(){
+        playSound('click');
+        hideAllControls();
+        setStep(5);
+        STATE.isSliderMode = true;
+        sliderAreaEl.classList.add('visible');
+        showBtn(btnRestart);
+        setOldMan('cool', '다른 값도 넣어봐!');
+        updateSliders();
+    };
+
+    /* Reset */
+    window.GAME.resetGame = function(){
+        playSound('click');
+        STATE.step = 0;
+        STATE.heightMeasured = false;
+        STATE.distanceMeasured = false;
+        STATE.diagonalAttempted = false;
+        STATE.rulerActive = false;
+        STATE.rulerDragging = false;
+        STATE.rulerStart = null;
+        STATE.rulerEnd = null;
+        STATE.rulerResult = null;
+        STATE.measurements = [];
+        STATE.proofSubStep = 0;
+        STATE.proofSquareA = 0;
+        STATE.proofSquareB = 0;
+        STATE.proofSquareC = 0;
+        STATE.answered = false;
+        STATE.cableProgress = 0;
+        STATE.cableCarPos = 0;
+        STATE.cableCarMoving = false;
+        STATE.confetti = [];
+        STATE.celebrating = false;
+        STATE.isSliderMode = false;
+        STATE.cableBuilt = false;
+        STATE.sideA = 30;
+        STATE.sideB = 40;
+        cv.style.cursor = 'default';
+        sliderA.value = 30;
+        sliderB.value = 40;
+        valA.textContent = '30m';
+        valB.textContent = '40m';
+        sliderResult.textContent = '케이블카 줄(c) = 50.0m';
+        document.querySelectorAll('.quiz-btn').forEach(function(b){ b.classList.remove('correct','wrong'); });
+        quizHint.textContent = '';
+        var rulerTool = document.querySelector('[data-tool-id="ruler"]');
+        if(rulerTool) rulerTool.classList.remove('selected');
+        hideAllControls();
+        showBtn(btnStart);
+        setStep(0);
+        setOldMan('think', '친구네 집까지 케이블카를 설치하고 싶은데... 줄을 얼마나 사야 할까?');
+    };
+
+    /* ── SLIDERS ── */
+    function updateSliders(){
+        STATE.sideA = parseInt(sliderA.value);
+        STATE.sideB = parseInt(sliderB.value);
+        valA.textContent = STATE.sideA + 'm';
+        valB.textContent = STATE.sideB + 'm';
+        var c = getC().toFixed(1);
+        sliderResult.textContent = '케이블카 줄(c) = ' + c + 'm';
+        if(sliderMsg) sliderMsg.textContent = '이번에는 높이가 ' + STATE.sideA + 'm이고 거리가 ' + STATE.sideB + 'm라면, 케이블카 줄은 ' + c + 'm 필요해요!';
+    }
+    sliderA.addEventListener('input', updateSliders);
+    sliderB.addEventListener('input', updateSliders);
+
+    /* ── RULER TOOL: MOUSE/TOUCH HANDLING ── */
+    function getCanvasPos(e){
+        var rect = cv.getBoundingClientRect();
+        var clientX, clientY;
+        if(e.touches && e.touches.length > 0){
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function classifyMeasurement(sx, sy, ex, ey){
+        var s = SCENE;
+        var dx = Math.abs(ex - sx), dy = Math.abs(ey - sy);
+        var angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+        // Check if near mountain wall (vertical, left side)
+        var nearMountainWall = (sx < s.mountainW + 40 && ex < s.mountainW + 40) ||
+                               (Math.min(sx,ex) < s.mountainW + 20);
+        // Check if near ground (horizontal, bottom area)
+        var nearGround = (sy > s.groundY - 50 && ey > s.groundY - 50) ||
+                         (Math.max(sy,ey) > s.groundY - 30);
+
+        if(angle > 60 && nearMountainWall){
+            return 'height';
+        } else if(angle < 30 && nearGround){
+            return 'distance';
+        } else {
+            return 'diagonal';
+        }
+    }
+
+    cv.addEventListener('mousedown', function(e){
+        if(!STATE.rulerActive || STATE.step !== 1) return;
+        var pos = getCanvasPos(e);
+        STATE.rulerDragging = true;
+        STATE.rulerStart = pos;
+        STATE.rulerEnd = pos;
+        STATE.rulerResult = null;
+    });
+
+    cv.addEventListener('mousemove', function(e){
+        if(!STATE.rulerDragging) return;
+        STATE.rulerEnd = getCanvasPos(e);
+    });
+
+    cv.addEventListener('mouseup', function(e){
+        if(!STATE.rulerDragging) return;
+        STATE.rulerDragging = false;
+        STATE.rulerEnd = getCanvasPos(e);
+        finalizeMeasurement();
+    });
+
+    // Touch support
+    cv.addEventListener('touchstart', function(e){
+        if(!STATE.rulerActive || STATE.step !== 1) return;
+        e.preventDefault();
+        var pos = getCanvasPos(e);
+        STATE.rulerDragging = true;
+        STATE.rulerStart = pos;
+        STATE.rulerEnd = pos;
+        STATE.rulerResult = null;
+    }, {passive: false});
+
+    cv.addEventListener('touchmove', function(e){
+        if(!STATE.rulerDragging) return;
+        e.preventDefault();
+        STATE.rulerEnd = getCanvasPos(e);
+    }, {passive: false});
+
+    cv.addEventListener('touchend', function(e){
+        if(!STATE.rulerDragging) return;
+        STATE.rulerDragging = false;
+        finalizeMeasurement();
+    });
+
+    function finalizeMeasurement(){
+        if(!STATE.rulerStart || !STATE.rulerEnd) return;
+        var sx = STATE.rulerStart.x, sy = STATE.rulerStart.y;
+        var ex = STATE.rulerEnd.x, ey = STATE.rulerEnd.y;
+        var dragDist = Math.sqrt((ex-sx)*(ex-sx)+(ey-sy)*(ey-sy));
+        if(dragDist < 20) return; // too short
+
+        var type = classifyMeasurement(sx, sy, ex, ey);
+        var s = SCENE;
+
+        if(type === 'height' && !STATE.heightMeasured){
+            STATE.heightMeasured = true;
+            playSound('measure');
+            STATE.measurements.push({
+                type: 'height',
+                x: s.A.x - 15,
+                y: (s.A.y + s.B.y) / 2,
+                text: '높이 = ' + STATE.sideA + 'm',
+                time: Date.now()
+            });
+            setOldMan('think', '높이 ' + STATE.sideA + 'm! 이제 거리도 재보세요.');
+        } else if(type === 'distance' && !STATE.distanceMeasured){
+            STATE.distanceMeasured = true;
+            playSound('measure');
+            STATE.measurements.push({
+                type: 'distance',
+                x: (s.B.x + s.C.x) / 2,
+                y: s.B.y + 22,
+                text: '거리 = ' + STATE.sideB + 'm',
+                time: Date.now()
+            });
+            setOldMan('think', '거리 ' + STATE.sideB + 'm!');
+        } else if(type === 'diagonal'){
+            STATE.diagonalAttempted = true;
+            playSound('wrong');
+            STATE.measurements.push({
+                type: 'diagonal',
+                x: (s.A.x + s.C.x) / 2 + 20,
+                y: (s.A.y + s.C.y) / 2,
+                text: '직접 측정 불가! 공중이라 줄자로 잴 수 없어요',
+                time: Date.now()
+            });
+            setOldMan('dizzy', '안 돼! 케이블카 줄은 공중이라 직접 잴 수 없어!');
+        } else if(type === 'height' && STATE.heightMeasured){
+            playSound('pop');
+        } else if(type === 'distance' && STATE.distanceMeasured){
+            playSound('pop');
+        }
+
+        STATE.rulerStart = null;
+        STATE.rulerEnd = null;
+
+        // Check if both measured
+        if(STATE.heightMeasured && STATE.distanceMeasured){
+            setTimeout(function(){
+                if(STATE.step !== 1) return;
+                setOldMan('think', '높이 30m, 거리 40m... 그런데 케이블카 줄 길이는 직접 잴 수가 없어요! 줄은 공중에 있으니까...');
+                if(!STATE.diagonalAttempted){
+                    setTimeout(function(){
+                        if(STATE.step !== 1) return;
+                        setOldMan('think', '대각선도 재보세요... 잴 수 있을까?');
+                    }, 3000);
+                }
+                setTimeout(function(){
+                    if(STATE.step !== 1) return;
+                    setOldMan('think', '어떡하지... 수학으로 구할 수 있을까?');
+                    showBtn(btnAfterMeasure);
+                }, STATE.diagonalAttempted ? 1500 : 5000);
+            }, 800);
+        }
+    }
+
+    /* ── VISIBILITY OBSERVER ── */
+    var isVisible = false;
+    var gameObs = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){ isVisible = e.isIntersecting; });
+    }, { threshold: 0.05 });
+    gameObs.observe(cv.parentElement);
+
+    /* ═══════════════════════════════════════════
+       DRAWING FUNCTIONS
+       ═══════════════════════════════════════════ */
+
+    function drawSky(){
+        var skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+        skyGrad.addColorStop(0, '#4a90d9');
+        skyGrad.addColorStop(0.3, '#6db3f2');
+        skyGrad.addColorStop(0.6, '#87CEEB');
+        skyGrad.addColorStop(1, '#a8d8ea');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, W, H);
+        // Clouds
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        var t = Date.now() * 0.0000015;
+        for(var ci=0;ci<5;ci++){
+            var cx = ((ci * 237 + t * (80+ci*15) * W) % (W+200)) - 100;
+            var cy = 30 + ci * 35 + Math.sin(ci*2.3)*20;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 22+ci*4, 0, Math.PI*2); ctx.fill();
+            ctx.arc(cx+20, cy-5, 18+ci*3, 0, Math.PI*2); ctx.fill();
+            ctx.arc(cx-15, cy+3, 16+ci*2, 0, Math.PI*2); ctx.fill();
+            ctx.arc(cx+35, cy+2, 14+ci*2, 0, Math.PI*2); ctx.fill();
+        }
+    }
+
+    function drawMountain(){
+        var s = SCENE;
+        // Mountain body (left side, tall)
+        var mountainGrad = ctx.createLinearGradient(0, s.mountainTop - 40, 0, H);
+        mountainGrad.addColorStop(0, '#6b8e5e');  // green top
+        mountainGrad.addColorStop(0.15, '#5a7d4f');
+        mountainGrad.addColorStop(0.4, '#7a6b52');  // brown middle
+        mountainGrad.addColorStop(0.7, '#6b5c46');
+        mountainGrad.addColorStop(1, '#4a3f33');
+        ctx.fillStyle = mountainGrad;
+        // Mountain shape: triangular peak above, flat vertical wall on right
+        ctx.beginPath();
+        ctx.moveTo(0, H);                      // bottom-left
+        ctx.lineTo(0, s.mountainTop - 60);      // far left top
+        ctx.lineTo(s.mountainW * 0.3, s.mountainTop - 80);  // peak left
+        ctx.lineTo(s.mountainW * 0.7, s.mountainTop - 30);  // peak right
+        ctx.lineTo(s.mountainW, s.mountainTop);  // right edge top (vertical wall starts)
+        ctx.lineTo(s.mountainW, H);              // right edge bottom
+        ctx.closePath();
+        ctx.fill();
+
+        // Snow cap
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.beginPath();
+        ctx.moveTo(s.mountainW * 0.2, s.mountainTop - 60);
+        ctx.lineTo(s.mountainW * 0.3, s.mountainTop - 80);
+        ctx.lineTo(s.mountainW * 0.5, s.mountainTop - 55);
+        ctx.lineTo(s.mountainW * 0.35, s.mountainTop - 50);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.beginPath();
+        ctx.moveTo(s.mountainW * 0.5, s.mountainTop - 55);
+        ctx.lineTo(s.mountainW * 0.7, s.mountainTop - 30);
+        ctx.lineTo(s.mountainW * 0.55, s.mountainTop - 25);
+        ctx.lineTo(s.mountainW * 0.45, s.mountainTop - 40);
+        ctx.closePath();
+        ctx.fill();
+
+        // Vertical mountain wall (right face - clearly vertical)
+        ctx.fillStyle = '#5a4a38';
+        ctx.fillRect(s.mountainW - 4, s.mountainTop, 4, s.groundY - s.mountainTop);
+
+        // Trees on mountain
+        for(var ti=0;ti<6;ti++){
+            var tx = 15 + ti * (s.mountainW * 0.15);
+            var ty = s.mountainTop + 10 + ti * 20 + Math.sin(ti*1.7)*15;
+            if(ty < s.groundY - 30){
+                ctx.fillStyle = '#2d5a27';
+                ctx.beginPath();
+                ctx.moveTo(tx, ty);
+                ctx.lineTo(tx-8, ty+18);
+                ctx.lineTo(tx+8, ty+18);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#3a7a30';
+                ctx.beginPath();
+                ctx.moveTo(tx, ty-6);
+                ctx.lineTo(tx-6, ty+10);
+                ctx.lineTo(tx+6, ty+10);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+    }
+
+    function drawGround(){
+        var s = SCENE;
+        // Flat green ground from mountain base to right edge
+        var groundGrad = ctx.createLinearGradient(0, s.groundY, 0, H);
+        groundGrad.addColorStop(0, '#4caf50');
+        groundGrad.addColorStop(0.1, '#43a047');
+        groundGrad.addColorStop(0.4, '#388e3c');
+        groundGrad.addColorStop(1, '#2e7d32');
+        ctx.fillStyle = groundGrad;
+        ctx.fillRect(s.mountainW, s.groundY, W - s.mountainW, H - s.groundY);
+
+        // Also fill ground under mountain
+        ctx.fillRect(0, s.groundY, s.mountainW, H - s.groundY);
+
+        // Grass line
+        ctx.fillStyle = '#66bb6a';
+        ctx.fillRect(s.mountainW, s.groundY - 2, W - s.mountainW, 5);
+
+        // Grass tufts
+        ctx.strokeStyle = '#81c784';
+        ctx.lineWidth = 1.5;
+        for(var gi=0;gi<20;gi++){
+            var gx = s.mountainW + 30 + gi * ((W - s.mountainW - 30) / 20);
+            var gy = s.groundY;
+            ctx.beginPath();
+            ctx.moveTo(gx, gy);
+            ctx.lineTo(gx-3, gy-8);
+            ctx.moveTo(gx, gy);
+            ctx.lineTo(gx+2, gy-7);
+            ctx.moveTo(gx+5, gy);
+            ctx.lineTo(gx+7, gy-6);
+            ctx.stroke();
+        }
+
+        // Path/road
+        ctx.fillStyle = 'rgba(139,119,101,0.3)';
+        ctx.fillRect(s.mountainW, s.groundY + 10, W - s.mountainW, 8);
+    }
+
+    function drawHouse(x, y, label, isTop){
+        // Simple pixel house
+        var hw = 32, hh = 28;
+        // Walls
+        ctx.fillStyle = isTop ? '#8B4513' : '#b87333';
+        ctx.fillRect(x - hw/2, y - hh, hw, hh);
+        // Lighter inside
+        ctx.fillStyle = isTop ? '#a0522d' : '#cc8844';
+        ctx.fillRect(x - hw/2 + 2, y - hh + 2, hw - 4, hh - 4);
+        // Roof
+        ctx.fillStyle = isTop ? '#cc3333' : '#4169e1';
+        ctx.beginPath();
+        ctx.moveTo(x - hw/2 - 6, y - hh);
+        ctx.lineTo(x, y - hh - 20);
+        ctx.lineTo(x + hw/2 + 6, y - hh);
+        ctx.closePath();
+        ctx.fill();
+        // Window (glowing)
+        ctx.fillStyle = '#ffe066';
+        ctx.fillRect(x - 5, y - hh + 8, 10, 8);
+        ctx.fillStyle = 'rgba(255,224,102,0.3)';
+        ctx.beginPath(); ctx.arc(x, y - hh + 12, 14, 0, Math.PI*2); ctx.fill();
+        // Door
+        ctx.fillStyle = '#654321';
+        ctx.fillRect(x - 4, y - 12, 8, 12);
+        // Label
+        ctx.font = 'bold 11px "Jua", sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+        ctx.lineWidth = 3;
+        ctx.strokeText(label, x, y - hh - 24);
+        ctx.fillText(label, x, y - hh - 24);
+        ctx.textAlign = 'start';
+    }
+
+    /* ── OLD MAN ── */
+    function drawOldMan(x, y){
+        var expr = STATE.oldManExpr;
+        // Robe
+        ctx.fillStyle = '#e8e0d0';
+        ctx.fillRect(x-8, y-20, 16, 18);
+        // Head
+        ctx.fillStyle = '#f5d6b8';
+        ctx.beginPath(); ctx.arc(x, y-28, 9, 0, Math.PI*2); ctx.fill();
+        // Beard
+        ctx.fillStyle = '#ddd';
+        ctx.beginPath();
+        ctx.moveTo(x-6, y-22); ctx.lineTo(x+6, y-22);
+        ctx.lineTo(x+4, y-12); ctx.lineTo(x, y-9); ctx.lineTo(x-4, y-12);
+        ctx.closePath(); ctx.fill();
+        // Eyes
+        if (expr === 'dizzy') {
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 1.5;
+            [-3, 3].forEach(function(ox){
+                ctx.beginPath(); ctx.moveTo(x+ox-2, y-30); ctx.lineTo(x+ox+2, y-28); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(x+ox+2, y-30); ctx.lineTo(x+ox-2, y-28); ctx.stroke();
+            });
+        } else if (expr === 'eureka' || expr === 'surprise') {
+            ctx.fillStyle = '#333';
+            ctx.beginPath(); ctx.arc(x-3, y-29, 2.5, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x+3, y-29, 2.5, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(x-3.5, y-30, 0.8, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x+2.5, y-30, 0.8, 0, Math.PI*2); ctx.fill();
+        } else {
+            ctx.fillStyle = '#333';
+            ctx.beginPath(); ctx.arc(x-3, y-29, 2, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x+3, y-29, 2, 0, Math.PI*2); ctx.fill();
+        }
+        // Mouth
+        if (expr === 'eureka') {
+            ctx.fillStyle = '#333';
+            ctx.beginPath(); ctx.arc(x, y-23, 3, 0, Math.PI); ctx.fill();
+        } else if (expr === 'surprise') {
+            ctx.fillStyle = '#333';
+            ctx.beginPath(); ctx.arc(x, y-23, 2.5, 0, Math.PI*2); ctx.fill();
+        } else if (expr === 'cool') {
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(x, y-23, 3, 0.1*Math.PI, 0.9*Math.PI); ctx.stroke();
+        }
+        // Headband
+        ctx.fillStyle = '#b8860b';
+        ctx.fillRect(x-10, y-38, 20, 3);
+        // Sandals
+        ctx.fillStyle = '#8B7355';
+        ctx.fillRect(x-8, y-2, 7, 3);
+        ctx.fillRect(x+1, y-2, 7, 3);
+    }
+
+    /* ── SPEECH BUBBLE ── */
+    function drawSpeechBubble(x, y, text){
+        if (!text) return;
+        ctx.font = '13px "Jua", sans-serif';
+        var lines = [];
+        var words = text.split('');
+        var line = '';
+        var maxW = 200;
+        for(var i=0;i<words.length;i++){
+            var test = line + words[i];
+            if(ctx.measureText(test).width > maxW && line.length > 0){
+                lines.push(line); line = words[i];
+            } else { line = test; }
+        }
+        if(line) lines.push(line);
+        var lineH = 18;
+        var bw = Math.min(maxW + 24, 230);
+        var bh = lines.length * lineH + 16;
+        var bx = Math.max(5, Math.min(x - bw/2, W - bw - 5));
+        var by = y - bh - 12;
+        if(by < 5) by = y + 20;
+        // Bubble
+        ctx.fillStyle = 'rgba(15,23,42,0.9)';
+        ctx.strokeStyle = 'rgba(245,158,11,0.4)';
+        ctx.lineWidth = 1.5;
+        var r = 10;
+        ctx.beginPath();
+        ctx.moveTo(bx+r, by); ctx.lineTo(bx+bw-r, by);
+        ctx.arcTo(bx+bw, by, bx+bw, by+r, r);
+        ctx.lineTo(bx+bw, by+bh-r);
+        ctx.arcTo(bx+bw, by+bh, bx+bw-r, by+bh, r);
+        ctx.lineTo(bx+r, by+bh);
+        ctx.arcTo(bx, by+bh, bx, by+bh-r, r);
+        ctx.lineTo(bx, by+r);
+        ctx.arcTo(bx, by, bx+r, by, r);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        // Tail
+        var tailX = Math.max(bx+15, Math.min(x, bx+bw-15));
+        ctx.fillStyle = 'rgba(15,23,42,0.9)';
+        ctx.beginPath(); ctx.moveTo(tailX-6, by+bh); ctx.lineTo(tailX, by+bh+8); ctx.lineTo(tailX+6, by+bh); ctx.closePath(); ctx.fill();
+        // Text
+        ctx.fillStyle = '#fbbf24';
+        ctx.textAlign = 'center';
+        for(var li=0;li<lines.length;li++){
+            ctx.fillText(lines[li], bx+bw/2, by+14+li*lineH);
+        }
+        ctx.textAlign = 'start';
+    }
+
+    /* ── RULER OVERLAY (while dragging) ── */
+    function drawRulerDrag(){
+        if(!STATE.rulerDragging || !STATE.rulerStart || !STATE.rulerEnd) return;
+        var sx = STATE.rulerStart.x, sy = STATE.rulerStart.y;
+        var ex = STATE.rulerEnd.x, ey = STATE.rulerEnd.y;
+        var dist = Math.sqrt((ex-sx)*(ex-sx)+(ey-sy)*(ey-sy));
+        if(dist < 5) return;
+
+        var type = classifyMeasurement(sx, sy, ex, ey);
+        var color = type === 'height' ? '#00e5ff' : type === 'distance' ? '#76ff03' : '#ff5252';
+
+        // Line
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.setLineDash(type === 'diagonal' ? [8,6] : []);
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Endpoints
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.arc(sx, sy, 5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(ex, ey, 5, 0, Math.PI*2); ctx.fill();
+
+        // Distance text with dark background
+        var mx = (sx+ex)/2, my = (sy+ey)/2;
+        ctx.font = 'bold 14px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        var dragLabel, dragLX, dragLY;
+        if(type === 'height'){
+            dragLabel = STATE.sideA + 'm';
+            dragLX = mx - 20; dragLY = my;
+        } else if(type === 'distance'){
+            dragLabel = STATE.sideB + 'm';
+            dragLX = mx; dragLY = my - 10;
+        } else {
+            dragLabel = '???';
+            dragLX = mx + 20; dragLY = my;
+        }
+        var dragLW = ctx.measureText(dragLabel).width;
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.beginPath(); ctx.roundRect(dragLX-dragLW/2-6, dragLY-12, dragLW+12, 20, 4); ctx.fill();
+        ctx.fillStyle = type === 'diagonal' ? '#ff5252' : '#fff';
+        ctx.fillText(dragLabel, dragLX, dragLY+2);
+        ctx.textAlign = 'start';
+    }
+
+    /* ── STORED MEASUREMENT LABELS ── */
+    function drawMeasurementLabels(){
+        var s = SCENE;
+        STATE.measurements.forEach(function(m){
+            var age = (Date.now() - m.time) / 1000;
+            var alpha = Math.min(age * 3, 1);
+            var scale = age < 0.3 ? 0.3 + age * 2.3 : 1; // pop-in
+
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.translate(m.x, m.y);
+            ctx.scale(scale, scale);
+
+            if(m.type === 'height'){
+                // Cyan line along mountain wall
+                ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+                ctx.beginPath(); ctx.moveTo(s.A.x - m.x, s.A.y - m.y); ctx.lineTo(s.B.x - m.x, s.B.y - m.y); ctx.stroke();
+                // Label with dark background
+                ctx.font = 'bold 14px "JetBrains Mono", monospace';
+                var htw = ctx.measureText(m.text).width;
+                ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                ctx.beginPath(); ctx.roundRect(-htw-12, -10, htw+14, 22, 5); ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.textAlign = 'right';
+                ctx.fillText(m.text, -5, 5);
+            } else if(m.type === 'distance'){
+                // Green line along ground
+                ctx.strokeStyle = '#76ff03'; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+                ctx.beginPath(); ctx.moveTo(s.B.x - m.x, s.B.y - m.y); ctx.lineTo(s.C.x - m.x, s.C.y - m.y); ctx.stroke();
+                // Label with dark background
+                ctx.font = 'bold 14px "JetBrains Mono", monospace';
+                var dtw = ctx.measureText(m.text).width;
+                ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                ctx.beginPath(); ctx.roundRect(-dtw/2-7, -10, dtw+14, 22, 5); ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.textAlign = 'center';
+                ctx.fillText(m.text, 0, 5);
+            } else if(m.type === 'diagonal'){
+                // Red X + message with dark background (fades after 3s)
+                var fadeAlpha = age < 3 ? 1 : Math.max(0, 1 - (age-3)/2);
+                ctx.globalAlpha = alpha * fadeAlpha;
+                ctx.font = 'bold 13px "Jua", sans-serif';
+                var diagText = '\u274C ' + m.text;
+                var diagW = ctx.measureText(diagText).width;
+                ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                ctx.beginPath(); ctx.roundRect(-diagW/2-7, -12, diagW+14, 22, 5); ctx.fill();
+                ctx.fillStyle = '#ff5252';
+                ctx.textAlign = 'center';
+                ctx.fillText(diagText, 0, 0);
+            }
+            ctx.textAlign = 'start';
+            ctx.restore();
+        });
+
+        // Draw dashed diagonal line (cable path) once both measured
+        if(STATE.heightMeasured && STATE.distanceMeasured && STATE.step >= 1 && STATE.step <= 3){
+            ctx.strokeStyle = 'rgba(245,158,11,0.5)'; ctx.lineWidth = 2;
+            ctx.setLineDash([8,6]);
+            ctx.beginPath(); ctx.moveTo(s.A.x, s.A.y); ctx.lineTo(s.C.x, s.C.y); ctx.stroke();
+            ctx.setLineDash([]);
+            // "???" on diagonal with dark background
+            ctx.font = 'bold 16px "JetBrains Mono", monospace';
+            var cLabelText = '줄(c) = ???';
+            var cLabelX = (s.A.x+s.C.x)/2 + 25, cLabelY = (s.A.y+s.C.y)/2 - 10;
+            var cLabelW = ctx.measureText(cLabelText).width;
+            ctx.fillStyle = 'rgba(0,0,0,0.75)';
+            ctx.textAlign = 'center';
+            ctx.beginPath(); ctx.roundRect(cLabelX-cLabelW/2-8, cLabelY-14, cLabelW+16, 24, 6); ctx.fill();
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillText(cLabelText, cLabelX, cLabelY+2);
+            ctx.textAlign = 'start';
+        }
+    }
+
+    /* ── RIGHT ANGLE MARKER ── */
+    function drawRightAngle(){
+        var s = SCENE;
+        var rm = 14;
+        ctx.strokeStyle = 'rgba(245,158,11,0.7)'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(s.B.x + rm, s.B.y);
+        ctx.lineTo(s.B.x + rm, s.B.y - rm);
+        ctx.lineTo(s.B.x, s.B.y - rm);
+        ctx.stroke();
+        // "90°" label
+        ctx.font = 'bold 12px "JetBrains Mono", monospace';
+        ctx.fillStyle = GOLD;
+        ctx.fillText('90°', s.B.x + rm + 4, s.B.y - rm + 4);
+    }
+
+    /* ── PROOF SQUARES ON SCENE ── */
+    function drawProofOnScene(){
+        var s = SCENE;
+        var Ax = s.A.x, Ay = s.A.y;
+        var Bx = s.B.x, By = s.B.y;
+        var Cx = s.C.x, Cy = s.C.y;
+
+        var sideAlen = By - Ay; // vertical pixels (height)
+        var sideBlen = Cx - Bx; // horizontal pixels (distance)
+
+        // Triangle outline
+        ctx.strokeStyle = GOLD; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(Ax,Ay); ctx.lineTo(Bx,By); ctx.lineTo(Cx,Cy); ctx.closePath(); ctx.stroke();
+
+        // Right angle marker
+        drawRightAngle();
+
+        // Sub-step 0: a² square (blue) from vertical side, extending LEFT
+        if(STATE.proofSubStep >= 0){
+            STATE.proofSquareA = Math.min(STATE.proofSquareA + 0.02, 1);
+            var spA = easeOutCubic(STATE.proofSquareA);
+            ctx.globalAlpha = 0.35 * spA;
+            ctx.fillStyle = 'rgba(59,130,246,0.5)';
+            ctx.strokeStyle = 'rgba(59,130,246,0.8)'; ctx.lineWidth = 1.5;
+            ctx.fillRect(Ax - sideAlen*spA, Ay, sideAlen*spA, sideAlen);
+            ctx.strokeRect(Ax - sideAlen*spA, Ay, sideAlen*spA, sideAlen);
+            ctx.globalAlpha = 1;
+            if(spA > 0.5){
+                ctx.globalAlpha = (spA-0.5)*2;
+                var labelX = Ax-sideAlen/2, labelY = Ay+sideAlen/2+5;
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.beginPath(); ctx.roundRect(labelX-70, labelY-14, 140, 22, 6); ctx.fill();
+                ctx.fillStyle = '#93c5fd';
+                ctx.font = 'bold 13px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('a\u00B2 = '+STATE.sideA+'\u00B2 = '+(STATE.sideA*STATE.sideA), labelX, labelY);
+                ctx.textAlign = 'start'; ctx.globalAlpha = 1;
+            }
+            if(spA >= 1 && STATE.proofSubStep === 0 && !btnProofNext.classList.contains('visible')){
+                showBtn(btnProofNext);
+            }
+        }
+
+        // Sub-step 1: b² square (green) from horizontal side, extending DOWN
+        if(STATE.proofSubStep >= 1){
+            STATE.proofSquareB = Math.min(STATE.proofSquareB + 0.02, 1);
+            var spB = easeOutCubic(STATE.proofSquareB);
+            ctx.globalAlpha = 0.35 * spB;
+            ctx.fillStyle = 'rgba(16,185,129,0.5)';
+            ctx.strokeStyle = 'rgba(16,185,129,0.8)'; ctx.lineWidth = 1.5;
+            ctx.fillRect(Bx, By, sideBlen, sideBlen*spB);
+            ctx.strokeRect(Bx, By, sideBlen, sideBlen*spB);
+            ctx.globalAlpha = 1;
+            if(spB > 0.5){
+                ctx.globalAlpha = (spB-0.5)*2;
+                var lbX = Bx+sideBlen/2, lbY = By+Math.min(sideBlen*spB/2+10, 50);
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.beginPath(); ctx.roundRect(lbX-75, lbY-14, 150, 22, 6); ctx.fill();
+                ctx.fillStyle = '#6ee7b7';
+                ctx.font = 'bold 13px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('b\u00B2 = '+STATE.sideB+'\u00B2 = '+(STATE.sideB*STATE.sideB), lbX, lbY);
+                ctx.textAlign = 'start'; ctx.globalAlpha = 1;
+            }
+            if(spB >= 1 && STATE.proofSubStep === 1 && !btnProofNext.classList.contains('visible')){
+                showBtn(btnProofNext);
+            }
+        }
+
+        // Sub-step 2: equation text with background box for readability
+        if(STATE.proofSubStep >= 2){
+            var aS = STATE.sideA * STATE.sideA;
+            var bS = STATE.sideB * STATE.sideB;
+            var sum = aS + bS;
+            var correct = Math.round(getC());
+            // Dark background box for formula readability
+            var boxW = 340, boxH = STATE.answered ? 100 : 80;
+            var boxX = W/2 - boxW/2, boxY = 6;
+            ctx.fillStyle = 'rgba(0,0,20,0.82)';
+            ctx.beginPath();
+            ctx.roundRect(boxX, boxY, boxW, boxH, 10);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(245,158,11,0.5)'; ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.textAlign = 'center';
+            // Line 1: a² + b²
+            ctx.font = 'bold 14px "JetBrains Mono", monospace';
+            ctx.fillStyle = '#93c5fd';
+            ctx.fillText('a\u00B2 + b\u00B2 = ' + aS + ' + ' + bS + ' = ' + sum, W/2, boxY + 22);
+            // Line 2: c²
+            ctx.fillStyle = '#fff';
+            ctx.fillText('c\u00B2 = ' + sum, W/2, boxY + 44);
+            // Line 3
+            if(!STATE.answered){
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = 'bold 15px "JetBrains Mono", monospace';
+                ctx.fillText('c = \u221A' + sum + ' = ???', W/2, boxY + 66);
+            } else {
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillText('c = \u221A' + sum, W/2, boxY + 66);
+                // Line 4: answer celebration
+                ctx.font = 'bold 18px "JetBrains Mono", monospace';
+                ctx.fillStyle = '#22c55e';
+                ctx.fillText('c = ' + correct + 'm!', W/2, boxY + 90);
+            }
+            ctx.textAlign = 'start';
+        }
+
+        // After correct answer: c² square OUTWARD from hypotenuse
+        if(STATE.answered){
+            STATE.proofSquareC = Math.min(STATE.proofSquareC + 0.015, 1);
+            var spC = easeOutCubic(STATE.proofSquareC);
+            var dx = Cx - Ax, dy = Cy - Ay;
+            var len = Math.sqrt(dx*dx + dy*dy);
+            // Perpendicular AWAY from right angle B
+            var nx = -dy/len, ny = dx/len;
+            // Ensure direction is AWAY from B
+            var mhx=(Ax+Cx)/2, mhy=(Ay+Cy)/2;
+            var tbx=Bx-mhx, tby=By-mhy;
+            if(nx*tbx+ny*tby>0){ nx=-nx; ny=-ny; }
+            var s2 = len * spC;
+            var ratio = s2/len;
+            var P1x = Ax, P1y = Ay;
+            var P2x = Ax + dx*ratio, P2y = Ay + dy*ratio;
+            var P3x = P2x + nx*s2, P3y = P2y + ny*s2;
+            var P4x = P1x + nx*s2, P4y = P1y + ny*s2;
+
+            ctx.globalAlpha = 0.3 * spC;
+            ctx.fillStyle = 'rgba(245,158,11,0.5)';
+            ctx.strokeStyle = 'rgba(245,158,11,0.8)'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(P1x,P1y); ctx.lineTo(P2x,P2y); ctx.lineTo(P3x,P3y); ctx.lineTo(P4x,P4y); ctx.closePath();
+            ctx.fill(); ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            if(spC > 0.5){
+                ctx.globalAlpha = (spC-0.5)*2;
+                ctx.font = 'bold 13px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center';
+                var cmx = (P1x+P3x)/2, cmy = (P1y+P3y)/2;
+                var cSqText = 'c\u00B2 = '+(STATE.sideA*STATE.sideA+STATE.sideB*STATE.sideB);
+                var cSqW = ctx.measureText(cSqText).width;
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.beginPath(); ctx.roundRect(cmx-cSqW/2-8, cmy-9, cSqW+16, 22, 5); ctx.fill();
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillText(cSqText, cmx, cmy+5);
+                ctx.textAlign = 'start'; ctx.globalAlpha = 1;
+            }
+        }
+    }
+
+    /* ── CABLE CAR LINE + CAR ── */
+    function drawCableLine(progress){
+        var s = SCENE;
+        var bp = easeOutCubic(progress);
+        var ax = s.A.x, ay = s.A.y;
+        var cx = s.C.x, cy = s.C.y;
+        var endX = ax + (cx-ax)*bp;
+        var endY = ay + (cy-ay)*bp;
+
+        // Cable (thick rope)
+        ctx.strokeStyle = '#555'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(endX, endY); ctx.stroke();
+        ctx.strokeStyle = '#888'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(endX, endY); ctx.stroke();
+
+        // Cable tower at mountain top
+        ctx.fillStyle = '#666';
+        ctx.fillRect(ax-3, ay-25, 6, 25);
+        ctx.fillStyle = '#f44336';
+        ctx.beginPath(); ctx.arc(ax, ay-25, 4, 0, Math.PI*2); ctx.fill();
+
+        // Cable tower at house
+        if(bp > 0.9){
+            ctx.fillStyle = '#666';
+            ctx.fillRect(cx-3, cy-25, 6, 25);
+            ctx.fillStyle = '#f44336';
+            ctx.beginPath(); ctx.arc(cx, cy-25, 4, 0, Math.PI*2); ctx.fill();
+        }
+    }
+
+    function drawCableCar(pos){
+        var s = SCENE;
+        var ax = s.A.x, ay = s.A.y;
+        var cx = s.C.x, cy = s.C.y;
+        var t = easeInOutCubic(pos);
+        var carX = ax + (cx-ax)*t;
+        var carY = ay + (cy-ay)*t;
+
+        // Hanger wire
+        ctx.strokeStyle = '#888'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(carX, carY); ctx.lineTo(carX, carY+12); ctx.stroke();
+
+        // Car body
+        ctx.fillStyle = '#e53935';
+        ctx.fillRect(carX-14, carY+12, 28, 18);
+        ctx.fillStyle = '#ef5350';
+        ctx.fillRect(carX-12, carY+14, 24, 14);
+
+        // Windows
+        ctx.fillStyle = '#bbdefb';
+        ctx.fillRect(carX-9, carY+16, 8, 8);
+        ctx.fillRect(carX+1, carY+16, 8, 8);
+
+        // Wheel on top
+        ctx.fillStyle = '#333';
+        ctx.beginPath(); ctx.arc(carX, carY, 4, 0, Math.PI*2); ctx.fill();
+
+        // Swing effect
+        var swing = Math.sin(Date.now()*0.003)*2;
+        ctx.save();
+        ctx.translate(carX, carY+30+swing);
+        ctx.restore();
+    }
+
+    /* ── SLIDER MODE TRIANGLE ── */
+    function drawSliderTriangle(){
+        var s = SCENE;
+        var Ax = s.A.x, Ay = s.A.y;
+        var Bx = s.B.x, By = s.B.y;
+        var Cx = s.C.x, Cy = s.C.y;
+
+        var sideAlen = By - Ay;
+        var sideBlen = Cx - Bx;
+
+        // Triangle
+        ctx.strokeStyle = GOLD; ctx.lineWidth = 2; ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(Ax,Ay); ctx.lineTo(Bx,By); ctx.lineTo(Cx,Cy); ctx.closePath(); ctx.stroke();
+
+        drawRightAngle();
+
+        // a² square (left)
+        ctx.globalAlpha = 0.2;
+        ctx.fillStyle = 'rgba(59,130,246,0.3)'; ctx.strokeStyle = 'rgba(59,130,246,0.5)'; ctx.lineWidth = 1;
+        ctx.fillRect(Ax-sideAlen, Ay, sideAlen, sideAlen); ctx.strokeRect(Ax-sideAlen, Ay, sideAlen, sideAlen);
+        // b² square (below)
+        ctx.fillStyle = 'rgba(16,185,129,0.3)'; ctx.strokeStyle = 'rgba(16,185,129,0.5)';
+        ctx.fillRect(Bx, By, sideBlen, Math.min(sideBlen, H-By-5));
+        ctx.strokeRect(Bx, By, sideBlen, Math.min(sideBlen, H-By-5));
+        // c² square outward (AWAY from right angle B)
+        var dx=Cx-Ax, dy=Cy-Ay, len=Math.sqrt(dx*dx+dy*dy);
+        var nx=-dy/len, ny=dx/len;
+        // Ensure direction is AWAY from B
+        var smhx=(Ax+Cx)/2, smhy=(Ay+Cy)/2;
+        var stbx=Bx-smhx, stby=By-smhy;
+        if(nx*stbx+ny*stby>0){ nx=-nx; ny=-ny; }
+        var P2x=Ax+dx, P2y=Ay+dy;
+        var P3x=P2x+nx*len, P3y=P2y+ny*len;
+        var P4x=Ax+nx*len, P4y=Ay+ny*len;
+        ctx.fillStyle='rgba(245,158,11,0.2)'; ctx.strokeStyle='rgba(245,158,11,0.4)';
+        ctx.beginPath(); ctx.moveTo(Ax,Ay); ctx.lineTo(P2x,P2y); ctx.lineTo(P3x,P3y); ctx.lineTo(P4x,P4y); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.globalAlpha = 1;
+
+        // Labels on sides with dark background
+        ctx.font = 'bold 14px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+        // a label
+        var laX=Ax-25, laY=(Ay+By)/2;
+        ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.roundRect(laX-40,laY-12,80,22,5); ctx.fill();
+        ctx.fillStyle = '#93c5fd'; ctx.fillText('a='+STATE.sideA+'m', laX, laY+4);
+        // b label
+        var lbX=(Bx+Cx)/2, lbY=By+22;
+        ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.roundRect(lbX-40,lbY-12,80,22,5); ctx.fill();
+        ctx.fillStyle = '#6ee7b7'; ctx.fillText('b='+STATE.sideB+'m', lbX, lbY+4);
+        // c label
+        var lcX=(Ax+Cx)/2+25, lcY=(Ay+Cy)/2-10;
+        ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.roundRect(lcX-55,lcY-12,110,22,5); ctx.fill();
+        ctx.fillStyle = '#fbbf24'; ctx.fillText('c='+getC().toFixed(1)+'m', lcX, lcY+4);
+        // Equation with background box
+        var aS=STATE.sideA*STATE.sideA, bS=STATE.sideB*STATE.sideB;
+        var eqText = aS+' + '+bS+' = '+(aS+bS)+' → c = '+getC().toFixed(1)+'m';
+        var eqW = 300, eqH = 30, eqX = W/2-eqW/2, eqY = 8;
+        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        ctx.beginPath(); ctx.roundRect(eqX,eqY,eqW,eqH,8); ctx.fill();
+        ctx.strokeStyle='rgba(245,158,11,0.3)'; ctx.lineWidth=1; ctx.stroke();
+        ctx.font = 'bold 14px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText(eqText, W/2, eqY+20);
+        ctx.textAlign = 'start';
+
+        // Cable line
+        drawCableLine(1);
+    }
+
+    /* ── CONFETTI ── */
+    function updateConfetti(){
+        STATE.confetti.forEach(function(c){
+            c.x += c.vx; c.y += c.vy;
+            c.vy += 0.15; c.rot += c.rotSpeed; c.vx *= 0.99;
+            ctx.save();
+            ctx.translate(c.x, c.y);
+            ctx.rotate(c.rot * Math.PI/180);
+            ctx.fillStyle = c.color;
+            ctx.fillRect(-c.size/2, -c.size/2, c.size, c.size*0.6);
+            ctx.restore();
+        });
+        STATE.confetti = STATE.confetti.filter(function(c){ return c.y < H+20; });
+    }
+
+    function spawnConfetti(){
+        for(var ci=0;ci<80;ci++){
+            STATE.confetti.push({
+                x: W/2 + (Math.random()-0.5)*W*0.6,
+                y: H*0.3,
+                vx: (Math.random()-0.5)*7,
+                vy: -Math.random()*9 - 3,
+                size: Math.random()*6+2,
+                color: ['#f59e0b','#ef4444','#3b82f6','#10b981','#8b5cf6','#ec4899'][ci%6],
+                rot: Math.random()*360,
+                rotSpeed: (Math.random()-0.5)*12,
+            });
+        }
+    }
+
+    /* ═══════════════════════════════════════════
+       MAIN SCENE DRAW
+       ═══════════════════════════════════════════ */
+    function drawScene(){
+        updateScene();
+        var s = SCENE;
+
+        // Background
+        drawSky();
+        drawMountain();
+        drawGround();
+
+        // Houses
+        drawHouse(s.A.x - 10, s.A.y, '친구네 집', true);
+        drawHouse(s.C.x, s.C.y, '우리 집', false);
+
+        // Old man position (near mountain base, on ground)
+        var omX = s.B.x + 35;
+        var omY = s.B.y - 2;
+
+        /* ── Step-specific drawing ── */
+
+        // Step 0: Intro
+        if(STATE.step === 0){
+            var pulse = 0.4 + Math.sin(Date.now()*0.005)*0.3;
+            // Glow at mountain top
+            ctx.fillStyle = 'rgba(245,158,11,'+pulse*0.3+')';
+            ctx.beginPath(); ctx.arc(s.A.x, s.A.y, 16, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = 'rgba(245,158,11,'+pulse+')';
+            ctx.beginPath(); ctx.arc(s.A.x, s.A.y, 5, 0, Math.PI*2); ctx.fill();
+            // Glow at house
+            ctx.fillStyle = 'rgba(245,158,11,'+pulse*0.3+')';
+            ctx.beginPath(); ctx.arc(s.C.x, s.C.y, 16, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = 'rgba(245,158,11,'+pulse+')';
+            ctx.beginPath(); ctx.arc(s.C.x, s.C.y, 5, 0, Math.PI*2); ctx.fill();
+            // Dotted line between them (desired cable path)
+            ctx.strokeStyle = 'rgba(245,158,11,0.2)'; ctx.lineWidth = 1.5;
+            ctx.setLineDash([6,8]);
+            ctx.beginPath(); ctx.moveTo(s.A.x, s.A.y); ctx.lineTo(s.C.x, s.C.y); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Step 1: Ruler measuring mode - show measurement labels
+        if(STATE.step >= 1 && STATE.step <= 3){
+            drawMeasurementLabels();
+        }
+
+        // Step 1: Draw ruler drag overlay
+        if(STATE.step === 1){
+            drawRulerDrag();
+            // Instruction text at top if nothing measured yet
+            if(!STATE.heightMeasured && !STATE.distanceMeasured){
+                ctx.font = 'bold 14px "Jua", sans-serif';
+                var instrText = '캔버스를 드래그해서 높이와 거리를 측정하세요!';
+                var instrW = ctx.measureText(instrText).width;
+                ctx.textAlign = 'center';
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.beginPath(); ctx.roundRect(W/2-instrW/2-10, 10, instrW+20, 24, 6); ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.fillText(instrText, W/2, 28);
+                ctx.textAlign = 'start';
+            }
+        }
+
+        // Step 3: Proof on scene
+        if(STATE.step === 3){
+            drawProofOnScene();
+        }
+
+        // Step 4: Cable car build
+        if(STATE.step === 4){
+            STATE.cableProgress = Math.min(STATE.cableProgress + 0.008, 1);
+            drawCableLine(STATE.cableProgress);
+
+            if(STATE.cableProgress >= 1 && !STATE.cableCarMoving && !STATE.cableBuilt){
+                STATE.cableCarMoving = true;
+                STATE.cableCarPos = 0;
+                STATE.cableBuilt = true;
+                playSound('pop');
+            }
+
+            if(STATE.cableCarMoving){
+                STATE.cableCarPos = Math.min(STATE.cableCarPos + 0.005, 1);
+                drawCableCar(STATE.cableCarPos);
+
+                if(STATE.cableCarPos >= 1 && !STATE.celebrating){
+                    STATE.celebrating = true;
+                    playSound('celebrate');
+                    spawnConfetti();
+                    setOldMan('cool', '수학의 힘! 직접 잴 수 없는 거리도 구할 수 있어요!');
+                    setTimeout(function(){
+                        hideAllControls();
+                        infoBox.classList.add('visible');
+                        showBtn(btnExplore);
+                    }, 1500);
+                }
+            }
+        }
+
+        // Step 5: Slider mode
+        if(STATE.step === 5){
+            drawSliderTriangle();
+            drawCableCar(0.5 + Math.sin(Date.now()*0.001)*0.3);
+        }
+
+        // Confetti
+        if(STATE.confetti.length > 0) updateConfetti();
+
+        // Cable persistence
+        if(STATE.cableBuilt && STATE.step !== 5 && STATE.step !== 4){
+            drawCableLine(1);
+        }
+
+        // Right angle marker (visible from step 1 onward in steps 1-3)
+        if(STATE.step >= 1 && STATE.step <= 3 && STATE.heightMeasured && STATE.distanceMeasured && STATE.step < 3){
+            drawRightAngle();
+        }
+
+        // Old man (always visible)
+        drawOldMan(omX, omY);
+        drawSpeechBubble(omX, omY - 40, STATE.oldManMsg);
+    }
+
+    /* ── MAIN LOOP ── */
+    function gameLoop(){
+        if(!isVisible){
+            requestAnimationFrame(gameLoop);
+            return;
+        }
+        ctx.clearRect(0,0,W,H);
+        drawScene();
+        requestAnimationFrame(gameLoop);
+    }
+
+    // Initialize
+    updateScene();
+    setOldMan('think', '친구네 집까지 케이블카를 설치하고 싶은데... 줄을 얼마나 사야 할까?');
+    hideAllControls();
+    showBtn(btnStart);
+    setStep(0);
+    gameLoop();
+})();
+
+/* ═══════════════════════════════════════════════════
+   SCROLL REVEAL (works within visible content-sections)
+   ═══════════════════════════════════════════════════ */
+document.querySelectorAll('.content-section .section, .content-section .pyth-story, .content-section .game-section, .content-section .usecases').forEach(function(sec){
+    sec.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+});
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR NAV click handler (close mobile sidebar)
+   ═══════════════════════════════════════════════════ */
+sidebar.querySelectorAll('.nav-item[data-section]').forEach(function(item) {
+    item.addEventListener('click', function() {
+        if (window.innerWidth <= 768) toggleSidebar();
+    });
+});
+
+/* Set initial hub state */
+var hubNav = document.querySelector('.nav-item[data-section="hub"]');
+if (hubNav) hubNav.classList.add('active');
+var initFooter = document.querySelector('.math-footer');
+if (initFooter) initFooter.style.display = 'none';
+
+})();
+</script>
+<script src="../../assets/js/global-nav.js?v=20260329f"></script>
+</body>
+</html>

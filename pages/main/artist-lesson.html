@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Lesson - Luna Whale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400;500;700&family=Playfair+Display:wght@400;700;900&family=Noto+Serif+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #faf8f0;
+            font-family: 'Noto Serif KR', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #2a1a0a;
+            overflow: hidden;
+        }
+
+        /* Header bar */
+        .top-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(180deg, #faf8f0 70%, transparent);
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: #8B6914;
+            font-size: 14px;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .back-link:hover { opacity: 1; }
+
+        .lesson-info-top {
+            font-family: 'Playfair Display', serif;
+            font-size: 12px;
+            color: #a08050;
+            letter-spacing: 1px;
+        }
+
+        /* LP Container */
+        .lp-wrapper {
+            position: relative;
+            width: min(70vh, 90vw);
+            max-width: 600px;
+        }
+
+        .lp-stage {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow:
+                0 20px 60px rgba(50, 30, 0, 0.25),
+                0 0 0 1px rgba(0,0,0,0.05);
+            background: #faf8f0;
+        }
+
+        /* Paper Stack: All pages stacked via absolute positioning */
+        .lp-page {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            /* All pages visible but underneath */
+            transform: none;
+            opacity: 1;
+            pointer-events: none;
+            will-change: transform, opacity;
+        }
+
+        .lp-page.active {
+            z-index: 10;
+            pointer-events: auto;
+        }
+
+        /* Cover page */
+        .cover-page {
+            background: #111;
+            position: relative;
+        }
+
+        .cover-page img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cover-overlay {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 40px 30px 25px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            text-align: right;
+        }
+
+        .cover-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(20px, 4vw, 32px);
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .cover-title-ko {
+            font-family: 'Noto Serif KR', serif;
+            font-size: clamp(22px, 4.5vw, 36px);
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .cover-artist {
+            font-family: 'Noto Serif KR', serif;
+            font-size: clamp(14px, 2.5vw, 18px);
+            color: #c4a86a;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .cover-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 10px;
+            letter-spacing: 2px;
+        }
+
+        .cover-num {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            font-weight: 900;
+            color: rgba(255,255,255,0.08);
+            line-height: 1;
+        }
+
+        /* Text pages */
+        .text-page {
+            background: #faf8f0;
+            padding: 28px 28px;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            overflow-y: auto;
+        }
+
+        .text-page::-webkit-scrollbar { width: 3px; }
+        .text-page::-webkit-scrollbar-thumb { background: #c4a86a; border-radius: 2px; }
+
+        /* Artist page */
+        .artist-name-big {
+            font-family: 'Noto Serif KR', serif;
+            font-size: clamp(20px, 4vw, 28px);
+            font-weight: 900;
+            color: #2a1a0a;
+            line-height: 1.2;
+        }
+
+        .artist-name-en {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(14px, 2.5vw, 18px);
+            font-weight: 400;
+            color: #8B6914;
+            margin-top: 2px;
+        }
+
+        .artist-years {
+            font-size: 12px;
+            color: #a08050;
+            margin-top: 2px;
+            margin-bottom: 12px;
+        }
+
+        .artist-quote {
+            font-family: 'Noto Serif KR', serif;
+            font-size: clamp(12px, 2.2vw, 15px);
+            font-weight: 300;
+            font-style: italic;
+            color: #5a4a3a;
+            line-height: 1.7;
+            border-left: 3px solid #c4a86a;
+            padding-left: 14px;
+            margin: 12px 0;
+        }
+
+        .artist-bio {
+            font-size: clamp(11px, 2vw, 13px);
+            line-height: 1.8;
+            color: #4a3a2a;
+            margin-top: 10px;
+        }
+
+        .artist-works {
+            margin-top: 12px;
+            font-size: 11px;
+            color: #8B6914;
+            line-height: 1.7;
+        }
+
+        .artist-works strong {
+            color: #5a4a3a;
+        }
+
+        /* Lesson page */
+        .lesson-section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: #c4a86a;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .lesson-goal {
+            font-size: 13px;
+            line-height: 1.8;
+            color: #3a2a1a;
+        }
+
+        .lesson-goal li {
+            margin-bottom: 4px;
+            list-style: none;
+            position: relative;
+            padding-left: 16px;
+        }
+
+        .lesson-goal li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #c4a86a;
+        }
+
+        .lesson-task {
+            margin-top: 14px;
+            font-size: 12px;
+            line-height: 1.8;
+            color: #4a3a2a;
+        }
+
+        .lesson-task ol {
+            padding-left: 18px;
+        }
+
+        .lesson-task ol li {
+            margin-bottom: 4px;
+        }
+
+        .lesson-question {
+            margin-top: 14px;
+            padding: 12px;
+            background: rgba(139, 105, 20, 0.06);
+            border-radius: 10px;
+            font-size: 12px;
+            font-style: italic;
+            color: #6a5a4a;
+            line-height: 1.7;
+        }
+
+        /* Image page */
+        .img-page {
+            background: #111;
+        }
+
+        .img-page img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .img-counter {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            font-family: 'Playfair Display', serif;
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            pointer-events: none;
+        }
+
+        /* Player Controls */
+        .player-controls {
+            width: 100%;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ctrl-btn {
+            width: 34px;
+            height: 34px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5a4a3a;
+            font-size: 15px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(139, 105, 20, 0.1);
+            color: #2a1a0a;
+        }
+
+        .ctrl-btn.play-btn {
+            width: 42px;
+            height: 42px;
+            background: #2a1a0a;
+            color: #f5f0e8;
+            font-size: 17px;
+        }
+
+        .ctrl-btn.play-btn:hover {
+            background: #8B6914;
+            color: #fff;
+        }
+
+        /* Progress bar */
+        .progress-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .progress-track {
+            flex: 1;
+            height: 3px;
+            background: #ddd5c5;
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-fill {
+            position: absolute;
+            top: 0; left: 0;
+            height: 100%;
+            background: #8B6914;
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        .progress-thumb {
+            position: absolute;
+            top: 50%;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #2a1a0a;
+            transform: translate(-50%, -50%);
+            cursor: grab;
+            transition: left 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .progress-thumb:active { cursor: grabbing; }
+
+        .page-counter {
+            font-family: 'Playfair Display', serif;
+            font-size: 11px;
+            color: #a08050;
+            min-width: 36px;
+            text-align: right;
+        }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+            body { padding: 8px; }
+            .lp-wrapper { width: min(75vh, 95vw); }
+            .text-page { padding: 20px 16px; }
+            .cover-overlay { padding: 24px 16px 14px; }
+            .controls-row { gap: 8px; }
+            .ctrl-btn { width: 30px; height: 30px; font-size: 13px; }
+            .ctrl-btn.play-btn { width: 38px; height: 38px; font-size: 15px; }
+            .player-controls { margin-top: 6px; gap: 4px; }
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #faf8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+
+        .loading-overlay.hide { opacity: 0; pointer-events: none; }
+
+        .loading-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            color: #8B6914;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-text">Loading...</div>
+</div>
+
+<div class="top-bar">
+    <a href="artist-library.html" class="back-link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        Library
+    </a>
+    <div class="lesson-info-top" id="topInfo">001 / 100</div>
+</div>
+
+<div class="lp-wrapper">
+    <div class="lp-stage" id="lpStage"></div>
+
+    <div class="player-controls">
+        <div class="controls-row">
+            <button class="ctrl-btn" id="btnFirst" title="&#47592; &#52376;&#51020;&#51004;&#47196;">&#9198;</button>
+            <button class="ctrl-btn" id="btnPrev" title="&#51060;&#51204;">&#9664;</button>
+            <button class="ctrl-btn play-btn" id="btnNext" title="&#45796;&#51020;">&#9654;</button>
+            <button class="ctrl-btn" id="btnFastFwd" title="4&#51109; &#48736;&#47476;&#44172; &#45336;&#44592;&#44592;">&#9197;</button>
+        </div>
+
+        <div class="progress-row">
+            <div class="progress-track" id="progressTrack">
+                <div class="progress-fill" id="progressFill"></div>
+                <div class="progress-thumb" id="progressThumb"></div>
+            </div>
+            <span class="page-counter" id="pageCounter">1/18</span>
+        </div>
+    </div>
+</div>
+
+<!-- Load lesson data -->
+<script src="../../assets/data/artist-100-data.js"></script>
+
+<!-- Sound effects -->
+<script>
+const SFX = {
+    flip: '../../assets/sounds/SonSounds/DA - Paper Turn - 3.mp3',
+    drop: '../../assets/sounds/SonSounds/DA - Book Drop - 1.mp3',
+};
+
+const sfxCache = {};
+function playSfx(key, vol) {
+    try {
+        if (!sfxCache[key]) sfxCache[key] = new Audio(SFX[key]);
+        const a = sfxCache[key].cloneNode();
+        a.volume = vol !== undefined ? vol : 0.3;
+        a.play().catch(() => {});
+    } catch(e) {}
+}
+</script>
+
+<script>
+// ───── State ─────
+let currentPage = 0;
+let totalPages = 0;
+let pageElements = [];
+let isAnimating = false;
+let lessonId = 1;
+
+// ───── Parse URL ─────
+const urlParams = new URLSearchParams(window.location.search);
+lessonId = parseInt(urlParams.get('lesson')) || 1;
+
+// Find lesson from data file
+const lesson = (typeof ARTIST_LESSONS !== 'undefined')
+    ? ARTIST_LESSONS.find(l => l.id === lessonId)
+    : null;
+
+if (!lesson) {
+    document.body.innerHTML = '<p style="text-align:center;margin-top:40vh;">Lesson not found</p>';
+}
+
+// ───── Build Pages ─────
+function buildPages() {
+    const stage = document.getElementById('lpStage');
+    const numStr = String(lesson.id).padStart(3, '0');
+    const imagePath = `../../images/artist-100/${numStr}/`;
+
+    let pagesHtml = [];
+
+    // Page 0: Cover
+    pagesHtml.push(`<div class="lp-page cover-page active" data-page="0">
+        <div class="cover-num">${numStr}</div>
+        <img src="${imagePath}${numStr}_001.png" alt="Cover">
+        <div class="cover-overlay">
+            <div class="cover-title">${lesson.en || ''}</div>
+            <div class="cover-title-ko">${lesson.title}</div>
+            <div class="cover-artist">${lesson.artist}${lesson.en ? ' (' + lesson.en + ')' : ''}</div>
+            <div class="cover-brand">LUNA WHALE ART LAB</div>
+        </div>
+    </div>`);
+
+    // Page 1: Artist description
+    const bio = lesson.bio || '';
+    const bioHtml = bio.split('\n').map(l => l || '<br>').join('<br>');
+    const quote = lesson.quote || '';
+    const works = lesson.works || '';
+    const worksHtml = works.split('\n').map(l => `<div>${l}</div>`).join('');
+    const years = lesson.years || '';
+
+    pagesHtml.push(`<div class="lp-page text-page" data-page="1">
+        <div class="artist-name-big">${lesson.artist}</div>
+        <div class="artist-name-en">${lesson.en || ''}</div>
+        ${years ? `<div class="artist-years">(${years})</div>` : '<div style="margin-bottom:12px"></div>'}
+        <div class="artist-quote">${quote.replace(/\n/g, '<br>')}</div>
+        <div class="artist-bio">${bioHtml}</div>
+        ${works ? `<div class="artist-works"><strong>Info</strong><br>${worksHtml}</div>` : ''}
+    </div>`);
+
+    // Page 2: Lesson description
+    const goals = lesson.goals || [lesson.lesson || ''];
+    const goalsHtml = goals.map(g => `<li>${g}</li>`).join('');
+    const task = lesson.task || '';
+    const taskLines = task ? task.split('\n').map(l => `<li>${l.replace(/^\d+\.\s*/, '')}</li>`).join('') : '';
+    const questions = lesson.questions || [];
+    const questHtml = questions.map(q => `"${q}"`).join('<br>');
+
+    pagesHtml.push(`<div class="lp-page text-page" data-page="2">
+        <div class="lesson-section-title">Lesson Goals</div>
+        <ul class="lesson-goal">${goalsHtml}</ul>
+        ${taskLines ? `<div class="lesson-section-title" style="margin-top:24px;">Practice</div>
+        <div class="lesson-task"><ol>${taskLines}</ol></div>` : ''}
+        ${questHtml ? `<div class="lesson-question">${questHtml}</div>` : ''}
+    </div>`);
+
+    // Image pages
+    const imgCount = lesson.imageCount || 0;
+    for (let i = 1; i <= imgCount; i++) {
+        const imgNum = String(i).padStart(3, '0');
+        const fileName = `${numStr}_${imgNum}`;
+        const pageIdx = pagesHtml.length;
+
+        pagesHtml.push(`<div class="lp-page img-page" data-page="${pageIdx}">
+            <img src="${imagePath}${fileName}.png" alt="Image ${i}" loading="lazy">
+            <div class="img-counter">${i} / ${imgCount}</div>
+        </div>`);
+    }
+
+    totalPages = pagesHtml.length;
+
+    // Render all pages stacked
+    stage.innerHTML = pagesHtml.join('');
+
+    // Cache page elements
+    pageElements = Array.from(stage.querySelectorAll('.lp-page'));
+
+    // Set initial z-indices: page 0 on top, rest at 1
+    pageElements.forEach((el, idx) => {
+        if (idx === 0) {
+            el.style.zIndex = 10;
+            el.classList.add('active');
+        } else {
+            el.style.zIndex = 1;
+            // Hide off-screen to right for pages after current
+            el.style.transform = 'translateX(100%)';
+        }
+    });
+
+    // Update title
+    document.title = `${lesson.title} - ${lesson.artist} | Luna Whale`;
+    document.getElementById('topInfo').textContent = `${numStr} / 100`;
+
+    updateProgress();
+}
+
+// ───── Paper Stack Navigation ─────
+function goToPage(target, direction = 'next', fast = false) {
+    if (isAnimating || target === currentPage || target < 0 || target >= totalPages) return;
+    isAnimating = true;
+
+    const currentEl = pageElements[currentPage];
+    const nextEl = pageElements[target];
+
+    if (!currentEl || !nextEl) { isAnimating = false; return; }
+
+    const duration = fast ? 180 : 450;
+
+    // Play sounds
+    playSfx('flip', 0.25);
+    if (!fast) playSfx('drop', 0.05);
+
+    if (direction === 'next') {
+        // Forward: current page slides LEFT and fades, revealing next underneath
+        // Prepare next page: already in position (no transform), just below current
+        nextEl.style.transition = 'none';
+        nextEl.style.transform = 'none';
+        nextEl.style.opacity = '1';
+        nextEl.style.zIndex = 9;
+
+        // Current page on top
+        currentEl.style.zIndex = 10;
+
+        // Animate current page OUT to the left
+        currentEl.style.transition = `transform ${duration}ms ease-in-out, opacity ${duration}ms ease-in-out`;
+        currentEl.style.transform = 'translateX(-100%) scale(1.02)';
+        currentEl.style.opacity = '0';
+
+        setTimeout(() => {
+            // Cleanup current page
+            currentEl.style.transition = 'none';
+            currentEl.style.transform = 'translateX(100%)'; // park offscreen right
+            currentEl.style.opacity = '1';
+            currentEl.style.zIndex = 1;
+            currentEl.classList.remove('active');
+
+            // Activate next
+            nextEl.style.zIndex = 10;
+            nextEl.classList.add('active');
+
+            currentPage = target;
+            updateProgress();
+            isAnimating = false;
+        }, duration);
+    } else {
+        // Backward: next page slides IN from the left, covering current
+        // Prepare next page: start from left offscreen, on top
+        nextEl.style.transition = 'none';
+        nextEl.style.transform = 'translateX(-100%) scale(1.02)';
+        nextEl.style.opacity = '0';
+        nextEl.style.zIndex = 10;
+
+        // Current page stays as backdrop
+        currentEl.style.zIndex = 9;
+        currentEl.style.transform = 'none';
+        currentEl.style.opacity = '1';
+
+        // Force reflow
+        nextEl.offsetHeight;
+
+        // Animate next page IN from left
+        nextEl.style.transition = `transform ${duration}ms ease-in-out, opacity ${duration}ms ease-in-out`;
+        nextEl.style.transform = 'none';
+        nextEl.style.opacity = '1';
+
+        setTimeout(() => {
+            // Cleanup
+            currentEl.style.transition = 'none';
+            currentEl.style.transform = 'translateX(100%)'; // park offscreen right
+            currentEl.style.zIndex = 1;
+            currentEl.classList.remove('active');
+
+            nextEl.style.zIndex = 10;
+            nextEl.classList.add('active');
+
+            currentPage = target;
+            updateProgress();
+            isAnimating = false;
+        }, duration);
+    }
+}
+
+function nextPage() {
+    if (currentPage < totalPages - 1) {
+        goToPage(currentPage + 1, 'next');
+    }
+}
+
+function prevPage() {
+    if (currentPage > 0) {
+        goToPage(currentPage - 1, 'prev');
+    }
+}
+
+function firstPage() {
+    if (currentPage > 0) {
+        goToPage(0, 'prev');
+    }
+}
+
+function fastForward() {
+    if (isAnimating) return;
+
+    const target = Math.min(currentPage + 4, totalPages - 1);
+    if (target === currentPage) return;
+
+    // Rapid succession flip
+    let step = currentPage;
+    function flipNext() {
+        step++;
+        if (step > target) return;
+        goToPage(step, 'next', true);
+        setTimeout(flipNext, 220);
+    }
+    flipNext();
+}
+
+function updateProgress() {
+    const pct = totalPages > 1 ? (currentPage / (totalPages - 1)) * 100 : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressThumb').style.left = pct + '%';
+    document.getElementById('pageCounter').textContent = `${currentPage + 1}/${totalPages}`;
+}
+
+// ───── Progress bar drag ─────
+function setupProgressDrag() {
+    const track = document.getElementById('progressTrack');
+    let dragging = false;
+
+    function handleDrag(e) {
+        const rect = track.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        const target = Math.round(pct * (totalPages - 1));
+        if (target !== currentPage && !isAnimating) {
+            const dir = target > currentPage ? 'next' : 'prev';
+            goToPage(target, dir, true);
+        }
+    }
+
+    track.addEventListener('mousedown', (e) => { dragging = true; handleDrag(e); });
+    document.addEventListener('mousemove', (e) => { if (dragging) handleDrag(e); });
+    document.addEventListener('mouseup', () => { dragging = false; });
+
+    track.addEventListener('touchstart', (e) => { dragging = true; handleDrag(e); }, { passive: true });
+    document.addEventListener('touchmove', (e) => { if (dragging) handleDrag(e); }, { passive: true });
+    document.addEventListener('touchend', () => { dragging = false; });
+
+    track.addEventListener('click', handleDrag);
+}
+
+// ───── Keyboard ─────
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevPage(); }
+    if (e.key === 'Home') { e.preventDefault(); firstPage(); }
+});
+
+// ───── Touch swipe ─────
+let touchStartX = 0;
+document.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+        diff > 0 ? nextPage() : prevPage();
+    }
+});
+
+// ───── Button bindings ─────
+document.getElementById('btnFirst').addEventListener('click', firstPage);
+document.getElementById('btnPrev').addEventListener('click', prevPage);
+document.getElementById('btnNext').addEventListener('click', nextPage);
+document.getElementById('btnFastFwd').addEventListener('click', fastForward);
+
+// ───── Init ─────
+if (lesson) {
+    buildPages();
+    setupProgressDrag();
+
+    // Preload images
+    const numStr = String(lesson.id).padStart(3, '0');
+    const imagePath = `../../images/artist-100/${numStr}/`;
+    const preloadCount = Math.min(4, lesson.imageCount || 0);
+    for (let i = 1; i <= preloadCount; i++) {
+        const img = new Image();
+        img.src = `${imagePath}${numStr}_${String(i).padStart(3,'0')}.png`;
+    }
+}
+
+// Hide loading
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        document.getElementById('loadingOverlay').classList.add('hide');
+    }, 300);
+});
+</script>
+
+</body>
+</html>

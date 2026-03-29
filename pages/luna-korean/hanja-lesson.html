@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>그림으로 그리는 어원 사전 — Luna Whale</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Lexend:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script src="../../assets/data/hanja-data.js?v=1"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans KR','Lexend',sans-serif;background:#f8f6f0;min-height:100vh;overflow-x:hidden;}
+
+/* ── 배경 장식 ── */
+body::before{content:'';position:fixed;width:500px;height:500px;border-radius:50%;filter:blur(120px);opacity:.18;z-index:0;pointer-events:none;background:linear-gradient(135deg,#a7f3d0,#6ee7b7);top:-100px;right:-100px;animation:blobH 25s ease-in-out infinite alternate;}
+body::after{content:'';position:fixed;width:400px;height:400px;border-radius:50%;filter:blur(100px);opacity:.12;z-index:0;pointer-events:none;background:linear-gradient(135deg,#fde68a,#fbbf24);bottom:-80px;left:-80px;animation:blobH2 20s ease-in-out infinite alternate;}
+@keyframes blobH{0%{transform:translate(0,0) scale(1);}100%{transform:translate(-50px,70px) scale(1.15);}}
+@keyframes blobH2{0%{transform:translate(0,0) scale(1);}100%{transform:translate(40px,-50px) scale(1.1);}}
+
+/* ── Tab navigation ── */
+.tab-bar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;
+  background:rgba(248,246,240,.92);backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(0,0,0,.06);
+  padding:0 1rem;
+}
+.back-link{
+  display:inline-flex;align-items:center;
+  padding:10px 8px 10px 0;
+  color:#64748b;text-decoration:none;font-size:13px;font-weight:500;
+  transition:color .2s;
+}
+.back-link:hover{color:#334155;}
+.tab-btn{
+  padding:12px 16px;font-size:13px;font-weight:600;
+  color:#94a3b8;background:none;border:none;border-bottom:2px solid transparent;
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.tab-btn.active{color:#059669;border-bottom-color:#059669;}
+.tab-btn:hover:not(.active){color:#64748b;}
+.level-badge{
+  margin-left:auto;padding:4px 12px;border-radius:20px;
+  font-family:'Jua',sans-serif;font-size:.75rem;color:#fff;
+}
+
+/* ── Page containers ── */
+.page{display:none;position:relative;z-index:1;}
+.page.active{display:block;}
+
+/* ══════════════════════════════════
+   PAGE 1 — 문해력 가이드
+   ══════════════════════════════════ */
+.guide-wrap{max-width:720px;margin:0 auto;padding:1.5rem 1rem 3rem;}
+
+/* 한자 히어로 */
+.hanja-hero{
+  text-align:center;margin-bottom:2rem;padding:2.5rem 1rem;
+  background:linear-gradient(135deg,#ecfdf5,#d1fae5);
+  border-radius:24px;border:1px solid rgba(16,185,129,.12);
+  position:relative;overflow:hidden;
+}
+.hanja-hero::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:120px;height:120px;border-radius:50%;
+  background:rgba(16,185,129,.08);
+}
+.hanja-hero .lesson-tag{
+  display:inline-block;font-family:'Jua',sans-serif;font-size:.8rem;
+  color:#fff;background:#10b981;padding:4px 14px;border-radius:20px;
+  margin-bottom:.8rem;
+}
+.hanja-big{
+  font-family:'Noto Serif KR',serif;font-size:clamp(4rem,15vw,7rem);
+  font-weight:900;color:#1e293b;line-height:1;
+  margin-bottom:.3rem;
+  text-shadow:0 2px 12px rgba(0,0,0,.06);
+}
+.hanja-reading{
+  font-family:'Jua',sans-serif;font-size:1.3rem;color:#059669;
+  margin-bottom:.2rem;
+}
+.hanja-word{
+  font-family:'Noto Serif KR',serif;font-size:1.8rem;font-weight:700;
+  color:#334155;margin-bottom:.3rem;
+}
+.hanja-word-meaning{
+  font-size:.9rem;color:#64748b;
+}
+
+/* 어원 풀이 */
+.etymology-section{
+  background:#fff;border-radius:20px;padding:1.6rem;margin-bottom:1.2rem;
+  box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.04);
+}
+.section-title{
+  font-family:'Jua',sans-serif;font-size:1.1rem;color:#334155;
+  margin-bottom:.8rem;display:flex;align-items:center;gap:8px;
+}
+.parts-visual{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  margin-bottom:1.2rem;padding:1rem;
+  background:linear-gradient(135deg,#f0fdf4,#ecfdf5);
+  border-radius:16px;
+}
+.part-box{
+  text-align:center;padding:.8rem 1rem;
+  background:#fff;border-radius:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  min-width:80px;
+}
+.part-char{
+  font-family:'Noto Serif KR',serif;font-size:2.2rem;font-weight:900;
+  color:#1e293b;line-height:1.1;
+}
+.part-name{font-family:'Jua',sans-serif;font-size:.75rem;color:#059669;margin-top:.2rem;}
+.part-desc{font-size:.7rem;color:#94a3b8;margin-top:.1rem;}
+.part-plus{font-family:'Jua',sans-serif;font-size:1.5rem;color:#d1d5db;}
+.part-equals{font-family:'Jua',sans-serif;font-size:1.5rem;color:#10b981;}
+.part-result .part-char{color:#059669;font-size:2.8rem;}
+
+.story-box{
+  padding:1rem 1.2rem;border-radius:14px;
+  background:linear-gradient(135deg,rgba(16,185,129,.06),rgba(6,182,212,.04));
+  border:1px solid rgba(16,185,129,.1);
+  font-size:.88rem;color:#334155;line-height:1.8;
+  margin-bottom:.8rem;
+}
+.fun-fact{
+  padding:.8rem 1rem;border-radius:12px;
+  background:#fffbeb;border:1px solid rgba(245,158,11,.12);
+  font-size:.82rem;color:#92400e;line-height:1.6;
+}
+
+/* 문해력 카드 */
+.literacy-cards{
+  display:grid;gap:.6rem;margin-bottom:1.2rem;
+}
+.lit-card{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:.8rem 1rem;border-radius:14px;
+  background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.03);
+  border:1px solid rgba(0,0,0,.04);
+  font-size:.85rem;color:#475569;line-height:1.7;
+}
+.lit-emoji{font-size:1.2rem;flex-shrink:0;margin-top:2px;}
+
+/* 예문 */
+.example-list{list-style:none;padding:0;}
+.example-item{
+  padding:.7rem 1rem;margin-bottom:.5rem;border-radius:12px;
+  background:#f8fafc;border-left:3px solid #10b981;
+}
+.example-sentence{font-size:.88rem;color:#334155;line-height:1.7;margin-bottom:.2rem;}
+.example-sentence b{color:#059669;font-weight:700;}
+.example-note{font-size:.75rem;color:#94a3b8;}
+
+/* ══════════════════════════════════
+   PAGE 2 — 활동지 (가로 A4)
+   ══════════════════════════════════ */
+.activity-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  padding:1rem;min-height:calc(100vh - 52px);
+}
+.act-header{
+  text-align:center;margin-bottom:.8rem;
+}
+.act-header h2{font-family:'Jua',sans-serif;font-size:1.1rem;color:#334155;}
+.act-header p{font-size:.8rem;color:#94a3b8;margin-top:.2rem;}
+
+/* A4 가로 캔버스 */
+.sheet-container{
+  position:relative;
+  width:min(90vw, 900px);
+  aspect-ratio:297/210; /* A4 가로 */
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 4px 24px rgba(0,0,0,.08);
+  overflow:hidden;
+  margin-bottom:1rem;
+}
+.sheet-canvas{
+  width:100%;height:100%;display:block;
+}
+
+/* 컨트롤 바 */
+.act-controls{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  justify-content:center;margin-bottom:1rem;
+}
+.ctrl-group{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:10px;
+  background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.04);
+  font-size:.78rem;color:#475569;
+}
+.ctrl-group label{font-weight:600;white-space:nowrap;}
+.ctrl-group input[type=range]{width:100px;accent-color:#10b981;}
+.ctrl-group .val{min-width:30px;text-align:center;font-size:.75rem;color:#94a3b8;}
+
+.act-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:10px 20px;border-radius:12px;
+  font-family:'Jua',sans-serif;font-size:.9rem;
+  border:none;cursor:pointer;transition:all .25s;
+}
+.btn-print{background:#10b981;color:#fff;}
+.btn-print:hover{background:#059669;transform:translateY(-1px);}
+.btn-download{background:#fff;color:#475569;border:1px solid #e2e8f0;}
+.btn-download:hover{background:#f8fafc;transform:translateY(-1px);}
+.btn-outline{background:#3b82f6;color:#fff;}
+.btn-outline:hover{background:#2563eb;transform:translateY(-1px);}
+.btn-trace{background:#f59e0b;color:#fff;}
+.btn-trace:hover{background:#d97706;transform:translateY(-1px);}
+
+/* 모드 표시 */
+.mode-indicator{
+  padding:4px 10px;border-radius:8px;
+  font-size:.7rem;font-weight:600;
+  background:rgba(16,185,129,.1);color:#059669;
+}
+
+/* ══════════════════════════════════
+   PAGE 3 — 우리반 갤러리 (사진 업로드)
+   ══════════════════════════════════ */
+.gallery-wrap{max-width:800px;margin:0 auto;padding:1.5rem 1rem 3rem;}
+.gallery-header{text-align:center;margin-bottom:1.5rem;}
+.gallery-header h2{font-family:'Jua',sans-serif;font-size:1.3rem;color:#334155;}
+.gallery-header p{font-size:.82rem;color:#94a3b8;margin-top:.3rem;}
+.gallery-count{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:.6rem;padding:6px 16px;border-radius:20px;
+  background:linear-gradient(135deg,#ecfdf5,#d1fae5);
+  font-family:'Jua',sans-serif;font-size:.9rem;color:#059669;
+  border:1px solid rgba(16,185,129,.15);
+}
+.gallery-count .num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;
+  background:#10b981;color:#fff;font-size:.85rem;font-weight:700;
+}
+
+/* 업로드 영역 */
+.upload-zone{
+  border:2px dashed #cbd5e1;border-radius:16px;
+  padding:2rem;text-align:center;cursor:pointer;
+  transition:all .3s;margin-bottom:1.5rem;
+  background:rgba(255,255,255,.6);
+}
+.upload-zone:hover{border-color:#10b981;background:rgba(16,185,129,.04);}
+.upload-zone.dragover{border-color:#10b981;background:rgba(16,185,129,.08);transform:scale(1.01);}
+.upload-icon{font-size:2.5rem;margin-bottom:.5rem;}
+.upload-text{font-family:'Jua',sans-serif;font-size:1rem;color:#475569;}
+.upload-sub{font-size:.75rem;color:#94a3b8;margin-top:.3rem;}
+.upload-zone input{display:none;}
+
+/* 갤러리 그리드 */
+.gal-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:12px;
+}
+.gal-item{
+  position:relative;border-radius:12px;overflow:hidden;
+  background:#f1f5f9;aspect-ratio:4/3;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+  transition:transform .2s;
+}
+.gal-item:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.1);}
+.gal-item img{width:100%;height:100%;object-fit:cover;display:block;}
+.gal-item .gal-name{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:6px 10px;background:linear-gradient(transparent,rgba(0,0,0,.6));
+  font-size:.72rem;color:#fff;font-weight:500;
+}
+.gal-item .gal-delete{
+  position:absolute;top:6px;right:6px;
+  width:24px;height:24px;border-radius:50%;
+  background:rgba(0,0,0,.4);color:#fff;border:none;
+  font-size:14px;cursor:pointer;display:none;
+  align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.gal-item:hover .gal-delete{display:flex;}
+.gal-item .gal-delete:hover{background:rgba(239,68,68,.8);}
+
+/* 빈 상태 */
+.gal-empty{
+  text-align:center;padding:3rem 1rem;color:#94a3b8;
+}
+.gal-empty .empty-icon{font-size:3rem;margin-bottom:.5rem;}
+.gal-empty p{font-family:'Jua',sans-serif;font-size:1rem;}
+
+/* 업로드 카운트 뱃지 (탭 버튼) */
+.tab-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:18px;border-radius:9px;
+  background:#10b981;color:#fff;font-size:10px;font-weight:700;
+  margin-left:4px;padding:0 5px;
+}
+
+/* ── Print styles ── */
+@media print{
+  body{background:#fff !important;}
+  body::before,body::after{display:none !important;}
+  .tab-bar,.act-controls,.act-header,.act-btns-row,.mode-indicator{display:none !important;}
+  .page:not(#page-activity){display:none !important;}
+  .page#page-activity{display:block !important;}
+  .sheet-container{
+    width:100vw !important;height:100vh !important;
+    border-radius:0 !important;box-shadow:none !important;
+    margin:0 !important;
+  }
+  .activity-wrap{padding:0 !important;min-height:auto !important;}
+  @page{size:A4 landscape;margin:0;}
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<!-- Tab bar -->
+<nav class="tab-bar">
+  <a href="index.html" class="back-link">
+    <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
+  </a>
+  <button class="tab-btn active" data-page="guide" onclick="switchTab('guide')">문해력 가이드</button>
+  <button class="tab-btn" data-page="activity" onclick="switchTab('activity')">활동지</button>
+  <button class="tab-btn" data-page="gallery" onclick="switchTab('gallery')">우리반 갤러리 <span class="tab-badge" id="tabBadge" style="display:none;">0</span></button>
+  <span class="level-badge" id="levelBadge"></span>
+</nav>
+
+<!-- 레벨 선택 바 -->
+<div id="levelBar" style="display:flex;align-items:center;gap:6px;padding:8px 1rem;background:rgba(248,246,240,.95);border-bottom:1px solid rgba(0,0,0,.04);overflow-x:auto;position:sticky;top:44px;z-index:49;backdrop-filter:blur(10px);">
+</div>
+
+<!-- PAGE 1: 문해력 가이드 -->
+<div class="page active" id="page-guide">
+  <div class="guide-wrap" id="guideContent"></div>
+</div>
+
+<!-- PAGE 2: 활동지 -->
+<div class="page" id="page-activity">
+  <div class="activity-wrap">
+    <div class="act-header">
+      <h2 id="actTitle"></h2>
+      <p id="actHint"></p>
+    </div>
+
+    <!-- 컨트롤 -->
+    <div class="act-controls" id="actControls">
+      <div class="ctrl-group">
+        <label>한자 농도</label>
+        <input type="range" id="hanjaOpacity" min="5" max="80" value="20"/>
+        <span class="val" id="opacityVal">20%</span>
+      </div>
+      <div class="ctrl-group">
+        <label>설명 농도</label>
+        <input type="range" id="textOpacity" min="5" max="80" value="25"/>
+        <span class="val" id="textOpVal">25%</span>
+      </div>
+      <div class="ctrl-group">
+        <label>한자 크기</label>
+        <input type="range" id="hanjaSize" min="30" max="100" value="65"/>
+        <span class="val" id="sizeVal">65%</span>
+      </div>
+      <button class="act-btn btn-outline" onclick="toggleOutlineMode()">
+        <span class="material-symbols-outlined" style="font-size:16px;">border_style</span>
+        <span id="outlineBtnText">테두리만</span>
+      </button>
+      <button class="act-btn btn-trace" onclick="toggleTraceMode()">
+        <span class="material-symbols-outlined" style="font-size:16px;">edit</span>
+        <span id="traceBtnText">따라쓰기 줄</span>
+      </button>
+    </div>
+
+    <!-- A4 가로 캔버스 -->
+    <div class="sheet-container" id="sheetContainer">
+      <canvas id="sheetCanvas" class="sheet-canvas"></canvas>
+    </div>
+
+    <!-- 버튼 -->
+    <div class="act-btns-row" style="display:flex;gap:10px;justify-content:center;">
+      <button class="act-btn btn-print" onclick="printSheet()">
+        <span class="material-symbols-outlined" style="font-size:16px;">print</span> 프린트
+      </button>
+      <button class="act-btn btn-download" onclick="downloadSheet()">
+        <span class="material-symbols-outlined" style="font-size:16px;">download</span> 다운로드
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3: 우리반 갤러리 -->
+<div class="page" id="page-gallery">
+  <div class="gallery-wrap">
+    <div class="gallery-header">
+      <h2 id="galTitle"></h2>
+      <p>아이들이 그린 작품을 사진 찍어 올려주세요!</p>
+      <div class="gallery-count">
+        <span class="material-symbols-outlined" style="font-size:18px;">photo_library</span>
+        업로드된 작품 <span class="num" id="galCount">0</span>장
+      </div>
+    </div>
+
+    <!-- 업로드 영역 -->
+    <div class="upload-zone" id="uploadZone">
+      <div class="upload-icon">📸</div>
+      <div class="upload-text">사진을 드래그하거나 클릭해서 업로드</div>
+      <div class="upload-sub">JPG, PNG, HEIC 지원 · 여러 장 동시 가능</div>
+      <input type="file" id="galUpload" accept="image/*" multiple/>
+    </div>
+
+    <!-- 갤러리 그리드 -->
+    <div class="gal-grid" id="galGrid"></div>
+    <div class="gal-empty" id="galEmpty">
+      <div class="empty-icon">🖼️</div>
+      <p>아직 올라온 작품이 없어요</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ── Parse URL ── */
+  const params = new URLSearchParams(location.search);
+  const level = params.get('level') || 'elem1';
+  const lessonId = parseInt(params.get('lesson')) || 1;
+
+  const lessons = HANJA_LESSONS[level] || [];
+  const meta = lessons.find(l => l.id === lessonId);
+  const guide = HANJA_GUIDES[level + '_' + lessonId];
+  const levelInfo = HANJA_LEVELS.find(lv => lv.id === level);
+
+  if (!meta || !guide) {
+    document.getElementById('guideContent').innerHTML = '<p style="text-align:center;padding:3rem;color:#94a3b8;font-family:Jua,sans-serif;">수업 데이터를 찾을 수 없습니다.</p>';
+    return;
+  }
+
+  /* ── Level badge ── */
+  const badge = document.getElementById('levelBadge');
+  badge.textContent = (levelInfo ? levelInfo.icon + ' ' + levelInfo.label : level) + ' — ' + lessonId + '강';
+  badge.style.background = meta.color;
+
+  document.title = lessonId + '강. ' + meta.word + '(' + meta.hanja + ') — 그림으로 그리는 어원 사전';
+
+  /* ── Level Bar (7개 레벨 버튼) ── */
+  const levelBar = document.getElementById('levelBar');
+  HANJA_LEVELS.forEach(lv => {
+    const btn = document.createElement('button');
+    const isActive = lv.id === level;
+    btn.style.cssText = `
+      padding:6px 14px;border-radius:10px;font-family:'Jua',sans-serif;font-size:.75rem;
+      border:1px solid ${isActive ? lv.color : '#e2e8f0'};cursor:pointer;white-space:nowrap;
+      background:${isActive ? lv.color : '#fff'};color:${isActive ? '#fff' : '#64748b'};
+      transition:all .2s;flex-shrink:0;
+    `;
+    btn.textContent = lv.icon + ' ' + lv.label;
+    btn.onmouseover = () => { if (!isActive) { btn.style.borderColor = lv.color; btn.style.color = lv.color; }};
+    btn.onmouseout = () => { if (!isActive) { btn.style.borderColor = '#e2e8f0'; btn.style.color = '#64748b'; }};
+    btn.onclick = () => {
+      const lessons = HANJA_LESSONS[lv.id] || [];
+      if (lessons.length > 0) {
+        location.href = `hanja-lesson.html?level=${lv.id}&lesson=1`;
+      } else {
+        alert(lv.label + '은(는) 아직 준비 중이에요!');
+      }
+    };
+    levelBar.appendChild(btn);
+  });
+
+  /* ── Tab switching ── */
+  window.switchTab = function(page) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    if (page === 'activity') renderSheet();
+    if (page === 'gallery') refreshGallery();
+  };
+
+  /* ══════════════════════════════
+     PAGE 1: 문해력 가이드
+     ══════════════════════════════ */
+  buildGuide();
+
+  function buildGuide() {
+    const wrap = document.getElementById('guideContent');
+    const g = guide;
+    const etym = g.etymology;
+    let h = '';
+
+    /* 히어로 */
+    h += `<div class="hanja-hero">
+      <span class="lesson-tag">${levelInfo.icon} ${levelInfo.label} · ${lessonId}강</span>
+      <div class="hanja-big">${g.hanja}</div>
+      <div class="hanja-reading">${g.reading} · ${g.meaning}</div>
+      <div class="hanja-word">${g.wordHanja}</div>
+      <div class="hanja-word-meaning">${g.wordMeaning}</div>
+    </div>`;
+
+    /* 어원 풀이 */
+    h += `<div class="etymology-section">
+      <div class="section-title">🔍 이 글자는 어떻게 만들어졌을까?</div>
+      <div class="parts-visual">`;
+    etym.parts.forEach((p, i) => {
+      if (i > 0) h += '<span class="part-plus">+</span>';
+      h += `<div class="part-box">
+        <div class="part-char">${p.char}</div>
+        <div class="part-name">${p.name}</div>
+        <div class="part-desc">${p.desc}</div>
+      </div>`;
+    });
+    h += `<span class="part-equals">=</span>
+      <div class="part-box part-result">
+        <div class="part-char">${g.hanja}</div>
+        <div class="part-name">${g.reading} · ${g.meaning}</div>
+      </div>
+    </div>`;
+
+    h += `<div class="story-box">${etym.story}</div>`;
+    if (etym.funFact) h += `<div class="fun-fact">💡 ${etym.funFact}</div>`;
+    h += '</div>';
+
+    /* 문해력 카드 */
+    h += `<div class="etymology-section">
+      <div class="section-title">📚 알아두면 좋은 것들</div>
+      <div class="literacy-cards">`;
+    g.literacy.forEach(c => {
+      h += `<div class="lit-card"><span class="lit-emoji">${c.emoji}</span><span>${c.text}</span></div>`;
+    });
+    h += '</div></div>';
+
+    /* 예문 */
+    h += `<div class="etymology-section">
+      <div class="section-title">📖 이런 문장에서 써요</div>
+      <ul class="example-list">`;
+    g.examples.forEach(ex => {
+      h += `<li class="example-item">
+        <div class="example-sentence">${ex.sentence}</div>
+        <div class="example-note">${ex.note}</div>
+      </li>`;
+    });
+    h += '</ul></div>';
+
+    /* 활동지 안내 */
+    h += `<div class="etymology-section" style="text-align:center;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:1px solid rgba(16,185,129,.12);">
+      <div style="font-size:2rem;margin-bottom:.5rem;">🎨</div>
+      <div style="font-family:'Jua',sans-serif;font-size:1.1rem;color:#059669;margin-bottom:.4rem;">활동지로 넘어가서 그림을 그려보세요!</div>
+      <div style="font-size:.82rem;color:#64748b;line-height:1.6;">${g.activityHint}</div>
+      <button onclick="switchTab('activity')" style="margin-top:.8rem;padding:10px 24px;border-radius:12px;border:none;background:#10b981;color:#fff;font-family:'Jua',sans-serif;font-size:.9rem;cursor:pointer;transition:all .25s;">
+        활동지 열기 →
+      </button>
+    </div>`;
+
+    wrap.innerHTML = h;
+  }
+
+  /* ══════════════════════════════
+     PAGE 2: 활동지 (가로 A4 캔버스)
+     ══════════════════════════════ */
+  document.getElementById('actTitle').textContent = guide.activityTitle;
+  document.getElementById('actHint').textContent = guide.activityHint;
+
+  const canvas = document.getElementById('sheetCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = 2970, H = 2100; // A4 landscape at ~300dpi scale (px)
+  canvas.width = W;
+  canvas.height = H;
+
+  let outlineMode = false;
+  let traceMode = false;
+
+  /* 슬라이더 이벤트 */
+  const opSlider = document.getElementById('hanjaOpacity');
+  const txSlider = document.getElementById('textOpacity');
+  const szSlider = document.getElementById('hanjaSize');
+  [opSlider, txSlider, szSlider].forEach(s => s.addEventListener('input', renderSheet));
+
+  window.toggleOutlineMode = function() {
+    outlineMode = !outlineMode;
+    document.getElementById('outlineBtnText').textContent = outlineMode ? '채우기' : '테두리만';
+    renderSheet();
+  };
+  window.toggleTraceMode = function() {
+    traceMode = !traceMode;
+    document.getElementById('traceBtnText').textContent = traceMode ? '줄 숨기기' : '따라쓰기 줄';
+    renderSheet();
+  };
+
+  function renderSheet() {
+    const hanjaOp = parseInt(opSlider.value) / 100;
+    const textOp = parseInt(txSlider.value) / 100;
+    const sizePercent = parseInt(szSlider.value) / 100;
+
+    document.getElementById('opacityVal').textContent = opSlider.value + '%';
+    document.getElementById('textOpVal').textContent = txSlider.value + '%';
+    document.getElementById('sizeVal').textContent = szSlider.value + '%';
+
+    /* 배경 */
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, W, H);
+
+    /* 따라쓰기 보조선 */
+    if (traceMode) {
+      ctx.strokeStyle = 'rgba(200,200,200,0.3)';
+      ctx.lineWidth = 2;
+      // 가로선
+      for (let y = H * 0.15; y < H * 0.95; y += H * 0.1) {
+        ctx.beginPath();
+        ctx.moveTo(W * 0.05, y);
+        ctx.lineTo(W * 0.95, y);
+        ctx.stroke();
+      }
+      // 중앙 십자선 (한자 가이드)
+      ctx.strokeStyle = 'rgba(200,200,200,0.15)';
+      ctx.setLineDash([20, 10]);
+      ctx.beginPath();
+      ctx.moveTo(W / 2, H * 0.15);
+      ctx.lineTo(W / 2, H * 0.95);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(W * 0.15, H / 2);
+      ctx.lineTo(W * 0.85, H / 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    /* 상단 설명 텍스트 (흐리게) */
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+
+    // 뜻 풀이
+    ctx.globalAlpha = textOp;
+    ctx.font = '500 62px "Noto Sans KR", sans-serif';
+    ctx.fillStyle = '#334155';
+    ctx.fillText(guide.topText, W / 2, 70);
+
+    // 단어 (작게)
+    ctx.font = '700 48px "Noto Serif KR", serif';
+    ctx.fillStyle = '#10b981';
+    ctx.fillText(guide.wordHanja + ' (' + guide.word + ') — ' + guide.subText, W / 2, 155);
+
+    ctx.globalAlpha = 1;
+
+    /* 중앙 한자 (흐리게 / 테두리만) */
+    const fontSize = Math.floor(H * 0.6 * sizePercent);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `900 ${fontSize}px "Noto Serif KR", serif`;
+
+    const charX = W / 2;
+    const charY = H * 0.55;
+
+    if (outlineMode) {
+      // 테두리만 모드
+      ctx.globalAlpha = Math.min(hanjaOp * 2.5, 0.8);
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = Math.max(3, fontSize * 0.008);
+      ctx.lineJoin = 'round';
+      ctx.strokeText(guide.mainChar, charX, charY);
+      ctx.globalAlpha = 1;
+    } else {
+      // 흐린 채우기 모드
+      ctx.globalAlpha = hanjaOp;
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(guide.mainChar, charX, charY);
+      ctx.globalAlpha = 1;
+    }
+
+    /* 하단 힌트 */
+    ctx.globalAlpha = textOp * 0.7;
+    ctx.font = '400 40px "Noto Sans KR", sans-serif';
+    ctx.fillStyle = '#94a3b8';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('✏️ ' + guide.activityHint, W / 2, H - 50);
+    ctx.globalAlpha = 1;
+  }
+
+  /* ── Print & Download ── */
+  window.printSheet = function() {
+    const dataUrl = canvas.toDataURL('image/png');
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html><head><title>Print</title><style>
+      @page{size:A4 landscape;margin:0;}
+      body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#fff;}
+      img{width:100vw;height:100vh;object-fit:contain;}
+    </style></head><body><img src="${dataUrl}" onload="setTimeout(()=>{window.print();},300);"/></body></html>`);
+    win.document.close();
+  };
+
+  window.downloadSheet = function() {
+    const link = document.createElement('a');
+    link.download = `hanja-${level}-${lessonId}-${guide.mainChar}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
+  // 초기 렌더
+  setTimeout(renderSheet, 100);
+
+  /* ══════════════════════════════
+     PAGE 3: 우리반 갤러리
+     ══════════════════════════════ */
+  const STORAGE_KEY = `hanja-gallery-${level}-${lessonId}`;
+  const galGrid = document.getElementById('galGrid');
+  const galEmpty = document.getElementById('galEmpty');
+  const galUpload = document.getElementById('galUpload');
+  const uploadZone = document.getElementById('uploadZone');
+  const tabBadge = document.getElementById('tabBadge');
+  const galCount = document.getElementById('galCount');
+
+  document.getElementById('galTitle').textContent = guide.mainChar + ' — 우리반 갤러리';
+
+  // localStorage 기반 이미지 저장
+  function getGalleryItems() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    catch { return []; }
+  }
+
+  function saveGalleryItems(items) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    updateBadge(items.length);
+  }
+
+  function updateBadge(count) {
+    tabBadge.textContent = count;
+    tabBadge.style.display = count > 0 ? 'inline-flex' : 'none';
+    galCount.textContent = count;
+  }
+
+  function refreshGallery() {
+    const items = getGalleryItems();
+    galGrid.innerHTML = '';
+    galEmpty.style.display = items.length ? 'none' : 'block';
+    updateBadge(items.length);
+
+    items.forEach((item, idx) => {
+      const div = document.createElement('div');
+      div.className = 'gal-item';
+      div.innerHTML = `
+        <img src="${item.data}" alt="${item.name || '작품'}"/>
+        <div class="gal-name">${item.name || '작품 ' + (idx + 1)}</div>
+        <button class="gal-delete" onclick="deleteGalItem(${idx})" title="삭제">&times;</button>
+      `;
+      galGrid.appendChild(div);
+    });
+  }
+
+  window.deleteGalItem = function(idx) {
+    if (!confirm('이 작품을 삭제할까요?')) return;
+    const items = getGalleryItems();
+    items.splice(idx, 1);
+    saveGalleryItems(items);
+    refreshGallery();
+  };
+
+  function addImages(files) {
+    const items = getGalleryItems();
+    let loaded = 0;
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        // 리사이즈 (max 800px)
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 800;
+          let w = img.width, h = img.height;
+          if (w > MAX || h > MAX) {
+            const ratio = Math.min(MAX / w, MAX / h);
+            w = Math.floor(w * ratio);
+            h = Math.floor(h * ratio);
+          }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          items.push({
+            name: file.name.replace(/\.[^.]+$/, ''),
+            data: c.toDataURL('image/jpeg', 0.7),
+            date: new Date().toISOString()
+          });
+          loaded++;
+          if (loaded === files.length) {
+            saveGalleryItems(items);
+            refreshGallery();
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // 클릭 업로드
+  uploadZone.addEventListener('click', () => galUpload.click());
+  galUpload.addEventListener('change', (e) => {
+    if (e.target.files.length) addImages(e.target.files);
+    e.target.value = '';
+  });
+
+  // 드래그 앤 드롭
+  uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) addImages(e.dataTransfer.files);
+  });
+
+  // 초기 뱃지 업데이트
+  updateBadge(getGalleryItems().length);
+
+})();
+</script>
+</body>
+</html>

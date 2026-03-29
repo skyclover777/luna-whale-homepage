@@ -1,0 +1,2363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모네의 빛과 수면 — 인상주의 1강 | Luna Whale</title>
+<style>
+:root{
+  --g0:#0a0e14;--g1:#12171f;--g2:#1a2030;
+  --glow:#d4a853;--pale:#e8c97a;--acc:#8b6914;
+  --cream:#f5f0e8;--glass:rgba(255,255,255,.04);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Apple SD Gothic Neo','Noto Sans KR',system-ui,sans-serif;background:var(--g0);color:var(--cream);user-select:none;font-size:17px;line-height:1.8;-webkit-font-smoothing:antialiased;}
+#sw{width:100%;height:100%;position:relative;overflow:hidden;}
+
+/* ── slides ── */
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .8s cubic-bezier(.4,0,.2,1),transform .8s cubic-bezier(.4,0,.2,1);pointer-events:none;display:flex;flex-direction:column;overflow:hidden;min-height:0;transform:scale(.98) translateY(8px);}
+.slide.active{opacity:1;transform:scale(1) translateY(0);pointer-events:auto;z-index:10;}
+.slide.exit-left{opacity:0;transform:scale(1.02) translateY(-8px);z-index:5;}
+.bg{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(212,168,83,.03) 0%,transparent 50%),radial-gradient(ellipse at 80% 50%,rgba(90,60,160,.02) 0%,transparent 50%),linear-gradient(160deg,var(--g0) 0%,var(--g1) 40%,var(--g2) 100%);}
+
+/* ── topbar ── */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:rgba(10,14,20,.75);backdrop-filter:blur(30px) saturate(1.4);border-bottom:1px solid rgba(212,168,83,.06);transition:transform .4s;}
+.topbar.hidden{transform:translateY(-100%);}
+.tlogo{font-size:13px;font-weight:700;color:var(--glow);cursor:pointer;transition:.2s;text-decoration:none;letter-spacing:.5px;}.tlogo:hover{opacity:.7;}
+.tsc{font-size:12px;color:rgba(255,255,255,.3);font-variant-numeric:tabular-nums;}.tsc strong{color:rgba(255,255,255,.8);font-weight:700;}
+.tbadges{display:flex;gap:8px;}
+.badge{padding:3px 12px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.bl{background:rgba(212,168,83,.1);color:var(--glow);border:1px solid rgba(212,168,83,.2);}
+.ba{background:rgba(232,201,122,.08);color:var(--pale);border:1px solid rgba(232,201,122,.15);}
+
+/* ── progress bar ── */
+.progress-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--acc),var(--glow),var(--pale));z-index:250;transition:width .6s cubic-bezier(.4,0,.2,1);box-shadow:0 0 12px rgba(212,168,83,.4);}
+
+/* ── nav ── */
+.dots{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:200;display:flex;gap:6px;align-items:center;background:rgba(10,14,20,.6);backdrop-filter:blur(20px);padding:8px 16px;border-radius:30px;border:1px solid rgba(255,255,255,.06);}
+.dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.15);cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);}
+.dot:hover{background:rgba(255,255,255,.3);}
+.dot.active{width:28px;background:var(--glow);box-shadow:0 0 8px rgba(212,168,83,.4);}
+.arr{position:fixed;top:50%;z-index:200;transform:translateY(-50%);background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;transition:all .3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(12px);}
+.arr:hover{background:rgba(212,168,83,.15);color:var(--glow);border-color:rgba(212,168,83,.3);transform:translateY(-50%) scale(1.08);box-shadow:0 4px 24px rgba(212,168,83,.15);}
+.arr:disabled{opacity:0;cursor:default;pointer-events:none;}
+#bp{left:20px;}#bn{right:20px;}
+@media(max-width:768px){.arr{display:none;}.tsc{display:none;}.topbar{padding:12px 20px;}.dots{bottom:16px;padding:6px 12px;}}
+
+/* ── slide content ── */
+.sc{position:relative;z-index:2;flex:1;min-height:0;display:flex;flex-direction:column;padding:72px 80px 80px;overflow:hidden;}
+@media(max-width:900px){.sc{padding:66px 28px 70px;}}
+@media(max-width:768px){.sc{padding:60px 20px 70px;}}
+.sc-scroll{flex:1;min-height:0;overflow-y:auto;padding-right:8px;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;}
+.sc-scroll::-webkit-scrollbar{width:3px;}.sc-scroll::-webkit-scrollbar-track{background:transparent;}.sc-scroll::-webkit-scrollbar-thumb{background:rgba(212,168,83,.2);border-radius:4px;}
+
+/* ── typography ── */
+.ew{font-size:10px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:rgba(212,168,83,.6);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.ew::before{content:'';display:block;width:24px;height:1px;background:linear-gradient(90deg,var(--glow),transparent);}
+.stitle{font-size:clamp(28px,4vw,56px);font-weight:900;line-height:1.1;letter-spacing:-1.5px;margin-bottom:16px;background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,.9) 30%,var(--glow) 70%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ssub{font-size:clamp(15px,1.6vw,20px);color:rgba(255,255,255,.4);font-style:italic;margin-bottom:28px;font-weight:300;}
+
+/* ── reveal animations ── */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1);}
+.reveal.show{opacity:1;transform:translateY(0);}
+.reveal:nth-child(1){transition-delay:.05s;}
+.reveal:nth-child(2){transition-delay:.12s;}
+.reveal:nth-child(3){transition-delay:.19s;}
+.reveal:nth-child(4){transition-delay:.26s;}
+.reveal:nth-child(5){transition-delay:.33s;}
+.reveal:nth-child(6){transition-delay:.40s;}
+.reveal:nth-child(7){transition-delay:.47s;}
+.reveal:nth-child(8){transition-delay:.54s;}
+.reveal:nth-child(9){transition-delay:.61s;}
+.reveal:nth-child(10){transition-delay:.68s;}
+.reveal:nth-child(11){transition-delay:.75s;}
+.reveal:nth-child(12){transition-delay:.82s;}
+.reveal:nth-child(13){transition-delay:.89s;}
+
+/* ── S0 Gallery Marquee ── */
+.gal-marquee{position:absolute;inset:0;overflow:hidden;z-index:1;}
+.gal-row{display:flex;gap:8px;margin-bottom:8px;width:max-content;will-change:transform;}
+.gal-row-wrap{overflow:hidden;position:relative;}
+.gal-row-wrap::before,.gal-row-wrap::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none;}
+.gal-row-wrap::before{left:0;background:linear-gradient(90deg,var(--g0),transparent);}
+.gal-row-wrap::after{right:0;background:linear-gradient(270deg,var(--g0),transparent);}
+.gal-row.row-left{animation:scrollLeft 480s linear infinite;}
+.gal-row.row-right{animation:scrollRight 480s linear infinite;}
+@keyframes scrollLeft{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+@keyframes scrollRight{0%{transform:translateX(-50%);}100%{transform:translateX(0);}}
+.gal-item{flex-shrink:0;width:220px;height:160px;border-radius:8px;overflow:hidden;cursor:pointer;position:relative;transition:transform .4s,box-shadow .4s;}
+.gal-row-wrap:hover .gal-row{animation-play-state:paused;}
+.gal-item:hover{transform:scale(1.08);box-shadow:0 8px 32px rgba(212,168,83,.3);z-index:10;}
+.gal-item img{width:100%;height:100%;object-fit:cover;object-position:top;transition:filter .4s;}
+.gal-item:hover img{filter:brightness(1.1);}
+.gal-item .gal-title-bar{position:absolute;bottom:0;left:0;right:0;padding:6px 10px;background:linear-gradient(transparent,rgba(0,0,0,.8));font-size:11px;color:rgba(255,255,255,.85);opacity:0;transition:opacity .3s;line-height:1.3;white-space:normal;}
+.gal-item:hover .gal-title-bar{opacity:1;}
+@media(max-width:768px){.gal-item{width:160px;height:115px;}.gal-item .gal-title-bar{font-size:10px;}}
+
+/* ── Painting Info Popup ── */
+.paint-popup{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .5s ease;}
+.paint-popup.open{opacity:1;pointer-events:auto;}
+.paint-popup-bg{position:absolute;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);}
+.paint-popup-inner{position:relative;z-index:1;max-width:800px;width:100%;display:flex;flex-direction:column;align-items:center;gap:20px;transform:scale(.95) translateY(12px);transition:transform .5s cubic-bezier(.2,.8,.3,1),opacity .5s ease;opacity:0;}
+.paint-popup.open .paint-popup-inner{transform:scale(1) translateY(0);opacity:1;}
+.paint-popup-img{max-width:100%;max-height:55vh;border-radius:12px;box-shadow:0 16px 64px rgba(0,0,0,.5);}
+.paint-popup-info{text-align:center;max-width:600px;}
+.paint-popup-title{font-size:clamp(20px,3vw,32px);font-weight:900;color:#fff;margin-bottom:4px;}
+.paint-popup-sub{font-size:14px;color:var(--glow);margin-bottom:8px;font-weight:600;}
+.paint-popup-desc{font-size:15px;color:rgba(255,255,255,.6);line-height:1.7;}
+.paint-popup-loc{font-size:12px;color:rgba(255,255,255,.3);margin-top:6px;font-style:italic;}
+.paint-popup-close{position:absolute;top:-40px;right:0;background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.3s;}
+.paint-popup-close:hover{color:#fff;border-color:var(--glow);}
+
+/* ── cover (S0) Gallery ── */
+#s0 .hov{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,14,20,.97) 0%,rgba(10,14,20,.7) 25%,rgba(10,14,20,.3) 50%,rgba(10,14,20,.5) 100%);z-index:2;pointer-events:none;}
+#s0 .sc{justify-content:flex-end;padding-bottom:120px;}
+#s0 .typewriter{display:inline-block;overflow:hidden;white-space:nowrap;border-right:2px solid var(--glow);animation:typewriterBlink .6s infinite;font-size:clamp(32px,5vw,64px);font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,#fff 0%,var(--glow) 60%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;width:0;}
+#s0 .typewriter.animate{animation:typewriterExpand 2s 1s cubic-bezier(.25,.46,.45,.94) forwards,typewriterBlink .6s 1s 5;}
+@keyframes typewriterExpand{0%{width:0;}100%{width:100%;border-right-color:transparent;}}
+@keyframes typewriterBlink{0%,100%{border-right-color:var(--glow);}50%{border-right-color:transparent;}}
+#s0 .cover-meta{display:flex;gap:16px;flex-wrap:wrap;opacity:0;animation:fadeUp .8s 2.8s forwards;}
+.cover-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:30px;padding:8px 18px;font-size:13px;color:rgba(255,255,255,.6);backdrop-filter:blur(8px);transition:.3s;}
+.cover-chip:hover{border-color:rgba(212,168,83,.3);color:rgba(255,255,255,.8);}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(30px);}100%{opacity:1;transform:translateY(0);}}
+
+/* ── crossfade gallery ── */
+.slide-split{display:flex;gap:24px;flex:1;min-height:0;}
+.slide-split-left{width:45%;flex-shrink:0;display:flex;}
+.slide-split-right{width:55%;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;}
+.slide-split-right::-webkit-scrollbar{width:3px;}.slide-split-right::-webkit-scrollbar-track{background:transparent;}.slide-split-right::-webkit-scrollbar-thumb{background:rgba(212,168,83,.2);border-radius:4px;}
+.crossfade-gallery{position:relative;width:100%;height:100%;border-radius:16px;overflow:hidden;border:1px solid rgba(212,168,83,0.15);box-shadow:0 0 20px rgba(212,168,83,0.05);}
+.crossfade-gallery img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--g0);opacity:0;transition:opacity 2s ease-in-out;}
+.crossfade-gallery img.cf-active{opacity:1;}
+@media(max-width:768px){
+.slide-split{flex-direction:column;gap:16px;}
+.slide-split-left{width:100%;height:200px;flex-shrink:0;}
+.slide-split-right{width:100%;flex:1;min-height:0;}
+}
+
+/* ── interactive cards (S1) ── */
+.card-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:12px;}
+@media(max-width:900px){.card-grid{grid-template-columns:1fr;}}
+.info-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;cursor:pointer;transition:all .5s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;}
+.info-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--glow),transparent);opacity:0;transition:opacity .4s;}
+.info-card:hover{border-color:rgba(212,168,83,.25);background:rgba(255,255,255,.05);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.info-card:hover::before{opacity:1;}
+.info-card.expanded{background:rgba(212,168,83,.06);border-color:rgba(212,168,83,.2);transform:none;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+.info-card.expanded::before{opacity:1;}
+.card-header{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.card-num{font-size:11px;font-weight:800;color:var(--glow);letter-spacing:2px;opacity:.5;}
+.card-title{font-size:clamp(16px,1.8vw,20px);font-weight:800;color:#fff;line-height:1.3;}
+.card-chevron{color:rgba(255,255,255,.3);font-size:14px;transition:transform .4s;flex-shrink:0;}
+.info-card.expanded .card-chevron{transform:rotate(180deg);color:var(--glow);}
+.card-body{max-height:0;overflow:hidden;transition:max-height .6s cubic-bezier(.4,0,.2,1),opacity .4s,padding .4s;opacity:0;padding-top:0;}
+.info-card.expanded .card-body{max-height:500px;opacity:1;padding-top:16px;}
+.card-body p{font-size:15px;line-height:1.85;color:rgba(255,255,255,.7);}
+.card-body .artist-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.artist-tag{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.65);transition:.3s;}
+.artist-tag:hover{border-color:rgba(212,168,83,.3);color:var(--pale);}
+
+/* ── timeline (S2) ── */
+.timeline{position:relative;padding-left:40px;margin-top:8px;}
+.timeline::before{content:'';position:absolute;left:14px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,rgba(212,168,83,.3) 5%,rgba(212,168,83,.3) 95%,transparent);}
+.tl-item{position:relative;margin-bottom:4px;cursor:pointer;transition:all .3s;}
+.tl-dot{position:absolute;left:-33px;top:10px;width:12px;height:12px;border-radius:50%;background:var(--g1);border:2px solid rgba(212,168,83,.4);transition:all .4s;z-index:2;}
+.tl-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(212,168,83,.15);animation:dotPulse 3s ease-in-out infinite;}
+@keyframes dotPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(1.3);opacity:0;}}
+.tl-item:hover .tl-dot,.tl-item.expanded .tl-dot{background:var(--glow);border-color:var(--glow);box-shadow:0 0 12px rgba(212,168,83,.4);}
+.tl-year{font-size:13px;font-weight:800;color:var(--glow);margin-bottom:2px;}
+.tl-summary{font-size:14px;color:rgba(255,255,255,.5);line-height:1.6;transition:color .3s;}
+.tl-item:hover .tl-summary,.tl-item.expanded .tl-summary{color:rgba(255,255,255,.8);}
+.tl-detail{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1),opacity .3s;opacity:0;}
+.tl-item.expanded .tl-detail{max-height:200px;opacity:1;}
+.tl-detail p{font-size:14px;line-height:1.8;color:rgba(255,255,255,.65);margin-top:6px;padding:10px 14px;background:rgba(212,168,83,.04);border-radius:10px;border-left:2px solid rgba(212,168,83,.2);}
+
+/* ── masterpiece full-screen ── */
+.mp-cinema{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;flex:1;align-items:start;min-height:0;}
+@media(max-width:900px){.mp-cinema{grid-template-columns:1fr;gap:20px;}}
+.mp-img-hero{position:relative;border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 1px rgba(255,255,255,.1);transition:transform .4s,box-shadow .4s;max-height:68vh;}
+.mp-img-hero:hover{transform:scale(1.01);box-shadow:0 32px 100px rgba(0,0,0,.7),0 0 40px rgba(212,168,83,.08);}
+.mp-img-hero img{width:100%;height:100%;object-fit:contain;display:block;}
+.mp-img-hero .view-hint{position:absolute;bottom:16px;right:16px;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);color:rgba(255,255,255,.7);font-size:11px;padding:6px 14px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;border:1px solid rgba(255,255,255,.1);}
+.mp-img-hero:hover .view-hint{opacity:1;}
+.mp-analysis{overflow-y:auto;max-height:68vh;padding-right:8px;}
+.mp-analysis::-webkit-scrollbar{width:3px;}.mp-analysis::-webkit-scrollbar-thumb{background:rgba(212,168,83,.15);border-radius:3px;}
+.mp-analysis h3{font-size:clamp(22px,2.8vw,34px);font-weight:900;color:#fff;margin-bottom:4px;line-height:1.2;}
+.mp-analysis h3 em{color:var(--glow);font-style:normal;}
+.mp-analysis .mp-sub{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:18px;line-height:1.5;}
+
+/* analysis panels */
+.an-panel{margin-bottom:8px;border-radius:12px;overflow:hidden;transition:all .4s;cursor:pointer;}
+.an-panel-head{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;transition:all .3s;}
+.an-panel:hover .an-panel-head{background:rgba(255,255,255,.05);border-color:rgba(212,168,83,.15);}
+.an-panel.open .an-panel-head{background:rgba(212,168,83,.06);border-color:rgba(212,168,83,.2);border-radius:12px 12px 0 0;}
+.an-label{font-size:13px;font-weight:700;color:var(--pale);flex:1;}
+.an-icon{font-size:12px;color:rgba(255,255,255,.3);transition:transform .3s;}
+.an-panel.open .an-icon{transform:rotate(90deg);color:var(--glow);}
+.an-content{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1),opacity .3s;opacity:0;background:rgba(212,168,83,.03);border:1px solid rgba(212,168,83,.1);border-top:0;border-radius:0 0 12px 12px;}
+.an-panel.open .an-content{max-height:400px;opacity:1;}
+.an-content p{font-size:14px;line-height:1.85;color:rgba(255,255,255,.7);padding:14px 16px;}
+
+/* ── technique cards (S8) ── */
+.tech-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:12px;}
+.tech-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:22px;cursor:pointer;transition:all .4s;overflow:hidden;}
+.tech-card:hover{border-color:rgba(212,168,83,.2);background:rgba(255,255,255,.05);}
+.tech-card.expanded{border-color:rgba(212,168,83,.25);background:rgba(212,168,83,.05);}
+.tech-card-head{display:flex;align-items:center;gap:12px;}
+.tech-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;background:rgba(212,168,83,.1);border:1px solid rgba(212,168,83,.2);font-size:13px;font-weight:800;color:var(--glow);flex-shrink:0;}
+.tech-title{font-size:15px;font-weight:800;color:#fff;flex:1;}
+.tech-toggle{color:rgba(255,255,255,.25);font-size:14px;transition:transform .3s;}
+.tech-card.expanded .tech-toggle{transform:rotate(45deg);color:var(--glow);}
+.tech-detail{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1),opacity .3s;opacity:0;}
+.tech-card.expanded .tech-detail{max-height:600px;opacity:1;}
+.tech-detail p{font-size:14px;line-height:1.85;color:rgba(255,255,255,.68);margin-top:14px;}
+.tip-star{color:var(--glow);margin-right:4px;}
+.yt-links{margin-top:16px;display:flex;flex-direction:column;gap:10px;}
+.yt-link{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px 18px;text-decoration:none;transition:all .3s;}
+.yt-link:hover{border-color:rgba(212,168,83,.25);background:rgba(212,168,83,.06);transform:translateY(-1px);}
+.yt-icon{font-size:24px;flex-shrink:0;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(212,168,83,.1);border-radius:10px;}
+.yt-text strong{display:block;color:var(--pale);font-size:14px;}
+.yt-text span{color:rgba(255,255,255,.4);font-size:12px;}
+
+/* ── practice grid ── */
+.prac-section{margin-bottom:20px;}
+.prac-label{font-size:12px;font-weight:700;color:var(--pale);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;}
+.prac-label::before{content:'AI';display:inline-block;background:rgba(212,168,83,.9);color:#0d0a04;font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;letter-spacing:.5px;margin-right:8px;vertical-align:middle;}
+.prac-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:768px){.prac-grid{grid-template-columns:repeat(2,1fr);}}
+.prac-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);}
+.prac-grid img:hover{transform:scale(1.05);border-color:rgba(212,168,83,.3);box-shadow:0 12px 40px rgba(0,0,0,.5);}
+.prac-caption{font-size:12px;color:rgba(255,255,255,.3);text-align:center;margin-top:14px;font-style:italic;}
+
+/* ── ending slide ── */
+.end-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;flex:1;gap:20px;}
+.summary-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0;max-width:720px;width:100%;}
+@media(max-width:768px){.summary-cards{grid-template-columns:1fr;}}
+.sum-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px 20px;text-align:center;transition:all .4s;}
+.sum-card:hover{border-color:rgba(212,168,83,.25);transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.sum-card .sum-num{font-size:32px;font-weight:900;background:linear-gradient(135deg,var(--glow),var(--pale));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
+.sum-card .sum-text{font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;}
+.sum-card .sum-text strong{color:var(--glow);-webkit-text-fill-color:var(--glow);}
+.next-info{background:rgba(212,168,83,.06);border:1px solid rgba(212,168,83,.15);border-radius:14px;padding:18px 28px;max-width:600px;font-size:15px;color:rgba(255,255,255,.65);line-height:1.7;}
+.next-info strong{color:var(--glow);}
+.museum-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
+.museum-pill{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:10px;font-size:12px;font-weight:600;text-decoration:none;transition:.3s;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5);}
+.museum-pill:hover{border-color:rgba(212,168,83,.3);color:var(--pale);background:rgba(212,168,83,.08);}
+.end-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px;}
+.end-btn{display:inline-block;padding:12px 28px;background:rgba(212,168,83,.1);border:1px solid rgba(212,168,83,.25);color:var(--glow);border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.3s;text-decoration:none;}
+.end-btn:hover{background:rgba(212,168,83,.2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(212,168,83,.12);}
+
+/* ── lightbox / overlay ── */
+#lbox{display:none;position:fixed;inset:0;z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+#lbox.open{display:flex;}
+#lbox .lbox-bg{position:absolute;inset:0;background:rgba(0,0,0,.97);backdrop-filter:blur(30px);animation:lboxBgIn .3s;}
+@keyframes lboxBgIn{0%{opacity:0;}100%{opacity:1;}}
+#lbox-img{max-width:92vw;max-height:78vh;object-fit:contain;border-radius:12px;box-shadow:0 40px 120px rgba(0,0,0,.8);position:relative;z-index:1;animation:lboxZoom .5s cubic-bezier(.4,0,.2,1);}
+@keyframes lboxZoom{0%{opacity:0;transform:scale(.85);}100%{opacity:1;transform:scale(1);}}
+.lbox-cap{margin-top:14px;font-size:14px;color:rgba(255,255,255,.45);max-width:600px;text-align:center;position:relative;z-index:1;}
+.lbox-actions{display:flex;gap:12px;margin-top:16px;position:relative;z-index:1;}
+.lbox-dl{padding:10px 24px;background:var(--glow);color:#000;border-radius:10px;font-weight:700;text-decoration:none;font-size:13px;transition:.2s;border:none;cursor:pointer;font-family:inherit;}
+.lbox-dl:hover{background:#fff;}
+.lbox-cl{padding:10px 24px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit;transition:.2s;}
+.lbox-cl:hover{background:rgba(255,255,255,.15);}
+
+/* ── ambient particles ── */
+.pt{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.p{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(212,168,83,.25),transparent);animation:pf linear infinite;}
+@keyframes pf{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:.4}90%{opacity:.1}100%{transform:translateY(-60px) scale(1);opacity:0}}
+
+/* ── scroll-triggered observer ── */
+.scroll-reveal{opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s;}
+.scroll-reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ── Text Blur Dissolve ── */
+.blur-in{display:inline-block;}
+.ew.blur-in{display:flex;}
+.blur-in .char{display:inline-block;opacity:0;filter:blur(8px);transform:translateY(12px);transition:opacity 1.2s ease,filter 1.6s ease,transform 1s cubic-bezier(.25,.46,.45,.94);}
+.blur-in.animate .char{opacity:1;filter:blur(0);transform:translateY(0);}
+.blur-in .char-space{width:0.3em;}
+
+/* ── Films & Books cards ── */
+.film-card{display:flex;gap:16px;padding:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:10px;transition:all .3s;}
+.film-card:hover{background:rgba(212,168,83,.06);border-color:rgba(212,168,83,.15);}
+.film-poster{width:70px;min-width:70px;height:100px;object-fit:cover;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.4);cursor:pointer;transition:transform .3s,box-shadow .3s;}
+.film-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:2px;}
+.film-title-ko{font-size:12px;color:var(--pale);margin-bottom:4px;}
+.film-meta{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:4px;}
+.film-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;}
+
+.book-item{display:flex;gap:14px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:8px;transition:all .3s;align-items:flex-start;}
+.book-item:hover{background:rgba(212,168,83,.06);border-color:rgba(212,168,83,.15);}
+.book-icon{font-size:24px;min-width:32px;text-align:center;margin-top:2px;}
+.book-cover{width:55px;min-width:55px;height:80px;object-fit:cover;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.4);cursor:pointer;transition:transform .3s,box-shadow .3s;}
+.book-cover:hover,.film-poster:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(212,168,83,.3);}
+
+/* Mini poster popup */
+.poster-popup{position:fixed;z-index:600;opacity:0;pointer-events:none;transition:opacity .35s ease,transform .35s cubic-bezier(.2,.8,.3,1);transform:scale(.9);display:flex;flex-direction:column;align-items:center;}
+.poster-popup.open{opacity:1;pointer-events:auto;transform:scale(1);}
+.poster-popup-bg{position:fixed;inset:0;z-index:-1;}
+.poster-popup img{max-height:260px;width:auto;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 1px rgba(255,255,255,.15);}
+.poster-popup-title{margin-top:10px;font-size:13px;font-weight:700;color:#fff;text-align:center;max-width:200px;line-height:1.4;}
+.poster-popup-sub{font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-top:2px;}
+.book-title{font-size:14px;font-weight:800;color:#fff;margin-bottom:2px;}
+.book-author{font-size:11px;color:var(--pale);margin-bottom:4px;}
+.book-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;}
+
+/* ── Poems slide ── */
+.poem-bg-gallery{position:absolute;inset:0;z-index:1;}
+.poem-bg-gallery img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity 3s ease-in-out;}
+.poem-bg-gallery img.cf-active{opacity:.12;}
+.poem-overlay{position:absolute;inset:0;z-index:2;background:linear-gradient(to bottom,rgba(10,14,20,.92) 0%,rgba(10,14,20,.85) 50%,rgba(10,14,20,.95) 100%);}
+
+.poem-container{max-width:700px;margin:0 auto;}
+.poem-block{text-align:center;padding:24px 0;}
+.poem-quote{font-size:clamp(15px,1.8vw,20px);color:rgba(255,255,255,.75);font-style:italic;line-height:2.2;letter-spacing:.5px;font-weight:300;}
+.poem-quote-ko{font-size:clamp(14px,1.5vw,17px);color:var(--pale);line-height:2;margin-top:16px;font-weight:400;opacity:.7;}
+.poem-attr{font-size:12px;color:var(--glow);margin-top:14px;font-weight:700;letter-spacing:1px;}
+.poem-context{font-size:12px;color:rgba(255,255,255,.3);margin-top:6px;font-style:italic;}
+.poem-divider{width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--glow),transparent);margin:8px auto;opacity:.3;}
+
+/* ── Panorama Immersive Viewer (S4) ── */
+.pano-viewer{position:absolute;inset:0;overflow:hidden;cursor:grab;z-index:1;perspective:1200px;perspective-origin:50% 50%;}
+.pano-viewer.grabbing{cursor:grabbing;}
+.pano-viewer.zoomed{cursor:zoom-out;}
+.pano-track{position:absolute;top:50%;left:0;height:85vh;min-height:400px;white-space:nowrap;will-change:transform;transform-style:preserve-3d;transform:translateY(-50%) translateX(0px) rotateY(0deg);}
+.pano-img{height:100%;width:auto;display:none;pointer-events:none;user-select:none;-webkit-user-drag:none;transition:opacity .8s ease;}
+.pano-img.pano-active{display:inline-block;}
+.pano-viewer.zoomed .pano-track{height:100vh;}
+.pano-edge{position:absolute;top:0;bottom:0;width:60px;z-index:5;pointer-events:none;}
+.pano-edge-left{left:0;background:linear-gradient(90deg,var(--g0),transparent);}
+.pano-edge-right{right:0;background:linear-gradient(270deg,var(--g0),transparent);}
+.pano-hint{position:absolute;bottom:140px;left:50%;transform:translateX(-50%);z-index:10;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);padding:10px 24px;border-radius:30px;border:1px solid rgba(255,255,255,.1);font-size:13px;color:rgba(255,255,255,.5);transition:opacity .6s;pointer-events:none;white-space:nowrap;}
+.pano-hint.hidden{opacity:0;}
+.pano-zoom-indicator{position:fixed;pointer-events:none;z-index:100;font-size:24px;opacity:0;transition:opacity .2s;transform:translate(-50%,-50%);}
+.pano-zoom-indicator.show{opacity:.7;}
+
+/* Panorama bottom bar */
+.pano-bottom{position:absolute;bottom:0;left:0;right:0;z-index:10;padding:16px 32px 70px;background:linear-gradient(to top,rgba(10,14,20,.95) 0%,rgba(10,14,20,.7) 60%,transparent 100%);display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;}
+.pano-title-area{flex:1;min-width:200px;}
+.pano-ew{font-size:10px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:rgba(212,168,83,.6);margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+.pano-ew::before{content:'';display:block;width:24px;height:1px;background:linear-gradient(90deg,var(--glow),transparent);}
+.pano-main-title{font-size:clamp(20px,3vw,36px);font-weight:900;line-height:1.2;background:linear-gradient(135deg,#fff 0%,var(--glow) 70%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;}
+.pano-main-title em{font-style:normal;}
+.pano-main-sub{font-size:12px;color:rgba(255,255,255,.35);font-style:italic;}
+
+.pano-info-pills{display:flex;gap:6px;align-items:flex-end;flex-shrink:0;}
+.pano-pill{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.6);padding:8px 14px;border-radius:24px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .3s;backdrop-filter:blur(8px);}
+.pano-pill:hover{border-color:rgba(212,168,83,.3);color:var(--pale);background:rgba(212,168,83,.1);}
+.pano-pill span{display:inline;}
+
+.pano-panel-selector{display:flex;gap:4px;align-items:flex-end;flex-shrink:0;}
+.pano-panel-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .3s;}
+.pano-panel-btn:hover{border-color:rgba(212,168,83,.2);color:rgba(255,255,255,.7);}
+.pano-panel-btn.pano-panel-active{background:rgba(212,168,83,.12);border-color:rgba(212,168,83,.3);color:var(--glow);}
+
+/* Panorama info popup */
+.pano-info-popup{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:50;opacity:0;pointer-events:none;transition:opacity .4s;}
+.pano-info-popup.open{opacity:1;pointer-events:auto;}
+.pano-info-popup-inner{max-width:500px;padding:28px 32px;background:rgba(10,14,20,.92);backdrop-filter:blur(30px);border:1px solid rgba(212,168,83,.2);border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.6);position:relative;}
+.pano-info-popup-title{font-size:18px;font-weight:800;color:var(--glow);margin-bottom:10px;}
+.pano-info-popup-text{font-size:15px;line-height:1.85;color:rgba(255,255,255,.7);}
+.pano-info-popup-close{position:absolute;top:12px;right:12px;background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:.3s;font-family:inherit;}
+.pano-info-popup-close:hover{color:#fff;border-color:var(--glow);}
+
+@media(max-width:768px){
+  .pano-bottom{padding:12px 16px 65px;gap:10px;}
+  .pano-info-pills .pano-pill span{display:none;}
+  .pano-panel-selector{gap:3px;}
+  .pano-panel-btn{padding:5px 10px;font-size:10px;}
+  .pano-track{height:60vh;min-height:250px;}
+  .pano-hint{bottom:170px;font-size:11px;padding:8px 16px;}
+}
+
+/* ── print ── */
+@media print{
+  *{color:#222!important;background:white!important;box-shadow:none!important;text-shadow:none!important;border-color:#ddd!important;-webkit-text-fill-color:#222!important;}
+  html,body{overflow:visible!important;height:auto!important;}
+  .topbar,.dots,.arr,#bp,#bn,.pt,.hov,.bgimg,.gal-marquee,.paint-popup,#lbox,.lbox-actions,.progress-bar,.view-hint,.card-chevron,.an-icon,.tech-toggle{display:none!important;}
+  .slide{position:relative!important;opacity:1!important;transform:none!important;pointer-events:auto!important;page-break-inside:avoid;page-break-after:always;min-height:auto!important;height:auto!important;}
+  .bg{background:white!important;}
+  .sc{padding:20px!important;overflow:visible!important;}
+  .sc-scroll{overflow:visible!important;max-height:none!important;}
+  .stitle,.typewriter{-webkit-text-fill-color:#222!important;background:none!important;font-size:24pt!important;width:100%!important;overflow:visible!important;white-space:normal!important;border:none!important;animation:none!important;}
+  .reveal,.scroll-reveal{opacity:1!important;transform:none!important;}
+  .blur-in .char{opacity:1!important;filter:none!important;transform:none!important;}
+  .card-body,.tl-detail,.an-content,.tech-detail{max-height:none!important;opacity:1!important;overflow:visible!important;}
+  .ew{color:#8b6914!important;}
+  img{max-width:100%!important;break-inside:avoid;}
+  .mp-cinema{grid-template-columns:1fr!important;}
+  .mp-img-hero{max-height:none!important;}
+  .mp-analysis{max-height:none!important;overflow:visible!important;}
+  .prac-grid{grid-template-columns:repeat(4,1fr)!important;}
+  .prac-grid img{border:1px solid #ccc!important;}
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar" id="pbar" style="width:0%"></div>
+
+<!-- TOPBAR -->
+<div class="topbar" id="topbar">
+  <a class="tlogo" href="../../index.html">Luna Whale</a>
+  <div class="tsc"><strong id="cn">1</strong> / <span id="tn">25</span></div>
+  <div class="tbadges"><span class="badge bl">Impressionism</span><span class="badge ba">Lesson 01</span></div>
+</div>
+
+<!-- NAV -->
+<button class="arr" id="bp" onclick="nav(-1)">&#8249;</button>
+<button class="arr" id="bn" onclick="nav(1)">&#8250;</button>
+<div class="dots" id="db"></div>
+
+<!-- LIGHTBOX -->
+<div id="lbox" onclick="if(event.target===this||event.target.classList.contains('lbox-bg'))closeLb()">
+  <div class="lbox-bg"></div>
+  <img id="lbox-img" src="" alt="">
+  <div class="lbox-cap" id="lbox-cap"></div>
+  <div class="lbox-actions">
+    <a class="lbox-dl" id="lbox-dl" href="" download="">&#11015; &#45796;&#50868;&#47196;&#46300;</a>
+    <button class="lbox-cl" onclick="closeLb()">&#10005; &#45803;&#44592;</button>
+  </div>
+</div>
+
+<div id="sw">
+
+<!-- S0: COVER — Monet Gallery -->
+<div class="slide active" id="s0">
+  <div class="bg"></div>
+  <div class="gal-marquee">
+    <div style="position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);">
+      <div class="gal-row-wrap">
+        <div class="gal-row row-left">
+          <div class="gal-item" onclick="showPainting('monet_impression_sunrise')"><img src="../../assets/images/paintings/monet/thumb/monet_impression_sunrise.jpg" alt="인상, 해돋이" loading="lazy"><div class="gal-title-bar">인상, 해돋이 (1872)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_water_lilies_1906')"><img src="../../assets/images/paintings/monet/thumb/monet_water_lilies_1906.jpg" alt="수련" loading="lazy"><div class="gal-title-bar">수련 (1906)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_the_magpie')"><img src="../../assets/images/paintings/monet/thumb/monet_the_magpie.jpg" alt="까치" loading="lazy"><div class="gal-title-bar">까치 (1869)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_gare_saint_lazare')"><img src="../../assets/images/paintings/monet/thumb/monet_gare_saint_lazare.jpg" alt="생라자르역" loading="lazy"><div class="gal-title-bar">생라자르역 (1877)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_bridge_at_argenteuil')"><img src="../../assets/images/paintings/monet/thumb/monet_bridge_at_argenteuil.jpg" alt="아르장퇴유의 다리" loading="lazy"><div class="gal-title-bar">아르장퇴유의 다리 (1874)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_woman_with_parasol')"><img src="../../assets/images/paintings/monet/thumb/monet_woman_with_parasol.jpg" alt="양산을 든 여인" loading="lazy"><div class="gal-title-bar">양산을 든 여인 (1875)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_rouen_cathedral_sunlight')"><img src="../../assets/images/paintings/monet/thumb/monet_rouen_cathedral_sunlight.jpg" alt="루앙 대성당" loading="lazy"><div class="gal-title-bar">루앙 대성당 (1894)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_houses_of_parliament_sunset')"><img src="../../assets/images/paintings/monet/thumb/monet_houses_of_parliament_sunset.jpg" alt="국회의사당, 석양" loading="lazy"><div class="gal-title-bar">국회의사당, 석양 (1903)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_poppies')"><img src="../../assets/images/paintings/monet/thumb/monet_poppies.jpg" alt="양귀비 들판" loading="lazy"><div class="gal-title-bar">양귀비 들판 (1873)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_la_grenouillere')"><img src="../../assets/images/paintings/monet/thumb/monet_la_grenouillere.jpg" alt="라 그르누예르" loading="lazy"><div class="gal-title-bar">라 그르누예르 (1869)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_garden_at_sainte_adresse')"><img src="../../assets/images/paintings/monet/thumb/monet_garden_at_sainte_adresse.jpg" alt="생타드레스의 정원" loading="lazy"><div class="gal-title-bar">생타드레스의 정원 (1867)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_la_japonaise')"><img src="../../assets/images/paintings/monet/thumb/monet_la_japonaise.jpg" alt="라 자포네즈" loading="lazy"><div class="gal-title-bar">라 자포네즈 (1876)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_haystacks_sunset')"><img src="../../assets/images/paintings/monet/thumb/monet_haystacks_sunset.jpg" alt="건초더미(석양)" loading="lazy"><div class="gal-title-bar">건초더미(석양) (1891)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_haystacks_snow')"><img src="../../assets/images/paintings/monet/thumb/monet_haystacks_snow.jpg" alt="밀짚더미, 눈의 효과" loading="lazy"><div class="gal-title-bar">밀짚더미, 눈의 효과 (1891)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_impression_sunrise')"><img src="../../assets/images/paintings/monet/thumb/monet_impression_sunrise.jpg" alt="인상, 해돋이" loading="lazy"><div class="gal-title-bar">인상, 해돋이 (1872)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_water_lilies_1906')"><img src="../../assets/images/paintings/monet/thumb/monet_water_lilies_1906.jpg" alt="수련" loading="lazy"><div class="gal-title-bar">수련 (1906)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_the_magpie')"><img src="../../assets/images/paintings/monet/thumb/monet_the_magpie.jpg" alt="까치" loading="lazy"><div class="gal-title-bar">까치 (1869)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_gare_saint_lazare')"><img src="../../assets/images/paintings/monet/thumb/monet_gare_saint_lazare.jpg" alt="생라자르역" loading="lazy"><div class="gal-title-bar">생라자르역 (1877)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_bridge_at_argenteuil')"><img src="../../assets/images/paintings/monet/thumb/monet_bridge_at_argenteuil.jpg" alt="아르장퇴유의 다리" loading="lazy"><div class="gal-title-bar">아르장퇴유의 다리 (1874)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_woman_with_parasol')"><img src="../../assets/images/paintings/monet/thumb/monet_woman_with_parasol.jpg" alt="양산을 든 여인" loading="lazy"><div class="gal-title-bar">양산을 든 여인 (1875)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_rouen_cathedral_sunlight')"><img src="../../assets/images/paintings/monet/thumb/monet_rouen_cathedral_sunlight.jpg" alt="루앙 대성당" loading="lazy"><div class="gal-title-bar">루앙 대성당 (1894)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_houses_of_parliament_sunset')"><img src="../../assets/images/paintings/monet/thumb/monet_houses_of_parliament_sunset.jpg" alt="국회의사당, 석양" loading="lazy"><div class="gal-title-bar">국회의사당, 석양 (1903)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_poppies')"><img src="../../assets/images/paintings/monet/thumb/monet_poppies.jpg" alt="양귀비 들판" loading="lazy"><div class="gal-title-bar">양귀비 들판 (1873)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_la_grenouillere')"><img src="../../assets/images/paintings/monet/thumb/monet_la_grenouillere.jpg" alt="라 그르누예르" loading="lazy"><div class="gal-title-bar">라 그르누예르 (1869)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_garden_at_sainte_adresse')"><img src="../../assets/images/paintings/monet/thumb/monet_garden_at_sainte_adresse.jpg" alt="생타드레스의 정원" loading="lazy"><div class="gal-title-bar">생타드레스의 정원 (1867)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_la_japonaise')"><img src="../../assets/images/paintings/monet/thumb/monet_la_japonaise.jpg" alt="라 자포네즈" loading="lazy"><div class="gal-title-bar">라 자포네즈 (1876)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_haystacks_sunset')"><img src="../../assets/images/paintings/monet/thumb/monet_haystacks_sunset.jpg" alt="건초더미(석양)" loading="lazy"><div class="gal-title-bar">건초더미(석양) (1891)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_haystacks_snow')"><img src="../../assets/images/paintings/monet/thumb/monet_haystacks_snow.jpg" alt="밀짚더미, 눈의 효과" loading="lazy"><div class="gal-title-bar">밀짚더미, 눈의 효과 (1891)</div></div>
+        </div>
+      </div>
+      <div class="gal-row-wrap">
+        <div class="gal-row row-right">
+          <div class="gal-item" onclick="showPainting('monet_poplars')"><img src="../../assets/images/paintings/monet/thumb/monet_poplars.jpg" alt="포플러 나무" loading="lazy"><div class="gal-title-bar">포플러 나무 (1891)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_japanese_bridge')"><img src="../../assets/images/paintings/monet/thumb/monet_japanese_bridge.jpg" alt="수련 연못 위의 다리" loading="lazy"><div class="gal-title-bar">수련 연못 위의 다리 (1899)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_san_giorgio_maggiore_dusk')"><img src="../../assets/images/paintings/monet/thumb/monet_san_giorgio_maggiore_dusk.jpg" alt="황혼의 산 조르조 마조레" loading="lazy"><div class="gal-title-bar">황혼의 산 조르조 마조레 (1908)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_bordighera')"><img src="../../assets/images/paintings/monet/thumb/monet_bordighera.jpg" alt="보르디게라" loading="lazy"><div class="gal-title-bar">보르디게라 (1884)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_camille_green_dress')"><img src="../../assets/images/paintings/monet/thumb/monet_camille_green_dress.jpg" alt="카미유(초록 드레스의 여인)" loading="lazy"><div class="gal-title-bar">카미유(초록 드레스의 여인) (1866)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_cliff_walk_pourville')"><img src="../../assets/images/paintings/monet/thumb/monet_cliff_walk_pourville.jpg" alt="푸르빌의 절벽 산책" loading="lazy"><div class="gal-title-bar">푸르빌의 절벽 산책 (1882)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_boulevard_des_capucines')"><img src="../../assets/images/paintings/monet/thumb/monet_boulevard_des_capucines.jpg" alt="카퓌신 대로" loading="lazy"><div class="gal-title-bar">카퓌신 대로 (1873)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_luncheon_on_grass')"><img src="../../assets/images/paintings/monet/thumb/monet_luncheon_on_grass.jpg" alt="풀밭 위의 점심" loading="lazy"><div class="gal-title-bar">풀밭 위의 점심 (1865)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_artists_garden_giverny')"><img src="../../assets/images/paintings/monet/thumb/monet_artists_garden_giverny.jpg" alt="지베르니의 화가의 정원" loading="lazy"><div class="gal-title-bar">지베르니의 화가의 정원 (1900)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_autumn_seine_argenteuil')"><img src="../../assets/images/paintings/monet/thumb/monet_autumn_seine_argenteuil.jpg" alt="센 강의 가을" loading="lazy"><div class="gal-title-bar">센 강의 가을 (1873)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_water_lily_pond_green_harmony')"><img src="../../assets/images/paintings/monet/thumb/monet_water_lily_pond_green_harmony.jpg" alt="수련 연못, 녹색의 조화" loading="lazy"><div class="gal-title-bar">수련 연못, 녹색의 조화 (1899)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_camille_on_deathbed')"><img src="../../assets/images/paintings/monet/thumb/monet_camille_on_deathbed.jpg" alt="임종 직전의 카미유 모네" loading="lazy"><div class="gal-title-bar">임종 직전의 카미유 모네 (1879)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_regatta_at_argenteuil')"><img src="../../assets/images/paintings/monet/thumb/monet_regatta_at_argenteuil.jpg" alt="아르장퇴유의 레가타" loading="lazy"><div class="gal-title-bar">아르장퇴유의 레가타 (1872)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_poplars')"><img src="../../assets/images/paintings/monet/thumb/monet_poplars.jpg" alt="포플러 나무" loading="lazy"><div class="gal-title-bar">포플러 나무 (1891)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_japanese_bridge')"><img src="../../assets/images/paintings/monet/thumb/monet_japanese_bridge.jpg" alt="수련 연못 위의 다리" loading="lazy"><div class="gal-title-bar">수련 연못 위의 다리 (1899)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_san_giorgio_maggiore_dusk')"><img src="../../assets/images/paintings/monet/thumb/monet_san_giorgio_maggiore_dusk.jpg" alt="황혼의 산 조르조 마조레" loading="lazy"><div class="gal-title-bar">황혼의 산 조르조 마조레 (1908)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_bordighera')"><img src="../../assets/images/paintings/monet/thumb/monet_bordighera.jpg" alt="보르디게라" loading="lazy"><div class="gal-title-bar">보르디게라 (1884)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_camille_green_dress')"><img src="../../assets/images/paintings/monet/thumb/monet_camille_green_dress.jpg" alt="카미유(초록 드레스의 여인)" loading="lazy"><div class="gal-title-bar">카미유(초록 드레스의 여인) (1866)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_cliff_walk_pourville')"><img src="../../assets/images/paintings/monet/thumb/monet_cliff_walk_pourville.jpg" alt="푸르빌의 절벽 산책" loading="lazy"><div class="gal-title-bar">푸르빌의 절벽 산책 (1882)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_boulevard_des_capucines')"><img src="../../assets/images/paintings/monet/thumb/monet_boulevard_des_capucines.jpg" alt="카퓌신 대로" loading="lazy"><div class="gal-title-bar">카퓌신 대로 (1873)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_luncheon_on_grass')"><img src="../../assets/images/paintings/monet/thumb/monet_luncheon_on_grass.jpg" alt="풀밭 위의 점심" loading="lazy"><div class="gal-title-bar">풀밭 위의 점심 (1865)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_artists_garden_giverny')"><img src="../../assets/images/paintings/monet/thumb/monet_artists_garden_giverny.jpg" alt="지베르니의 화가의 정원" loading="lazy"><div class="gal-title-bar">지베르니의 화가의 정원 (1900)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_autumn_seine_argenteuil')"><img src="../../assets/images/paintings/monet/thumb/monet_autumn_seine_argenteuil.jpg" alt="센 강의 가을" loading="lazy"><div class="gal-title-bar">센 강의 가을 (1873)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_water_lily_pond_green_harmony')"><img src="../../assets/images/paintings/monet/thumb/monet_water_lily_pond_green_harmony.jpg" alt="수련 연못, 녹색의 조화" loading="lazy"><div class="gal-title-bar">수련 연못, 녹색의 조화 (1899)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_camille_on_deathbed')"><img src="../../assets/images/paintings/monet/thumb/monet_camille_on_deathbed.jpg" alt="임종 직전의 카미유 모네" loading="lazy"><div class="gal-title-bar">임종 직전의 카미유 모네 (1879)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_regatta_at_argenteuil')"><img src="../../assets/images/paintings/monet/thumb/monet_regatta_at_argenteuil.jpg" alt="아르장퇴유의 레가타" loading="lazy"><div class="gal-title-bar">아르장퇴유의 레가타 (1872)</div></div>
+        </div>
+      </div>
+      <div class="gal-row-wrap">
+        <div class="gal-row row-left">
+          <div class="gal-item" onclick="showPainting('monet_sunrise_marine')"><img src="../../assets/images/paintings/monet/thumb/monet_sunrise_marine.jpg" alt="해돋이(바다)" loading="lazy"><div class="gal-title-bar">해돋이(바다) (1873)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_palazzo_da_mula_venice')"><img src="../../assets/images/paintings/monet/thumb/monet_palazzo_da_mula_venice.jpg" alt="다 물라 궁전, 베네치아" loading="lazy"><div class="gal-title-bar">다 물라 궁전, 베네치아 (1908)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_path_in_monets_garden')"><img src="../../assets/images/paintings/monet/thumb/monet_path_in_monets_garden.jpg" alt="지베르니 모네 정원의 오솔길" loading="lazy"><div class="gal-title-bar">지베르니 모네 정원의 오솔길 (1902)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_train_in_snow')"><img src="../../assets/images/paintings/monet/thumb/monet_train_in_snow.jpg" alt="눈 속의 기차" loading="lazy"><div class="gal-title-bar">눈 속의 기차 (1875)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_waterloo_bridge')"><img src="../../assets/images/paintings/monet/thumb/monet_waterloo_bridge.jpg" alt="채링 크로스 다리" loading="lazy"><div class="gal-title-bar">채링 크로스 다리 (1903)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_fishing_boats_at_honfleur')"><img src="../../assets/images/paintings/monet/thumb/monet_fishing_boats_at_honfleur.jpg" alt="항구를 떠나는 어선" loading="lazy"><div class="gal-title-bar">항구를 떠나는 어선 (1874)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_springtime')"><img src="../../assets/images/paintings/monet/thumb/monet_springtime.jpg" alt="봄" loading="lazy"><div class="gal-title-bar">봄 (1872)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_promenade_argenteuil')"><img src="../../assets/images/paintings/monet/thumb/monet_promenade_argenteuil.jpg" alt="아르장퇴유의 산책" loading="lazy"><div class="gal-title-bar">아르장퇴유의 산책 (1875)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_water_lilies_1916')"><img src="../../assets/images/paintings/monet/thumb/monet_water_lilies_1916.jpg" alt="수련" loading="lazy"><div class="gal-title-bar">수련 (1916)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_charing_cross_bridge')"><img src="../../assets/images/paintings/monet/thumb/monet_charing_cross_bridge.jpg" alt="채링 크로스 다리" loading="lazy"><div class="gal-title-bar">채링 크로스 다리 (1902)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_le_bassin_aux_nympheas')"><img src="../../assets/images/paintings/monet/thumb/monet_le_bassin_aux_nympheas.jpg" alt="수련 연못, 분홍빛 조화" loading="lazy"><div class="gal-title-bar">수련 연못, 분홍빛 조화 (1900)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_rue_montorgueil')"><img src="../../assets/images/paintings/monet/thumb/monet_rue_montorgueil.jpg" alt="몽토르게유 거리" loading="lazy"><div class="gal-title-bar">몽토르게유 거리 (1878)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_water_lilies_nympheas')"><img src="../../assets/images/paintings/monet/thumb/monet_water_lilies_nympheas.jpg" alt="님페아(수련)" loading="lazy"><div class="gal-title-bar">님페아(수련) (1915)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_sunrise_marine')"><img src="../../assets/images/paintings/monet/thumb/monet_sunrise_marine.jpg" alt="해돋이(바다)" loading="lazy"><div class="gal-title-bar">해돋이(바다) (1873)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_palazzo_da_mula_venice')"><img src="../../assets/images/paintings/monet/thumb/monet_palazzo_da_mula_venice.jpg" alt="다 물라 궁전, 베네치아" loading="lazy"><div class="gal-title-bar">다 물라 궁전, 베네치아 (1908)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_path_in_monets_garden')"><img src="../../assets/images/paintings/monet/thumb/monet_path_in_monets_garden.jpg" alt="지베르니 모네 정원의 오솔길" loading="lazy"><div class="gal-title-bar">지베르니 모네 정원의 오솔길 (1902)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_train_in_snow')"><img src="../../assets/images/paintings/monet/thumb/monet_train_in_snow.jpg" alt="눈 속의 기차" loading="lazy"><div class="gal-title-bar">눈 속의 기차 (1875)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_waterloo_bridge')"><img src="../../assets/images/paintings/monet/thumb/monet_waterloo_bridge.jpg" alt="채링 크로스 다리" loading="lazy"><div class="gal-title-bar">채링 크로스 다리 (1903)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_fishing_boats_at_honfleur')"><img src="../../assets/images/paintings/monet/thumb/monet_fishing_boats_at_honfleur.jpg" alt="항구를 떠나는 어선" loading="lazy"><div class="gal-title-bar">항구를 떠나는 어선 (1874)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_springtime')"><img src="../../assets/images/paintings/monet/thumb/monet_springtime.jpg" alt="봄" loading="lazy"><div class="gal-title-bar">봄 (1872)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_promenade_argenteuil')"><img src="../../assets/images/paintings/monet/thumb/monet_promenade_argenteuil.jpg" alt="아르장퇴유의 산책" loading="lazy"><div class="gal-title-bar">아르장퇴유의 산책 (1875)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_water_lilies_1916')"><img src="../../assets/images/paintings/monet/thumb/monet_water_lilies_1916.jpg" alt="수련" loading="lazy"><div class="gal-title-bar">수련 (1916)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_charing_cross_bridge')"><img src="../../assets/images/paintings/monet/thumb/monet_charing_cross_bridge.jpg" alt="채링 크로스 다리" loading="lazy"><div class="gal-title-bar">채링 크로스 다리 (1902)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_le_bassin_aux_nympheas')"><img src="../../assets/images/paintings/monet/thumb/monet_le_bassin_aux_nympheas.jpg" alt="수련 연못, 분홍빛 조화" loading="lazy"><div class="gal-title-bar">수련 연못, 분홍빛 조화 (1900)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_rue_montorgueil')"><img src="../../assets/images/paintings/monet/thumb/monet_rue_montorgueil.jpg" alt="몽토르게유 거리" loading="lazy"><div class="gal-title-bar">몽토르게유 거리 (1878)</div></div>
+          <div class="gal-item" onclick="showPainting('monet_water_lilies_nympheas')"><img src="../../assets/images/paintings/monet/thumb/monet_water_lilies_nympheas.jpg" alt="님페아(수련)" loading="lazy"><div class="gal-title-bar">님페아(수련) (1915)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hov"></div>
+  <div class="sc" style="z-index:3;">
+    <div style="flex:1;"></div>
+    <div class="ew" style="opacity:0;animation:fadeUp .8s .6s forwards;">Impressionism Lesson 01</div>
+    <div style="overflow:hidden;margin-bottom:16px;">
+      <h1 class="typewriter" id="cover-title">모네의 빛과 수면</h1>
+    </div>
+    <p class="ssub" style="opacity:0;animation:fadeUp .8s 2.4s forwards;">유럽 회화 여행 &mdash; 인상주의 1강</p>
+    <div class="cover-meta">
+      <div class="cover-chip">Claude Oscar Monet (1840&ndash;1926)</div>
+      <div class="cover-chip">작품 40점 아카이브</div>
+      <div class="cover-chip">인상주의의 아버지</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S1: 인상주의란? (Interactive Cards) -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s1">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">What is Impressionism?</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(26px,3.5vw,46px);">인상주의란?</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s1">
+          <img src="../../assets/images/paintings/monet/web/monet_impression_sunrise.jpg" alt="인상, 해돋이">
+          <img src="../../assets/images/paintings/monet/web/monet_water_lilies_1906.jpg" alt="수련">
+          <img src="../../assets/images/paintings/monet/web/monet_japanese_bridge.jpg" alt="수련 연못 위의 다리">
+          <img src="../../assets/images/paintings/monet/web/monet_poppies.jpg" alt="양귀비 들판">
+          <img src="../../assets/images/paintings/monet/web/monet_woman_with_parasol.jpg" alt="양산을 든 여인">
+          <img src="../../assets/images/paintings/monet/web/monet_garden_at_sainte_adresse.jpg" alt="생타드레스의 정원">
+          <img src="../../assets/images/paintings/monet/web/monet_haystacks_sunset.jpg" alt="건초더미(석양)">
+          <img src="../../assets/images/paintings/monet/web/monet_san_giorgio_maggiore_dusk.jpg" alt="황혼의 산 조르조 마조레">
+          <img src="../../assets/images/paintings/monet/web/monet_rouen_cathedral_sunlight.jpg" alt="루앙 대성당">
+          <img src="../../assets/images/paintings/monet/web/monet_cliff_walk_pourville.jpg" alt="푸르빌의 절벽 산책">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+        <div class="card-grid">
+
+          <div class="info-card reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">01</div><div class="card-title">혁명의 시작</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>1863년 살롱 낙선전(Salon des Refus&eacute;s). 나폴레옹 3세가 살롱에서 거부당한 작품들을 위해 별도 전시를 허락. 마네의 '풀밭 위의 점심'이 스캔들을 일으킴. 이것이 인상주의의 씨앗.</p>
+            </div>
+          </div>
+
+          <div class="info-card reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">02</div><div class="card-title">빛을 쫓는 사람들</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>핵심 혁신 &mdash; &#9312; 야외 사생(plein air): 1841년 금속 튜브 물감 발명이 이를 가능하게 함 &#9313; 빛의 순간 포착: 같은 장소도 아침/저녁이 완전히 다른 그림 &#9314; 검은색 추방: 그림자는 보라와 파랑으로</p>
+            </div>
+          </div>
+
+          <div class="info-card reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">03</div><div class="card-title">1874년 4월 15일</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>나다르의 사진관 2층에서 제1회 인상주의 전시 개막. 30명의 화가, 165점의 작품. 모네의 '인상, 해돋이'를 본 비평가 루이 르루아가 "인상주의자들의 전시회"라는 조롱 기사를 씀. 그러나 화가들은 이 이름을 자랑스럽게 받아들임.</p>
+            </div>
+          </div>
+
+          <div class="info-card reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">04</div><div class="card-title">빛의 화가들</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <div class="artist-list">
+                <span class="artist-tag">모네 &mdash; 빛의 마스터</span>
+                <span class="artist-tag">르누아르 &mdash; 인물과 빛</span>
+                <span class="artist-tag">드가 &mdash; 실내의 빛</span>
+                <span class="artist-tag">시슬레 &mdash; 하늘의 빛</span>
+                <span class="artist-tag">피사로 &mdash; 농촌의 빛</span>
+                <span class="artist-tag">모리조 &mdash; 가정의 빛</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S2: 클로드 모네 — 생애 (Visual Timeline) -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Claude Monet &mdash; Life</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(24px,3.2vw,42px);">클로드 모네의 생애</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s2">
+          <img src="../../assets/images/paintings/monet/web/monet_la_japonaise.jpg" alt="라 자포네즈">
+          <img src="../../assets/images/paintings/monet/web/monet_bridge_at_argenteuil.jpg" alt="아르장퇴유의 다리">
+          <img src="../../assets/images/paintings/monet/web/monet_the_magpie.jpg" alt="까치">
+          <img src="../../assets/images/paintings/monet/web/monet_gare_saint_lazare.jpg" alt="생라자르역">
+          <img src="../../assets/images/paintings/monet/web/monet_camille_green_dress.jpg" alt="카미유(초록 드레스의 여인)">
+          <img src="../../assets/images/paintings/monet/web/monet_boulevard_des_capucines.jpg" alt="카퓌신 대로">
+          <img src="../../assets/images/paintings/monet/web/monet_water_lily_pond_green_harmony.jpg" alt="수련 연못, 녹색의 조화">
+          <img src="../../assets/images/paintings/monet/web/monet_artists_garden_giverny.jpg" alt="지베르니의 화가의 정원">
+          <img src="../../assets/images/paintings/monet/web/monet_rue_montorgueil.jpg" alt="몽토르게유 거리">
+          <img src="../../assets/images/paintings/monet/web/monet_houses_of_parliament_sunset.jpg" alt="국회의사당, 석양">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+        <div class="timeline">
+
+        <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1840</div>
+          <div class="tl-summary">파리 출생, 노르망디로 이주</div>
+          <div class="tl-detail"><p>파리 출생. 다섯 살에 르아브르로 이주. 노르망디 바닷가에서 자라며 빛과 물의 변화를 체득</p></div>
+        </div>
+
+        <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1858</div>
+          <div class="tl-summary">외젠 부댕과의 운명적 만남</div>
+          <div class="tl-detail"><p>외젠 부댕을 만남. "야외에서 직접 그려라!" &mdash; 이 가르침이 모네의 예술 인생을 결정</p></div>
+        </div>
+
+        <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1862</div>
+          <div class="tl-summary">글레르 아틀리에 입학, 동료를 만나다</div>
+          <div class="tl-detail"><p>파리 글레르 아틀리에 입학. 르누아르, 시슬레, 바지유를 만나 평생의 동료가 됨</p></div>
+        </div>
+
+        <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1870</div>
+          <div class="tl-summary">보불전쟁, 런던으로 피신</div>
+          <div class="tl-detail"><p>보불전쟁을 피해 런던으로 피신. 터너와 컨스터블의 풍경화에 깊은 감명</p></div>
+        </div>
+
+        <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1872</div>
+          <div class="tl-summary">"인상, 해돋이" 완성</div>
+          <div class="tl-detail"><p>"인상, 해돋이" 완성. 르아브르 항구 호텔 창가에서 그린 이 그림이 인상주의의 이름이 됨</p></div>
+        </div>
+
+        <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1878</div>
+          <div class="tl-summary">극심한 가난</div>
+          <div class="tl-detail"><p>극심한 가난. 마네에게 편지: "20프랑만 빌려주시오, 내일 당장 빵이 없소"</p></div>
+        </div>
+
+        <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1879</div>
+          <div class="tl-summary">아내 카미유의 죽음</div>
+          <div class="tl-detail"><p>아내 카미유 사망(32세). 모네는 임종 순간에도 색을 관찰하는 자신을 발견하고 경악: "나는 사랑하는 사람의 죽음 앞에서도 파란색, 노란색, 회색의 그라데이션을 무의식적으로 분석하고 있었다"</p></div>
+        </div>
+
+        <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1883</div>
+          <div class="tl-summary">지베르니 정착</div>
+          <div class="tl-detail"><p>지베르니 정착. 세느강변의 작은 마을에서 일본식 정원을 조성</p></div>
+        </div>
+
+        <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1893</div>
+          <div class="tl-summary">수련 연못 조성</div>
+          <div class="tl-detail"><p>수련 연못 조성. 일본 목판화에서 영감받은 아치형 다리와 수련. 이후 30년간 250점의 수련 연작</p></div>
+        </div>
+
+        <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1905</div>
+          <div class="tl-summary">백내장 시작</div>
+          <div class="tl-detail"><p>백내장 시작. 시력이 서서히 흐려지지만 수술을 거부하고 15년간 "보이는 대로" 그림</p></div>
+        </div>
+
+        <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1923</div>
+          <div class="tl-summary">백내장 수술</div>
+          <div class="tl-detail"><p>결국 백내장 수술. 수술 후 한쪽 눈은 노랗게, 한쪽은 파랗게 세상이 보임. 자외선까지 볼 수 있게 되었다는 학설도</p></div>
+        </div>
+
+        <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)">
+          <div class="tl-dot"></div>
+          <div class="tl-year">1926</div>
+          <div class="tl-summary">86세, 지베르니에서 영면</div>
+          <div class="tl-detail"><p>86세, 지베르니에서 영면. 유언: "꽃만 가져와라. 장례식은 싫다"</p></div>
+        </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S3: 대표작 1 — 인상, 해돋이 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 01</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/masterpiece-01.jpg','인상, 해돋이 — Impression, soleil levant (1872)')">
+        <img src="../../images/lessons/impressionism/01-monet-light-water/masterpiece-01.jpg" loading="lazy" alt="인상, 해돋이">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>인상, 해돋이</em></h3>
+        <div class="mp-sub">Impression, soleil levant | 1872년 | 캔버스에 유채 | 48 &times; 63 cm | 마르모탕 모네 미술관, 파리</div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">탄생 비화</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>1872년 11월, 르아브르 항구의 아미로테 호텔 창가. 새벽 안개 속 항구를 바라보며 그림. 카탈로그에 제목을 물었을 때 모네의 대답: "르아브르 풍경이라고는 할 수 없지. 그냥 '인상'이라고 적어."</p></div>
+        </div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">스캔들</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>르루아의 풍자 기사 원문 &mdash; "인상이라고? 벽지 초안이 이 해경보다는 더 완성되어 있겠군!"</p></div>
+        </div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">구도</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>수평선이 화면을 정확히 양분. 주황색 태양이 유일한 뜨거운 점. 배의 실루엣이 깊이감 형성</p></div>
+        </div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">색채 혁명</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>보색 대비(주황 태양 vs 회색-보라 안개). 물 위 반사는 3~4번의 짧은 주황색 터치로만 표현</p></div>
+        </div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">기법</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>전체 작업 시간 추정 2~3시간. 마르기 전에 빠르게 올린 물감층이 생생한 빛의 효과 창출</p></div>
+        </div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">소장 이력</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>마르모탕 모네 미술관, 파리. 1985년 도난되었다가 1990년 코르시카에서 발견</p></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S4: 대표작 2 — 수련 (Immersive Panorama) -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="bg"></div>
+
+  <!-- Panorama viewer — full width horizontal scroll -->
+  <div class="pano-viewer" id="panoViewer">
+    <div class="pano-track" id="panoTrack">
+      <img class="pano-img pano-active" src="../../images/lessons/impressionism/01-monet-light-water/panorama-two-willows.jpg" alt="수련 — 두 그루의 버드나무 (1920-1926)" data-title="두 그루의 버드나무" data-sub="The Two Willows, 1920–1926 | 200×1275 cm | 오랑주리 미술관" loading="lazy">
+      <img class="pano-img" src="../../images/lessons/impressionism/01-monet-light-water/panorama-clouds.jpg" alt="수련 — 구름 (1920-1926)" data-title="구름" data-sub="The Clouds, 1920–1926 | 200×1275 cm | 오랑주리 미술관" loading="lazy">
+      <img class="pano-img" src="../../images/lessons/impressionism/01-monet-light-water/panorama-green-reflections.jpg" alt="수련 — 초록빛 반영 (1920-1926)" data-title="초록빛 반영" data-sub="Green Reflections, 1920–1926 | 200×850 cm | 오랑주리 미술관" loading="lazy">
+      <img class="pano-img" src="../../images/lessons/impressionism/01-monet-light-water/panorama-setting-sun.jpg" alt="수련 — 석양 (1920-1926)" data-title="석양" data-sub="Setting Sun, 1920–1926 | 200×600 cm | 오랑주리 미술관" loading="lazy">
+    </div>
+    <!-- Zoom lens indicator -->
+    <div class="pano-zoom-indicator" id="panoZoomIndicator">🔍</div>
+    <!-- Left/right edge fade -->
+    <div class="pano-edge pano-edge-left"></div>
+    <div class="pano-edge pano-edge-right"></div>
+    <!-- Scroll hint -->
+    <div class="pano-hint" id="panoHint">
+      <span>&#8592; 마우스 휠로 좌우 탐색 &middot; 클릭하면 줌인 &#8594;</span>
+    </div>
+  </div>
+
+  <!-- Bottom info bar — minimal, non-intrusive -->
+  <div class="pano-bottom">
+    <div class="pano-title-area">
+      <div class="pano-ew reveal blur-in">Masterpiece 02 — Immersive</div>
+      <h3 class="pano-main-title reveal blur-in"><em>수련</em> — 오랑주리의 대형 패널</h3>
+      <div class="pano-main-sub reveal">Nymphéas, Grandes Décorations | 8 panels, total 91m | Musée de l'Orangerie</div>
+    </div>
+    <div class="pano-info-pills">
+      <button class="pano-pill" onclick="showPanoInfo(0)" title="집착의 역사">🕰️ <span>33년</span></button>
+      <button class="pano-pill" onclick="showPanoInfo(1)" title="혁명적 구도">🎯 <span>구도</span></button>
+      <button class="pano-pill" onclick="showPanoInfo(2)" title="기법">🖌️ <span>기법</span></button>
+      <button class="pano-pill" onclick="showPanoInfo(3)" title="백내장과 수련">👁️ <span>백내장</span></button>
+      <button class="pano-pill" onclick="showPanoInfo(4)" title="오랑주리">🏛️ <span>91m</span></button>
+    </div>
+    <div class="pano-panel-selector">
+      <button class="pano-panel-btn pano-panel-active" onclick="switchPanel(0)">두 버드나무</button>
+      <button class="pano-panel-btn" onclick="switchPanel(1)">구름</button>
+      <button class="pano-panel-btn" onclick="switchPanel(2)">초록빛 반영</button>
+      <button class="pano-panel-btn" onclick="switchPanel(3)">석양</button>
+    </div>
+  </div>
+
+  <!-- Info popup (appears when pill clicked) -->
+  <div class="pano-info-popup" id="panoInfoPopup">
+    <div class="pano-info-popup-inner">
+      <div class="pano-info-popup-title" id="panoInfoTitle"></div>
+      <div class="pano-info-popup-text" id="panoInfoText"></div>
+      <button class="pano-info-popup-close" onclick="closePanoInfo()">&#10005;</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S5: 대표작 3 — 까치 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 03</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/masterpiece-03.jpg','까치 — The Magpie (1868-1869)')">
+        <img src="../../images/lessons/impressionism/01-monet-light-water/masterpiece-03.jpg" loading="lazy" alt="까치">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>까치</em></h3>
+        <div class="mp-sub">The Magpie (La Pie) | 1868&ndash;1869년 | 캔버스에 유채 | 89 &times; 130 cm | 오르세 미술관, 파리</div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">겨울의 혁명</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>에트르타 근처, 노르망디의 겨울. 울타리 위 까치 한 마리가 화면의 유일한 생명체</p></div>
+        </div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">파란 그림자의 발견</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>흰 눈 위에 드리운 그림자를 보라-파랑으로 표현 &mdash; 그림자는 검은색이라는 수백 년의 관습을 파괴. 쉐브뢸의 동시대비 이론을 실천으로 증명</p></div>
+        </div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">낙선의 아이러니</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>1869년 살롱전 출품 &rarr; 낙선. 심사위원 평: "너무 평범하고 거칠다." 100년 후 오르세 미술관이 거금에 구입, 가장 인기 있는 소장품 중 하나가 됨</p></div>
+        </div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">임파스토</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>두꺼운 물감으로 눈의 볼록한 질감을 살림. 실제로 만지면 울퉁불퉁한 표면</p></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S6: 대표작 4 — 생라자르 역 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 04</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/masterpiece-04.jpg','생라자르 역 — La Gare Saint-Lazare (1877)')">
+        <img src="../../images/lessons/impressionism/01-monet-light-water/masterpiece-04.jpg" loading="lazy" alt="생라자르 역">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>생라자르 역</em></h3>
+        <div class="mp-sub">La Gare Saint-Lazare | 1877년 | 캔버스에 유채 | 75 &times; 104 cm | 오르세 미술관, 파리</div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">영화감독 모네</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>르누아르의 아들 장 르누아르의 회고록에 따르면, 모네가 서부철도 국장을 찾아가 "당신의 역을 그리겠소. 북역과 고민했지만 당신 역이 더 멋지오"라고 말했다고. 국장은 감명받아 기차를 세우고, 석탄을 태워 증기를 더 내라고 명령. 모네는 마치 영화감독처럼 "증기 더! 더!"를 외쳤다는 일화 (다소 과장되었을 가능성)</p></div>
+        </div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">현대성의 찬양</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>기차역 = 산업혁명의 상징. 전통 화가들이 신화와 역사를 그릴 때, 모네는 증기와 철골 구조물의 아름다움을 포착</p></div>
+        </div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">빛의 산란</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>유리 지붕 아래 증기가 빛을 산란시키며 만들어내는 무한한 색채의 변주. 실내인데도 야외처럼 빛이 넘침</p></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S7: 대표작 5 — 아르장퇴유의 다리 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 05</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/masterpiece-05.jpg','아르장퇴유의 다리 — The Bridge at Argenteuil (1874)')">
+        <img src="../../images/lessons/impressionism/01-monet-light-water/masterpiece-05.jpg" loading="lazy" alt="아르장퇴유의 다리">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>아르장퇴유의 다리</em></h3>
+        <div class="mp-sub">The Bridge at Argenteuil (Le Pont d'Argenteuil) | 1874년 | 캔버스에 유채 | 60 &times; 80 cm</div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">떠다니는 아틀리에</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>모네는 1873년 보트를 구입해 선실을 개조, 이젤을 세울 수 있는 '수상 아틀리에'를 만듦. 세느강 위에서 육지에서는 불가능한 시점으로 그림. 마네가 이 모습을 그린 '아르장퇴유에서 그림 그리는 모네'도 유명</p></div>
+        </div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">빈곤 속의 걸작</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>이 시기 모네는 극도로 가난했음. 마네에게 "50프랑만", "20프랑만" 빌려달라는 편지를 반복. 그러나 작품은 가장 행복하고 밝은 색조</p></div>
+        </div>
+
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">수면 반사의 교과서</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>다리와 나무의 색이 물속에서 약간 어둡고 흐릿하게 반복. 수평 방향의 짧은 터치가 물결의 움직임을 표현. 이것이 모네 수면 표현의 정석</p></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S8: 모네의 기법 (Interactive Tech Cards) -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Monet's Technique</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">모네의 기법</h2>
+    <div class="sc-scroll">
+      <div class="tech-cards">
+
+        <div class="tech-card reveal scroll-reveal" onclick="toggleTech(this)">
+          <div class="tech-card-head">
+            <span class="tech-num">1</span>
+            <span class="tech-title blur-in">붓터치 (Broken Brushwork)</span>
+            <span class="tech-toggle">+</span>
+          </div>
+          <div class="tech-detail">
+            <p>짧고 끊어지는 터치로 색을 캔버스에 나란히 배치. 팔레트에서 미리 섞지 않고, 캔버스 위에서 시각적으로 혼합되게 함 &mdash; '광학적 혼합(Optical Mixing)'. 가까이서 보면 색점의 나열, 멀리서 보면 자연스러운 풍경.</p>
+          </div>
+        </div>
+
+        <div class="tech-card reveal scroll-reveal" onclick="toggleTech(this)">
+          <div class="tech-card-head">
+            <span class="tech-num">2</span>
+            <span class="tech-title blur-in">색채 (Color Revolution)</span>
+            <span class="tech-toggle">+</span>
+          </div>
+          <div class="tech-detail">
+            <p>검은색을 거의 사용하지 않음. 그림자: 보라, 파랑, 진녹색. 빛: 노랑, 주황, 연분홍. 보색 대비 적극 활용 &mdash; 주황과 파랑, 노랑과 보라가 나란히 놓이면 서로를 더 강렬하게 만듦. 모네의 팔레트: 리드 화이트, 크롬 옐로, 카드뮴 옐로, 비리디안 그린, 에메랄드 그린, 프렌치 울트라마린, 코발트 블루, 매더 레드, 버밀리온.</p>
+          </div>
+        </div>
+
+        <div class="tech-card reveal scroll-reveal" onclick="toggleTech(this)">
+          <div class="tech-card-head">
+            <span class="tech-num">3</span>
+            <span class="tech-title blur-in">빛의 포착 (Capturing Light)</span>
+            <span class="tech-toggle">+</span>
+          </div>
+          <div class="tech-detail">
+            <p>야외 직접 사생(plein air). 1841년 금속 튜브 물감이 발명되면서 비로소 가능해진 방식. 같은 장소를 다른 시간대에 반복 &mdash; 건초더미 25점, 루앙 대성당 30점, 수련 250점. 빛이 변하기 전에 포착해야 하므로 극도로 빠른 작업 속도.</p>
+          </div>
+        </div>
+
+        <div class="tech-card reveal scroll-reveal" onclick="toggleTech(this)">
+          <div class="tech-card-head">
+            <span class="tech-num">4</span>
+            <span class="tech-title blur-in">수면 표현법 (Water Rendering)</span>
+            <span class="tech-toggle">+</span>
+          </div>
+          <div class="tech-detail">
+            <p>수평 방향의 짧은 터치로 잔물결 표현. 반사 부분은 위 풍경의 색을 약간 어둡게 + 약간 흐리게. 수면 위 빛 반짝임은 순백색 또는 연노랑 점 터치. 핵심: 물은 그리는 것이 아니라 빛의 반사를 그리는 것.</p>
+          </div>
+        </div>
+
+        <div class="tech-card reveal scroll-reveal" onclick="toggleTech(this)">
+          <div class="tech-card-head">
+            <span class="tech-num">5</span>
+            <span class="tech-title blur-in">바로 적용할 수 있는 팁</span>
+            <span class="tech-toggle">+</span>
+          </div>
+          <div class="tech-detail">
+            <p><span class="tip-star">&#9733;</span> 검은 물감을 치우세요 &mdash; 어두운 부분은 보라+파랑으로<br><span class="tip-star">&#9733;</span> 붓을 세워서 짧게 찍듯이 &mdash; 길게 쓸지 마세요<br><span class="tip-star">&#9733;</span> 눈을 가늘게 뜨고 전체 색감을 먼저 보세요 &mdash; 디테일보다 인상을 먼저</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="yt-links reveal scroll-reveal">
+        <a class="yt-link" href="https://willkempartschool.com/how-to-paint-like-monet-1-of-4/" target="_blank" rel="noopener">
+          <div class="yt-icon">&#9654;</div>
+          <div class="yt-text"><strong>How to Paint like Monet (4부작)</strong><span>Will Kemp Art School &mdash; 아크릴 인상주의 풍경화 단계별 튜토리얼</span></div>
+        </a>
+        <a class="yt-link" href="https://drawpaintacademy.com/paint-like-claude-monet/" target="_blank" rel="noopener">
+          <div class="yt-icon">&#9654;</div>
+          <div class="yt-text"><strong>How to Paint like Claude Monet</strong><span>Draw Paint Academy &mdash; 모네 팔레트, 붓터치, 색채 혼합법 종합 해설</span></div>
+        </a>
+        <a class="yt-link" href="https://www.montmarte.com/blogs/tips-techniques/monet-painting-techniques" target="_blank" rel="noopener">
+          <div class="yt-icon">&#9654;</div>
+          <div class="yt-text"><strong>Monet Painting Techniques</strong><span>Mont Marte &mdash; 임파스토, 광학적 혼합, 플렌에어 기법 상세 설명</span></div>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S9: 모네 관련 영화/다큐 (Films & Documentaries) -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s9">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Films &amp; Documentaries</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">모네 관련 영화 &amp; 다큐멘터리</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s9films">
+          <img src="../../assets/images/paintings/monet/web/monet_la_grenouillere.jpg" alt="라 그르누이에르" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_bordighera.jpg" alt="보르디게라" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_poplars.jpg" alt="포플러" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_springtime.jpg" alt="봄" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_regatta_at_argenteuil.jpg" alt="아르장퇴유의 레가타" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_luncheon_on_grass.jpg" alt="풀밭 위의 점심" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_promenade_argenteuil.jpg" alt="아르장퇴유 산책" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_water_lilies_1916.jpg" alt="수련 1916" loading="lazy">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+
+        <div class="film-card reveal scroll-reveal">
+          <img class="film-poster" src="../../assets/images/paintings/monet/media/film_i_claude_monet.jpg" alt="I, Claude Monet" loading="lazy">
+          <div class="film-info">
+            <div class="film-title">I, Claude Monet</div>
+            <div class="film-title-ko">나, 클로드 모네</div>
+            <div class="film-meta">2017 &middot; 감독: Phil Grabsky &middot; 다큐멘터리</div>
+            <div class="film-desc">모네의 2,500여 통의 편지를 바탕으로 1인칭 시점에서 재구성한 다큐멘터리</div>
+          </div>
+        </div>
+
+        <div class="film-card reveal scroll-reveal">
+          <img class="film-poster" src="../../assets/images/paintings/monet/media/film_the_impressionists_bbc.jpg" alt="The Impressionists" loading="lazy">
+          <div class="film-info">
+            <div class="film-title">The Impressionists</div>
+            <div class="film-title-ko">인상주의자들</div>
+            <div class="film-meta">2006 &middot; BBC 미니시리즈 &middot; Richard Armitage 주연</div>
+            <div class="film-desc">인상주의 운동의 탄생을 편지와 기록으로 재현</div>
+          </div>
+        </div>
+
+        <div class="film-card reveal scroll-reveal">
+          <img class="film-poster" src="../../assets/images/paintings/monet/media/film_water_lilies_monet.jpg" alt="Water Lilies of Monet" loading="lazy">
+          <div class="film-info">
+            <div class="film-title">Water Lilies of Monet</div>
+            <div class="film-title-ko">모네의 수련: 물과 빛의 마법</div>
+            <div class="film-meta">2018 &middot; 감독: Giovanni Troilo &middot; 다큐멘터리</div>
+            <div class="film-desc">오랑주리&middot;마르모탕&middot;오르세 미술관과 지베르니 정원 순회 다큐</div>
+          </div>
+        </div>
+
+        <div class="film-card reveal scroll-reveal">
+          <img class="film-poster" src="../../assets/images/paintings/monet/media/film_linnea_monets_garden.jpg" alt="Linnea in Monet's Garden" loading="lazy">
+          <div class="film-info">
+            <div class="film-title">Linnea in Monet's Garden</div>
+            <div class="film-title-ko">린네아, 모네의 정원에 가다</div>
+            <div class="film-meta">1993 &middot; 애니메이션</div>
+            <div class="film-desc">소녀가 파리와 지베르니를 방문하며 모네의 세계를 탐험</div>
+          </div>
+        </div>
+
+        <div class="film-card reveal scroll-reveal">
+          <img class="film-poster" src="../../assets/images/paintings/monet/media/film_monet_shadow_light.jpg" alt="Monet: Shadow and Light" loading="lazy">
+          <div class="film-info">
+            <div class="film-title">Monet: Shadow and Light</div>
+            <div class="film-title-ko">모네: 그림자와 빛</div>
+            <div class="film-meta">1999 &middot; 가족 드라마</div>
+            <div class="film-desc">젊은 모네가 인상주의 화풍을 개척하는 과정</div>
+          </div>
+        </div>
+
+        <div class="film-card reveal scroll-reveal">
+          <img class="film-poster" src="../../assets/images/paintings/monet/media/film_painting_modern_garden.jpg" alt="Painting the Modern Garden" loading="lazy">
+          <div class="film-info">
+            <div class="film-title">Painting the Modern Garden: Monet to Matisse</div>
+            <div class="film-title-ko">현대 정원 회화: 모네에서 마티스까지</div>
+            <div class="film-meta">2016 &middot; 감독: Phil Grabsky &middot; 다큐멘터리</div>
+            <div class="film-desc">모네의 정원에서 시작된 현대 정원 회화의 흐름</div>
+          </div>
+        </div>
+
+        <div class="film-card reveal scroll-reveal">
+          <img class="film-poster" src="../../assets/images/paintings/monet/media/film_impressionists_exhibition.jpg" alt="Exhibition on Screen: Impressionists" loading="lazy">
+          <div class="film-info">
+            <div class="film-title">Exhibition on Screen: Impressionists</div>
+            <div class="film-title-ko">스크린 위의 전시: 인상주의</div>
+            <div class="film-meta">2015 &middot; 감독: David Bickerstaff &middot; 다큐멘터리</div>
+            <div class="film-desc">인상주의 화가들의 삶과 작품 조명</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S10: 모네 관련 도서 (Books) -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s10">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Books</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">모네 관련 도서</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s10books">
+          <img src="../../assets/images/paintings/monet/web/monet_camille_on_deathbed.jpg" alt="카미유의 임종" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_palazzo_da_mula_venice.jpg" alt="베니스 팔라초 다 물라" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_path_in_monets_garden.jpg" alt="모네 정원의 오솔길" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_train_in_snow.jpg" alt="눈 속의 기차" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_fishing_boats_at_honfleur.jpg" alt="옹플뢰르의 어선" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_charing_cross_bridge.jpg" alt="채링 크로스 다리" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_le_bassin_aux_nympheas.jpg" alt="수련 연못" loading="lazy">
+          <img src="../../assets/images/paintings/monet/web/monet_autumn_seine_argenteuil.jpg" alt="아르장퇴유의 센 강 가을" loading="lazy">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+
+        <div class="book-item reveal scroll-reveal">
+          <img class="book-cover" src="../../assets/images/paintings/monet/media/book_restless_vision.jpg" alt="Monet: The Restless Vision" loading="lazy">
+          <div class="book-info">
+            <div class="book-title">Monet: The Restless Vision</div>
+            <div class="book-author">Jackie Wullschlager &middot; 2023</div>
+            <div class="book-desc">최신 모네 전기, Elizabeth Longford 역사전기상 수상</div>
+          </div>
+        </div>
+
+        <div class="book-item reveal scroll-reveal">
+          <img class="book-cover" src="../../assets/images/paintings/monet/media/book_mad_enchantment.jpg" alt="Mad Enchantment" loading="lazy">
+          <div class="book-info">
+            <div class="book-title">Mad Enchantment</div>
+            <div class="book-author">Ross King &middot; 2016</div>
+            <div class="book-desc">모네 말년의 수련 연작 탄생과 클레망소와의 우정</div>
+          </div>
+        </div>
+
+        <div class="book-item reveal scroll-reveal">
+          <img class="book-cover" src="../../assets/images/paintings/monet/media/book_wildenstein_catalogue.jpg" alt="Monet: The Triumph of Impressionism" loading="lazy">
+          <div class="book-info">
+            <div class="book-title">Monet: The Triumph of Impressionism</div>
+            <div class="book-author">Daniel Wildenstein &middot; 1996</div>
+            <div class="book-desc">전 작품 2,500점 카탈로그 레조네, 모네 연구의 결정판</div>
+          </div>
+        </div>
+
+        <div class="book-item reveal scroll-reveal">
+          <img class="book-cover" src="../../assets/images/paintings/monet/media/book_monet_by_himself.jpg" alt="Monet by Himself" loading="lazy">
+          <div class="book-info">
+            <div class="book-title">Monet by Himself</div>
+            <div class="book-author">Richard Kendall &middot; 1989</div>
+            <div class="book-desc">모네가 직접 쓴 편지와 글 1차 사료 모음집</div>
+          </div>
+        </div>
+
+        <div class="book-item reveal scroll-reveal">
+          <img class="book-cover" src="../../assets/images/paintings/monet/media/book_basic_art_monet.jpg" alt="Claude Monet (Basic Art)" loading="lazy">
+          <div class="book-info">
+            <div class="book-title">Claude Monet (Basic Art)</div>
+            <div class="book-author">Christoph Heinrich &middot; 2000</div>
+            <div class="book-desc">주요 작품과 생애를 간결하게 정리한 입문서</div>
+          </div>
+        </div>
+
+        <div class="book-item reveal scroll-reveal">
+          <img class="book-cover" src="../../assets/images/paintings/monet/media/book_magical_garden.jpg" alt="The Magical Garden of Claude Monet" loading="lazy">
+          <div class="book-info">
+            <div class="book-title">The Magical Garden of Claude Monet</div>
+            <div class="book-author">Laurence Anholt &middot; 2003</div>
+            <div class="book-desc">소녀 줄리가 지베르니에서 모네를 만나는 아동용 그림책</div>
+          </div>
+        </div>
+
+        <div class="book-item reveal scroll-reveal">
+          <img class="book-cover" src="../../assets/images/paintings/monet/media/book_linnea_garden.jpg" alt="Linnea in Monet's Garden" loading="lazy">
+          <div class="book-info">
+            <div class="book-title">Linnea in Monet's Garden</div>
+            <div class="book-author">Christina Bjork &middot; 1985</div>
+            <div class="book-desc">파리와 지베르니를 방문하며 모네를 배우는 아동 명작</div>
+          </div>
+        </div>
+
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128212;</div>
+          <div class="book-info">
+            <div class="book-title">Impression, Sunrise: The Story of a Painting</div>
+            <div class="book-author">Mus&eacute;e Marmottan &middot; 2014</div>
+            <div class="book-desc">'인상, 해돋이' 한 작품의 심층 분석 도록</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S11: 모네를 위한 시 (Poems for Monet) -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s11">
+  <div class="bg"></div>
+  <div class="poem-bg-gallery crossfade-gallery" data-gallery="poems">
+    <img src="../../assets/images/paintings/monet/web/monet_water_lilies_nympheas.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/monet/web/monet_japanese_bridge.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/monet/web/monet_impression_sunrise.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/monet/web/monet_water_lily_pond_green_harmony.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/monet/web/monet_haystacks_sunset.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/monet/web/monet_san_giorgio_maggiore_dusk.jpg" alt="" loading="lazy">
+  </div>
+  <div class="poem-overlay"></div>
+  <div class="sc" style="z-index:3;">
+    <div class="ew reveal blur-in">Poetry for Monet</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.8vw,34px);">모네를 위한 시</h2>
+    <div class="sc-scroll">
+      <div class="poem-container">
+
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">
+            &ldquo;Here space and time exist in light<br>
+            the eye like the eye of faith believes.&rdquo;
+          </div>
+          <div class="poem-quote-ko">
+            &ldquo;여기서 공간과 시간은 빛 속에 존재하며<br>
+            눈은 믿음의 눈처럼 바라본다.&rdquo;
+          </div>
+          <div class="poem-attr">&mdash; Robert Hayden, &laquo;Monet&rsquo;s Waterlilies&raquo; (1966)</div>
+          <div class="poem-context">베트남 전쟁의 혼란 속, MoMA의 수련 대작 앞에서 예술이 주는 위안을 노래한 시</div>
+        </div>
+
+        <div class="poem-divider reveal scroll-reveal"></div>
+
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">
+            &ldquo;I tell you it has taken me all my life<br>
+            to arrive at the vision of gas lamps as angels.&rdquo;
+          </div>
+          <div class="poem-quote-ko">
+            &ldquo;가로등을 천사로 보는 이 시야에<br>
+            도달하기까지 평생이 걸렸다는 것을 알아주십시오.&rdquo;
+          </div>
+          <div class="poem-attr">&mdash; Lisel Mueller, &laquo;Monet Refuses the Operation&raquo; (1996)</div>
+          <div class="poem-context">백내장 수술을 거부하는 모네의 목소리로 쓴 퓰리처상 수상 시</div>
+        </div>
+
+        <div class="poem-divider reveal scroll-reveal"></div>
+
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">
+            &ldquo;This morning the water lilies are no less lovely, I think,<br>
+            than the lilies of Monet.<br>
+            Each one is a raft of optimism.&rdquo;
+          </div>
+          <div class="poem-quote-ko">
+            &ldquo;오늘 아침 수련꽃은 모네의 수련 못지않게<br>
+            아름답다고 나는 생각한다.<br>
+            하나하나가 낙관의 뗏목이다.&rdquo;
+          </div>
+          <div class="poem-attr">&mdash; Mary Oliver, &laquo;The Pond&raquo;</div>
+          <div class="poem-context">자연시인 메리 올리버가 실제 연못의 수련을 모네와 비교한 명상적인 시</div>
+        </div>
+
+        <div class="poem-divider reveal scroll-reveal"></div>
+
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">
+            &ldquo;You said you painted not the things themselves<br>
+            but the air between them&mdash;<br>
+            the shimmer, the breath of light<br>
+            on water, on leaves, on stone.&rdquo;
+          </div>
+          <div class="poem-quote-ko">
+            &ldquo;당신은 사물 자체가 아니라<br>
+            그 사이의 공기를 그렸다고 했지요&mdash;<br>
+            물 위의, 잎 위의, 돌 위의<br>
+            빛의 떨림, 빛의 숨결을.&rdquo;
+          </div>
+          <div class="poem-attr">&mdash; Mary Padgen Michna, &laquo;To Claude Monet Regarding the Water Lilies&raquo;</div>
+          <div class="poem-context">&ldquo;사물이 아닌 사물 사이의 공기를 그렸다&rdquo;는 모네의 말에서 영감 받은 에크프라시스 시</div>
+        </div>
+
+        <div class="poem-divider reveal scroll-reveal"></div>
+
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">
+            &ldquo;In this oval room, the paintings curve<br>
+            around me like the world itself.<br>
+            I stand inside a moment Monet once held,<br>
+            wrapped in blues that breathe and shift.&rdquo;
+          </div>
+          <div class="poem-quote-ko">
+            &ldquo;이 타원형 방에서 그림들이<br>
+            세상 그 자체처럼 나를 감싼다.<br>
+            모네가 한때 붙잡았던 한 순간 속에 나는 서 있다,<br>
+            숨 쉬고 흔들리는 푸른빛에 둘러싸여.&rdquo;
+          </div>
+          <div class="poem-attr">&mdash; Alarie Tennille, &laquo;Surrounded by Monet&rsquo;s Water Lilies&raquo;</div>
+          <div class="poem-context">파리 오랑주리 미술관의 타원형 수련 전시실에서의 체험을 담은 시</div>
+        </div>
+
+        <div class="poem-divider reveal scroll-reveal"></div>
+
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">
+            &ldquo;I wanted to tell you how the lilies<br>
+            float like prayers on the surface,<br>
+            how color bleeds into color<br>
+            until there is no telling sky from water.&rdquo;
+          </div>
+          <div class="poem-quote-ko">
+            &ldquo;수련이 수면 위에서 기도처럼<br>
+            떠 있는 모습을 말해주고 싶었다,<br>
+            색이 색으로 번져<br>
+            하늘과 물을 구분할 수 없게 되는 그 모습을.&rdquo;
+          </div>
+          <div class="poem-attr">&mdash; Preeti Vangani, &laquo;Looking Back at Monet&rsquo;s Water Lilies&raquo;</div>
+          <div class="poem-context">모네 수련 앞에서의 명상적 체험을 동양적 감성으로 풀어낸 시</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S12: 실기 참고 — 수양버들 추가 & 어두운 연못 변형 1 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s12">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 01</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">수양버들 추가 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-19-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-19-1.jpg','수양버들 추가 1')" loading="lazy" alt="수양버들 추가 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-19-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-19-2.jpg','수양버들 추가 2')" loading="lazy" alt="수양버들 추가 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-19-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-19-3.jpg','수양버들 추가 3')" loading="lazy" alt="수양버들 추가 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-19-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-19-4.jpg','수양버들 추가 4')" loading="lazy" alt="수양버들 추가 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">어두운 연못 변형 A ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-20-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-20-1.jpg','어두운 연못 변형 A 1')" loading="lazy" alt="어두운 연못 변형 A 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-20-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-20-2.jpg','어두운 연못 변형 A 2')" loading="lazy" alt="어두운 연못 변형 A 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-20-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-20-3.jpg','어두운 연못 변형 A 3')" loading="lazy" alt="어두운 연못 변형 A 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-20-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-20-4.jpg','어두운 연못 변형 A 4')" loading="lazy" alt="어두운 연못 변형 A 4">
+        </div>
+      </div>
+      <div class="prac-caption">수양버들과 연못 그림자의 다양한 표현</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S13: 실기 참고 — 어두운 연못 변형 2 & 3 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s13">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 02</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">어두운 연못 변형 B ⭐⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-21-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-21-1.jpg','어두운 연못 변형 B 1')" loading="lazy" alt="어두운 연못 변형 B 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-21-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-21-2.jpg','어두운 연못 변형 B 2')" loading="lazy" alt="어두운 연못 변형 B 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-21-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-21-3.jpg','어두운 연못 변형 B 3')" loading="lazy" alt="어두운 연못 변형 B 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-21-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-21-4.jpg','어두운 연못 변형 B 4')" loading="lazy" alt="어두운 연못 변형 B 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">어두운 연못 변형 C ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-22-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-22-1.jpg','어두운 연못 변형 C 1')" loading="lazy" alt="어두운 연못 변형 C 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-22-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-22-2.jpg','어두운 연못 변형 C 2')" loading="lazy" alt="어두운 연못 변형 C 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-22-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-22-3.jpg','어두운 연못 변형 C 3')" loading="lazy" alt="어두운 연못 변형 C 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-22-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-22-4.jpg','어두운 연못 변형 C 4')" loading="lazy" alt="어두운 연못 변형 C 4">
+        </div>
+      </div>
+      <div class="prac-caption">어두운 수면 위 빛과 그림자의 깊이감</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S14: 실기 참고 — 어두운 연못 변형 4 & 5 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s14">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 03</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">어두운 연못 변형 D ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-23-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-23-1.jpg','어두운 연못 변형 D 1')" loading="lazy" alt="어두운 연못 변형 D 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-23-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-23-2.jpg','어두운 연못 변형 D 2')" loading="lazy" alt="어두운 연못 변형 D 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-23-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-23-3.jpg','어두운 연못 변형 D 3')" loading="lazy" alt="어두운 연못 변형 D 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-23-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-23-4.jpg','어두운 연못 변형 D 4')" loading="lazy" alt="어두운 연못 변형 D 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">어두운 연못 변형 E ⭐⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-24-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-24-1.jpg','어두운 연못 변형 E 1')" loading="lazy" alt="어두운 연못 변형 E 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-24-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-24-2.jpg','어두운 연못 변형 E 2')" loading="lazy" alt="어두운 연못 변형 E 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-24-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-24-3.jpg','어두운 연못 변형 E 3')" loading="lazy" alt="어두운 연못 변형 E 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-24-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-24-4.jpg','어두운 연못 변형 E 4')" loading="lazy" alt="어두운 연못 변형 E 4">
+        </div>
+      </div>
+      <div class="prac-caption">연못 수면의 명암 대비 심화</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S15: 실기 참고 — 안개 낀 강 & 새벽 수련 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s15">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 04</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">안개 낀 강 풍경</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-01-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-01-1.jpg','안개 낀 강 풍경 1')" loading="lazy" alt="안개 낀 강 풍경 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-01-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-01-2.jpg','안개 낀 강 풍경 2')" loading="lazy" alt="안개 낀 강 풍경 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-01-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-01-3.jpg','안개 낀 강 풍경 3')" loading="lazy" alt="안개 낀 강 풍경 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-01-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-01-4.jpg','안개 낀 강 풍경 4')" loading="lazy" alt="안개 낀 강 풍경 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">새벽의 수련 연못</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-02-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-02-1.jpg','새벽 수련 연못 1')" loading="lazy" alt="새벽 수련 연못 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-02-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-02-2.jpg','새벽 수련 연못 2')" loading="lazy" alt="새벽 수련 연못 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-02-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-02-3.jpg','새벽 수련 연못 3')" loading="lazy" alt="새벽 수련 연못 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-02-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-02-4.jpg','새벽 수련 연못 4')" loading="lazy" alt="새벽 수련 연못 4">
+        </div>
+      </div>
+      <div class="prac-caption">부드러운 안개와 수련 &mdash; 연한 색조로 시작해보세요</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S16: 실기 참고 — 일본식 다리 & 석양 호수 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s16">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 05</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">일본식 다리와 수면 반사</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-03-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-03-1.jpg','일본식 다리 1')" loading="lazy" alt="일본식 다리 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-03-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-03-2.jpg','일본식 다리 2')" loading="lazy" alt="일본식 다리 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-03-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-03-3.jpg','일본식 다리 3')" loading="lazy" alt="일본식 다리 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-03-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-03-4.jpg','일본식 다리 4')" loading="lazy" alt="일본식 다리 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">석양이 비치는 호수</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-04-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-04-1.jpg','석양 호수 1')" loading="lazy" alt="석양 호수 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-04-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-04-2.jpg','석양 호수 2')" loading="lazy" alt="석양 호수 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-04-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-04-3.jpg','석양 호수 3')" loading="lazy" alt="석양 호수 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-04-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-04-4.jpg','석양 호수 4')" loading="lazy" alt="석양 호수 4">
+        </div>
+      </div>
+      <div class="prac-caption">구조물의 반사와 따뜻한 석양빛</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S17: 실기 참고 — 수양버들 & 물 질감 추상 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s17">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 06</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">수양버들과 수면</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-05-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-05-1.jpg','수양버들 1')" loading="lazy" alt="수양버들 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-05-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-05-2.jpg','수양버들 2')" loading="lazy" alt="수양버들 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-05-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-05-3.jpg','수양버들 3')" loading="lazy" alt="수양버들 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-05-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-05-4.jpg','수양버들 4')" loading="lazy" alt="수양버들 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">물 질감 추상 클로즈업</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-06-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-06-1.jpg','물 질감 추상 1')" loading="lazy" alt="물 질감 추상 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-06-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-06-2.jpg','물 질감 추상 2')" loading="lazy" alt="물 질감 추상 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-06-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-06-3.jpg','물 질감 추상 3')" loading="lazy" alt="물 질감 추상 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-06-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-06-4.jpg','물 질감 추상 4')" loading="lazy" alt="물 질감 추상 4">
+        </div>
+      </div>
+      <div class="prac-caption">자연물 반사와 추상적 물 표현</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S18: 실기 참고 — 햇빛 물결 & 비 내리는 거리 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s18">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 07</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">햇빛 반짝이는 물결</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-07-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-07-1.jpg','햇빛 물결 1')" loading="lazy" alt="햇빛 물결 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-07-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-07-2.jpg','햇빛 물결 2')" loading="lazy" alt="햇빛 물결 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-07-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-07-3.jpg','햇빛 물결 3')" loading="lazy" alt="햇빛 물결 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-07-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-07-4.jpg','햇빛 물결 4')" loading="lazy" alt="햇빛 물결 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">비 내리는 거리 웅덩이</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-08-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-08-1.jpg','비 내리는 거리 1')" loading="lazy" alt="비 내리는 거리 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-08-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-08-2.jpg','비 내리는 거리 2')" loading="lazy" alt="비 내리는 거리 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-08-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-08-3.jpg','비 내리는 거리 3')" loading="lazy" alt="비 내리는 거리 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-08-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-08-4.jpg','비 내리는 거리 4')" loading="lazy" alt="비 내리는 거리 4">
+        </div>
+      </div>
+      <div class="prac-caption">빛의 반짝임과 비 오는 날의 반사</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S19: 실기 참고 — 어두운 연못 & 호수 위 햇살 반사 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s19">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 08</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">어두운 연못 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-09-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-09-1.jpg','어두운 연못 1')" loading="lazy" alt="어두운 연못 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-09-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-09-2.jpg','어두운 연못 2')" loading="lazy" alt="어두운 연못 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-09-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-09-3.jpg','어두운 연못 3')" loading="lazy" alt="어두운 연못 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-09-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-09-4.jpg','어두운 연못 4')" loading="lazy" alt="어두운 연못 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">호수 위 햇살 반사 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-10-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-10-1.jpg','호수 위 햇살 반사 1')" loading="lazy" alt="호수 위 햇살 반사 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-10-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-10-2.jpg','호수 위 햇살 반사 2')" loading="lazy" alt="호수 위 햇살 반사 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-10-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-10-3.jpg','호수 위 햇살 반사 3')" loading="lazy" alt="호수 위 햇살 반사 3">
+        </div>
+      </div>
+      <div class="prac-caption">그림자와 빛의 대비 표현</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S20: 실기 참고 — 호수 물결 클로즈업 & 고요한 연못 수채화 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s20">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 09</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">호수 물결 클로즈업 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-11-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-11-1.jpg','호수 물결 클로즈업 1')" loading="lazy" alt="호수 물결 클로즈업 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-11-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-11-2.jpg','호수 물결 클로즈업 2')" loading="lazy" alt="호수 물결 클로즈업 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-11-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-11-3.jpg','호수 물결 클로즈업 3')" loading="lazy" alt="호수 물결 클로즈업 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-11-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-11-4.jpg','호수 물결 클로즈업 4')" loading="lazy" alt="호수 물결 클로즈업 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">고요한 연못 수채화 ⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-12-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-12-1.jpg','고요한 연못 수채화 1')" loading="lazy" alt="고요한 연못 수채화 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-12-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-12-2.jpg','고요한 연못 수채화 2')" loading="lazy" alt="고요한 연못 수채화 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-12-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-12-3.jpg','고요한 연못 수채화 3')" loading="lazy" alt="고요한 연못 수채화 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-12-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-12-4.jpg','고요한 연못 수채화 4')" loading="lazy" alt="고요한 연못 수채화 4">
+        </div>
+      </div>
+      <div class="prac-caption">수면 위 물결 표현 연습</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S21: 실기 참고 — 나무 반영 수채화 & 일출 호수 수채화 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s21">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 10</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">나무 반영 수채화 ⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-13-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-13-1.jpg','나무 반영 수채화 1')" loading="lazy" alt="나무 반영 수채화 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-13-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-13-2.jpg','나무 반영 수채화 2')" loading="lazy" alt="나무 반영 수채화 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-13-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-13-3.jpg','나무 반영 수채화 3')" loading="lazy" alt="나무 반영 수채화 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-13-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-13-4.jpg','나무 반영 수채화 4')" loading="lazy" alt="나무 반영 수채화 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">일출 호수 수채화 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-14-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-14-1.jpg','일출 호수 수채화 1')" loading="lazy" alt="일출 호수 수채화 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-14-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-14-2.jpg','일출 호수 수채화 2')" loading="lazy" alt="일출 호수 수채화 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-14-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-14-3.jpg','일출 호수 수채화 3')" loading="lazy" alt="일출 호수 수채화 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-14-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-14-4.jpg','일출 호수 수채화 4')" loading="lazy" alt="일출 호수 수채화 4">
+        </div>
+      </div>
+      <div class="prac-caption">자연 반영과 일출 분위기</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S22: 실기 참고 — 잔잔한 수면 수채화 & 따뜻한 석양 호수 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s22">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 11</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">잔잔한 수면 수채화 ⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-15-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-15-1.jpg','잔잔한 수면 수채화 1')" loading="lazy" alt="잔잔한 수면 수채화 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-15-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-15-2.jpg','잔잔한 수면 수채화 2')" loading="lazy" alt="잔잔한 수면 수채화 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-15-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-15-3.jpg','잔잔한 수면 수채화 3')" loading="lazy" alt="잔잔한 수면 수채화 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-15-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-15-4.jpg','잔잔한 수면 수채화 4')" loading="lazy" alt="잔잔한 수면 수채화 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">따뜻한 석양 호수 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-16-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-16-1.jpg','따뜻한 석양 호수 1')" loading="lazy" alt="따뜻한 석양 호수 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-16-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-16-2.jpg','따뜻한 석양 호수 2')" loading="lazy" alt="따뜻한 석양 호수 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-16-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-16-3.jpg','따뜻한 석양 호수 3')" loading="lazy" alt="따뜻한 석양 호수 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-16-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-16-4.jpg','따뜻한 석양 호수 4')" loading="lazy" alt="따뜻한 석양 호수 4">
+        </div>
+      </div>
+      <div class="prac-caption">잔잔한 수면과 따뜻한 빛</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S23: 실기 참고 — 흐린 하늘 호수 & 수련 연못 수채화 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s23">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 12</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">흐린 하늘 호수 ⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-17-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-17-1.jpg','흐린 하늘 호수 1')" loading="lazy" alt="흐린 하늘 호수 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-17-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-17-2.jpg','흐린 하늘 호수 2')" loading="lazy" alt="흐린 하늘 호수 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-17-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-17-3.jpg','흐린 하늘 호수 3')" loading="lazy" alt="흐린 하늘 호수 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-17-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-17-4.jpg','흐린 하늘 호수 4')" loading="lazy" alt="흐린 하늘 호수 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">수련 연못 수채화 ⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-18-1.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-18-1.jpg','수련 연못 수채화 1')" loading="lazy" alt="수련 연못 수채화 1">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-18-2.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-18-2.jpg','수련 연못 수채화 2')" loading="lazy" alt="수련 연못 수채화 2">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-18-3.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-18-3.jpg','수련 연못 수채화 3')" loading="lazy" alt="수련 연못 수채화 3">
+          <img src="../../images/lessons/impressionism/01-monet-light-water/thumbs/style-18-4.jpg" onclick="openLb('../../images/lessons/impressionism/01-monet-light-water/style-18-4.jpg','수련 연못 수채화 4')" loading="lazy" alt="수련 연못 수채화 4">
+        </div>
+      </div>
+      <div class="prac-caption">하늘 반사와 수련 표현</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- S24: 마무리 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="slide" id="s24">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="sc-scroll">
+    <div class="end-wrap">
+      <div class="ew reveal blur-in">Lesson Complete</div>
+      <h2 class="stitle reveal blur-in">오늘 배운 핵심 3가지</h2>
+
+      <div class="summary-cards">
+        <div class="sum-card reveal">
+          <div class="sum-num blur-in">01</div>
+          <div class="sum-text"><strong>그림자는 색이다</strong><br>검은색이 아닌 보라, 파랑으로 그림자를 표현하는 것이 인상주의의 핵심 발견</div>
+        </div>
+        <div class="sum-card reveal">
+          <div class="sum-num blur-in">02</div>
+          <div class="sum-text"><strong>빛은 순간이다</strong><br>같은 장소도 아침과 저녁이 완전히 다른 그림 &mdash; 빛의 변화를 포착하라</div>
+        </div>
+        <div class="sum-card reveal">
+          <div class="sum-num blur-in">03</div>
+          <div class="sum-text"><strong>인상을 먼저 잡아라</strong><br>디테일보다 전체 색감과 분위기를 먼저 &mdash; 눈을 가늘게 뜨고 보라</div>
+        </div>
+      </div>
+
+      <div class="next-info reveal">
+        다음 강: <strong>2강 &mdash; 모네의 연작: 순간의 기록</strong><br>
+        건초더미, 루앙 대성당, 포플러 연작을 통해 연작 개념을 깊이 있게 다룹니다.
+      </div>
+
+      <div class="reveal" style="margin-top:8px;">
+        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:8px;letter-spacing:1px;">추천 감상</div>
+        <div class="museum-pills">
+          <a class="museum-pill" href="https://artsandculture.google.com/partner/musee-dorsay-paris" target="_blank" rel="noopener">오르세 미술관</a>
+          <a class="museum-pill" href="https://www.marmottan.fr/en/" target="_blank" rel="noopener">마르모탕 모네 미술관</a>
+          <a class="museum-pill" href="https://www.musee-orangerie.fr/" target="_blank" rel="noopener">오랑주리 미술관</a>
+        </div>
+      </div>
+
+      <div class="end-btns reveal">
+        <button class="end-btn" onclick="location.href='../main/classes.html'">&#8592; 수업 목록</button>
+        <button class="end-btn" onclick="location.href='../../index.html'">메인 페이지</button>
+      </div>
+    </div>
+    </div><!-- /sc-scroll -->
+  </div>
+</div>
+
+</div><!-- /sw -->
+
+<!-- PAINTING INFO POPUP -->
+<div class="paint-popup" id="paintPopup" onclick="if(event.target===this||event.target.classList.contains('paint-popup-bg'))closePainting()">
+  <div class="paint-popup-bg"></div>
+  <div class="paint-popup-inner">
+    <button class="paint-popup-close" onclick="closePainting()">&#10005;</button>
+    <img class="paint-popup-img" id="ppImg" src="" alt="">
+    <div class="paint-popup-info">
+      <div class="paint-popup-title" id="ppTitle"></div>
+      <div class="paint-popup-sub" id="ppSub"></div>
+      <div class="paint-popup-desc" id="ppDesc"></div>
+      <div class="paint-popup-loc" id="ppLoc"></div>
+    </div>
+  </div>
+</div>
+
+<!-- POSTER MINI POPUP -->
+<div class="poster-popup" id="posterPopup" onclick="closePoster()">
+  <div class="poster-popup-bg"></div>
+  <img id="posterImg" src="" alt="">
+  <div class="poster-popup-title" id="posterTitle"></div>
+  <div class="poster-popup-sub" id="posterSub"></div>
+</div>
+
+<script>
+/* ── CORE ENGINE ── */
+var total=25,cur=0,isAnimating=false;
+
+/* Build dots */
+function buildDots(){
+  var db=document.getElementById('db');db.innerHTML='';
+  for(var i=0;i<total;i++){
+    var d=document.createElement('div');
+    d.className='dot'+(i===0?' active':'');
+    d.onclick=(function(x){return function(){go(x);};})(i);
+    db.appendChild(d);
+  }
+}
+
+/* Slide transition */
+function go(n){
+  if(n===cur||n<0||n>=total||isAnimating)return;
+  isAnimating=true;
+  var slides=document.querySelectorAll('.slide');
+  var dots=document.querySelectorAll('.dot');
+
+  /* exit current — reset blur-in animations */
+  slides[cur].querySelectorAll('.blur-in').forEach(function(el){el.classList.remove('animate');});
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('exit-left');
+
+  /* enter new */
+  slides[n].classList.remove('exit-left');
+  slides[n].classList.add('active');
+
+  /* dots */
+  dots[cur].classList.remove('active');
+  dots[n].classList.add('active');
+
+  var prev=cur;
+  cur=n;
+
+  /* update UI */
+  document.getElementById('cn').textContent=cur+1;
+  document.getElementById('bp').disabled=cur===0;
+  document.getElementById('bn').disabled=cur===total-1;
+  document.getElementById('pbar').style.width=((cur/(total-1))*100)+'%';
+
+  /* Reset scroll */
+  var scr=slides[n].querySelector('.sc-scroll');
+  if(scr)scr.scrollTop=0;
+
+  /* Trigger reveal animations */
+  triggerReveals(slides[n]);
+
+  /* Reset panorama when entering S4 */
+  if(n===4){
+    panoX=0;panoTargetX=0;panoVelocity=0;panoZoomed=false;panoRotY=0;panoTargetRotY=0;
+    var pv=document.getElementById('panoViewer');
+    if(pv)pv.classList.remove('zoomed');
+    var ph=document.getElementById('panoHint');
+    if(ph){ph.classList.remove('hidden');setTimeout(function(){ph.classList.add('hidden');},4000);}
+  }
+
+  /* Clean up old slide */
+  setTimeout(function(){
+    slides[prev].classList.remove('exit-left');
+    isAnimating=false;
+  },900);
+}
+
+function nav(d){if(cur+d>=0&&cur+d<total)go(cur+d);}
+
+/* ── REVEAL SYSTEM ── */
+function triggerReveals(slide){
+  var els=slide.querySelectorAll('.reveal');
+  /* Reset first */
+  els.forEach(function(el){el.classList.remove('show');});
+  /* Reset blur-in */
+  slide.querySelectorAll('.blur-in').forEach(function(el){el.classList.remove('animate');});
+  /* Then trigger with small stagger */
+  requestAnimationFrame(function(){
+    setTimeout(function(){
+      els.forEach(function(el){el.classList.add('show');});
+      /* Trigger blur-in text animations */
+      slide.querySelectorAll('.blur-in').forEach(function(el){el.classList.add('animate');});
+    },100);
+  });
+}
+
+/* Scroll-triggered reveals within slides */
+function setupScrollObserver(){
+  if(!('IntersectionObserver' in window))return;
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+      }
+    });
+  },{threshold:0.15,rootMargin:'0px 0px -40px 0px'});
+
+  document.querySelectorAll('.scroll-reveal').forEach(function(el){
+    observer.observe(el);
+  });
+}
+
+/* ── INTERACTIVE CARDS ── */
+function toggleCard(card){
+  var wasExpanded=card.classList.contains('expanded');
+  /* Close siblings */
+  card.parentElement.querySelectorAll('.info-card').forEach(function(c){c.classList.remove('expanded');});
+  if(!wasExpanded)card.classList.add('expanded');
+}
+
+/* ── TIMELINE ── */
+function toggleTimeline(item){
+  var wasExpanded=item.classList.contains('expanded');
+  /* Close siblings */
+  item.parentElement.querySelectorAll('.tl-item').forEach(function(t){t.classList.remove('expanded');});
+  if(!wasExpanded)item.classList.add('expanded');
+}
+
+/* ── ANALYSIS PANELS ── */
+function togglePanel(panel){
+  var wasOpen=panel.classList.contains('open');
+  /* Close siblings */
+  panel.parentElement.querySelectorAll('.an-panel').forEach(function(p){p.classList.remove('open');});
+  if(!wasOpen)panel.classList.add('open');
+}
+
+/* ── TECH CARDS ── */
+function toggleTech(card){
+  var wasExpanded=card.classList.contains('expanded');
+  if(!wasExpanded){
+    card.parentElement.querySelectorAll('.tech-card').forEach(function(c){c.classList.remove('expanded');});
+  }
+  card.classList.toggle('expanded');
+}
+
+/* ── KEYBOARD NAV ── */
+document.addEventListener('keydown',function(e){
+  if(document.getElementById('lbox').classList.contains('open')){
+    if(e.key==='Escape')closeLb();
+    return;
+  }
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nav(1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();nav(-1);}
+  if(e.key==='Home'){e.preventDefault();go(0);}
+  if(e.key==='End'){e.preventDefault();go(total-1);}
+});
+
+/* ── TOUCH / SWIPE ── */
+var tx=0,ty=0,swiping=false;
+var swEl=document.getElementById('sw');
+swEl.addEventListener('touchstart',function(e){
+  tx=e.touches[0].clientX;
+  ty=e.touches[0].clientY;
+  swiping=true;
+},{passive:true});
+swEl.addEventListener('touchmove',function(e){
+  /* Allow vertical scroll inside sc-scroll */
+},{passive:true});
+swEl.addEventListener('touchend',function(e){
+  if(!swiping)return;
+  swiping=false;
+  var dx=e.changedTouches[0].clientX-tx;
+  var dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>60){
+    nav(dx<0?1:-1);
+  }
+});
+
+/* ── LIGHTBOX ── */
+function openLb(src,cap){
+  var lb=document.getElementById('lbox');
+  var img=document.getElementById('lbox-img');
+  img.src=src;
+  document.getElementById('lbox-cap').textContent=cap||'';
+  var dl=document.getElementById('lbox-dl');
+  dl.href=src;dl.download=src.split('/').pop();
+  lb.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeLb(){
+  document.getElementById('lbox').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+/* ── COVER TYPEWRITER ── */
+function initCover(){
+  var title=document.getElementById('cover-title');
+  if(title)title.classList.add('animate');
+}
+
+/* ── TOPBAR AUTO-HIDE ── */
+var lastScrollY=0;
+function setupTopbarHide(){
+  document.querySelectorAll('.sc-scroll').forEach(function(scr){
+    scr.addEventListener('scroll',function(){
+      var tb=document.getElementById('topbar');
+      if(this.scrollTop>80&&this.scrollTop>lastScrollY){
+        tb.classList.add('hidden');
+      }else{
+        tb.classList.remove('hidden');
+      }
+      lastScrollY=this.scrollTop;
+    },{passive:true});
+  });
+}
+
+/* ── Blur Dissolve Text ── */
+function initBlurText(){
+  document.querySelectorAll('.blur-in').forEach(function(el){
+    if(el.dataset.processed)return;
+    el.dataset.processed='1';
+    var text=el.textContent;
+    /* Clear all child nodes */
+    while(el.firstChild)el.removeChild(el.firstChild);
+    /* Create a wrapper span to hold chars (prevents flex gap issues on .ew) */
+    var wrapper=document.createElement('span');
+    wrapper.style.display='inline';
+    for(var i=0;i<text.length;i++){
+      var span=document.createElement('span');
+      if(text[i]===' '){
+        span.className='char char-space';
+        span.innerHTML='&nbsp;';
+      }else{
+        span.className='char';
+        span.textContent=text[i];
+      }
+      span.style.transitionDelay=(i*120)+'ms';
+      wrapper.appendChild(span);
+    }
+    el.appendChild(wrapper);
+  });
+}
+
+/* ── INIT ── */
+initBlurText();
+buildDots();
+
+/* ── Painting Data ── */
+var PAINTINGS = {
+  monet_impression_sunrise:{t:'인상, 해돋이',e:'Impression, Sunrise',y:1872,d:'인상주의라는 이름의 기원이 된 역사적인 작품으로, 르아브르 항구의 일출을 담았다',l:'Musée Marmottan Monet, Paris'},
+  monet_water_lilies_1906:{t:'수련',e:'Water Lilies',y:1906,d:'지베르니 정원의 수련 연못을 그린 연작 중 하나로, 물 위에 비친 빛의 변화를 포착했다',l:'Art Institute of Chicago'},
+  monet_water_lilies_nympheas:{t:'님페아(수련)',e:'Nymphéas',y:1915,d:'말년의 대형 수련 연작으로, 추상에 가까운 대담한 색채와 붓터치가 특징이다',l:'Musée Marmottan Monet, Paris'},
+  monet_the_magpie:{t:'까치',e:'The Magpie',y:1869,d:'눈 덮인 풍경 위 울타리에 앉은 까치를 그린 작품으로, 모네 최고의 설경화로 평가된다',l:'Musée d\'Orsay, Paris'},
+  monet_gare_saint_lazare:{t:'생라자르역',e:'The Gare Saint-Lazare',y:1877,d:'파리 생라자르 역의 증기와 빛을 포착한 도시 산업 풍경의 걸작',l:'Fogg Art Museum, Harvard'},
+  monet_bridge_at_argenteuil:{t:'아르장퇴유의 다리',e:'The Bridge at Argenteuil',y:1874,d:'아르장퇴유의 도로 다리와 센 강의 반영을 밝은 색채로 표현한 작품',l:'National Gallery of Art, Washington D.C.'},
+  monet_woman_with_parasol:{t:'양산을 든 여인',e:'Woman with a Parasol',y:1875,d:'아내 카미유와 아들 장을 야외에서 그린 인상주의의 상징적 작품',l:'National Gallery of Art, Washington D.C.'},
+  monet_rouen_cathedral_sunlight:{t:'루앙 대성당',e:'Rouen Cathedral, Facade (Sunset)',y:1894,d:'루앙 대성당 연작 중 하나로, 석양빛 아래 성당 파사드의 색채 변화를 포착했다',l:'Musée Marmottan Monet, Paris'},
+  monet_houses_of_parliament_sunset:{t:'국회의사당, 석양',e:'Houses of Parliament, Sunset',y:1903,d:'런던 템스강 너머 국회의사당의 실루엣을 붉은 석양빛으로 물들인 작품',l:'National Gallery of Art, Washington D.C.'},
+  monet_poppies:{t:'양귀비 들판',e:'Poppy Field',y:1873,d:'아르장퇴유 근처 양귀비 들판을 걷는 모자를 그린 전원 풍경의 대표작',l:'Musée d\'Orsay, Paris'},
+  monet_la_grenouillere:{t:'라 그르누예르',e:'La Grenouillère',y:1869,d:'르누아르와 함께 그린 센 강변 수상 레스토랑 풍경으로, 인상주의 탄생의 순간',l:'Metropolitan Museum of Art, New York'},
+  monet_garden_at_sainte_adresse:{t:'생타드레스의 정원',e:'Garden at Sainte-Adresse',y:1867,d:'노르망디 해변 정원에서 가족이 쉬는 모습을 그린 초기 걸작',l:'Metropolitan Museum of Art, New York'},
+  monet_la_japonaise:{t:'라 자포네즈',e:'La Japonaise',y:1876,d:'아내 카미유가 화려한 일본 기모노를 입고 포즈를 취한 대형 인물화',l:'Museum of Fine Arts, Boston'},
+  monet_haystacks_sunset:{t:'건초더미(석양)',e:'Haystacks (Sunset)',y:1891,d:'건초더미 연작 중 하나로, 석양빛에 물든 건초더미의 색채 변화를 기록한 대표작',l:'Museum of Fine Arts, Boston'},
+  monet_haystacks_snow:{t:'밀짚더미, 눈의 효과',e:'Wheatstacks, Snow Effect',y:1891,d:'눈 덮인 아침 풍경 속 밀짚더미를 그린 연작으로, 겨울 빛의 미묘한 변화를 포착했다',l:'J. Paul Getty Museum'},
+  monet_poplars:{t:'포플러 나무',e:'Poplars',y:1891,d:'엡트 강변의 포플러 나무 연작으로, 수직 리듬과 반영이 음악적 조화를 이룬다',l:'Philadelphia Museum of Art'},
+  monet_japanese_bridge:{t:'수련 연못 위의 다리',e:'Bridge over a Pond of Water Lilies',y:1899,d:'지베르니 정원의 일본식 다리와 수련을 그린 가장 유명한 버전',l:'Metropolitan Museum of Art, New York'},
+  monet_san_giorgio_maggiore_dusk:{t:'황혼의 산 조르조 마조레',e:'San Giorgio Maggiore at Dusk',y:1908,d:'베네치아 석양에 물든 산 조르조 마조레 성당의 환상적인 색채',l:'National Museum Cardiff'},
+  monet_bordighera:{t:'보르디게라',e:'Bordighera',y:1884,d:'이탈리아 리비에라의 보르디게라 마을을 지중해의 강렬한 빛과 함께 포착',l:'Art Institute of Chicago'},
+  monet_camille_green_dress:{t:'카미유(초록 드레스의 여인)',e:'Camille',y:1866,d:'모네의 첫 번째 아내 카미유를 그린 대형 초상화로, 살롱에서 큰 호평을 받았다',l:'Kunsthalle Bremen'},
+  monet_cliff_walk_pourville:{t:'푸르빌의 절벽 산책',e:'Cliff Walk at Pourville',y:1882,d:'노르망디 해안 절벽 위를 산책하는 두 여인의 모습을 바다 바람과 함께 그렸다',l:'Art Institute of Chicago'},
+  monet_boulevard_des_capucines:{t:'카퓌신 대로',e:'Boulevard des Capucines',y:1873,d:'1874년 첫 인상주의 전시에 출품된 작품으로, 파리 대로의 활기찬 군중과 빛을 포착',l:'Nelson-Atkins Museum of Art'},
+  monet_luncheon_on_grass:{t:'풀밭 위의 점심',e:'Le Déjeuner sur l\'herbe',y:1865,d:'마네의 동명 작품에 영감을 받아 야외 대작으로 시도한 초기 야심작',l:'Musée d\'Orsay, Paris'},
+  monet_artists_garden_giverny:{t:'지베르니의 화가의 정원',e:'The Artist\'s Garden at Giverny',y:1900,d:'아이리스 꽃이 만개한 지베르니 정원의 화려한 색채를 담은 작품',l:'Musée d\'Orsay, Paris'},
+  monet_autumn_seine_argenteuil:{t:'센 강의 가을',e:'Autumn on the Seine, Argenteuil',y:1873,d:'아르장퇴유의 센 강변 가을 풍경을 따뜻한 색조로 표현한 서정적인 작품',l:'High Museum of Art, Atlanta'},
+  monet_water_lily_pond_green_harmony:{t:'수련 연못, 녹색의 조화',e:'Water Lily Pond, Green Harmony',y:1899,d:'일본식 다리와 수련이 초록빛 조화를 이루는 지베르니 정원의 대표 풍경',l:'Musée d\'Orsay, Paris'},
+  monet_camille_on_deathbed:{t:'임종 직전의 카미유 모네',e:'Camille Monet on Her Deathbed',y:1879,d:'사랑하는 아내의 마지막 순간을 화가로서의 본능으로 포착한 가슴 아픈 작품',l:'Musée d\'Orsay, Paris'},
+  monet_regatta_at_argenteuil:{t:'아르장퇴유의 레가타',e:'Regatta at Argenteuil',y:1872,d:'센 강 위의 요트 경주를 빠른 붓터치로 포착한 생동감 넘치는 수상 풍경화',l:'Musée d\'Orsay, Paris'},
+  monet_sunrise_marine:{t:'해돋이(바다)',e:'Sunrise (Marine)',y:1873,d:'르아브르 바다의 이른 아침 풍경으로, 인상, 해돋이와 같은 시기에 그려진 해경화',l:'J. Paul Getty Museum'},
+  monet_palazzo_da_mula_venice:{t:'다 물라 궁전, 베네치아',e:'Le Palais da Mula, Venice',y:1908,d:'베네치아 대운하변의 다 물라 궁전을 물 위의 반영과 함께 그린 작품',l:'National Gallery of Art, Washington D.C.'},
+  monet_path_in_monets_garden:{t:'지베르니 모네 정원의 오솔길',e:'Path in Monet\'s Garden',y:1902,d:'장미 아치 아래 이어진 지베르니 정원의 오솔길을 풍성한 꽃과 함께 표현',l:'Österreichische Galerie Belvedere'},
+  monet_train_in_snow:{t:'눈 속의 기차',e:'Train in the Snow',y:1875,d:'눈 덮인 철로 위를 달리는 기차를 인상주의적 필치로 포착한 겨울 풍경',l:'Musée Marmottan Monet, Paris'},
+  monet_waterloo_bridge:{t:'채링 크로스 다리',e:'Charing Cross Bridge',y:1903,d:'런던의 안개 속 채링 크로스 다리를 보라빛 분위기로 그린 런던 연작',l:'Saint Louis Art Museum'},
+  monet_fishing_boats_at_honfleur:{t:'항구를 떠나는 어선',e:'Fishing Boats Leaving the Harbor',y:1874,d:'르아브르 항구에서 출항하는 어선들의 활기찬 모습을 담은 해양 풍경화',l:'Los Angeles County Museum of Art'},
+  monet_springtime:{t:'봄',e:'Springtime',y:1872,d:'꽃나무 아래 풀밭에 앉아 책을 읽는 여인의 모습을 봄빛 속에 담았다',l:'Walters Art Museum, Baltimore'},
+  monet_promenade_argenteuil:{t:'아르장퇴유의 산책',e:'The Promenade, Argenteuil',y:1875,d:'아르장퇴유 들판을 산책하는 인물들의 모습을 밝은 야외 빛 속에 포착',l:'Private collection'},
+  monet_water_lilies_1916:{t:'수련',e:'Water Lilies',y:1916,d:'만년의 대형 수련 작품으로, 수면 위 빛과 색의 추상적 향연이 펼쳐진다',l:'National Museum of Western Art, Tokyo'},
+  monet_charing_cross_bridge:{t:'채링 크로스 다리',e:'Charing Cross Bridge',y:1902,d:'런던 안개에 싸인 채링 크로스 다리의 몽환적인 분위기를 포착한 연작',l:'Art Gallery of Ontario, Toronto'},
+  monet_le_bassin_aux_nympheas:{t:'수련 연못, 분홍빛 조화',e:'Le Bassin aux Nymphéas',y:1900,d:'분홍빛 색조가 지배하는 수련 연못 풍경으로, 물과 식물의 조화가 아름답다',l:'Musée d\'Orsay, Paris'},
+  monet_rue_montorgueil:{t:'몽토르게유 거리',e:'Rue Montorgueil, Paris',y:1878,d:'프랑스 국경일 축제로 삼색기가 휘날리는 파리 거리의 열기와 환희를 담았다',l:'Musée d\'Orsay, Paris'}
+};
+
+/* ── PANORAMA VIEWER (S4) ── */
+var panoData=[
+  {title:'집착의 역사',text:'1893년 연못 조성부터 1926년 사망까지 33년간 약 250점의 수련. 모네는 매일 새벽 3시 반에 일어나 빛이 바뀌기 전 연못으로 향했다.'},
+  {title:'혁명적 구도',text:'수평선을 완전히 제거한 최초의 풍경화 중 하나. 하늘도 땅도 없이 오직 물 표면만으로 화면 구성 — 이것은 추상미술의 예고편이었다.'},
+  {title:'기법: 반투명 글레이징',text:'여러 겹의 얇은 물감층이 빛을 통과시키며 실제 물처럼 투명한 깊이를 만든다. 가까이서 보면 수백 개의 붓터치가 보인다.'},
+  {title:'백내장과 수련',text:'1905년부터 시력이 흐려지면서 수련의 색이 점점 붉고 거칠어졌다. 미술사에서는 이 시기의 작품을 "추상표현주의의 선구"로 평가한다. 잭슨 폴록, 마크 로스코가 영향 받았다.'},
+  {title:'오랑주리 미술관',text:'1927년 개관한 오랑주리 미술관의 타원형 방 2개에 8점의 대형 수련 패널(총 길이 91m) 설치. 자연광이 천장에서 들어와 연못 앞에 서 있는 듯한 경험을 준다. 모네의 유언에 따른 것.'}
+];
+/* Inertia physics + VR rotation state */
+var panoX=0,          /* current visual position */
+    panoTargetX=0,    /* where we want to be (smooth chase) */
+    panoVelocity=0,   /* current velocity for inertia */
+    panoRotY=0,       /* current VR rotateY */
+    panoTargetRotY=0, /* target rotateY */
+    panoZoomed=false,
+    panoDragging=false,panoDragStartX=0,panoDragScrollX=0,
+    panoCurrentPanel=0,
+    panoAnimFrame=null;
+
+function initPanorama(){
+  var viewer=document.getElementById('panoViewer');
+  var track=document.getElementById('panoTrack');
+  if(!viewer||!track)return;
+
+  /* Start the render loop */
+  panoRenderLoop();
+
+  /* Wheel → add velocity (inertia-based, not instant) */
+  viewer.addEventListener('wheel',function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    var delta=e.deltaY||e.deltaX;
+    /* Add to velocity — small multiplier for smooth feel */
+    panoVelocity-=delta*0.8;
+    hidePanoHint();
+  },{passive:false});
+
+  /* Click → toggle zoom */
+  viewer.addEventListener('click',function(e){
+    if(panoDragging)return;
+    if(e.target.closest('.pano-bottom')||e.target.closest('.pano-info-popup'))return;
+    panoZoomed=!panoZoomed;
+    viewer.classList.toggle('zoomed',panoZoomed);
+    setTimeout(function(){clampPanoScroll();},100);
+    hidePanoHint();
+  });
+
+  /* Mouse drag */
+  viewer.addEventListener('mousedown',function(e){
+    if(e.target.closest('.pano-bottom')||e.target.closest('.pano-info-popup'))return;
+    panoDragging=false;panoDragStartX=e.clientX;panoDragScrollX=panoTargetX;
+    panoVelocity=0; /* stop inertia when grabbing */
+    viewer.classList.add('grabbing');
+    var lastMoveX=e.clientX,lastMoveTime=Date.now();
+    function onMove(ev){
+      var dx=ev.clientX-panoDragStartX;
+      if(Math.abs(dx)>5)panoDragging=true;
+      /* Track velocity for throw */
+      var now=Date.now(),dt=now-lastMoveTime;
+      if(dt>0)panoVelocity=(ev.clientX-lastMoveX)/dt*16;
+      lastMoveX=ev.clientX;lastMoveTime=now;
+      panoTargetX=panoDragScrollX+dx;
+      panoX=panoTargetX; /* instant follow during drag */
+      clampPanoScroll();
+      hidePanoHint();
+    }
+    function onUp(){
+      viewer.classList.remove('grabbing');
+      document.removeEventListener('mousemove',onMove);
+      document.removeEventListener('mouseup',onUp);
+      setTimeout(function(){panoDragging=false;},50);
+    }
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+  });
+
+  /* Touch drag */
+  var touchStartX=0,touchScrollX=0,touchLastX=0,touchLastTime=0;
+  viewer.addEventListener('touchstart',function(e){
+    if(e.target.closest('.pano-bottom')||e.target.closest('.pano-info-popup'))return;
+    touchStartX=e.touches[0].clientX;touchScrollX=panoTargetX;
+    touchLastX=touchStartX;touchLastTime=Date.now();
+    panoVelocity=0;
+  },{passive:true});
+  viewer.addEventListener('touchmove',function(e){
+    var cx=e.touches[0].clientX;
+    var now=Date.now(),dt=now-touchLastTime;
+    if(dt>0)panoVelocity=(cx-touchLastX)/dt*16;
+    touchLastX=cx;touchLastTime=now;
+    panoTargetX=touchScrollX+(cx-touchStartX);
+    panoX=panoTargetX;
+    clampPanoScroll();
+    hidePanoHint();
+  },{passive:true});
+}
+
+/* Physics render loop — runs every frame */
+function panoRenderLoop(){
+  /* Apply velocity → targetX (inertia) */
+  if(Math.abs(panoVelocity)>0.3){
+    panoTargetX+=panoVelocity;
+    panoVelocity*=0.95; /* friction: slow decay for smooth glide */
+  }else{
+    panoVelocity=0;
+  }
+
+  clampPanoScroll();
+
+  /* Smooth chase: panoX lerps toward panoTargetX */
+  var dx=panoTargetX-panoX;
+  panoX+=dx*0.12; /* 0.12 = gentle, dreamy lag */
+
+  /* VR rotation: based on velocity, max ±3deg */
+  panoTargetRotY=Math.max(-3,Math.min(3,panoVelocity*0.15));
+  panoRotY+=(panoTargetRotY-panoRotY)*0.08;
+  if(Math.abs(panoRotY)<0.01)panoRotY=0;
+
+  /* Apply transform */
+  var track=document.getElementById('panoTrack');
+  if(track){
+    track.style.transform='translateY(-50%) translateX('+panoX.toFixed(1)+'px) rotateY('+panoRotY.toFixed(2)+'deg)';
+  }
+
+  panoAnimFrame=requestAnimationFrame(panoRenderLoop);
+}
+
+function clampPanoScroll(){
+  var track=document.getElementById('panoTrack');
+  var viewer=document.getElementById('panoViewer');
+  if(!track||!viewer)return;
+  var trackW=track.scrollWidth;
+  var viewW=viewer.clientWidth;
+  var maxScroll=0;
+  var minScroll=-(trackW-viewW);
+  if(minScroll>0)minScroll=0;
+  /* Soft clamp with bounce */
+  if(panoTargetX>maxScroll){panoTargetX=maxScroll;panoVelocity*=0.3;}
+  if(panoTargetX<minScroll){panoTargetX=minScroll;panoVelocity*=0.3;}
+  if(panoX>maxScroll+50)panoX=maxScroll+50;
+  if(panoX<minScroll-50)panoX=minScroll-50;
+}
+function hidePanoHint(){
+  var h=document.getElementById('panoHint');
+  if(h)h.classList.add('hidden');
+}
+
+function switchPanel(idx){
+  var track=document.getElementById('panoTrack');
+  if(!track)return;
+  var imgs=track.querySelectorAll('.pano-img');
+  imgs.forEach(function(img,i){
+    img.classList.toggle('pano-active',i===idx);
+  });
+  panoX=0;panoTargetX=0;panoVelocity=0;panoZoomed=false;panoRotY=0;panoTargetRotY=0;
+  document.getElementById('panoViewer').classList.remove('zoomed');
+  var btns=document.querySelectorAll('.pano-panel-btn');
+  btns.forEach(function(b,i){b.classList.toggle('pano-panel-active',i===idx);});
+  panoCurrentPanel=idx;
+  var h=document.getElementById('panoHint');
+  if(h){h.classList.remove('hidden');setTimeout(function(){h.classList.add('hidden');},3000);}
+}
+
+/* ── POSTER MINI POPUP ── */
+function openPoster(imgEl){
+  var card=imgEl.closest('.film-card')||imgEl.closest('.book-item');
+  if(!card)return;
+  var title='',sub='';
+  var ft=card.querySelector('.film-title');
+  var fk=card.querySelector('.film-title-ko');
+  var fm=card.querySelector('.film-meta');
+  var bt=card.querySelector('.book-title');
+  var ba=card.querySelector('.book-author');
+  if(ft){title=ft.textContent;sub=(fk?fk.textContent+' · ':'')+((fm)?fm.textContent:'');}
+  if(bt){title=bt.textContent;sub=ba?ba.textContent:'';}
+  document.getElementById('posterImg').src=imgEl.src;
+  document.getElementById('posterTitle').textContent=title;
+  document.getElementById('posterSub').textContent=sub;
+  document.getElementById('posterPopup').classList.add('open');
+}
+function closePoster(){
+  document.getElementById('posterPopup').classList.remove('open');
+}
+/* Auto-attach click to all film-poster and book-cover images */
+document.querySelectorAll('.film-poster,.book-cover').forEach(function(img){
+  img.addEventListener('click',function(e){
+    e.stopPropagation();
+    openPoster(this);
+  });
+});
+
+function showPanoInfo(idx){
+  var d=panoData[idx];
+  if(!d)return;
+  document.getElementById('panoInfoTitle').textContent=d.title;
+  document.getElementById('panoInfoText').textContent=d.text;
+  document.getElementById('panoInfoPopup').classList.add('open');
+}
+function closePanoInfo(){
+  document.getElementById('panoInfoPopup').classList.remove('open');
+}
+
+function showPainting(id){
+  var p=PAINTINGS[id];
+  if(!p)return;
+  document.getElementById('ppImg').src='../../assets/images/paintings/monet/web/'+id+'.jpg';
+  document.getElementById('ppTitle').textContent=p.t;
+  document.getElementById('ppSub').textContent=p.e+' ('+p.y+')';
+  document.getElementById('ppDesc').textContent=p.d;
+  document.getElementById('ppLoc').textContent='\uD83D\uDCCD '+p.l;
+  document.getElementById('paintPopup').classList.add('open');
+}
+function closePainting(){
+  document.getElementById('paintPopup').classList.remove('open');
+}
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&document.getElementById('paintPopup').classList.contains('open')){
+    closePainting();e.stopPropagation();
+  }
+});
+
+document.getElementById('tn').textContent=total;
+document.getElementById('bp').disabled=true;
+document.getElementById('pbar').style.width='0%';
+initCover();
+setupScrollObserver();
+setupTopbarHide();
+initPanorama();
+
+/* Trigger reveals for first slide */
+triggerReveals(document.getElementById('s0'));
+
+/* Wheel: disabled for slide navigation — use arrows/swipe/buttons only */
+
+/* ── CROSSFADE GALLERIES ── */
+function initCrossfade() {
+    document.querySelectorAll('.crossfade-gallery').forEach(function(gal) {
+        var imgs = gal.querySelectorAll('img');
+        if (imgs.length === 0) return;
+        var current = 0;
+        imgs[0].classList.add('cf-active');
+        setInterval(function() {
+            imgs[current].classList.remove('cf-active');
+            current = (current + 1) % imgs.length;
+            imgs[current].classList.add('cf-active');
+        }, 5000);
+    });
+}
+initCrossfade();
+
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

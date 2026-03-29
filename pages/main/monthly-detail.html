@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luna - Monthly Detail</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../../assets/data/i18n.js?v=0312-2330"></script>
+    <script src="../../assets/data/classes-data.js?v=0312-2330"></script>
+    <script src="../../assets/data/monthly-packages.js?v=0312-2330"></script>
+    <script src="../../assets/js/app.js?v=0312-2330"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background: #0a0c14;
+            color: white;
+        }
+
+        .glass-header {
+            background: rgba(10, 12, 20, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .hero-gradient {
+            background: linear-gradient(180deg, rgba(10, 12, 20, 0) 0%, rgba(10, 12, 20, 1) 100%);
+        }
+
+        .premium-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .premium-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Level Badge */
+        .lv-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px 2px 3px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 800;
+            line-height: 1;
+        }
+        .lv-badge .lv-dot {
+            width: 16px; height: 16px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 8px; font-weight: 900; color: white; flex-shrink: 0;
+        }
+        .lv-badge.lv-05 { background: rgba(255,107,138,0.15); color: #ff85a2; }
+        .lv-badge.lv-05 .lv-dot { background: linear-gradient(135deg,#ff6b8a,#ff85a2); }
+        .lv-badge.lv-1 { background: rgba(16,185,129,0.15); color: #34d399; }
+        .lv-badge.lv-1 .lv-dot { background: linear-gradient(135deg,#10b981,#34d399); }
+        .lv-badge.lv-2 { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .lv-badge.lv-2 .lv-dot { background: linear-gradient(135deg,#3b82f6,#60a5fa); }
+        .lv-badge.lv-3 { background: rgba(139,92,246,0.15); color: #a78bfa; }
+        .lv-badge.lv-3 .lv-dot { background: linear-gradient(135deg,#8b5cf6,#a78bfa); }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="dark bg-[#0a0c14]">
+    <!-- Navbar -->
+    <nav class="glass-header fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <button onclick="history.back()"
+                class="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-all">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <h1 id="nav-title" class="text-lg font-black tracking-tight">-</h1>
+        </div>
+        <div id="lang-dropdown"></div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="relative w-full h-[60vh] overflow-hidden">
+        <img id="hero-image" src="" class="w-full h-full object-cover" alt="Hero">
+        <div class="hero-gradient absolute inset-0"></div>
+        <div class="absolute bottom-0 left-0 right-0 p-8 md:p-16 max-w-7xl mx-auto">
+            <div id="hero-tag" class="text-primary font-black uppercase tracking-[0.3em] text-[10px] mb-4">MONTHLY
+                COLLECTION</div>
+            <h2 id="hero-title" class="text-4xl md:text-6xl font-black mb-4 leading-tight">-</h2>
+            <p id="hero-desc" class="text-slate-400 max-w-2xl text-sm md:text-base leading-relaxed mb-8">-</p>
+
+            <div class="flex flex-wrap items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary">payments</span>
+                    </div>
+                    <div>
+                        <div class="text-[9px] font-black text-white/40 uppercase tracking-widest">Price</div>
+                        <div id="price-tag" class="text-lg font-black">-</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary">video_library</span>
+                    </div>
+                    <div>
+                        <div class="text-[9px] font-black text-white/40 uppercase tracking-widest">Lessons</div>
+                        <div id="count-tag" class="text-lg font-black">15 Classes</div>
+                    </div>
+                </div>
+
+                <div id="action-area" class="ml-auto">
+                    <!-- Purchase or Start button -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classes Grid -->
+    <section class="max-w-7xl mx-auto px-6 py-16">
+        <div class="flex items-center justify-between mb-12">
+            <h3 class="text-sm font-black uppercase tracking-[0.2em] text-slate-400">Included Lessons</h3>
+            <div id="status-badge"></div>
+        </div>
+
+        <div id="lessons-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Populated via JS -->
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const monthId = params.get('month');
+
+            if (window.lwRenderLangPicker) lwRenderLangPicker('lang-dropdown');
+
+            if (monthId) {
+                loadPackage(monthId);
+            }
+        });
+
+        function loadPackage(id) {
+            if (typeof MONTHLY_PACKAGES === 'undefined') return;
+            const pkg = MONTHLY_PACKAGES.find(p => p.id === id);
+            if (!pkg) return;
+
+            document.getElementById('nav-title').textContent = pkg.label;
+            document.getElementById('hero-image').src = '../../' + pkg.representativeImage;
+            document.getElementById('hero-title').textContent = pkg.label;
+            document.getElementById('hero-desc').setAttribute('data-i18n', pkg.titleKey);
+            document.getElementById('price-tag').textContent = pkg.isCurrent ? pkg.price + ' /월' : pkg.lessonPrice + ' /수업';
+
+            const userRole = LunaApp.user?.role || 'user';
+            const isAdmin = userRole === 'admin' || userRole === 'teacher';
+            const actionArea = document.getElementById('action-area');
+
+            if (isAdmin) {
+                actionArea.innerHTML = `
+                    <button class="px-8 py-4 rounded-2xl bg-primary text-white font-black hover:bg-primary/90 transition-all shadow-xl shadow-primary/30 flex items-center gap-3 uppercase text-sm">
+                        Admin Preview <span class="material-symbols-outlined">visibility</span>
+                    </button>
+                `;
+            } else {
+                actionArea.innerHTML = `
+                    <button onclick="LunaApp.navigate('payment')" class="px-8 py-4 rounded-2xl bg-primary text-white font-black hover:bg-primary/90 transition-all shadow-xl shadow-primary/30 flex items-center gap-3 uppercase text-sm">
+                        Unlock Collection <span class="material-symbols-outlined">shopping_cart</span>
+                    </button>
+                `;
+            }
+
+            renderLessons(id);
+            if (window.lwApplyLang) lwApplyLang();
+        }
+
+        function renderLessons(monthId) {
+            const grid = document.getElementById('lessons-grid');
+            const lessons = CLASSES_DATA.filter(c => c.month === monthId);
+
+            // Update count display
+            const countEl = document.getElementById('count-tag');
+            if (countEl && lessons.length > 0) countEl.textContent = lessons.length + ' Classes';
+
+            const emojis = ['🌱','🌿','🏡','🌲','🔍','🐛','🗺️','🌲','🎶','🎨','🎼','🦄','🔤','👾','🪶','🐱','🔬'];
+
+            grid.innerHTML = lessons.map((lesson, idx) => {
+                const thumbHtml = lesson.thumbnail
+                    ? `<img src="../../${lesson.thumbnail}?v=0313-1400" class="w-full h-full object-cover" alt="">`
+                    : `<div class="w-full h-full flex items-center justify-center" style="background:${lesson.themeColor||'#1e293b'}">
+                         <span style="font-size:26px">${emojis[idx] || '🎨'}</span>
+                       </div>`;
+                const lessonUrl = lesson.link ? `../lessons/${lesson.link}` : '#';
+
+                // Level badge
+                const lv = lesson.level;
+                const lvClass = lv == 0.5 ? 'lv-05' : `lv-${lv}`;
+                const lvLabel = lv == 0.5 ? '0.5' : lv;
+                const lvAge = lv == 0.5 ? '4-5세' : lv == 1 ? '5-7세' : lv == 2 ? '8-10세' : lv == 3 ? '11-13세' : '';
+                const lvHtml = lv !== undefined ? `<span class="lv-badge ${lvClass}"><span class="lv-dot">${lvLabel}</span>${lvAge}</span>` : '';
+
+                return `
+                <div class="premium-card p-4 rounded-2xl flex gap-4 cursor-pointer relative group" onclick="window.location.href='${lessonUrl}'">
+                    <div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0">
+                        ${thumbHtml}
+                    </div>
+                    <div class="flex flex-col justify-center overflow-hidden flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-[9px] font-black text-primary uppercase tracking-widest">${lesson.subTags ? lesson.subTags[0] : ''}</span>
+                            ${lvHtml}
+                        </div>
+                        <h4 class="text-sm font-bold text-white line-clamp-2 leading-tight">${lesson.title}</h4>
+                        <div class="flex items-center gap-2 mt-2">
+                             <div class="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-[10px] text-slate-400">schedule</span>
+                             </div>
+                             <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">60-90 MIN</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Reference Button -->
+                    <button onclick="event.stopPropagation(); window.location.href='monthly-ref-viewer.html?month=${monthId}&lessonId=${lesson.id}&title=${encodeURIComponent(lesson.title)}'"
+                        class="absolute bottom-4 right-4 w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/20 hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all opacity-0 group-hover:opacity-100 shadow-xl"
+                        title="View References">
+                        <span class="material-symbols-outlined text-[20px]">auto_stories</span>
+                    </button>
+                </div>`;
+
+            }).join('');
+        }
+    </script>
+<!-- Recent Lessons — save on view -->
+<script src="../../assets/js/recent-lessons.js?v=0321"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof RecentLessons !== 'undefined') RecentLessons.saveFromMonthlyDetail();
+});
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+<!-- Luna Sound Effects -->
+<script src="../../assets/js/luna-sounds.js?v=0321"></script>
+</body>
+
+</html>

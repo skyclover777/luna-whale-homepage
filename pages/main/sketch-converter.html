@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>스케치 변환기 - Luna Whale</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lexend:wght@300;400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lexend',sans-serif;background:#f8f6f3;min-height:100vh;color:#2c2420}
+
+.top-bar{position:sticky;top:0;z-index:50;background:rgba(248,246,243,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,0,0,.04);padding:14px 24px;display:flex;align-items:center;gap:14px}
+.back-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.back-btn:hover{background:rgba(0,0,0,.04)}
+.top-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#2c2420;flex:1;letter-spacing:-.5px}
+
+.container{max-width:1200px;margin:0 auto;padding:24px}
+.subtitle{text-align:center;font-family:'Cormorant Garamond',serif;font-size:14px;color:#a09890;margin-bottom:24px;letter-spacing:-.2px}
+
+/* Controls */
+.controls{display:flex;justify-content:center;gap:24px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+.control-group{display:flex;align-items:center;gap:8px}
+.control-group label{font-size:12px;color:#6b5c4e;font-weight:400}
+.control-group input[type=range]{width:120px;accent-color:#8b7355}
+.control-group .val{font-size:11px;color:#a09890;min-width:28px;text-align:center}
+.method-select{padding:6px 12px;border:1px solid rgba(0,0,0,.1);border-radius:8px;background:#fff;font-family:'Lexend',sans-serif;font-size:12px;color:#2c2420;cursor:pointer}
+
+/* Panels */
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:24px;min-height:400px}
+@media(max-width:768px){.panels{grid-template-columns:1fr;gap:16px}}
+
+.panel{background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,.06);overflow:hidden;display:flex;flex-direction:column}
+.panel-header{padding:14px 20px;border-bottom:1px solid rgba(0,0,0,.04);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:13px;font-weight:600;color:#2c2420}
+.panel-badge{font-size:10px;color:#a09890;background:rgba(0,0,0,.04);padding:3px 10px;border-radius:20px}
+.panel-body{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;min-height:350px}
+
+/* Drop zone */
+.drop-zone{width:100%;height:100%;min-height:300px;border:2px dashed rgba(0,0,0,.12);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:.3s;position:relative}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#8b7355;background:rgba(139,115,85,.04)}
+.drop-zone .material-symbols-outlined{font-size:48px;color:#c4b8a8}
+.drop-zone p{font-size:13px;color:#a09890}
+.drop-zone small{font-size:11px;color:#c4b8a8}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.drop-zone.has-image{border:none}
+.drop-zone.has-image .placeholder{display:none}
+
+/* Image display */
+.preview-img{max-width:100%;max-height:500px;border-radius:8px;object-fit:contain;display:none}
+.preview-img.visible{display:block}
+
+/* Result */
+.result-area{width:100%;height:100%;display:flex;align-items:center;justify-content:center;min-height:300px}
+.result-empty{text-align:center;color:#c4b8a8}
+.result-empty .material-symbols-outlined{font-size:48px;display:block;margin-bottom:8px}
+.result-empty p{font-size:13px}
+#result-canvas{max-width:100%;max-height:500px;border-radius:8px;display:none}
+
+/* Processing */
+.processing{display:none;flex-direction:column;align-items:center;gap:12px}
+.processing.active{display:flex}
+.processing .spinner{width:36px;height:36px;border:3px solid rgba(0,0,0,.08);border-top-color:#8b7355;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing p{font-size:12px;color:#a09890}
+
+/* Buttons */
+.btn-row{display:flex;justify-content:center;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:10px 24px;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:#fff;font-family:'Lexend',sans-serif;font-size:13px;font-weight:400;color:#2c2420;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
+.btn:hover{background:rgba(0,0,0,.03)}
+.btn:disabled{opacity:.35;cursor:default}
+.btn-primary{background:#2c2420;color:#fff;border-color:#2c2420}
+.btn-primary:hover{background:#3d3530}
+.btn .material-symbols-outlined{font-size:18px}
+
+/* Size info */
+.size-info{font-size:11px;color:#a09890;text-align:center;margin-top:8px}
+
+/* Batch area */
+.batch-section{margin-top:32px;background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,.06);padding:24px}
+.batch-title{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.batch-drop{width:100%;min-height:120px;border:2px dashed rgba(0,0,0,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;position:relative;transition:.3s}
+.batch-drop:hover,.batch-drop.drag-over{border-color:#8b7355;background:rgba(139,115,85,.04)}
+.batch-drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.batch-drop .material-symbols-outlined{font-size:32px;color:#c4b8a8}
+.batch-drop p{font-size:12px;color:#a09890}
+.batch-progress{margin-top:16px;display:none}
+.batch-progress.active{display:block}
+.progress-bar{width:100%;height:6px;background:rgba(0,0,0,.06);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#8b7355,#b8a080);border-radius:3px;transition:width .3s;width:0}
+.progress-text{font-size:11px;color:#a09890;margin-top:6px;text-align:center}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">
+    <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+  </button>
+  <div class="top-title">Sketch Converter</div>
+</div>
+
+<div class="container">
+  <div class="subtitle">V1 Dodge Blend — 드래그 & 드롭으로 스케치 변환</div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>블러 강도</label>
+      <input type="range" id="blur-radius" min="5" max="50" value="21"/>
+      <span class="val" id="blur-val">21</span>
+    </div>
+    <div class="control-group">
+      <label>검정 감소</label>
+      <input type="range" id="black-reduce" min="0" max="80" value="40"/>
+      <span class="val" id="black-val">40%</span>
+    </div>
+    <div class="control-group">
+      <label>방식</label>
+      <select class="method-select" id="method-select">
+        <option value="dodge">V1 Dodge Blend</option>
+        <option value="lut">LUT (수채화용)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="panels">
+    <!-- Left: Original -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">원본 이미지</span>
+        <span class="panel-badge" id="original-size"></span>
+      </div>
+      <div class="panel-body">
+        <div class="drop-zone" id="drop-zone">
+          <div class="placeholder">
+            <span class="material-symbols-outlined">cloud_upload</span>
+            <p>이미지를 드래그하거나 클릭하세요</p>
+            <small>PNG, JPG, WEBP</small>
+          </div>
+          <img class="preview-img" id="original-preview"/>
+          <input type="file" accept="image/*" id="file-input"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Result -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">스케치 결과</span>
+        <span class="panel-badge" id="result-size"></span>
+      </div>
+      <div class="panel-body">
+        <div class="result-area" id="result-area">
+          <div class="result-empty" id="result-empty">
+            <span class="material-symbols-outlined">auto_fix_high</span>
+            <p>변환 결과가 여기에 표시됩니다</p>
+          </div>
+          <div class="processing" id="processing">
+            <div class="spinner"></div>
+            <p>변환 중...</p>
+          </div>
+          <canvas id="result-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" id="btn-reset" disabled onclick="resetAll()">
+      <span class="material-symbols-outlined">restart_alt</span> 초기화
+    </button>
+    <button class="btn btn-primary" id="btn-download" disabled onclick="downloadResult()">
+      <span class="material-symbols-outlined">download</span> 다운로드
+    </button>
+  </div>
+
+  <!-- Batch -->
+  <div class="batch-section">
+    <div class="batch-title">
+      <span class="material-symbols-outlined" style="font-size:20px;color:#8b7355">folder_open</span>
+      일괄 변환
+    </div>
+    <div class="batch-drop" id="batch-drop">
+      <span class="material-symbols-outlined">note_add</span>
+      <p>여러 이미지를 한번에 드래그하세요 (ZIP 다운로드)</p>
+      <input type="file" accept="image/*" multiple id="batch-input"/>
+    </div>
+    <div class="batch-progress" id="batch-progress">
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-text" id="progress-text">0 / 0</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const originalPreview = document.getElementById('original-preview');
+const resultCanvas = document.getElementById('result-canvas');
+const processing = document.getElementById('processing');
+const resultEmpty = document.getElementById('result-empty');
+const blurSlider = document.getElementById('blur-radius');
+const blackSlider = document.getElementById('black-reduce');
+const blurVal = document.getElementById('blur-val');
+const blackVal = document.getElementById('black-val');
+const methodSelect = document.getElementById('method-select');
+
+let currentImage = null;
+
+// Slider labels
+blurSlider.oninput = () => { blurVal.textContent = blurSlider.value; if(currentImage) convert(currentImage); };
+blackSlider.oninput = () => { blackVal.textContent = blackSlider.value + '%'; if(currentImage) convert(currentImage); };
+methodSelect.onchange = () => { if(currentImage) convert(currentImage); };
+
+// Drag & Drop
+['dragenter','dragover'].forEach(e => {
+  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag-over'); });
+});
+['dragleave','drop'].forEach(e => {
+  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('drag-over'); });
+});
+dropZone.addEventListener('drop', ev => {
+  const file = ev.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) loadImage(file);
+});
+fileInput.addEventListener('change', ev => {
+  if(ev.target.files[0]) loadImage(ev.target.files[0]);
+});
+
+function loadImage(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      currentImage = img;
+      currentImage._name = file.name;
+      originalPreview.src = e.target.result;
+      originalPreview.classList.add('visible');
+      dropZone.classList.add('has-image');
+      document.getElementById('original-size').textContent = img.width + ' × ' + img.height;
+      document.getElementById('btn-reset').disabled = false;
+      convert(img);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function convert(img) {
+  const method = methodSelect.value;
+  const blurR = parseInt(blurSlider.value);
+  const blackReduce = parseInt(blackSlider.value) / 100;
+
+  processing.classList.add('active');
+  resultEmpty.style.display = 'none';
+  resultCanvas.style.display = 'none';
+
+  // Use setTimeout to allow UI update
+  setTimeout(() => {
+    const w = img.width, h = img.height;
+    // Work canvas
+    const work = document.createElement('canvas');
+    work.width = w; work.height = h;
+    const wCtx = work.getContext('2d');
+    wCtx.drawImage(img, 0, 0);
+    const imgData = wCtx.getImageData(0, 0, w, h);
+    const px = imgData.data;
+
+    // Grayscale
+    const gray = new Uint8Array(w * h);
+    for(let i = 0; i < w * h; i++) {
+      gray[i] = Math.round(px[i*4] * 0.299 + px[i*4+1] * 0.587 + px[i*4+2] * 0.114);
+    }
+
+    let result;
+    if(method === 'dodge') {
+      // V1 Dodge Blend
+      const inv = new Uint8Array(w * h);
+      for(let i = 0; i < gray.length; i++) inv[i] = 255 - gray[i];
+      const blurred = gaussianBlur(inv, w, h, blurR);
+      result = new Uint8Array(w * h);
+      for(let i = 0; i < gray.length; i++) {
+        const d = 255 - blurred[i] + 1;
+        let v = Math.min(255, (gray[i] / d) * 256);
+        // Black reduction: lighten dark lines
+        if(v < 200 && blackReduce > 0) {
+          v = v + (200 - v) * blackReduce;
+        }
+        result[i] = Math.round(v);
+      }
+    } else {
+      // LUT method
+      result = new Uint8Array(w * h);
+      for(let i = 0; i < gray.length; i++) {
+        if(gray[i] > 200) result[i] = gray[i];
+        else result[i] = Math.round(155 + (gray[i] / 200) * 45);
+      }
+    }
+
+    // Output
+    resultCanvas.width = w; resultCanvas.height = h;
+    const rCtx = resultCanvas.getContext('2d');
+    const out = rCtx.createImageData(w, h);
+    for(let i = 0; i < result.length; i++) {
+      out.data[i*4] = result[i];
+      out.data[i*4+1] = result[i];
+      out.data[i*4+2] = result[i];
+      out.data[i*4+3] = 255;
+    }
+    rCtx.putImageData(out, 0, 0);
+
+    processing.classList.remove('active');
+    resultCanvas.style.display = 'block';
+    document.getElementById('result-size').textContent = w + ' × ' + h;
+    document.getElementById('btn-download').disabled = false;
+  }, 50);
+}
+
+// Box blur approximation of Gaussian (3 passes)
+function gaussianBlur(src, w, h, radius) {
+  let buf1 = new Float32Array(src);
+  let buf2 = new Float32Array(w * h);
+  const passes = 3;
+  const r = Math.max(1, Math.round(radius / passes));
+  for(let p = 0; p < passes; p++) {
+    // Horizontal
+    for(let y = 0; y < h; y++) {
+      let sum = 0, count = 0;
+      for(let x = -r; x <= r; x++) {
+        const xx = Math.min(w-1, Math.max(0, x));
+        sum += buf1[y * w + xx]; count++;
+      }
+      buf2[y * w] = sum / count;
+      for(let x = 1; x < w; x++) {
+        const addX = Math.min(w-1, x + r);
+        const remX = Math.max(0, x - r - 1);
+        sum += buf1[y * w + addX] - buf1[y * w + remX];
+        buf2[y * w + x] = sum / count;
+      }
+    }
+    // Vertical
+    for(let x = 0; x < w; x++) {
+      let sum = 0, count = 0;
+      for(let y = -r; y <= r; y++) {
+        const yy = Math.min(h-1, Math.max(0, y));
+        sum += buf2[yy * w + x]; count++;
+      }
+      buf1[x] = sum / count;
+      for(let y = 1; y < h; y++) {
+        const addY = Math.min(h-1, y + r);
+        const remY = Math.max(0, y - r - 1);
+        sum += buf2[addY * w + x] - buf2[remY * w + x];
+        buf1[y * w + x] = sum / count;
+      }
+    }
+  }
+  return Uint8Array.from(buf1.map(v => Math.round(Math.min(255, Math.max(0, v)))));
+}
+
+function downloadResult() {
+  const link = document.createElement('a');
+  const name = currentImage._name || 'image';
+  const base = name.replace(/\.[^.]+$/, '');
+  link.download = base + '_sketch.jpg';
+  resultCanvas.toBlob(blob => {
+    link.href = URL.createObjectURL(blob);
+    link.click();
+  }, 'image/jpeg', 0.92);
+}
+
+function resetAll() {
+  currentImage = null;
+  originalPreview.classList.remove('visible');
+  originalPreview.src = '';
+  dropZone.classList.remove('has-image');
+  resultCanvas.style.display = 'none';
+  resultEmpty.style.display = '';
+  document.getElementById('original-size').textContent = '';
+  document.getElementById('result-size').textContent = '';
+  document.getElementById('btn-reset').disabled = true;
+  document.getElementById('btn-download').disabled = true;
+  fileInput.value = '';
+}
+
+// === Batch ===
+const batchDrop = document.getElementById('batch-drop');
+const batchInput = document.getElementById('batch-input');
+['dragenter','dragover'].forEach(e => {
+  batchDrop.addEventListener(e, ev => { ev.preventDefault(); batchDrop.classList.add('drag-over'); });
+});
+['dragleave','drop'].forEach(e => {
+  batchDrop.addEventListener(e, ev => { ev.preventDefault(); batchDrop.classList.remove('drag-over'); });
+});
+batchDrop.addEventListener('drop', ev => {
+  const files = [...ev.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+  if(files.length) batchConvert(files);
+});
+batchInput.addEventListener('change', ev => {
+  const files = [...ev.target.files].filter(f => f.type.startsWith('image/'));
+  if(files.length) batchConvert(files);
+});
+
+async function batchConvert(files) {
+  const prog = document.getElementById('batch-progress');
+  const fill = document.getElementById('progress-fill');
+  const text = document.getElementById('progress-text');
+  prog.classList.add('active');
+
+  // Dynamic import JSZip from CDN
+  if(!window.JSZip) {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    document.head.appendChild(s);
+    await new Promise(r => s.onload = r);
+  }
+
+  const zip = new JSZip();
+  const blurR = parseInt(blurSlider.value);
+  const blackReduce = parseInt(blackSlider.value) / 100;
+  const method = methodSelect.value;
+
+  for(let i = 0; i < files.length; i++) {
+    text.textContent = `${i+1} / ${files.length}`;
+    fill.style.width = ((i+1)/files.length*100) + '%';
+
+    const blob = await processFile(files[i], blurR, blackReduce, method);
+    const name = files[i].name.replace(/\.[^.]+$/, '') + '_sketch.jpg';
+    zip.file(name, blob);
+
+    await new Promise(r => setTimeout(r, 10)); // UI breath
+  }
+
+  text.textContent = 'ZIP 생성 중...';
+  const content = await zip.generateAsync({type: 'blob'});
+  const link = document.createElement('a');
+  link.download = 'sketches.zip';
+  link.href = URL.createObjectURL(content);
+  link.click();
+
+  text.textContent = `완료! ${files.length}장 변환됨`;
+  setTimeout(() => { prog.classList.remove('active'); fill.style.width = '0'; batchInput.value = ''; }, 3000);
+}
+
+function processFile(file, blurR, blackReduce, method) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const w = img.width, h = img.height;
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const px = ctx.getImageData(0, 0, w, h).data;
+
+        const gray = new Uint8Array(w * h);
+        for(let i = 0; i < w*h; i++) {
+          gray[i] = Math.round(px[i*4]*.299 + px[i*4+1]*.587 + px[i*4+2]*.114);
+        }
+
+        let result;
+        if(method === 'dodge') {
+          const inv = new Uint8Array(w*h);
+          for(let i = 0; i < gray.length; i++) inv[i] = 255 - gray[i];
+          const blurred = gaussianBlur(inv, w, h, blurR);
+          result = new Uint8Array(w*h);
+          for(let i = 0; i < gray.length; i++) {
+            let v = Math.min(255, (gray[i] / (255 - blurred[i] + 1)) * 256);
+            if(v < 200 && blackReduce > 0) v = v + (200 - v) * blackReduce;
+            result[i] = Math.round(v);
+          }
+        } else {
+          result = new Uint8Array(w*h);
+          for(let i = 0; i < gray.length; i++) {
+            if(gray[i] > 200) result[i] = gray[i];
+            else result[i] = Math.round(155 + (gray[i]/200)*45);
+          }
+        }
+
+        const out = ctx.createImageData(w, h);
+        for(let i = 0; i < result.length; i++) {
+          out.data[i*4] = result[i];
+          out.data[i*4+1] = result[i];
+          out.data[i*4+2] = result[i];
+          out.data[i*4+3] = 255;
+        }
+        ctx.putImageData(out, 0, 0);
+        c.toBlob(blob => resolve(blob), 'image/jpeg', 0.92);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

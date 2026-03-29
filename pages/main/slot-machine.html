@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>상상력 슬롯머신 - Luna Whale</title>
+
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1D4ED8',
+                        "primary-blue": "#0056b3",
+                        "sky-blue": "#3da9fc",
+                        "navy-blue": "#094067",
+                    },
+                    animation: {
+                        fadeInUp: 'fadeInUp 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- App System Scripts -->
+    <script src="../../js/theme.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .dark body {
+            background-color: #0f172a;
+        }
+
+        .neumorphic-slot-blue {
+            box-shadow: inset 8px 8px 16px rgba(224, 231, 255, 0.8), inset -8px -8px 16px rgba(255, 255, 255, 0.8);
+            border: 4px solid #f0f7ff;
+        }
+
+        .dark .neumorphic-slot-blue {
+            box-shadow: inset 8px 8px 16px rgba(0, 0, 0, 0.3), inset -8px -8px 16px rgba(255, 255, 255, 0.05);
+            border: 4px solid #1e293b;
+            background-color: #0f172a;
+        }
+
+        .pop-art-shadow-blue {
+            box-shadow: 6px 6px 0px 0px #094067;
+        }
+
+        .dark .pop-art-shadow-blue {
+            box-shadow: 6px 6px 0px 0px #0ea5e9;
+            border-color: #0ea5e9;
+        }
+
+        .blue-gradient-bg {
+            background: radial-gradient(circle at 50% 50%, #f0f9ff 0%, #ffffff 100%);
+        }
+
+        .dark .blue-gradient-bg {
+            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+        }
+
+        .slot-animation-container {
+            mask-image: linear-gradient(to bottom, transparent, black 25%, black 75%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 25%, black 75%, transparent);
+        }
+
+        /* Spinning animation logic */
+        .slot-col {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slot-item {
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="text-navy-blue dark:text-slate-100 antialiased overflow-x-hidden min-h-screen">
+    <div class="fixed inset-0 blue-gradient-bg pointer-events-none -z-10 transition-colors duration-500"></div>
+
+    <!-- Header -->
+    <header
+        class="sticky top-0 z-50 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border-b border-sky-100 dark:border-slate-800 shrink-0">
+        <div class="relative flex items-center justify-between h-14 px-4 w-full max-w-[1200px] mx-auto">
+            <button onclick="window.location.href = '../../index.html'"
+                class="flex items-center gap-1 w-auto px-2 h-10 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300">
+                <span class="material-symbols-outlined text-xl">arrow_back_ios_new</span>
+                <span id="ui-back" class="text-sm font-bold hidden sm:inline">돌아가기</span>
+            </button>
+            <div class="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 pointer-events-none">
+                <div
+                    class="w-8 h-8 rounded-full bg-primary-blue dark:bg-sky-blue flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-white text-lg">draw</span>
+                </div>
+                <h1 id="ui-header-title" class="font-bold text-lg tracking-tight">상상력 슬롯머신</h1>
+            </div>
+            <div class="flex flex-row items-center gap-2">
+                <button onclick="toggleSlotLanguage()"
+                    class="h-10 px-3 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300 font-bold text-sm tracking-wider">
+                    <span id="lang-btn-text">KO</span>
+                </button>
+                <button onclick="toggleTheme()"
+                    class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400">
+                    <span id="theme-icon" class="material-symbols-outlined text-[20px]">light_mode</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main
+        class="flex-1 flex flex-col items-center justify-center px-4 max-w-6xl mx-auto w-full py-12 md:py-20 relative">
+        <div class="text-center mb-10 md:mb-16 animate-fadeInUp">
+            <h1 id="ui-main-title"
+                class="text-4xl md:text-6xl font-extrabold mb-3 tracking-tight text-navy-blue dark:text-white">
+                오늘의 <span class="text-sky-blue dark:text-sky-400">그림 주제</span>
+            </h1>
+            <p id="ui-sub-title" class="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium">돌림판을 돌려
+                독창적인 아이디어를 발명해 보세요!</p>
+        </div>
+
+        <div id="slot-container"
+            class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full max-w-4xl mb-12 animate-fadeInUp"
+            style="animation-delay: 0.1s;">
+
+            <!-- Column 1: Adjective -->
+            <div id="wrap-adj" class="relative group order-2 md:order-2">
+                <div id="label-adj"
+                    class="absolute -top-4 left-1/2 -translate-x-1/2 bg-navy-blue dark:bg-slate-700 text-white px-5 py-1 rounded-full text-xs font-bold uppercase tracking-widest z-10 shadow-md whitespace-nowrap">
+                    형용사</div>
+                <div
+                    class="neumorphic-slot-blue bg-white h-72 rounded-[2rem] flex flex-col items-center justify-center overflow-hidden relative">
+                    <div class="slot-animation-container absolute inset-0 overflow-hidden">
+                        <div id="col-adj" class="slot-col">
+                            <!-- Generated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 2: Noun (Center, slightly larger) -->
+            <div id="wrap-noun" class="relative group md:scale-110 z-20 mt-8 md:mt-0 order-3 md:order-3">
+                <div id="label-noun"
+                    class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-blue dark:bg-sky-600 text-white px-5 py-1 rounded-full text-xs font-bold uppercase tracking-widest z-30 shadow-md whitespace-nowrap">
+                    주인공 명사</div>
+                <div
+                    class="neumorphic-slot-blue bg-white h-72 rounded-[2rem] flex flex-col items-center justify-center overflow-hidden border-sky-blue/30 dark:border-sky-900/50 relative">
+                    <div class="slot-animation-container absolute inset-0 overflow-hidden">
+                        <div id="col-noun" class="slot-col">
+                            <!-- Generated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3: Place -->
+            <div id="wrap-place" class="relative group mt-8 md:mt-0 order-1 md:order-1">
+                <div id="label-place"
+                    class="absolute -top-4 left-1/2 -translate-x-1/2 bg-navy-blue dark:bg-slate-700 text-white px-5 py-1 rounded-full text-xs font-bold uppercase tracking-widest z-10 shadow-md whitespace-nowrap">
+                    장소 / 배경</div>
+                <div
+                    class="neumorphic-slot-blue bg-white h-72 rounded-[2rem] flex flex-col items-center justify-center overflow-hidden relative">
+                    <div class="slot-animation-container absolute inset-0 overflow-hidden">
+                        <div id="col-place" class="slot-col">
+                            <!-- Generated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative animate-fadeInUp mt-4" style="animation-delay: 0.2s;">
+            <button id="spin-btn"
+                class="pop-art-shadow-blue bg-primary-blue dark:bg-sky-600 hover:bg-sky-blue dark:hover:bg-sky-500 active:translate-x-1 active:translate-y-1 active:shadow-none transition-all duration-150 text-white text-3xl md:text-4xl font-black px-12 md:px-20 py-4 md:py-6 rounded-full flex items-center gap-3 border-4 border-navy-blue dark:border-slate-800">
+                <span class="material-symbols-outlined text-4xl animate-spin-slow"
+                    style="animation-duration: 3s;">refresh</span>
+                <span id="ui-btn-spin">SPIN!</span>
+            </button>
+            <div id="ui-btn-badge"
+                class="absolute -top-4 -right-4 md:-right-8 bg-amber-400 text-navy-blue dark:text-slate-900 border-2 border-navy-blue font-black text-xs md:text-sm px-3 md:px-4 py-1 rotate-12 rounded-lg shadow-lg whitespace-nowrap">
+                LET'S GO!</div>
+        </div>
+    </main>
+
+    <script>
+        // Data Dictionaries (Approx 100 per category)
+        const adjectives = [
+            { w: { ko: "행복한", en: "Happy" }, i: "sentiment_satisfied" }, { w: { ko: "외로운", en: "Lonely" }, i: "sentiment_dissatisfied" }, { w: { ko: "반짝이는", en: "Sparkling" }, i: "auto_awesome" }, { w: { ko: "잠든", en: "Sleeping" }, i: "bedtime" },
+            { w: { ko: "화난", en: "Angry" }, i: "mood_bad" }, { w: { ko: "거대한", en: "Giant" }, i: "fullscreen" }, { w: { ko: "작은", en: "Tiny" }, i: "zoom_in_map" }, { w: { ko: "투명한", en: "Invisible" }, i: "opacity" },
+            { w: { ko: "뜨거운", en: "Hot" }, i: "local_fire_department" }, { w: { ko: "차가운", en: "Cold" }, i: "ac_unit" }, { w: { ko: "축축한", en: "Wet" }, i: "water_drop" }, { w: { ko: "메마른", en: "Dry" }, i: "wb_sunny" },
+            { w: { ko: "신비로운", en: "Mysterious" }, i: "auto_fix_high" }, { w: { ko: "빠른", en: "Fast" }, i: "bolt" }, { w: { ko: "느릿느릿한", en: "Sluggish" }, i: "snooze" }, { w: { ko: "똑똑한", en: "Smart" }, i: "lightbulb" },
+            { w: { ko: "용감한", en: "Brave" }, i: "swords" }, { w: { ko: "달콤한", en: "Sweet" }, i: "cake" }, { w: { ko: "무서운", en: "Scary" }, i: "skull" }, { w: { ko: "아름다운", en: "Beautiful" }, i: "favorite" },
+            { w: { ko: "더러운", en: "Dirty" }, i: "delete" }, { w: { ko: "깨끗한", en: "Clean" }, i: "cleaning_services" }, { w: { ko: "시끄러운", en: "Noisy" }, i: "volume_up" }, { w: { ko: "조용한", en: "Quiet" }, i: "volume_off" },
+            { w: { ko: "빛나는", en: "Shining" }, i: "flare" }, { w: { ko: "어두운", en: "Dark" }, i: "dark_mode" }, { w: { ko: "다채로운", en: "Colorful" }, i: "palette" }, { w: { ko: "낡은", en: "Old" }, i: "history" },
+            { w: { ko: "새로운", en: "New" }, i: "new_releases" }, { w: { ko: "부유한", en: "Rich" }, i: "payments" }, { w: { ko: "가난한", en: "Poor" }, i: "money_off" }, { w: { ko: "배고픈", en: "Hungry" }, i: "restaurant" },
+            { w: { ko: "목마른", en: "Thirsty" }, i: "local_drink" }, { w: { ko: "아픈", en: "Sick" }, i: "sick" }, { w: { ko: "건강한", en: "Healthy" }, i: "health_and_safety" }, { w: { ko: "피곤한", en: "Tired" }, i: "battery_alert" },
+            { w: { ko: "활기찬", en: "Energetic" }, i: "battery_charging_full" }, { w: { ko: "미끄러운", en: "Slippery" }, i: "ice_skating" }, { w: { ko: "끈적한", en: "Sticky" }, i: "hive" }, { w: { ko: "부드러운", en: "Soft" }, i: "spa" },
+            { w: { ko: "단단한", en: "Hard" }, i: "diamond" }, { w: { ko: "가벼운", en: "Light" }, i: "air" }, { w: { ko: "무거운", en: "Heavy" }, i: "fitness_center" }, { w: { ko: "바쁜", en: "Busy" }, i: "history_toggle_off" },
+            { w: { ko: "한가한", en: "Free" }, i: "chair" }, { w: { ko: "화려한", en: "Fancy" }, i: "celebration" }, { w: { ko: "소박한", en: "Simple" }, i: "cottage" }, { w: { ko: "위험한", en: "Dangerous" }, i: "warning" },
+            { w: { ko: "안전한", en: "Safe" }, i: "shield" }, { w: { ko: "부끄러운", en: "Shy" }, i: "face_retouching_natural" }, { w: { ko: "당당한", en: "Confident" }, i: "workspace_premium" }, { w: { ko: "투명한", en: "Clear" }, i: "visibility_off" },
+            { w: { ko: "우울한", en: "Gloomy" }, i: "water_drop" }, { w: { ko: "상냥한", en: "Kind" }, i: "volunteer_activism" }, { w: { ko: "차가운", en: "Freezing" }, i: "severe_cold" }, { w: { ko: "따뜻한", en: "Warm" }, i: "tsunami" },
+            { w: { ko: "투덜대는", en: "Grumpy" }, i: "chat" }, { w: { ko: "유쾌한", en: "Cheerful" }, i: "lyrics" }, { w: { ko: "비밀스러운", en: "Secretive" }, i: "lock" }, { w: { ko: "엉뚱한", en: "Quirky" }, i: "psychology_alt" },
+            { w: { ko: "로봇같은", en: "Robotic" }, i: "smart_toy" }, { w: { ko: "투명한", en: "Translucent" }, i: "lens_blur" }, { w: { ko: "전설적인", en: "Legendary" }, i: "castle" }, { w: { ko: "게으른", en: "Lazy" }, i: "weekend" },
+            { w: { ko: "우주적인", en: "Cosmic" }, i: "rocket_launch" }, { w: { ko: "사나운", en: "Fierce" }, i: "pets" }, { w: { ko: "부끄럼타는", en: "Bashful" }, i: "emoji_nature" }, { w: { ko: "강력한", en: "Powerful" }, i: "bolt" },
+            { w: { ko: "녹색의", en: "Green" }, i: "forest" }, { w: { ko: "황금빛", en: "Golden" }, i: "stars" }, { w: { ko: "얼어붙은", en: "Frozen" }, i: "ac_unit" }, { w: { ko: "녹아내리는", en: "Melting" }, i: "water" },
+            { w: { ko: "노래하는", en: "Singing" }, i: "mic" }, { w: { ko: "춤추는", en: "Dancing" }, i: "music_note" }, { w: { ko: "마법의", en: "Magical" }, i: "magic_button" }, { w: { ko: "기계적인", en: "Mechanical" }, i: "settings" },
+            { w: { ko: "미래의", en: "Futuristic" }, i: "update" }, { w: { ko: "선사시대의", en: "Prehistoric" }, i: "cruelty_free" }, { w: { ko: "수중의", en: "Underwater" }, i: "scuba_diving" }, { w: { ko: "비행하는", en: "Flying" }, i: "flight" },
+            { w: { ko: "유령같은", en: "Ghostly" }, i: "blur_on" }, { w: { ko: "괴물같은", en: "Monster-like" }, i: "bug_report" }, { w: { ko: "천사같은", en: "Angelic" }, i: "child_care" }, { w: { ko: "악마같은", en: "Demonic" }, i: "local_fire_department" },
+            { w: { ko: "슬픈", en: "Sad" }, i: "sentiment_dissatisfied" }, { w: { ko: "기쁜", en: "Glad" }, i: "sentiment_very_satisfied" }, { w: { ko: "화난", en: "Mad" }, i: "mood_bad" }, { w: { ko: "놀란", en: "Surprised" }, i: "sentiment_neutral" },
+            { w: { ko: "지루한", en: "Boring" }, i: "hourglass_empty" }, { w: { ko: "흥미로운", en: "Interesting" }, i: "travel_explore" }, { w: { ko: "긴장한", en: "Nervous" }, i: "warning_amber" }, { w: { ko: "편안한", en: "Relaxed" }, i: "self_improvement" },
+            { w: { ko: "바보같은", en: "Silly" }, i: "face" }, { w: { ko: "똑똑한", en: "Clever" }, i: "school" }, { w: { ko: "아름다운", en: "Pretty" }, i: "brush" }, { w: { ko: "단순한", en: "Plain" }, i: "check_box_outline_blank" },
+            { w: { ko: "복잡한", en: "Complex" }, i: "account_tree" }, { w: { ko: "시원한", en: "Cool" }, i: "wind_power" }, { w: { ko: "폭신한", en: "Fluffy" }, i: "cloud" }, { w: { ko: "축축한", en: "Damp" }, i: "water" }
+        ];
+
+        const nouns = [
+            { w: { ko: "고양이", en: "Cat" }, i: "pets" }, { w: { ko: "강아지", en: "Dog" }, i: "cruelty_free" }, { w: { ko: "햄스터", en: "Hamster" }, i: "pest_control_rodent" }, { w: { ko: "로봇", en: "Robot" }, i: "smart_toy" },
+            { w: { ko: "코끼리", en: "Elephant" }, i: "pets" }, { w: { ko: "기린", en: "Giraffe" }, i: "pets" }, { w: { ko: "사자", en: "Lion" }, i: "pets" }, { w: { ko: "호랑이", en: "Tiger" }, i: "pets" },
+            { w: { ko: "토끼", en: "Rabbit" }, i: "cruelty_free" }, { w: { ko: "새", en: "Bird" }, i: "flight" }, { w: { ko: "물고기", en: "Fish" }, i: "phishing" }, { w: { ko: "거북이", en: "Turtle" }, i: "pets" },
+            { w: { ko: "자동차", en: "Car" }, i: "directions_car" }, { w: { ko: "비행기", en: "Airplane" }, i: "flight_takeoff" }, { w: { ko: "배", en: "Boat" }, i: "directions_boat" }, { w: { ko: "기차", en: "Train" }, i: "train" },
+            { w: { ko: "자전거", en: "Bicycle" }, i: "pedal_bike" }, { w: { ko: "오토바이", en: "Motorcycle" }, i: "two_wheeler" }, { w: { ko: "버스", en: "Bus" }, i: "directions_bus" }, { w: { ko: "트럭", en: "Truck" }, i: "local_shipping" },
+            { w: { ko: "우주선", en: "Spaceship" }, i: "rocket" }, { w: { ko: "잠수함", en: "Submarine" }, i: "sailing" }, { w: { ko: "사과", en: "Apple" }, i: "apple" }, { w: { ko: "바나나", en: "Banana" }, i: "lunch_dining" },
+            { w: { ko: "포도", en: "Grape" }, i: "scatter_plot" }, { w: { ko: "수박", en: "Watermelon" }, i: "pie_chart" }, { w: { ko: "딸기", en: "Strawberry" }, i: "favorite" }, { w: { ko: "오렌지", en: "Orange" }, i: "trip_origin" },
+            { w: { ko: "햄버거", en: "Hamburger" }, i: "fastfood" }, { w: { ko: "피자", en: "Pizza" }, i: "local_pizza" }, { w: { ko: "아이스크림", en: "Ice Cream" }, i: "icecream" }, { w: { ko: "케이크", en: "Cake" }, i: "cake" },
+            { w: { ko: "컴퓨터", en: "Computer" }, i: "computer" }, { w: { ko: "스마트폰", en: "Smartphone" }, i: "smartphone" }, { w: { ko: "텔레비전", en: "Television" }, i: "tv" }, { w: { ko: "라디오", en: "Radio" }, i: "radio" },
+            { w: { ko: "카메라", en: "Camera" }, i: "camera_alt" }, { w: { ko: "시계", en: "Watch" }, i: "watch" }, { w: { ko: "안경", en: "Glasses" }, i: "glasses" }, { w: { ko: "책", en: "Book" }, i: "menu_book" },
+            { w: { ko: "연필", en: "Pencil" }, i: "edit" }, { w: { ko: "가방", en: "Bag" }, i: "backpack" }, { w: { ko: "의자", en: "Chair" }, i: "chair" }, { w: { ko: "책상", en: "Desk" }, i: "desk" },
+            { w: { ko: "침대", en: "Bed" }, i: "bed" }, { w: { ko: "문", en: "Door" }, i: "door_front" }, { w: { ko: "창문", en: "Window" }, i: "window" }, { w: { ko: "거울", en: "Mirror" }, i: "panorama_wide_angle" },
+            { w: { ko: "피아노", en: "Piano" }, i: "piano" }, { w: { ko: "기타", en: "Guitar" }, i: "music_note" }, { w: { ko: "바이올린", en: "Violin" }, i: "music_note" }, { w: { ko: "드럼", en: "Drum" }, i: "album" },
+            { w: { ko: "공", en: "Ball" }, i: "sports_baseball" }, { w: { ko: "인형", en: "Doll" }, i: "smart_toy" }, { w: { ko: "레고", en: "Lego" }, i: "view_module" }, { w: { ko: "퍼즐", en: "Puzzle" }, i: "extension" },
+            { w: { ko: "외계인", en: "Alien" }, i: "psychiatry" }, { w: { ko: "황제펭귄", en: "Emperor Penguin" }, i: "severe_cold" }, { w: { ko: "스켈레톤", en: "Skeleton" }, i: "skull" }, { w: { ko: "드래곤", en: "Dragon" }, i: "local_fire_department" },
+            { w: { ko: "유니콘", en: "Unicorn" }, i: "auto_awesome" }, { w: { ko: "정령", en: "Spirit" }, i: "air" }, { w: { ko: "마법사", en: "Wizard" }, i: "auto_fix_high" }, { w: { ko: "기사", en: "Knight" }, i: "shield" },
+            { w: { ko: "공주", en: "Princess" }, i: "diamond" }, { w: { ko: "왕", en: "King" }, i: "workspace_premium" }, { w: { ko: "해적", en: "Pirate" }, i: "sailing" }, { w: { ko: "유령", en: "Ghost" }, i: "blur_on" },
+            { w: { ko: "괴물", en: "Monster" }, i: "bug_report" }, { w: { ko: "악당", en: "Villain" }, i: "sentiment_very_dissatisfied" }, { w: { ko: "영웅", en: "Hero" }, i: "stars" }, { w: { ko: "구름", en: "Cloud" }, i: "cloud" },
+            { w: { ko: "태양", en: "Sun" }, i: "sunny" }, { w: { ko: "달", en: "Moon" }, i: "nightlight" }, { w: { ko: "별", en: "Star" }, i: "star" }, { w: { ko: "무지개", en: "Rainbow" }, i: "palette" },
+            { w: { ko: "바다", en: "Ocean" }, i: "water" }, { w: { ko: "산", en: "Mountain" }, i: "landscape" }, { w: { ko: "숲", en: "Forest" }, i: "forest" }, { w: { ko: "강", en: "River" }, i: "waves" },
+            { w: { ko: "눈사람", en: "Snowman" }, i: "ac_unit" }, { w: { ko: "트리", en: "Tree" }, i: "park" }, { w: { ko: "선물", en: "Gift" }, i: "redeem" }, { w: { ko: "풍선", en: "Balloon" }, i: "bubble_chart" },
+            { w: { ko: "폭죽", en: "Firework" }, i: "celebration" }, { w: { ko: "꽃", en: "Flower" }, i: "local_florist" }, { w: { ko: "나비", en: "Butterfly" }, i: "emoji_nature" }, { w: { ko: "무당벌레", en: "Ladybug" }, i: "bug_report" },
+            { w: { ko: "거미", en: "Spider" }, i: "pest_control" }, { w: { ko: "개미", en: "Ant" }, i: "adb" }, { w: { ko: "벌", en: "Bee" }, i: "hive" }, { w: { ko: "공룡", en: "Dinosaur" }, i: "cruelty_free" }
+        ];
+
+        const places = [
+            { w: { ko: "우주에서", en: "in Space" }, i: "rocket_launch" }, { w: { ko: "깊은 바다 속에서", en: "in Deep Sea" }, i: "scuba_diving" }, { w: { ko: "구름 위에서", en: "on a Cloud" }, i: "cloud" }, { w: { ko: "숲속에서", en: "in a Forest" }, i: "forest" },
+            { w: { ko: "사막에서", en: "in a Desert" }, i: "wb_sunny" }, { w: { ko: "눈 덮인 산에서", en: "on a Snowy Mountain" }, i: "ac_unit" }, { w: { ko: "화산에서", en: "in a Volcano" }, i: "volcano" }, { w: { ko: "무인도에서", en: "on a Deserted Island" }, i: "beach_access" },
+            { w: { ko: "동굴에서", en: "in a Cave" }, i: "dark_mode" }, { w: { ko: "도시에서", en: "in a City" }, i: "location_city" }, { w: { ko: "마을에서", en: "in a Village" }, i: "holiday_village" }, { w: { ko: "놀이공원에서", en: "at an Amusement Park" }, i: "attractions" },
+            { w: { ko: "학교에서", en: "at School" }, i: "school" }, { w: { ko: "병원에서", en: "at a Hospital" }, i: "local_hospital" }, { w: { ko: "경찰서에서", en: "at a Police Station" }, i: "local_police" }, { w: { ko: "소방서에서", en: "at a Fire Station" }, i: "local_fire_department" },
+            { w: { ko: "우체국에서", en: "at a Post Office" }, i: "local_post_office" }, { w: { ko: "은행에서", en: "at a Bank" }, i: "account_balance" }, { w: { ko: "도서관에서", en: "in a Library" }, i: "local_library" }, { w: { ko: "박물관에서", en: "in a Museum" }, i: "museum" },
+            { w: { ko: "미술관에서", en: "in an Art Gallery" }, i: "palette" }, { w: { ko: "영화관에서", en: "in a Cinema" }, i: "movie" }, { w: { ko: "수영장에서", en: "at a Swimming Pool" }, i: "pool" }, { w: { ko: "운동장에서", en: "on a Playground" }, i: "sports_soccer" },
+            { w: { ko: "식당에서", en: "in a Restaurant" }, i: "restaurant" }, { w: { ko: "카페에서", en: "in a Cafe" }, i: "local_cafe" }, { w: { ko: "빵집에서", en: "in a Bakery" }, i: "bakery_dining" }, { w: { ko: "마트에서", en: "at a Supermarket" }, i: "shopping_cart" },
+            { w: { ko: "편의점에서", en: "at a Convenience Store" }, i: "storefront" }, { w: { ko: "지하철에서", en: "in a Subway" }, i: "subway" }, { w: { ko: "공항에서", en: "at an Airport" }, i: "flight" }, { w: { ko: "우주정거장에서", en: "at a Space Station" }, i: "satellite_alt" },
+            { w: { ko: "달에서", en: "on the Moon" }, i: "nightlight" }, { w: { ko: "화성에서", en: "on Mars" }, i: "public" }, { w: { ko: "블랙홀에서", en: "in a Black Hole" }, i: "blur_circular" }, { w: { ko: "과거에서", en: "in the Past" }, i: "history" },
+            { w: { ko: "미래에서", en: "in the Future" }, i: "update" }, { w: { ko: "꿈속에서", en: "in a Dream" }, i: "bedtime" }, { w: { ko: "동화책 속에서", en: "in a Fairy Tale" }, i: "menu_book" }, { w: { ko: "게임 속에서", en: "in a Video Game" }, i: "sports_esports" },
+            { w: { ko: "인터넷에서", en: "on the Internet" }, i: "language" }, { w: { ko: "냉장고 안에서", en: "in a Refrigerator" }, i: "kitchen" }, { w: { ko: "지갑 안에서", en: "in a Wallet" }, i: "account_balance_wallet" }, { w: { ko: "주머니 속에서", en: "in a Pocket" }, i: "shopping_bag" },
+            { w: { ko: "신발 속에서", en: "in a Shoe" }, i: "snowshoeing" }, { w: { ko: "모자 안에서", en: "in a Hat" }, i: "magic_button" }, { w: { ko: "상자 안에서", en: "in a Box" }, i: "inventory_2" }, { w: { ko: "침대 밑에서", en: "under a Bed" }, i: "bed" },
+            { w: { ko: "지붕 위에서", en: "on a Roof" }, i: "roofing" }, { w: { ko: "나무 위에서", en: "in a Tree" }, i: "park" }, { w: { ko: "다리 밑에서", en: "under a Bridge" }, i: "bridge" }, { w: { ko: "터널 안에서", en: "in a Tunnel" }, i: "subway" },
+            { w: { ko: "미로 속에서", en: "in a Maze" }, i: "extension" }, { w: { ko: "사탕 공장에서", en: "in a Candy Factory" }, i: "factory" }, { w: { ko: "장난감 나라에서", en: "in Toyland" }, i: "smart_toy" }, { w: { ko: "마법 학교에서", en: "at a Magic School" }, i: "auto_fix_high" },
+            { w: { ko: "유령의 집에서", en: "in a Haunted House" }, i: "holiday_village" }, { w: { ko: "해적선에서", en: "on a Pirate Ship" }, i: "sailing" }, { w: { ko: "잠수함에서", en: "in a Submarine" }, i: "sailing" }, { w: { ko: "열기구에서", en: "in a Hot Air Balloon" }, i: "air" },
+            { w: { ko: "케이블카에서", en: "in a Cable Car" }, i: "tram" }, { w: { ko: "롤러코스터에서", en: "on a Roller Coaster" }, i: "attractions" }, { w: { ko: "회전목마에서", en: "on a Carousel" }, i: "attractions" }, { w: { ko: "서커스에서", en: "at a Circus" }, i: "festival" },
+            { w: { ko: "동물원에서", en: "at a Zoo" }, i: "pets" }, { w: { ko: "수족관에서", en: "at an Aquarium" }, i: "water" }, { w: { ko: "식물원에서", en: "in a Botanical Garden" }, i: "yard" }, { w: { ko: "농장에서", en: "on a Farm" }, i: "agriculture" },
+            { w: { ko: "목장에서", en: "at a Ranch" }, i: "grass" }, { w: { ko: "과수원에서", en: "in an Orchard" }, i: "apple" }, { w: { ko: "비밀기지에서", en: "in a Secret Base" }, i: "lock" }, { w: { ko: "무기고에서", en: "in an Armory" }, i: "shield" },
+            { w: { ko: "연구실에서", en: "in a Lab" }, i: "science" }, { w: { ko: "수술실에서", en: "in an Operating Room" }, i: "medical_services" }, { w: { ko: "방송국에서", en: "in a Broadcast Studio" }, i: "mic" }, { w: { ko: "녹음실에서", en: "in a Recording Studio" }, i: "headphones" },
+            { w: { ko: "스튜디오에서", en: "in a Studio" }, i: "camera" }, { w: { ko: "무대 위에서", en: "on a Stage" }, i: "theater_comedy" }, { w: { ko: "경기장에서", en: "in a Stadium" }, i: "stadium" }, { w: { ko: "우승 시상대에서", en: "on a Podium" }, i: "emoji_events" }
+        ];
+
+        // Combine into slots array
+        const slotsData = [adjectives, nouns, places];
+        const numItemsPerColumn = 40; // Number of items to generate per column for the spin
+
+        // UI references
+        const cols = [
+            document.getElementById('col-adj'),
+            document.getElementById('col-noun'),
+            document.getElementById('col-place')
+        ];
+        const spinBtn = document.getElementById('spin-btn');
+
+        // State
+        let isSpinning = false;
+        let colsCurrentItems = [[], [], []];
+        let currentLang = 'ko'; // 'ko' or 'en'
+
+        // Shuffle utility
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Setup DOM for a specific column
+        function renderCol(colIndex, itemsArray) {
+            cols[colIndex].innerHTML = "";
+            for (let j = 0; j < itemsArray.length; j++) {
+                const item = itemsArray[j];
+                const div = document.createElement('div');
+                div.className = "slot-item text-center w-full"; // 100px height
+
+                const displayWord = item.w[currentLang] || item.w.ko;
+
+                if (colIndex === 1) { // Center Noun is larger
+                    div.innerHTML = `<span class="text-3xl md:text-4xl lg:text-5xl font-black text-primary-blue dark:text-sky-400 w-full px-2 leading-tight break-keep whitespace-normal" style="word-break: keep-all;">${displayWord}</span>`;
+                } else {
+                    const styleClass = colIndex === 0 ? "text-navy-blue dark:text-white" : "text-navy-blue dark:text-white";
+                    div.innerHTML = `<span class="text-xl md:text-2xl lg:text-3xl font-bold ${styleClass} w-full px-2 leading-tight break-keep whitespace-normal" style="word-break: keep-all;">${displayWord}</span>`;
+                }
+                cols[colIndex].appendChild(div);
+            }
+        }
+
+        // Initial build - Pre-spin it so it looks complete on load
+        function initInitialState() {
+            for (let i = 0; i < 3; i++) {
+                let pool = shuffle([...slotsData[i]]);
+                let items = [];
+                for (let j = 0; j < numItemsPerColumn; j++) items.push(pool[j % pool.length]);
+                colsCurrentItems[i] = items;
+                renderCol(i, items);
+
+                // Immediately jump to the end of the random list. 
+                // Using target index (numItemsPerColumn - 2).
+                // Magic number 94 centers the 100px item horizontally inside the 288px container.
+                const targetY = 94 - ((numItemsPerColumn - 2) * 100);
+                cols[i].style.transition = 'none';
+                cols[i].style.transform = `translateY(${targetY}px)`;
+            }
+        }
+
+        // Fire spin
+        function spin() {
+            if (isSpinning) return;
+            isSpinning = true;
+
+            const N = numItemsPerColumn;
+
+            for (let i = 0; i < 3; i++) {
+                let oldItems = colsCurrentItems[i];
+                let pool = shuffle([...slotsData[i]]);
+                let newItems = [];
+
+                // Seamlessly transfer the currently visible 3 items to the TOP of the new list.
+                // Currently focused on N-2, which means indices N-3, N-2, N-1 are visible in the box.
+                newItems[0] = oldItems[N - 3];
+                newItems[1] = oldItems[N - 2];
+                newItems[2] = oldItems[N - 1];
+
+                // Fill the rest randomly
+                for (let j = 3; j < N; j++) {
+                    newItems[j] = pool[j % pool.length];
+                }
+
+                colsCurrentItems[i] = newItems;
+                renderCol(i, newItems);
+
+                // Instantly snap to the top (index 1 is vertically centered) so it perfectly overlays the old position.
+                // 94 - 100 = -6px offset
+                cols[i].style.transition = 'none';
+                cols[i].style.transform = `translateY(-6px)`;
+            }
+
+            // Force reflow to commit 'none' transitions
+            void cols[0].offsetHeight;
+
+            // Start animation
+            // Target Y is N-2
+            const targetY = 94 - ((numItemsPerColumn - 2) * 100);
+
+            // Spin each column with slightly different delays for the classic effect
+            cols.forEach((col, i) => {
+                setTimeout(() => {
+                    col.style.transition = `transform ${2.5 + i * 0.5}s cubic-bezier(0.15, 0.85, 0.25, 1)`;
+                    col.style.transform = `translateY(${targetY}px)`;
+                }, i * 200);
+            });
+
+            // Re-enable after longest spin completes
+            setTimeout(() => {
+                isSpinning = false;
+            }, 2500 + (2 * 500) + 100);
+        }
+
+        initInitialState();
+
+        spinBtn.addEventListener('click', spin);
+
+        // Language Logic
+        const langData = {
+            'ko': {
+                back: '돌아가기',
+                headerTitle: '상상력 슬롯머신',
+                mainTitleLabel: '오늘의 <span class="text-sky-blue dark:text-sky-400">그림 주제</span>',
+                subTitle: '돌림판을 돌려 독창적인 아이디어를 발명해 보세요!',
+                btnSpin: 'SPIN!',
+                btnBadge: 'LET\'S GO!',
+                labelAdj: '형용사',
+                labelNoun: '주인공 명사',
+                labelPlace: '장소 / 배경'
+            },
+            'en': {
+                back: 'Back',
+                headerTitle: 'Imagination Slot',
+                mainTitleLabel: 'Today\'s <span class="text-sky-blue dark:text-sky-400">Drawing Topic</span>',
+                subTitle: 'Spin the wheel to invent creative ideas!',
+                btnSpin: 'SPIN!',
+                btnBadge: 'LET\'S GO!',
+                labelAdj: 'Adjective',
+                labelNoun: 'Main Noun',
+                labelPlace: 'Place / BG'
+            }
+        };
+
+        function toggleSlotLanguage() {
+            currentLang = currentLang === 'ko' ? 'en' : 'ko';
+            document.getElementById('lang-btn-text').innerText = currentLang === 'ko' ? 'KO' : 'EN';
+
+            const d = langData[currentLang];
+            document.getElementById('ui-back').innerText = d.back;
+            document.getElementById('ui-header-title').innerText = d.headerTitle;
+            document.getElementById('ui-main-title').innerHTML = d.mainTitleLabel;
+            document.getElementById('ui-sub-title').innerText = d.subTitle;
+            document.getElementById('ui-btn-spin').innerText = d.btnSpin;
+            document.getElementById('ui-btn-badge').innerText = d.btnBadge;
+            document.getElementById('label-adj').innerText = d.labelAdj;
+            document.getElementById('label-noun').innerText = d.labelNoun;
+            document.getElementById('label-place').innerText = d.labelPlace;
+
+            // Handle Column Order based on language grammar rules
+            // KO: Place (1) -> Adjective (2) -> Noun (3)
+            // EN: Adjective (1) -> Noun (2) -> Place (3)
+            const wrapAdj = document.getElementById('wrap-adj');
+            const wrapNoun = document.getElementById('wrap-noun');
+            const wrapPlace = document.getElementById('wrap-place');
+
+            if (currentLang === 'ko') {
+                wrapPlace.style.order = "1";
+                wrapAdj.style.order = "2";
+                wrapNoun.style.order = "3";
+            } else {
+                wrapAdj.style.order = "1";
+                wrapNoun.style.order = "2";
+                wrapPlace.style.order = "3";
+            }
+
+            // Immediately re-render currently displayed items so they translate in place
+            if (colsCurrentItems[0].length > 0) {
+                renderCol(0, colsCurrentItems[0]);
+                renderCol(1, colsCurrentItems[1]);
+                renderCol(2, colsCurrentItems[2]);
+            }
+        }
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

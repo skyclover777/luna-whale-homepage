@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나의 단어장 - Luna EN</title>
+    <script src="../../assets/js/english-puns-data.js?v=2"></script>
+    <script src="../../assets/js/english-sentence-explanations.js?v=art1"></script>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <style>
+        @font-face {
+            font-family: 'CookieRun-Bold';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Bold.woff') format('woff');
+            font-weight: bold; font-style: normal;
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #080C18;
+            --surface: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.08);
+            --red: #FF6B6B;
+            --yellow: #FFE66D;
+            --cyan: #4ECDC4;
+            --purple: #B39DDB;
+            --orange: #FFB74D;
+            --green: #81C784;
+        }
+
+        body {
+            font-family: 'Pretendard Variable', sans-serif;
+            background: var(--bg);
+            color: #E8E8E8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-mesh { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+        .bg-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.08; }
+        .bg-orb:nth-child(1) { width: 400px; height: 400px; background: var(--purple); top: 10%; left: 5%; }
+        .bg-orb:nth-child(2) { width: 300px; height: 300px; background: var(--cyan); bottom: 20%; right: 10%; }
+
+        /* ═══ Header ═══ */
+        .header {
+            position: relative; z-index: 1;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 28px;
+        }
+        .back-btn {
+            display: flex; align-items: center; gap: 8px;
+            color: rgba(255,255,255,0.6); text-decoration: none; font-size: 14px;
+            transition: color 0.2s;
+        }
+        .back-btn:hover { color: #fff; }
+        .page-title {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--yellow), var(--orange));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .clear-btn {
+            background: rgba(255,107,107,0.15); border: 1px solid rgba(255,107,107,0.3);
+            color: var(--red); padding: 6px 14px; border-radius: 8px; cursor: pointer;
+            font-size: 12px; transition: all 0.2s;
+        }
+        .clear-btn:hover { background: rgba(255,107,107,0.3); }
+
+        /* ═══ Stats Bar ═══ */
+        .stats-bar {
+            position: relative; z-index: 1;
+            display: flex; gap: 12px; padding: 0 28px 16px; flex-wrap: wrap;
+        }
+        .stat-chip {
+            display: flex; align-items: center; gap: 6px;
+            background: var(--surface); border: 1px solid var(--border);
+            padding: 6px 14px; border-radius: 20px; font-size: 13px;
+        }
+        .stat-chip .num { font-weight: 700; }
+        .stat-chip.miss .num { color: var(--red); }
+        .stat-chip.lucky .num { color: var(--orange); }
+        .stat-chip.review .num { color: var(--green); }
+        .stat-chip.total .num { color: var(--cyan); }
+        .stat-chip.saved .num { color: var(--yellow); }
+
+        /* ═══ Tabs ═══ */
+        .tabs {
+            position: relative; z-index: 1;
+            display: flex; gap: 0; margin: 0 28px 16px; border-radius: 12px;
+            background: var(--surface); border: 1px solid var(--border); overflow: hidden;
+        }
+        .tab {
+            flex: 1; padding: 12px; text-align: center; cursor: pointer;
+            font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.5);
+            transition: all 0.3s; border-right: 1px solid var(--border);
+        }
+        .tab:last-child { border-right: none; }
+        .tab.active { background: rgba(255,255,255,0.08); color: #fff; }
+        .tab:hover:not(.active) { background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.7); }
+
+        /* ═══ Filter Bar ═══ */
+        .filter-bar {
+            position: relative; z-index: 1;
+            display: flex; gap: 8px; padding: 0 28px 16px; flex-wrap: wrap; align-items: center;
+        }
+        .filter-btn {
+            padding: 5px 12px; border-radius: 16px; font-size: 12px; cursor: pointer;
+            background: var(--surface); border: 1px solid var(--border);
+            color: rgba(255,255,255,0.6); transition: all 0.2s;
+        }
+        .filter-btn.active { background: rgba(78,205,196,0.15); border-color: var(--cyan); color: var(--cyan); }
+        .filter-label { font-size: 12px; color: rgba(255,255,255,0.35); margin-right: 4px; }
+        .filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+        .sort-select {
+            background: var(--surface); border: 1px solid var(--border); color: #ccc;
+            padding: 5px 10px; border-radius: 8px; font-size: 12px; outline: none;
+        }
+
+        /* ═══ Content Area ═══ */
+        .content { position: relative; z-index: 1; padding: 0 28px 100px; }
+
+        /* ═══ List View ═══ */
+        .word-list { display: flex; flex-direction: column; gap: 8px; }
+        .word-card {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px 16px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .word-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); }
+        .word-card .speaker-icon {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(78,205,196,0.12); display: flex; align-items: center; justify-content: center;
+            font-size: 16px; cursor: pointer; flex-shrink: 0; transition: all 0.2s;
+        }
+        .word-card .speaker-icon:hover { background: rgba(78,205,196,0.3); transform: scale(1.1); }
+        .word-card .speaker-icon.speaking { animation: speakPulse 0.6s ease-in-out; }
+        @keyframes speakPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); background: rgba(78,205,196,0.4); }
+        }
+        .word-info { flex: 1; min-width: 0; }
+        .word-en { font-weight: 700; font-size: 15px; color: #fff; margin-bottom: 2px; }
+        .word-kr { font-size: 13px; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .word-badges { display: flex; gap: 6px; align-items: center; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+        .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+        .badge.miss { background: rgba(255,107,107,0.15); color: var(--red); }
+        .badge.lucky { background: rgba(255,183,77,0.15); color: var(--orange); }
+        .badge.source { background: rgba(179,157,219,0.12); color: var(--purple); font-size: 9px; }
+        .badge.graduated { background: rgba(129,199,132,0.15); color: var(--green); }
+        .badge.bookmarked { background: rgba(255,230,109,0.15); color: var(--yellow); }
+        .word-card.graduated { opacity: 0.5; }
+
+        /* ═══ Empty State ═══ */
+        .empty-state { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.35); font-size: 15px; }
+        .empty-state .emoji { font-size: 48px; margin-bottom: 16px; display: block; }
+
+        /* ═══ Dictionary Popup ═══ */
+        .dict-overlay {
+            position: fixed; inset: 0; z-index: 1000;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .dict-overlay.show { opacity: 1; pointer-events: auto; }
+        .dict-modal {
+            background: #141B2D; border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 24px; width: 90%; max-width: 520px; max-height: 80vh;
+            overflow-y: auto; padding: 0;
+            transform: translateY(20px); transition: transform 0.3s;
+        }
+        .dict-overlay.show .dict-modal { transform: translateY(0); }
+        .dict-header {
+            position: sticky; top: 0; z-index: 2;
+            background: linear-gradient(135deg, rgba(78,205,196,0.12), rgba(179,157,219,0.12));
+            border-bottom: 1px solid var(--border);
+            padding: 24px 24px 20px; border-radius: 24px 24px 0 0;
+        }
+        .dict-word-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+        .dict-word {
+            font-family: 'CookieRun-Bold', sans-serif; font-size: 28px;
+            color: var(--yellow); flex: 1;
+        }
+        .dict-speak-btn {
+            width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(78,205,196,0.3);
+            background: rgba(78,205,196,0.12); color: white; font-size: 18px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .dict-speak-btn:hover { background: rgba(78,205,196,0.3); transform: scale(1.1); }
+        .dict-save-btn {
+            width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,230,109,0.3);
+            background: rgba(255,230,109,0.1); color: var(--yellow); font-size: 18px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .dict-save-btn:hover { background: rgba(255,230,109,0.25); transform: scale(1.1); }
+        .dict-save-btn.saved { background: rgba(255,230,109,0.3); border-color: var(--yellow); }
+        .dict-close {
+            position: absolute; top: 16px; right: 16px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.5);
+            font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .dict-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .dict-phonetic { font-size: 14px; color: rgba(255,255,255,0.4); font-style: italic; }
+        .dict-kr-meaning {
+            margin-top: 8px; padding: 8px 14px; border-radius: 10px;
+            background: rgba(255,255,255,0.06); font-size: 15px; color: var(--cyan); font-weight: 600;
+        }
+        .dict-badges { display: flex; gap: 6px; margin-top: 8px; }
+        .dict-body { padding: 20px 24px 24px; }
+        .dict-section { margin-bottom: 20px; }
+        .dict-pos {
+            display: inline-block; padding: 3px 10px; border-radius: 8px;
+            background: rgba(179,157,219,0.15); color: var(--purple);
+            font-size: 12px; font-weight: 700; margin-bottom: 10px;
+        }
+        .dict-def-item {
+            padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 14px; line-height: 1.6;
+        }
+        .dict-def-item:last-child { border-bottom: none; }
+        .dict-def-num {
+            display: inline-block; width: 20px; height: 20px; line-height: 20px;
+            border-radius: 50%; background: rgba(255,255,255,0.06);
+            text-align: center; font-size: 11px; color: rgba(255,255,255,0.4);
+            margin-right: 8px;
+        }
+        .dict-example {
+            margin-top: 6px; padding-left: 28px;
+            font-size: 13px; color: rgba(255,255,255,0.35); font-style: italic;
+        }
+        .dict-loading { text-align: center; padding: 40px; color: rgba(255,255,255,0.3); }
+        .dict-error { text-align: center; padding: 30px; color: rgba(255,255,255,0.3); font-size: 14px; }
+        .dict-spinner {
+            width: 32px; height: 32px; border: 3px solid var(--border);
+            border-top-color: var(--cyan); border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ═══ Flashcard View ═══ */
+        .flashcard-container {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 24px; padding-top: 20px;
+        }
+        .flashcard-progress { font-size: 13px; color: rgba(255,255,255,0.4); }
+        .flashcard {
+            width: 100%; max-width: 420px; min-height: 280px;
+            perspective: 1000px; cursor: pointer;
+        }
+        .flashcard-inner {
+            position: relative; width: 100%; min-height: 280px;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back {
+            position: absolute; inset: 0;
+            backface-visibility: hidden;
+            border-radius: 20px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 28px;
+            border: 1px solid var(--border);
+        }
+        .flashcard-front {
+            background: linear-gradient(145deg, rgba(78,205,196,0.08), rgba(179,157,219,0.08));
+            justify-content: flex-start; padding-top: 32px;
+        }
+        .flashcard-front .fc-en {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 28px; color: var(--yellow); margin-bottom: 6px; text-align: center;
+        }
+        .flashcard-front .fc-label { font-size: 12px; color: rgba(255,255,255,0.3); margin-bottom: 16px; }
+        .fc-choices { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+        .fc-choice {
+            padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 600;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: #ccc; cursor: pointer; transition: all 0.2s; text-align: center;
+        }
+        .fc-choice:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
+        .fc-choice.correct { background: rgba(129,199,132,0.2); border-color: var(--green); color: var(--green); }
+        .fc-choice.wrong { background: rgba(255,107,107,0.15); border-color: var(--red); color: var(--red); }
+        .fc-choice.disabled { pointer-events: none; opacity: 0.4; }
+        .fc-result { font-size: 13px; margin-top: 8px; font-weight: 700; }
+        .fc-result.pass { color: var(--green); }
+        .fc-result.fail { color: var(--red); }
+        .flashcard-back {
+            background: linear-gradient(145deg, rgba(255,183,77,0.1), rgba(255,107,107,0.08));
+            transform: rotateY(180deg);
+        }
+        .flashcard-back .fc-back-en {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 26px; color: var(--yellow); margin-bottom: 6px; text-align: center;
+        }
+        .flashcard-back .fc-back-kr {
+            font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; text-align: center;
+        }
+        .flashcard-back .fc-back-detail {
+            font-size: 13px; color: rgba(255,255,255,0.4); text-align: center;
+            max-height: 80px; overflow-y: auto; margin-top: 8px; line-height: 1.5;
+        }
+        .flashcard-back .fc-back-btns {
+            display: flex; gap: 12px; margin-top: 16px;
+        }
+        .flashcard-back .fc-icon-btn {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; cursor: pointer; transition: all 0.2s;
+        }
+        .flashcard-back .fc-icon-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); }
+        .flashcard-hint { font-size: 12px; color: rgba(255,255,255,0.25); margin-top: 8px; }
+        .flashcard-nav { display: flex; gap: 16px; align-items: center; }
+        .fc-nav-btn {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--surface); border: 1px solid var(--border);
+            color: #ccc; font-size: 20px; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .fc-nav-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .fc-nav-btn:disabled { opacity: 0.3; cursor: default; }
+        .fc-shuffle-btn {
+            padding: 8px 20px; border-radius: 20px;
+            background: rgba(78,205,196,0.12); border: 1px solid rgba(78,205,196,0.3);
+            color: var(--cyan); font-size: 13px; cursor: pointer; transition: all 0.2s;
+        }
+        .fc-shuffle-btn:hover { background: rgba(78,205,196,0.25); }
+
+        /* ═══ Quiz View ═══ */
+        .quiz-container {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 20px; padding-top: 20px; max-width: 500px; margin: 0 auto;
+        }
+        .quiz-hud { display: flex; gap: 20px; font-size: 14px; color: rgba(255,255,255,0.5); }
+        .quiz-hud .val { color: var(--cyan); font-weight: 700; }
+        .quiz-question-box {
+            width: 100%; padding: 32px 24px; border-radius: 16px;
+            background: var(--surface); border: 1px solid var(--border);
+            text-align: center;
+        }
+        .quiz-label { font-size: 12px; color: rgba(255,255,255,0.3); margin-bottom: 12px; }
+        .quiz-meaning { font-size: 20px; font-weight: 700; line-height: 1.4; }
+        .quiz-type-badge {
+            display: inline-block; margin-top: 8px; font-size: 10px;
+            padding: 2px 10px; border-radius: 10px;
+            background: rgba(179,157,219,0.12); color: var(--purple);
+        }
+        .quiz-options { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .quiz-opt {
+            padding: 14px 18px; border-radius: 12px; font-size: 15px; font-weight: 600;
+            background: var(--surface); border: 1px solid var(--border);
+            color: #ddd; cursor: pointer; transition: all 0.2s; text-align: left;
+        }
+        .quiz-opt:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); }
+        .quiz-opt.correct { background: rgba(129,199,132,0.2); border-color: var(--green); color: var(--green); }
+        .quiz-opt.wrong { background: rgba(255,107,107,0.2); border-color: var(--red); color: var(--red); }
+        .quiz-opt.reveal { border-color: rgba(129,199,132,0.4); color: rgba(129,199,132,0.7); }
+        .quiz-opt.disabled { pointer-events: none; opacity: 0.5; }
+        .quiz-opt .key-hint {
+            display: inline-block; width: 22px; height: 22px; line-height: 22px;
+            border-radius: 6px; background: rgba(255,255,255,0.08); text-align: center;
+            font-size: 11px; margin-right: 10px; color: rgba(255,255,255,0.4);
+        }
+        .quiz-result { text-align: center; padding: 40px 20px; }
+        .quiz-result .score { font-size: 48px; font-weight: 700; font-family: 'CookieRun-Bold'; }
+        .quiz-result .detail { font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 8px; }
+        .quiz-start-btn, .quiz-retry-btn {
+            padding: 12px 32px; border-radius: 12px; font-size: 15px; font-weight: 700;
+            background: linear-gradient(135deg, var(--cyan), #45b7aa);
+            border: none; color: #000; cursor: pointer; transition: all 0.2s;
+        }
+        .quiz-start-btn:hover, .quiz-retry-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(78,205,196,0.3); }
+
+        /* ═══ Pun Toast ═══ */
+        .pun-toast {
+            position: fixed; bottom: -200px; left: 50%; transform: translateX(-50%);
+            z-index: 999; max-width: 460px; width: 90%;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1px solid rgba(255,230,109,0.3);
+            border-radius: 20px; padding: 20px 24px;
+            text-align: center; box-shadow: 0 -4px 30px rgba(255,230,109,0.15);
+            transition: bottom 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .pun-toast.show { bottom: 30px; }
+        .pun-toast .pun-text {
+            font-size: 16px; line-height: 1.6; color: #fff; font-weight: 600;
+        }
+        .pun-toast .pun-close {
+            position: absolute; top: 8px; right: 12px;
+            background: none; border: none; color: rgba(255,255,255,0.3);
+            font-size: 18px; cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .header { padding: 16px 16px; }
+            .stats-bar, .filter-bar, .content { padding-left: 16px; padding-right: 16px; }
+            .tabs { margin-left: 16px; margin-right: 16px; }
+            .page-title { font-size: 20px; }
+            .word-card { padding: 12px; }
+            .flashcard { max-width: 320px; }
+            .dict-modal { width: 95%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-mesh"><div class="bg-orb"></div><div class="bg-orb"></div></div>
+
+    <header class="header">
+        <a href="../luna-en/index.html" class="back-btn">&#8592; Luna EN</a>
+        <div class="page-title">나의 단어장</div>
+        <button class="clear-btn" onclick="confirmClear()">초기화</button>
+    </header>
+
+    <div class="stats-bar">
+        <div class="stat-chip total"><span>전체</span> <span class="num" id="stat-total">0</span></div>
+        <div class="stat-chip miss"><span>틀림</span> <span class="num" id="stat-miss">0</span></div>
+        <div class="stat-chip lucky"><span>우연</span> <span class="num" id="stat-lucky">0</span></div>
+        <div class="stat-chip saved"><span>암기</span> <span class="num" id="stat-saved">0</span></div>
+        <div class="stat-chip review"><span>졸업</span> <span class="num" id="stat-grad">0</span></div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="list" onclick="switchTab('list')">목록</div>
+        <div class="tab" data-tab="flash" onclick="switchTab('flash')">플래시카드</div>
+        <div class="tab" data-tab="quiz" onclick="switchTab('quiz')">퀴즈</div>
+    </div>
+
+    <div class="filter-bar" id="filter-bar">
+        <span class="filter-label">유형:</span>
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('type','all',this)">전체</button>
+        <button class="filter-btn" data-filter="miss" onclick="setFilter('type','miss',this)">틀림</button>
+        <button class="filter-btn" data-filter="lucky" onclick="setFilter('type','lucky',this)">우연</button>
+        <button class="filter-btn" data-filter="saved" onclick="setFilter('type','saved',this)">암기</button>
+        <div class="filter-sep"></div>
+        <span class="filter-label">출처:</span>
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('source','all',this)">전체</button>
+        <button class="filter-btn" data-filter="word" onclick="setFilter('source','word',this)">Word</button>
+        <button class="filter-btn" data-filter="idiom" onclick="setFilter('source','idiom',this)">Idiom</button>
+        <button class="filter-btn" data-filter="talk" onclick="setFilter('source','talk',this)">Talk</button>
+        <button class="filter-btn" data-filter="scene" onclick="setFilter('source','scene',this)">Scene</button>
+        <button class="filter-btn" data-filter="listen" onclick="setFilter('source','listen',this)">Listen</button>
+        <div class="filter-sep"></div>
+        <select class="sort-select" id="sort-select" onchange="renderList()">
+            <option value="most-miss">많이 틀린 순</option>
+            <option value="most-lucky">우연 많은 순</option>
+            <option value="recent">최근 본 순</option>
+            <option value="alpha">알파벳 순</option>
+            <option value="needs-review">복습 필요 순</option>
+        </select>
+    </div>
+
+    <div class="content" id="content"></div>
+
+    <!-- Pun Toast -->
+    <div class="pun-toast" id="punToast">
+        <button class="pun-close" onclick="hidePun()">&times;</button>
+        <div class="pun-text" id="punText"></div>
+    </div>
+
+    <!-- Dictionary Popup -->
+    <div class="dict-overlay" id="dictOverlay" onclick="if(event.target===this)closeDict()">
+        <div class="dict-modal" id="dictModal"></div>
+    </div>
+
+<script>
+const WEAK_KEY = 'lw_vocab_weak';
+const DICT_CACHE_KEY = 'lw_dict_cache';
+let currentTab = 'list';
+let filters = { type: 'all', source: 'all' };
+
+function getWeakData() { try { return JSON.parse(localStorage.getItem(WEAK_KEY) || '{}'); } catch { return {}; } }
+function saveWeakData(data) { localStorage.setItem(WEAK_KEY, JSON.stringify(data)); }
+
+function getDictCache() { try { return JSON.parse(localStorage.getItem(DICT_CACHE_KEY) || '{}'); } catch { return {}; } }
+function saveDictCache(data) { localStorage.setItem(DICT_CACHE_KEY, JSON.stringify(data)); }
+
+function getFilteredWords() {
+    const data = getWeakData();
+    let words = Object.values(data);
+    if (filters.type === 'miss') words = words.filter(w => w.missCount > 0);
+    else if (filters.type === 'lucky') words = words.filter(w => w.luckyCount > 0);
+    else if (filters.type === 'saved') words = words.filter(w => w.bookmarked);
+    if (filters.source !== 'all') {
+        words = words.filter(w => {
+            if (filters.source === 'word') return w.type === 'word' || w.source === 'english-run';
+            if (filters.source === 'idiom') return w.type === 'idiom' || w.source === 'idiom-run';
+            if (filters.source === 'talk') return w.type === 'talk' || w.source === 'talk-rhythm';
+            if (filters.source === 'scene') return w.type === 'scene' || w.source === 'scene-talk';
+            if (filters.source === 'listen') return w.source === 'listen-up';
+            return true;
+        });
+    }
+    const sort = document.getElementById('sort-select').value;
+    if (sort === 'most-miss') words.sort((a,b) => b.missCount - a.missCount);
+    else if (sort === 'most-lucky') words.sort((a,b) => b.luckyCount - a.luckyCount);
+    else if (sort === 'recent') words.sort((a,b) => (b.lastSeen||'').localeCompare(a.lastSeen||''));
+    else if (sort === 'alpha') words.sort((a,b) => (a.word||'').localeCompare(b.word||''));
+    else if (sort === 'needs-review') words.sort((a,b) => (a.reviewStreak||0) - (b.reviewStreak||0));
+    return words;
+}
+
+// ══════════════════════════════════════
+//  TTS
+// ══════════════════════════════════════
+let ttsVoice = null;
+function initTTS() {
+    const voices = speechSynthesis.getVoices();
+    ttsVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Female'))
+        || voices.find(v => v.lang.startsWith('en-US'))
+        || voices.find(v => v.lang.startsWith('en'));
+}
+speechSynthesis.onvoiceschanged = initTTS;
+setTimeout(initTTS, 300);
+
+function speak(text, el) {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if (ttsVoice) u.voice = ttsVoice;
+    u.rate = 0.85; u.lang = 'en-US';
+    if (el) { el.classList.add('speaking'); u.onend = () => el.classList.remove('speaking'); }
+    speechSynthesis.speak(u);
+}
+
+// ══════════════════════════════════════
+//  STATS
+// ══════════════════════════════════════
+function updateStats() {
+    const all = Object.values(getWeakData());
+    document.getElementById('stat-total').textContent = all.length;
+    document.getElementById('stat-miss').textContent = all.filter(w => w.missCount > 0).length;
+    document.getElementById('stat-lucky').textContent = all.filter(w => w.luckyCount > 0).length;
+    document.getElementById('stat-saved').textContent = all.filter(w => w.bookmarked).length;
+    document.getElementById('stat-grad').textContent = all.filter(w => (w.reviewStreak||0) >= 3).length;
+}
+
+// ══════════════════════════════════════
+//  DICTIONARY API
+// ══════════════════════════════════════
+async function fetchDictionary(word) {
+    // Extract first word for compound phrases
+    const lookupWord = word.split(' ')[0].toLowerCase().replace(/[^a-z]/g, '');
+    const cache = getDictCache();
+    if (cache[lookupWord]) return cache[lookupWord];
+    try {
+        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${lookupWord}`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        cache[lookupWord] = data[0];
+        saveDictCache(cache);
+        return data[0];
+    } catch { return null; }
+}
+
+function openDict(wordData) {
+    const overlay = document.getElementById('dictOverlay');
+    const modal = document.getElementById('dictModal');
+    const w = typeof wordData === 'string' ? JSON.parse(decodeURIComponent(wordData)) : wordData;
+
+    const data = getWeakData();
+    const key = Object.keys(data).find(k => data[k].word === w.word);
+    const isBookmarked = key && data[key] && data[key].bookmarked;
+
+    modal.innerHTML = `
+        <div class="dict-header">
+            <button class="dict-close" onclick="closeDict()">&times;</button>
+            <div class="dict-word-row">
+                <div class="dict-word">${escHtml(w.word)}</div>
+                <button class="dict-speak-btn" onclick="speak('${(w.word||'').replace(/'/g,"\\'")}')">🔊</button>
+                <button class="dict-save-btn ${isBookmarked?'saved':''}" onclick="toggleBookmark('${escAttr(w.word)}',this)" title="암기 목록에 저장">
+                    ${isBookmarked ? '💾' : '🔖'}
+                </button>
+            </div>
+            <div class="dict-kr-meaning">📝 ${escHtml(w.mean)}</div>
+            <div class="dict-badges">
+                ${w.missCount > 0 ? `<span class="badge miss">틀림 ${w.missCount}</span>` : ''}
+                ${w.luckyCount > 0 ? `<span class="badge lucky">우연 ${w.luckyCount}</span>` : ''}
+            </div>
+        </div>
+        <div class="dict-body" id="dictBody">
+            <div class="dict-loading"><div class="dict-spinner"></div>사전 검색 중...</div>
+        </div>`;
+    overlay.classList.add('show');
+
+    // Check sentence explanations first
+    const sentExp = window.SENTENCE_EXPLANATIONS && window.SENTENCE_EXPLANATIONS[w.word];
+    if (sentExp) {
+        const body = document.getElementById('dictBody');
+        if (!body) return;
+        let html = `<div style="margin-bottom:16px;">
+            <div style="font-size:18px;font-weight:700;color:var(--yellow);margin-bottom:8px;">🇰🇷 ${escHtml(sentExp.ko)}</div>
+        </div>`;
+        if (sentExp.vocab && sentExp.vocab.length) {
+            html += `<div class="dict-section"><div class="dict-pos">📚 핵심 어휘</div>`;
+            sentExp.vocab.forEach(v => {
+                html += `<div class="dict-def-item" style="display:flex;gap:8px;align-items:baseline;">
+                    <span style="color:var(--cyan);font-weight:600;white-space:nowrap;">${escHtml(v.word)}</span>
+                    <span style="color:rgba(255,255,255,0.6);">${escHtml(v.meaning)}</span>
+                </div>`;
+            });
+            html += `</div>`;
+        }
+        if (sentExp.grammar) {
+            html += `<div class="dict-section"><div class="dict-pos">📝 문법 포인트</div>
+                <div class="dict-def-item">${escHtml(sentExp.grammar)}</div></div>`;
+        }
+        if (sentExp.tip) {
+            html += `<div class="dict-section" style="background:rgba(255,230,109,0.08);border-radius:10px;padding:12px;margin-top:8px;">
+                <div style="font-size:13px;color:var(--yellow);font-weight:600;margin-bottom:4px;">💡 TIP</div>
+                <div style="font-size:14px;color:rgba(255,255,255,0.8);">${escHtml(sentExp.tip)}</div>
+            </div>`;
+        }
+        body.innerHTML = html;
+        return;
+    }
+
+    // Fetch dictionary for regular words
+    fetchDictionary(w.word).then(dict => {
+        const body = document.getElementById('dictBody');
+        if (!body) return;
+        if (!dict) {
+            body.innerHTML = `<div class="dict-error">📖 사전 데이터를 찾을 수 없습니다.<br><small style="color:rgba(255,255,255,0.25)">숙어나 문장은 사전에 없을 수 있어요</small></div>`;
+            return;
+        }
+        let html = '';
+        if (dict.phonetic || (dict.phonetics && dict.phonetics.length)) {
+            const ph = dict.phonetic || (dict.phonetics.find(p=>p.text)||{}).text || '';
+            html += `<div style="margin-bottom:16px;color:rgba(255,255,255,0.4);font-style:italic;font-size:15px;">${escHtml(ph)}</div>`;
+        }
+        if (dict.meanings) {
+            dict.meanings.forEach(m => {
+                html += `<div class="dict-section"><div class="dict-pos">${escHtml(m.partOfSpeech)}</div>`;
+                m.definitions.slice(0, 5).forEach((d, i) => {
+                    html += `<div class="dict-def-item"><span class="dict-def-num">${i+1}</span>${escHtml(d.definition)}`;
+                    if (d.example) html += `<div class="dict-example">"${escHtml(d.example)}"</div>`;
+                    html += `</div>`;
+                });
+                html += `</div>`;
+            });
+        }
+        body.innerHTML = html || '<div class="dict-error">정의를 찾을 수 없습니다.</div>';
+    });
+}
+
+function closeDict() {
+    document.getElementById('dictOverlay').classList.remove('show');
+}
+
+function toggleBookmark(word, btn) {
+    const data = getWeakData();
+    const key = Object.keys(data).find(k => data[k].word === word);
+    if (key && data[key]) {
+        data[key].bookmarked = !data[key].bookmarked;
+        saveWeakData(data);
+        btn.classList.toggle('saved');
+        btn.innerHTML = data[key].bookmarked ? '💾' : '🔖';
+        updateStats();
+    }
+}
+
+// ══════════════════════════════════════
+//  TAB / FILTER
+// ══════════════════════════════════════
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    document.getElementById('filter-bar').style.display = tab === 'quiz' ? 'none' : 'flex';
+    render();
+}
+
+function setFilter(group, value, btn) {
+    filters[group] = value;
+    let siblings = [];
+    let el = btn;
+    while (el.previousElementSibling && !el.previousElementSibling.classList.contains('filter-sep') && !el.previousElementSibling.classList.contains('filter-label')) {
+        el = el.previousElementSibling;
+        if (el.classList.contains('filter-btn')) siblings.push(el);
+    }
+    el = btn;
+    while (el.nextElementSibling && !el.nextElementSibling.classList.contains('filter-sep')) {
+        el = el.nextElementSibling;
+        if (el.classList.contains('filter-btn')) siblings.push(el);
+    }
+    siblings.forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+}
+
+function render() { updateStats(); if (currentTab === 'list') renderList(); else if (currentTab === 'flash') renderFlashcards(); else if (currentTab === 'quiz') renderQuiz(); }
+
+// ══════════════════════════════════════
+//  LIST VIEW
+// ══════════════════════════════════════
+function renderList() {
+    const words = getFilteredWords();
+    const container = document.getElementById('content');
+    if (words.length === 0) {
+        container.innerHTML = `<div class="empty-state"><span class="emoji">📚</span><div>아직 수집된 단어가 없어요!</div><div style="margin-top:8px;font-size:13px;">영어 게임을 플레이하면 틀리거나 우연히 맞춘 단어가 자동으로 여기에 모입니다.</div></div>`;
+        return;
+    }
+    const sourceLabels = { 'english-run':'단어', 'idiom-run':'숙어', 'talk-rhythm':'회화', 'scene-talk':'상황', 'listen-up':'듣기' };
+    container.innerHTML = `<div class="word-list">${words.map(w => {
+        const graduated = (w.reviewStreak || 0) >= 3;
+        return `
+        <div class="word-card${graduated ? ' graduated' : ''}" onclick="openDict('${encodeURIComponent(JSON.stringify(w))}')">
+            <div class="speaker-icon" onclick="event.stopPropagation();speak('${(w.word||'').replace(/'/g,"\\'")}',this)">🔊</div>
+            <div class="word-info">
+                <div class="word-en">${escHtml(w.word)}</div>
+                <div class="word-kr">${escHtml(w.mean)}</div>
+            </div>
+            <div class="word-badges">
+                ${w.bookmarked ? '<span class="badge bookmarked">암기</span>' : ''}
+                ${w.missCount > 0 ? `<span class="badge miss">틀림 ${w.missCount}</span>` : ''}
+                ${w.luckyCount > 0 ? `<span class="badge lucky">우연 ${w.luckyCount}</span>` : ''}
+                <span class="badge source">${sourceLabels[w.source] || w.type || ''}</span>
+                ${graduated ? '<span class="badge graduated">졸업</span>' : ''}
+            </div>
+        </div>`;
+    }).join('')}</div>`;
+}
+
+function escHtml(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+function escAttr(s) { return s ? s.replace(/'/g,"\\'").replace(/"/g,'&quot;') : ''; }
+
+// ══════════════════════════════════════
+//  FLASHCARD VIEW (영어+한국어 동시 표시)
+// ══════════════════════════════════════
+let fcWords = [], fcIndex = 0;
+
+function renderFlashcards() {
+    fcWords = getFilteredWords().filter(w => (w.reviewStreak||0) < 3);
+    fcIndex = 0; fcCorrectCount = 0; fcTotalAnswered = 0;
+    if (fcWords.length === 0) {
+        document.getElementById('content').innerHTML = `<div class="empty-state"><span class="emoji">🎉</span><div>복습할 단어가 없어요!</div><div style="margin-top:8px;font-size:13px;">모든 단어가 졸업했거나 아직 수집된 단어가 없습니다.</div></div>`;
+        return;
+    }
+    renderFlashcard();
+}
+
+let fcAnswered = false;
+let fcCorrectCount = 0, fcTotalAnswered = 0;
+
+function renderFlashcard() {
+    if (!fcWords.length) return;
+    fcAnswered = false;
+    const w = fcWords[fcIndex];
+    const allData = Object.values(getWeakData());
+
+    // Build 3 choices (1 correct + 2 wrong)
+    let wrongPool = allData.filter(x => x.mean !== w.mean && x.mean);
+    if (wrongPool.length < 2) wrongPool = wrongPool.concat([{mean:'사과'},{mean:'아름다운'},{mean:'도전하다'},{mean:'기회'}].filter(x => x.mean !== w.mean));
+    const wrongs = shuffle([...wrongPool]).slice(0, 2).map(x => x.mean);
+    const choices = shuffle([w.mean, ...wrongs]);
+
+    document.getElementById('content').innerHTML = `
+        <div class="flashcard-container">
+            <div class="flashcard-progress">${fcIndex + 1} / ${fcWords.length} &nbsp;|&nbsp; 정답률 ${fcTotalAnswered ? Math.round(fcCorrectCount/fcTotalAnswered*100) : 0}%</div>
+            <div class="flashcard" id="flashcard">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="fc-en">${escHtml(w.word)}</div>
+                        <div class="fc-label">이 단어의 뜻은?</div>
+                        <div class="fc-choices">
+                            ${choices.map((c, i) => `<div class="fc-choice" data-correct="${c === w.mean}" onclick="fcAnswer(this, ${c === w.mean})">${escHtml(c)}</div>`).join('')}
+                        </div>
+                        <div class="fc-result" id="fcResult"></div>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="fc-back-en">${escHtml(w.word)}</div>
+                        <div class="fc-back-kr">${escHtml(w.mean)}</div>
+                        <div class="fc-back-detail" id="fcBackDetail">로딩 중...</div>
+                        <div class="fc-back-btns">
+                            <div class="fc-icon-btn" onclick="event.stopPropagation();speak('${(w.word||'').replace(/'/g,"\\'")}')">🔊</div>
+                            <div class="fc-icon-btn" onclick="event.stopPropagation();openDict('${encodeURIComponent(JSON.stringify(w))}')">📖</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flashcard-hint">뜻 고르기 → 자동 뒤집기 → 좌우 이동</div>
+            <div class="flashcard-nav">
+                <button class="fc-nav-btn" onclick="fcPrev()" ${fcIndex === 0 ? 'disabled' : ''}>&#8592;</button>
+                <button class="fc-shuffle-btn" onclick="fcShuffle()">섞기</button>
+                <button class="fc-nav-btn" onclick="fcNext()" ${fcIndex >= fcWords.length - 1 ? 'disabled' : ''}>&#8594;</button>
+            </div>
+        </div>`;
+    // Check sentence explanations for flashcard back
+    const sentExpFC = window.SENTENCE_EXPLANATIONS && window.SENTENCE_EXPLANATIONS[w.word];
+    if (sentExpFC) {
+        const el = document.getElementById('fcBackDetail');
+        if (el) {
+            let parts = [sentExpFC.ko];
+            if (sentExpFC.grammar) parts.push(`📝 ${sentExpFC.grammar}`);
+            if (sentExpFC.tip) parts.push(`💡 ${sentExpFC.tip}`);
+            el.textContent = parts.join('\n');
+        }
+    } else {
+        fetchDictionary(w.word).then(dict => {
+            const el = document.getElementById('fcBackDetail');
+            if (!el) return;
+            if (!dict || !dict.meanings) { el.textContent = ''; return; }
+            el.textContent = dict.meanings.map(m => `[${m.partOfSpeech}] ${m.definitions[0]?.definition || ''}`).join('\n');
+        });
+    }
+}
+
+let punTimer = null;
+function showPun(word, mean) {
+    const text = typeof getWordPun === 'function' ? getWordPun(word, mean) : `${word} = ${mean}! 다음엔 꼭! 🎯`;
+    document.getElementById('punText').innerHTML = text;
+    const toast = document.getElementById('punToast');
+    toast.classList.add('show');
+    clearTimeout(punTimer);
+    punTimer = setTimeout(hidePun, 4000);
+}
+function hidePun() {
+    document.getElementById('punToast').classList.remove('show');
+    clearTimeout(punTimer);
+}
+
+function fcAnswer(btn, isCorrect) {
+    if (fcAnswered) return;
+    fcAnswered = true;
+    fcTotalAnswered++;
+    const w = fcWords[fcIndex];
+    const choices = document.querySelectorAll('.fc-choice');
+    const result = document.getElementById('fcResult');
+    if (isCorrect) {
+        btn.classList.add('correct');
+        fcCorrectCount++;
+        result.className = 'fc-result pass';
+        result.textContent = '정답! 🎉';
+        hidePun();
+    } else {
+        btn.classList.add('wrong');
+        choices.forEach(c => { if (c.dataset.correct === 'true') c.classList.add('correct'); });
+        result.className = 'fc-result fail';
+        result.textContent = '오답 😢';
+        // 아재개그 팝업!
+        showPun(w.word, w.mean);
+    }
+    choices.forEach(c => { if (!c.classList.contains('correct') && !c.classList.contains('wrong')) c.classList.add('disabled'); });
+    setTimeout(() => { const fc = document.getElementById('flashcard'); if (fc) fc.classList.add('flipped'); }, isCorrect ? 600 : 1500);
+    setTimeout(() => { if (fcIndex < fcWords.length - 1) fcNext(); }, isCorrect ? 2500 : 5000);
+}
+
+function fcNext() { if (fcIndex < fcWords.length - 1) { fcIndex++; renderFlashcard(); } }
+function fcPrev() { if (fcIndex > 0) { fcIndex--; renderFlashcard(); } }
+function fcShuffle() {
+    for (let i = fcWords.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [fcWords[i], fcWords[j]] = [fcWords[j], fcWords[i]]; }
+    fcIndex = 0; fcCorrectCount = 0; fcTotalAnswered = 0; renderFlashcard();
+}
+
+// ══════════════════════════════════════
+//  QUIZ VIEW
+// ══════════════════════════════════════
+let quizWords = [], quizIndex = 0, quizCorrect = 0, quizTotal = 0, quizAnswered = false;
+
+function renderQuiz() {
+    const all = Object.values(getWeakData()).filter(w => (w.reviewStreak||0) < 3);
+    document.getElementById('content').innerHTML = `
+        <div class="quiz-container">
+            ${all.length < 4 ? `<div class="empty-state"><span class="emoji">📝</span><div>퀴즈를 시작하려면 최소 4개의 단어가 필요해요!</div><div style="margin-top:8px;font-size:13px;">현재: ${all.length}개. 게임을 더 플레이해서 단어를 모아보세요.</div></div>` :
+            `<div style="text-align:center;"><div style="font-size:15px;color:rgba(255,255,255,0.6);margin-bottom:16px;">${all.length}개 단어 복습 준비 완료</div><button class="quiz-start-btn" onclick="startQuiz()">퀴즈 시작</button></div>`}
+        </div>`;
+}
+
+function startQuiz() {
+    const all = Object.values(getWeakData()).filter(w => (w.reviewStreak||0) < 3);
+    quizWords = shuffle([...all]).slice(0, 20);
+    quizIndex = 0; quizCorrect = 0; quizTotal = quizWords.length;
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+    if (quizIndex >= quizWords.length) { showQuizResult(); return; }
+    quizAnswered = false;
+    const q = quizWords[quizIndex];
+    const allData = Object.values(getWeakData());
+    let wrongPool = allData.filter(w => w.word !== q.word);
+    if (wrongPool.length < 3) wrongPool = wrongPool.concat([{word:'apple'},{word:'beautiful'},{word:'challenge'},{word:'discover'},{word:'elegant'}].filter(w => w.word !== q.word));
+    const wrongs = shuffle(wrongPool).slice(0, 3).map(w => w.word);
+    const options = shuffle([q.word, ...wrongs]);
+    document.getElementById('content').innerHTML = `
+        <div class="quiz-container">
+            <div class="quiz-hud"><span>문제 <span class="val">${quizIndex+1}/${quizTotal}</span></span><span>정답 <span class="val">${quizCorrect}</span></span></div>
+            <div class="quiz-question-box">
+                <div class="quiz-label">영어로 뭘까요?</div>
+                <div class="quiz-meaning">${escHtml(q.mean)}</div>
+                <div class="quiz-type-badge">${q.source || q.type || ''}</div>
+            </div>
+            <div class="quiz-options">${options.map((opt, i) => `
+                <button class="quiz-opt" data-answer="${encodeURIComponent(opt)}" data-correct="${opt === q.word}" onclick="answerQuiz(this, ${opt === q.word})">
+                    <span class="key-hint">${i+1}</span>${escHtml(opt)}
+                </button>`).join('')}
+            </div>
+        </div>`;
+    document.onkeydown = (e) => { if (quizAnswered) return; const k = parseInt(e.key); if (k >= 1 && k <= 4) { const btns = document.querySelectorAll('.quiz-opt'); if (btns[k-1]) btns[k-1].click(); } };
+}
+
+function answerQuiz(btn, isCorrect) {
+    if (quizAnswered) return;
+    quizAnswered = true;
+    const q = quizWords[quizIndex];
+    const btns = document.querySelectorAll('.quiz-opt');
+    if (isCorrect) {
+        btn.classList.add('correct'); quizCorrect++;
+        const data = getWeakData(); const key = Object.keys(data).find(k => data[k].word === q.word);
+        if (key && data[key]) { data[key].reviewStreak = (data[key].reviewStreak||0) + 1; saveWeakData(data); }
+    } else {
+        btn.classList.add('wrong');
+        btns.forEach(b => { if (b.dataset.correct === 'true') b.classList.add('reveal'); else if (b !== btn) b.classList.add('disabled'); });
+        const data = getWeakData(); const key = Object.keys(data).find(k => data[k].word === q.word);
+        if (key && data[key]) { data[key].reviewStreak = 0; saveWeakData(data); }
+        showPun(q.word, q.mean);
+    }
+    btns.forEach(b => { if (b !== btn && !b.classList.contains('reveal')) b.classList.add('disabled'); });
+    setTimeout(() => { quizIndex++; showQuizQuestion(); }, isCorrect ? 600 : 3000);
+}
+
+function showQuizResult() {
+    const pct = Math.round((quizCorrect / quizTotal) * 100);
+    document.getElementById('content').innerHTML = `
+        <div class="quiz-container"><div class="quiz-result">
+            <div class="score" style="color:${pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)'}">${pct}%</div>
+            <div class="detail">${quizCorrect} / ${quizTotal} 정답</div>
+            <div class="detail" style="margin-top:4px;font-size:12px;">3번 연속 맞추면 졸업!</div>
+            <button class="quiz-retry-btn" style="margin-top:24px;" onclick="startQuiz()">다시 도전</button>
+        </div></div>`;
+    document.onkeydown = null; updateStats();
+}
+
+function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+function confirmClear() { if (confirm('단어장 데이터를 모두 초기화할까요? 되돌릴 수 없습니다.')) { localStorage.removeItem(WEAK_KEY); render(); } }
+
+// ═══ Keyboard shortcuts ═══
+document.addEventListener('keydown', (e) => {
+    if (document.getElementById('dictOverlay').classList.contains('show')) {
+        if (e.key === 'Escape') closeDict();
+        return;
+    }
+    if (currentTab === 'flash') {
+        if (e.key === 'ArrowRight') fcNext();
+        else if (e.key === 'ArrowLeft') fcPrev();
+        else if (e.key === ' ') { e.preventDefault(); const fc = document.getElementById('flashcard'); if (fc) fc.classList.toggle('flipped'); }
+    }
+});
+
+render();
+</script>
+</body>
+</html>

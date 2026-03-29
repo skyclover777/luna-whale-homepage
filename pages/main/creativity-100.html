@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Creative Art 100 — Luna Whale Art Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script src="../../assets/data/creativity-data.js?v=0323"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  font-family:'Gothic A1','Noto Sans KR',sans-serif;
+  background:#faf8f5;
+  min-height:100vh;
+  overflow-x:hidden;
+  color:#2c2c2c;
+}
+body::before,body::after{
+  content:'';position:fixed;border-radius:50%;
+  filter:blur(80px);pointer-events:none;z-index:0;
+  opacity:0.3;
+}
+body::before{
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(200,180,220,0.5),transparent 70%);
+  top:-100px;right:-100px;
+  animation:floatBlob1 12s ease-in-out infinite;
+}
+body::after{
+  width:350px;height:350px;
+  background:radial-gradient(circle,rgba(180,210,200,0.5),transparent 70%);
+  bottom:-80px;left:-80px;
+  animation:floatBlob2 15s ease-in-out infinite;
+}
+@keyframes floatBlob1{
+  0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(-30px,40px) scale(1.1);}
+}
+@keyframes floatBlob2{
+  0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(40px,-30px) scale(1.15);}
+}
+
+/* ── Header ── */
+.page-header{
+  position:relative;
+  text-align:center;
+  padding:3rem 1rem 1.5rem;
+}
+
+.back-btn{
+  position:absolute;left:1rem;top:1.8rem;
+  display:inline-flex;align-items:center;gap:4px;
+  padding:8px 14px;border-radius:20px;
+  background:transparent;border:1px solid #d5d0c8;
+  font-family:'Gothic A1',sans-serif;
+  font-size:12px;font-weight:400;color:#888;
+  text-decoration:none;transition:all .2s;
+  letter-spacing:0.5px;
+}
+.back-btn:hover{
+  border-color:#999;color:#555;
+  transform:translateY(-1px);
+}
+
+.title-en{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.8rem,5vw,2.8rem);
+  font-weight:700;
+  letter-spacing:4px;
+  color:#2c2c2c;
+  margin-bottom:8px;
+}
+.title-kr{
+  font-family:'Noto Serif KR',serif;
+  font-size:clamp(0.8rem,2.2vw,1rem);
+  font-weight:400;
+  color:#999;
+  letter-spacing:2px;
+}
+.title-divider{
+  width:40px;height:1px;
+  background:#ccc;
+  margin:14px auto 0;
+}
+
+/* ── Progress ── */
+.progress-wrap{
+  max-width:360px;margin:1.2rem auto 0.6rem;padding:0 1rem;
+  text-align:center;
+}
+.progress-bar{
+  height:2px;background:#e8e4df;border-radius:1px;overflow:hidden;
+}
+.progress-fill{
+  height:100%;background:#aaa;border-radius:1px;transition:width .6s ease;
+}
+.progress-label{
+  font-family:'Gothic A1',sans-serif;
+  font-size:11px;color:#bbb;margin-top:6px;
+  letter-spacing:0.5px;font-weight:300;
+}
+
+/* ── Category pills ── */
+.cat-pills{
+  display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+  margin:1.2rem auto 1.5rem;padding:0 1rem;
+  max-width:700px;
+}
+.cat-pill{
+  font-family:'Gothic A1',sans-serif;
+  font-size:11px;font-weight:400;color:#aaa;
+  padding:5px 14px;border:1px solid #ddd;border-radius:20px;
+  background:transparent;cursor:pointer;
+  transition:all .2s;letter-spacing:0.5px;
+}
+.cat-pill:hover{color:#666;border-color:#bbb;}
+.cat-pill.active{color:#444;border-color:#444;background:#f5f3ef;}
+
+/* ── Books grid ── */
+.books-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(145px,1fr));
+  gap:16px;
+  padding:0 20px 3rem;
+  max-width:1100px;
+  margin:0 auto;
+}
+
+@media(min-width:640px){
+  .books-grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:18px;}
+}
+@media(min-width:960px){
+  .books-grid{grid-template-columns:repeat(6,1fr);gap:20px;}
+}
+@media(max-width:400px){
+  .books-grid{grid-template-columns:repeat(3,1fr);gap:10px;padding:0 12px 2rem;}
+}
+/* ── Artist Mode Styles ── */
+.artist-card {
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.artist-card .portrait-container {
+  position: absolute; inset: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #222;
+}
+.artist-card .artist-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: grayscale(100%) contrast(110%);
+  transition: all 0.6s ease;
+  opacity: 0.7;
+}
+.artist-card:hover .artist-img {
+  filter: grayscale(0%) contrast(100%);
+  transform: scale(1.1);
+  opacity: 1;
+}
+.artist-card .artist-info {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 20px 15px;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+  z-index: 5;
+  text-align: left;
+}
+.artist-name-tag {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px; color: #fff;
+  letter-spacing: 1px; font-weight: 700;
+  margin-bottom: 2px;
+}
+.lesson-ref {
+  font-size: 9px; color: rgba(255,255,255,0.5);
+  text-transform: uppercase; letter-spacing: 2px;
+}
+
+/* ── Mode Toggle ── */
+.mode-toggle-wrap {
+  display: flex; justify-content: center; margin-bottom: 2rem;
+}
+.mode-toggle {
+  display: flex; background: #eee; padding: 4px; border-radius: 30px;
+  border: 1px solid #ddd;
+}
+.mode-btn {
+  padding: 6px 18px; border-radius: 25px; border: none;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  transition: all 0.3s; color: #999; background: transparent;
+}
+.mode-btn.active {
+  background: #fff; color: #2c2c2c; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* ── Book card ── */
+.book-card{
+  position:relative;
+  aspect-ratio:3/4;
+  border-radius:8px;
+  overflow:hidden;
+  cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  transition:transform .35s cubic-bezier(.23,1,.32,1),box-shadow .35s ease;
+}
+.book-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 10px 28px rgba(0,0,0,0.1);
+}
+
+.book-bg{
+  position:absolute;inset:0;
+}
+.book-overlay-img{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  opacity:0.3;
+  mix-blend-mode:multiply;
+  transition:opacity .3s;
+}
+.book-card:hover .book-overlay-img{
+  opacity:0.4;
+}
+
+/* Subtle vignette on each card */
+.book-vignette{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.06) 100%);
+  pointer-events:none;
+}
+
+.book-text{
+  position:absolute;
+  bottom:10px;right:12px;
+  text-align:right;
+  z-index:2;
+}
+.book-num{
+  display:block;
+  font-family:'Playfair Display',serif;
+  font-size:clamp(22px,4vw,28px);
+  font-weight:700;
+  color:rgba(0,0,0,0.5);
+  line-height:1;
+}
+.book-title{
+  display:block;
+  font-family:'Gothic A1',sans-serif;
+  font-size:clamp(10px,1.8vw,12px);
+  font-weight:500;
+  color:rgba(0,0,0,0.6);
+  letter-spacing:0.3px;
+  margin-top:2px;
+  word-break:keep-all;
+  max-width:100px;
+  margin-left:auto;
+}
+
+/* Ready badge */
+.book-badge{
+  position:absolute;top:6px;left:8px;z-index:2;
+  width:6px;height:6px;border-radius:50%;
+  background:#8fbc8f;
+  opacity:0.7;
+}
+
+/* Lock overlay for not-ready */
+.book-lock-overlay{
+  position:absolute;inset:0;z-index:3;
+  background:rgba(250,248,245,0.5);
+  display:flex;align-items:center;justify-content:center;
+}
+.book-lock-overlay .material-symbols-outlined{
+  font-size:20px;color:rgba(0,0,0,0.15);
+}
+
+/* ── Footer ── */
+.page-footer{
+  text-align:center;padding:1rem 1rem 2.5rem;
+  font-family:'Gothic A1',sans-serif;
+  font-size:11px;color:#ccc;letter-spacing:1px;font-weight:300;
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<header class="page-header">
+  <a href="classes.html" class="back-btn">
+    <span class="material-symbols-outlined" style="font-size:16px;">arrow_back</span>
+    수업 목록
+  </a>
+  <div class="title-en">CREATIVE ART 100</div>
+  <div class="title-kr">창어력 확장 미술</div>
+  <div class="title-divider"></div>
+
+  <div class="mode-toggle-wrap" style="margin-top: 2rem;">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeArtwork">Artwork View</button>
+      <button class="mode-btn" id="modeArtist">Artist Gallery</button>
+    </div>
+  </div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel"></div>
+</div>
+
+<nav class="cat-pills" id="catPills">
+  <button class="cat-pill active" data-cat="all">전체</button>
+  <button class="cat-pill" data-cat="1-10">01 — 10</button>
+  <button class="cat-pill" data-cat="11-20">11 — 20</button>
+  <button class="cat-pill" data-cat="21-30">21 — 30</button>
+  <button class="cat-pill" data-cat="31-40">31 — 40</button>
+  <button class="cat-pill" data-cat="41-50">41 — 50</button>
+  <button class="cat-pill" data-cat="51-60">51 — 60</button>
+  <button class="cat-pill" data-cat="61-70">61 — 70</button>
+  <button class="cat-pill" data-cat="71-80">71 — 80</button>
+  <button class="cat-pill" data-cat="81-90">81 — 90</button>
+  <button class="cat-pill" data-cat="91-100">91 — 100</button>
+</nav>
+
+<main class="books-grid" id="booksGrid"></main>
+
+<footer class="page-footer">LUNA WHALE ART LAB &copy; 2026</footer>
+
+<script>
+(function(){
+  const lessons = typeof CREATIVITY_LESSONS !== 'undefined' ? CREATIVITY_LESSONS : [];
+  const guides  = typeof CREATIVITY_GUIDES  !== 'undefined' ? CREATIVITY_GUIDES  : {};
+  const grid    = document.getElementById('booksGrid');
+  const readyCount = lessons.filter(l => l.ready).length;
+
+  /* ── Artist Gallery 대표작 이미지 매핑 (100강 전체) ── */
+  var ARTIST_REF_FILES = {
+    1:"1_ReneMagritte_TheTreacheryOfImages.jpg",2:"2_AndyGoldsworthy_NegativeSpaceNature.jpg",3:"3_KurtSchwitters_Merzbau-1.webp",4:"4_KaraWalker_SilhouetteInstallation-1.webp",5:"5_WassilyKandinsky_CompositionVIII.jpg",6:"6_SaulBass_MovieTitleDesign-1.jpg",7:"7_JeanDubuffet_Texturologies-1.jpg",8:"8_GeorgBaselitz_InvertedPaintings-1.jpg",9:"9_BrunoMunari_IncompleteForms-1.jpg",10:"10_MeretOppenheim_FurTeacup-1.webp",
+    11:"11_PabloPicasso_WeepingWoman.jpg",12:"12_ErnstHaeckel_KunstformenDerNatur.webp",13:"13_MarkRothko_ColorFieldPainting.jpg",14:"14_DavidHockney_MyParents.jpg",15:"15_JacksonPollock_Number1A.jpg",16:"16_HieronymusBosch_GardenOfEarthlyDelights.jpg",17:"17_GuillermoKuitca_MapBedSeries.jpg",18:"18_JiYong_HangulCalligraphy.webp",19:"19_DanielSpoerri_TrapPictures1.jpg",20:"20_FelixGonzalezTorres_PerfectLovers.jpg",
+    21:"21_ClaesOldenburg_Clothespin1.jpg",22:"22_KeithHaring_SubwayDrawings1.jpg",23:"23_JulieMehretu_StadiaII.webp",24:"24_OlafurEliasson_RainbowPanorama1.jpg",25:"25_AnishKapoor_CloudColumn 1.jpg",26:"26_PaulKlee_Rhythmical.jpg",27:"27_ReneMagritte_PersonalValues.jpg",28:"28_MCEscher_Relativity.jpg",29:"29_JMWTurner_SnowStorm1.jpg",30:"30_TakashiMurakami_FlowerBall1.jpg",
+    31:"31_AnselmKiefer_DieOrdnungDerEngel 1.jpg",32:"32_ChristianBoltanski_TheatreOfShadows1.jpg",33:"33_WayneThiebaud_Cakes.jpg",34:"34_SalvadorDali_PersistenceOfMemory.jpg",35:"35_LeeBontecou_UntitledWallRelief1.webp",36:"36_VikMuniz_PicturesOfJunk1.webp",37:"37_DamianOrtega_CosmicThing1.jpg",38:"38_SisselTolaas_SmellScape 1.png",39:"39_JasperJohns_Numbers1.jpg",40:"40_MichelangeloPistoletto_MirrorPaintings1.jpg",
+    41:"41_WilliamKentridge_ShadowProcession.jpg",42:"42_Invader_PixelMosaicStreetArt 1.webp",43:"43_RoyLichtenstein_Whaam.jpg",44:"44_JohnConstable_CloudStudies1.jpg",45:"45_LeonardoDaVinci_FlightOfBirds1.jpg",46:"46_MaxErnst_HistoireNaturelle 1.jpg",47:"47_LiuBolin_HidingInTheCity 1.jpg",48:"48_LouiseBourgeois_Maman.jpg",49:"49_GeorgiaOKeeffe_RedCanna.jpg",50:"50_RubeGoldberg_SelfOperatingMachines.gif",
+    51:"51_AlexanderCalder_Mobiles.webp",52:"52_GiuseppeArcimboldo_FourSeasons.jpg",53:"53_YayoiKusama_InfinityNets1.jpg",54:"54_ZahaHadid_HeydarAliyevCenter 1.jpg",55:"55_FridaKahlo_TheTwoFridas.jpg",56:"56_ChuckClose_FingerprintSelfPortrait 2.webp",57:"57_ClaesOldenburg_SoftToilet1.jpg",58:"58_Christo_WrappedDoors 1.jpg",59:"59_BridgetRiley_MovementInSquares1.webp",60:"60_HerefordMappaMundi_MedievalWorldMap.jpg",
+    61:"61_LaraFavaretto_ShadowInstallation.jpg",62:"62_EnsoCircle_ZenCalligraphy.jpg",63:"63_PatrickBlanc_VerticalGardens 1.avif",64:"64_TheoJansen_Strandbeest 2.jpg",65:"65_WilliamMorris_StrawberryThief.jpg",66:"66_PietMondrian_BroadwayBoogieWoogie.jpg",67:"67_WolfgangLaib_BeeswaxRoom.jpg",68:"68_DavidHockney_Joiners1.jpg",69:"69_RosalieGascoigne_SuddenCountry1.webp",70:"70_EdRuscha_Hollywood1.jpg",
+    71:"71_ReneMagritte_TheHumanCondition.jpg",72:"72_JSGBoggs_MoneyArt1.jpg",73:"73_CasparDavidFriedrich_WandererAboveSeaOfFog.jpeg",74:"74_NickVeasey_XRayArt.jpeg",75:"75_OlafurEliasson_SpaceProject.jpg",76:"76_KurtSchwitters_MerzCollage.jpg",77:"77_RonMueck_Boy.webp",78:"78_MarkDion_TateThamesDig.webp",79:"79_ClaudeMonet_WaterLilies.webp",80:"80_CyTwombly_ScribbleSeries1.webp",
+    81:"81_MCEscher_Waterfall.jpg",82:"82_ReneMagritte_EmpireOfLight.jpg",83:"83_JosephBeuys_7000Oaks.jpg",84:"84_ChristianMarclay_TheClock.jpg",85:"85_TerunobuFujimori_TakasugiAn.jpg",86:"86_GeorgiaOKeeffe_CityNight.webp",87:"87_ClaesOldenburg_GiantFoodSculpture1.jpg",88:"88_JulesVerne_JourneyToCenterOfEarth 1.jpg",89:"89_GiacomoBalla_DynamismOfDog.jpg",90:"90_YoshitomoNara_KnifeBehindBack.jpeg",
+    91:"91_NormanRockwell_SaturdayEveningPost.jpg",92:"92_NicholasHilliard_YoungManAmongRoses.jpg",93:"93_ErnestoNeto_Navedenga.jpg",94:"94_KeithHaring_RadiantBaby.jpeg",95:"95_TonySmith_Die.jpg",96:"96_AnishKapoor_MyRedHomeland1.jpg",97:"97_ErwinWurm_OneMinuteSculptures1.jpg",98:"98_AnnaAtkins_BritishAlgae 1.jpg",99:"99_FelixGonzalezTorres_PortraitOfRoss1.jpg",100:"100_SongDong_WasteNot1.jpg"
+  };
+  function getArtistRefSrc(id) {
+    var f = ARTIST_REF_FILES[id];
+    return f ? '../../images/100Creativity/refs/1-100/' + encodeURIComponent(f) : '';
+  }
+
+  /* ── Progress ── */
+  const pFill = document.getElementById('progressFill');
+  const pLabel = document.getElementById('progressLabel');
+  const pct = Math.round((readyCount / lessons.length) * 100);
+  pFill.style.width = pct + '%';
+  pLabel.textContent = readyCount + ' / ' + lessons.length + ' lessons  (' + pct + '%)';
+
+  /* ── Pastel gradient generator ── */
+  function getPastelGradient(id) {
+    const hue1 = (id * 37 + 120) % 360;
+    const hue2 = (hue1 + 30) % 360;
+    return 'linear-gradient(135deg, hsl(' + hue1 + ', 20%, 88%), hsl(' + hue2 + ', 25%, 82%))';
+  }
+
+  /* ── Get first thumbnail for a lesson ── */
+  function getThumbSrc(id) {
+    const g = guides[id];
+    if (g && g.images && g.images.length > 0) {
+      return '../../images/100Creativity/thumbs/' + g.images[0] + '.jpg';
+    }
+    return '';
+  }
+
+  /* ── Pad number ── */
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  var isArtistMode = false;
+
+  /* ── Build all cards ── */
+  function renderBooks(filterCat) {
+    grid.innerHTML = '';
+    lessons.forEach(function(L) {
+      /* Filter */
+      if (filterCat && filterCat !== 'all') {
+        var parts = filterCat.split('-');
+        var lo = parseInt(parts[0]), hi = parseInt(parts[1]);
+        if (L.id < lo || L.id > hi) return;
+      }
+
+      var card = document.createElement('div');
+      card.className = isArtistMode ? 'book-card artist-card' : 'book-card';
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', isArtistMode ? L.artist : L.kr);
+
+      if (isArtistMode) {
+        var refSrc = getArtistRefSrc(L.id);
+        var artistName = L.artist || 'Unknown Artist';
+        var lessonTitle = L.kr || '';
+
+        card.innerHTML =
+          '<div class="portrait-container">' +
+            '<img class="artist-img" src="' + refSrc + '" onerror="this.parentElement.style.background=\'' + getPastelGradient(L.id) + '\';this.style.display=\'none\'" alt="' + artistName + '" loading="lazy">' +
+          '</div>' +
+          '<div class="artist-info">' +
+            '<div class="lesson-ref">' + pad(L.id) + '강 · ' + lessonTitle + '</div>' +
+            '<div class="artist-name-tag">' + artistName + '</div>' +
+          '</div>';
+      } else {
+        var thumbSrc = getThumbSrc(L.id);
+        var imgHTML = thumbSrc
+          ? '<img class="book-overlay-img" src="' + thumbSrc + '" loading="lazy" alt="" onerror="this.style.display=\'none\'">'
+          : '';
+
+        var lockHTML = !L.ready
+          ? '<div class="book-lock-overlay"><span class="material-symbols-outlined">lock</span></div>'
+          : '';
+
+        var badgeHTML = L.ready ? '<div class="book-badge"></div>' : '';
+
+        card.innerHTML =
+          '<div class="book-bg" style="background:' + getPastelGradient(L.id) + '"></div>' +
+          imgHTML +
+          '<div class="book-vignette"></div>' +
+          badgeHTML +
+          '<div class="book-text">' +
+            '<span class="book-num">' + pad(L.id) + '</span>' +
+            '<span class="book-title">' + L.kr + '</span>' +
+          '</div>' +
+          lockHTML;
+      }
+
+      card.addEventListener('click', function(){ openLesson(L); });
+      card.addEventListener('keydown', function(e){ if(e.key==='Enter') openLesson(L); });
+      grid.appendChild(card);
+    });
+  }
+
+  /* ── Mode Switching ── */
+  document.getElementById('modeArtwork').addEventListener('click', function() {
+    isArtistMode = false;
+    this.classList.add('active');
+    document.getElementById('modeArtist').classList.remove('active');
+    renderBooks(document.querySelector('.cat-pill.active').getAttribute('data-cat'));
+  });
+  document.getElementById('modeArtist').addEventListener('click', function() {
+    isArtistMode = true;
+    this.classList.add('active');
+    document.getElementById('modeArtwork').classList.remove('active');
+    renderBooks(document.querySelector('.cat-pill.active').getAttribute('data-cat'));
+  });
+
+  renderBooks('all');
+
+  /* ── Category filter ── */
+  var pills = document.querySelectorAll('.cat-pill');
+  pills.forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      pills.forEach(function(p){ p.classList.remove('active'); });
+      pill.classList.add('active');
+      renderBooks(pill.getAttribute('data-cat'));
+    });
+  });
+
+  /* ── Open lesson ── */
+  function openLesson(L) {
+    if (L.ready) {
+      window.location.href = 'creativity-lesson.html?lesson=' + L.id;
+    } else {
+      showToast(L.id + '강 — 준비 중입니다');
+    }
+  }
+
+  /* ── Toast ── */
+  function showToast(msg) {
+    var t = document.getElementById('_toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = '_toast';
+      Object.assign(t.style, {
+        position:'fixed',bottom:'2rem',left:'50%',
+        transform:'translateX(-50%) translateY(20px)',
+        padding:'10px 24px',borderRadius:'20px',
+        background:'rgba(44,44,44,0.85)',color:'#fff',
+        fontFamily:"'Gothic A1',sans-serif",fontSize:'13px',fontWeight:'400',
+        letterSpacing:'0.5px',
+        backdropFilter:'blur(10px)',
+        boxShadow:'0 4px 20px rgba(0,0,0,.12)',
+        opacity:'0',transition:'all .3s ease',zIndex:'999',
+        pointerEvents:'none',whiteSpace:'nowrap'
+      });
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(t._tid);
+    t._tid = setTimeout(function(){
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 2000);
+  }
+})();
+</script>
+<!-- Luna Sound Effects -->
+<script src="../../assets/js/luna-sounds.js?v=0323"></script>
+</body>
+</html>

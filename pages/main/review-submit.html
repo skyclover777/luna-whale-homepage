@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Luna Whale Art Lab - Share Your Work</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../../assets/data/i18n.js?v=0312-2330"></script>
+    <script src="../../assets/js/app.js?v=0312-2330"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-storage-compat.js"></script>
+    <script type="module" src="../../assets/js/firebase-config.js"></script>
+    <script src="../../assets/js/firebase-auth.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "primary": "#1337ec", "background-light": "#f6f6f8", "background-dark": "#101322" },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] },
+                }
+            },
+        }
+    </script>
+    <style>
+        .lg-upload-container {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        }
+
+        .dark .lg-upload-container {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .lg-input-group {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .lg-input-field {
+            width: 100%;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 13px 14px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .dark .lg-input-field {
+            background: rgba(30, 41, 59, 0.5);
+            border-color: #334155;
+            color: white;
+        }
+
+        .lg-input-field:focus {
+            border-color: #7c8cf8;
+            box-shadow: 0 0 0 3px rgba(124, 140, 248, 0.15);
+            background: #fff;
+        }
+
+        .dark .lg-input-field:focus {
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .lg-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .dark .lg-label {
+            color: #94a3b8;
+        }
+
+        .lg-label .required {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 800;
+            color: #334155;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8ecf4;
+        }
+
+        .dark .section-header {
+            color: #e2e8f0;
+            border-bottom-color: #334155;
+        }
+
+        .section-header .section-icon {
+            font-size: 18px;
+        }
+
+        #upload-zone {
+            background: rgba(124, 140, 248, 0.04);
+            border: 2px dashed rgba(124, 140, 248, 0.25);
+            border-radius: 18px;
+            padding: 28px 16px;
+            transition: all 0.3s ease;
+        }
+
+        #upload-zone.over {
+            background: rgba(124, 140, 248, 0.1);
+            border-color: #7c8cf8;
+            transform: scale(0.98);
+        }
+
+        /* Thumbnail grid */
+        .img-thumb-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        @media (min-width: 640px) {
+            .img-thumb-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        .img-thumb {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            animation: thumbPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        .img-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .img-thumb .delete-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 1;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            z-index: 2;
+            transition: transform 0.15s ease;
+        }
+
+        .img-thumb .delete-btn:active {
+            transform: scale(0.9);
+        }
+
+        @keyframes thumbPop {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .star-btn {
+            font-size: 2.2rem;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @media (max-width: 640px) {
+            .star-btn {
+                font-size: 1.8rem;
+            }
+        }
+
+        .star-btn.active {
+            color: #f59e0b;
+            text-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+            transform: scale(1.1);
+        }
+
+        .toggle-switch {
+            width: 56px;
+            height: 32px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input:checked + .toggle-track {
+            background: #7c8cf8;
+        }
+
+        .toggle-switch input:checked + .toggle-track .toggle-knob {
+            transform: translateX(24px);
+        }
+
+        .toggle-track {
+            position: absolute;
+            inset: 0;
+            background: #cbd5e1;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .dark .toggle-track {
+            background: #475569;
+        }
+
+        .toggle-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+
+        /* Quick mode toggle */
+        .quick-mode-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #faf0ff 100%);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(124, 140, 248, 0.15);
+        }
+
+        .dark .quick-mode-bar {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(50, 30, 60, 0.4) 100%);
+            border-color: rgba(124, 140, 248, 0.2);
+        }
+
+        /* Progress bar */
+        .upload-progress {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .upload-progress.active {
+            display: block;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .dark .progress-bar-bg {
+            background: #334155;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #06b6d4, #7c8cf8);
+            border-radius: 8px;
+            transition: width 0.3s ease;
+            animation: progressPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes progressPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.75; }
+        }
+
+        .progress-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: #06b6d4;
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        /* Hidden optional fields in quick mode */
+        .quick-hide {
+            transition: all 0.3s ease;
+        }
+
+        .quick-mode .quick-hide {
+            display: none !important;
+        }
+
+        /* Select arrow fix */
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper .lg-input-field {
+            padding-right: 36px;
+            cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .select-wrapper .select-arrow {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #94a3b8;
+            font-size: 20px;
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen pb-10" style="display:block !important;flex-direction:unset !important;">
+
+    <!-- Header -->
+    <header
+        class="bg-white dark:bg-slate-900 sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800 px-3 sm:px-6 py-2.5 sm:py-4 flex items-center gap-2">
+        <button onclick="history.back()"
+            class="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-colors">
+            <span class="material-symbols-outlined text-slate-600 dark:text-slate-300" style="font-size:20px">arrow_back</span>
+        </button>
+        <h1 class="flex-1 font-black text-base sm:text-xl truncate" data-i18n="rev_title">Share Your Work</h1>
+        <div class="relative flex-shrink-0" id="lang-container-rev">
+            <button onclick="toggleLangRev()"
+                class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors"
+                title="Language">
+                <span class="material-symbols-outlined text-slate-600" style="font-size:20px">language</span>
+            </button>
+            <div id="lang-menu-rev"
+                class="absolute right-0 top-11 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-44 py-1.5 z-50">
+            </div>
+            </div>
+        </header>
+
+        <main class="max-w-2xl mx-auto px-4 pb-28 pt-6 relative">
+            <!-- Background Orbs -->
+            <div class="absolute -top-10 -left-10 w-40 h-40 bg-primary/10 blur-[80px] rounded-full pointer-events-none"></div>
+            <div class="absolute top-40 -right-10 w-40 h-40 bg-accent-purple/10 blur-[80px] rounded-full pointer-events-none"></div>
+
+            <div class="lg-upload-container p-5 md:p-8" id="form-container">
+
+                <!-- Quick Mode Toggle -->
+                <div class="quick-mode-bar">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary" style="font-size:20px">bolt</span>
+                        <div>
+                            <div class="text-sm font-bold">빠른 등록</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400">필수 항목만 표시</div>
+                        </div>
+                    </div>
+                    <label class="toggle-switch relative inline-block">
+                        <input type="checkbox" id="quick-mode-toggle" class="opacity-0 w-0 h-0 absolute" />
+                        <span class="toggle-track"><span class="toggle-knob"></span></span>
+                    </label>
+                </div>
+
+                <!-- Section 1: Author Info -->
+                <div class="mb-6">
+                    <div class="section-header">
+                        <span class="section-icon">👤</span>
+                        <span>작가 정보</span>
+                    </div>
+
+                    <div class="lg-input-group">
+                        <label class="lg-label" for="student-name">학생 이름 <span class="required">*</span></label>
+                        <input type="text" id="student-name" placeholder="홍길동" class="lg-input-field" />
+                    </div>
+
+                    <div class="lg-input-group quick-hide">
+                        <label class="lg-label" for="display-name">공개 이름</label>
+                        <input type="text" id="display-name" placeholder="갤러리에 표시될 이름 (비워두면 학생 이름 사용)" class="lg-input-field" />
+                    </div>
+                </div>
+
+                <!-- Section 2: Artwork Info -->
+                <div class="mb-6">
+                    <div class="section-header">
+                        <span class="section-icon">🎨</span>
+                        <span>작품 정보</span>
+                    </div>
+
+                    <div class="lg-input-group quick-hide">
+                        <label class="lg-label" for="art-name">작품 제목</label>
+                        <input type="text" id="art-name" placeholder="무제" class="lg-input-field" />
+                    </div>
+
+                    <div class="lg-input-group">
+                        <label class="lg-label" for="class-select" data-i18n="rev_select_class">수업 선택 <span class="required">*</span></label>
+                        <div class="select-wrapper">
+                            <select id="class-select" class="lg-input-field">
+                                <option value="" data-i18n="rev_select_class_ph">수업을 선택해주세요</option>
+                                <option value="수채화" data-i18n="cat_watercolor_opt">수채화</option>
+                                <option value="발상" data-i18n="cat_idea_opt">발상</option>
+                                <option value="만들기" data-i18n="cat_craft_opt">만들기</option>
+                                <option value="프로젝트" data-i18n="cat_project_opt">프로젝트</option>
+                                <option value="창의력100" data-i18n="cat_creative100_opt">창의력 100</option>
+                                <option value="일러스트" data-i18n="cat_illust_opt">일러스트</option>
+                            </select>
+                            <span class="material-symbols-outlined select-arrow">expand_more</span>
+                        </div>
+                    </div>
+
+                    <!-- Stars -->
+                    <div class="lg-input-group">
+                        <label class="lg-label">별점 <span class="required">*</span></label>
+                        <div class="flex gap-2 mt-1" id="stars">
+                            <span class="star-btn cursor-pointer text-slate-200" data-val="1">★</span>
+                            <span class="star-btn cursor-pointer text-slate-200" data-val="2">★</span>
+                            <span class="star-btn cursor-pointer text-slate-200" data-val="3">★</span>
+                            <span class="star-btn cursor-pointer text-slate-200" data-val="4">★</span>
+                            <span class="star-btn cursor-pointer text-slate-200" data-val="5">★</span>
+                        </div>
+                    </div>
+
+                    <div class="lg-input-group mb-0 quick-hide">
+                        <label class="lg-label" for="review-text" data-i18n="rev_review">한줄 소감</label>
+                        <textarea id="review-text" rows="3" data-i18n-ph="rev_review_ph"
+                            placeholder="작품을 만들면서 어떤 점이 즐거웠나요?"
+                            class="lg-input-field resize-none min-h-[80px]"></textarea>
+                    </div>
+                </div>
+
+                <!-- Section 3: Photos -->
+                <div class="mb-6">
+                    <div class="section-header">
+                        <span class="section-icon">📸</span>
+                        <span>작품 사진</span>
+                        <span class="text-xs font-semibold text-slate-400 ml-auto">최대 5장</span>
+                    </div>
+
+                    <div id="upload-zone" class="group" onclick="document.getElementById('img-input').click()"
+                        ondragover="event.preventDefault();this.classList.add('over')"
+                        ondragleave="this.classList.remove('over')" ondrop="handleImgDrop(event)">
+                        <div class="flex flex-col items-center">
+                            <span class="material-symbols-outlined text-primary/40 group-hover:text-primary text-4xl mb-2 transition-colors">cloud_upload</span>
+                            <div class="text-[13px] font-bold text-slate-600 dark:text-slate-300" data-i18n="cre_drag_images">사진을 끌어다 놓거나 클릭하여 선택</div>
+                            <div class="text-[11px] text-slate-400 mt-1">JPG, PNG (Max 10MB)</div>
+                        </div>
+                    </div>
+                    <input type="file" id="img-input" accept="image/*" multiple class="hidden" onchange="handleImgFiles(this.files)" />
+                    <div id="img-thumbs" class="img-thumb-grid"></div>
+
+                    <!-- Upload Progress -->
+                    <div class="upload-progress" id="upload-progress">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="progress-text">업로드 중... 0/0장 (0%)</div>
+                    </div>
+                </div>
+
+                <!-- Public Toggle -->
+                <div class="quick-hide">
+                    <div class="flex items-center justify-between p-4 bg-primary/5 rounded-2xl border border-primary/10 mb-6">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary">public</span>
+                            <div>
+                                <div class="text-xs font-bold" data-i18n="rev_public">갤러리 공개 여부</div>
+                                <div class="text-[10px] text-slate-500" data-i18n="rev_public_sub">다른 학생들도 내 작품을 볼 수 있습니다.</div>
+                            </div>
+                        </div>
+                        <label class="toggle-switch relative inline-block">
+                            <input type="checkbox" id="public-toggle" class="opacity-0 w-0 h-0 absolute" checked />
+                            <span class="toggle-track"><span class="toggle-knob"></span></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-3">
+                    <button onclick="history.back()"
+                        class="flex-1 py-4 rounded-2xl border-2 border-slate-100 dark:border-slate-800 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+                        data-i18n="rev_cancel">취소</button>
+                    <button id="submit-btn" onclick="submitReview()"
+                        class="flex-[2] py-4 rounded-2xl bg-primary text-white text-sm font-black hover:bg-blue-700 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-95 shadow-lg shadow-primary/20"
+                        data-i18n="rev_submit">작품 올리기</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Success Overlay -->
+        <div class="success-overlay hidden items-center justify-center p-6 bg-black/60 backdrop-blur-sm" id="success-overlay"
+            style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1000;">
+            <div class="bg-white dark:bg-slate-900 rounded-[40px] p-10 text-center max-w-sm shadow-2xl animate-in zoom-in duration-300">
+                <div class="w-20 h-20 rounded-full bg-green-500 text-white flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/30">
+                    <span class="material-symbols-outlined text-4xl">check_circle</span>
+                </div>
+                <h2 class="font-black text-2xl mb-3 text-slate-900 dark:text-white" data-i18n="rev_success_title">업로드 완료!</h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed" data-i18n="rev_success_desc">학생의 멋진 작품이 갤러리에 등록되었습니다. <br/>함께 감상하러 가볼까요?</p>
+                <button onclick="window.location.href='gallery.html'"
+                    class="w-full py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-lg shadow-primary/25 hover:bg-blue-700 transition-all">갤러리로 이동</button>
+            </div>
+        </div>
+
+        <script>
+            let selectedImages = [];
+            let isEditMode = false;
+            let editId = null;
+            let selectedRating = 0;
+            let isQuickMode = false;
+
+            // Quick Mode Toggle
+            document.getElementById('quick-mode-toggle').addEventListener('change', function() {
+                isQuickMode = this.checked;
+                const container = document.getElementById('form-container');
+                if (isQuickMode) {
+                    container.classList.add('quick-mode');
+                } else {
+                    container.classList.remove('quick-mode');
+                }
+            });
+
+            async function init() {
+                console.log('[ReviewSubmit] Initializing...');
+                const params = new URLSearchParams(window.location.search);
+                editId = params.get('id');
+                console.log('[ReviewSubmit] Edit ID:', editId);
+
+                if (editId) {
+                    isEditMode = true;
+                    await loadEditData(editId);
+                }
+                lwRenderLangPicker('lang-menu-rev');
+            }
+
+            // Reliable initialization
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+            async function loadEditData(id) {
+                console.log('[ReviewSubmit] Loading data for ID:', id);
+                try {
+                    // Wait for LunaAuth to be ready and get user
+                    const user = await new Promise((resolve, reject) => {
+                        const timeout = setTimeout(() => reject(new Error('Auth timeout')), 5000);
+                        window.LunaAuth?.onReady(() => {
+                            clearTimeout(timeout);
+                            const u = window.LunaAuth.getUser();
+                            console.log('[ReviewSubmit] Auth ready, user:', u ? u.email : 'Guest');
+                            resolve(u);
+                        });
+                        if (!window.LunaAuth) {
+                            console.warn('[ReviewSubmit] LunaAuth not found, retrying...');
+                        }
+                    });
+
+                    const db = window.LunaAuth?.getDb() || firebase.firestore();
+                    const doc = await db.collection('reviews').doc(id).get();
+                    if (!doc.exists) {
+                        console.error('[ReviewSubmit] Document does not exist');
+                        alert('작품을 찾을 수 없습니다.');
+                        return;
+                    }
+                    const data = doc.data();
+                    console.log('[ReviewSubmit] Data loaded:', data);
+
+                    // Security check
+                    const isAdmin = localStorage.getItem('lw_role') === 'admin' || (user && user.email === 'skyclover777@gmail.com');
+                    const isOwner = user && data.uid && data.uid === user.uid;
+
+                    console.log('[ReviewSubmit] Access check - isAdmin:', isAdmin, 'isOwner:', isOwner);
+
+                    if (!isAdmin && !isOwner) {
+                        alert('수정 권한이 없습니다. (No permission to edit)');
+                        history.back();
+                        return;
+                    }
+
+                    // Fill Fields - map old field names to new IDs
+                    document.getElementById('class-select').value = data.classTitle || '';
+                    document.getElementById('student-name').value = data.artistName || data.nickname || '';
+                    document.getElementById('display-name').value = data.nickname || '';
+                    document.getElementById('art-name').value = data.artName || '';
+                    document.getElementById('review-text').value = data.text || '';
+                    document.getElementById('public-toggle').checked = data.public !== false;
+
+                    // Set Rating
+                    selectedRating = data.rating || 0;
+                    document.querySelectorAll('.star-btn').forEach((s, i) => {
+                        s.classList.toggle('active', i < selectedRating);
+                    });
+
+                    // Load Images
+                    if (data.images) {
+                        data.images.forEach((url, idx) => {
+                            const imgId = 'img-' + Math.random().toString(36).substr(2, 9);
+                            selectedImages.push({
+                                id: imgId,
+                                src: url,
+                                thumbSrc: (data.thumbnails && data.thumbnails[idx]) ? data.thumbnails[idx] : url,
+                                isExisting: true
+                            });
+                        });
+                        renderThumbs();
+                    }
+
+                    // Change UI for edit mode
+                    document.querySelector('h1[data-i18n="rev_title"]').textContent = 'Edit Your Work';
+                    document.getElementById('submit-btn').textContent = 'Update Review';
+
+                } catch (e) {
+                    console.error('Error loading edit data:', e);
+                    alert('데이터를 불러오는 중 오류가 발생했습니다: ' + e.message);
+                }
+            }
+
+            // Stars
+            document.querySelectorAll('.star-btn').forEach(star => {
+                star.addEventListener('click', function () {
+                    selectedRating = parseInt(this.getAttribute('data-val'));
+                    document.querySelectorAll('.star-btn').forEach((s, i) => {
+                        s.classList.toggle('active', i < selectedRating);
+                    });
+                });
+            });
+
+            // Image optimization: Resize and compress
+            async function optimizeImage(base64Str, maxWidth = 800, quality = 0.65) {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.src = base64Str;
+                    img.onload = () => {
+                        let width = img.width;
+                        let height = img.height;
+
+                        const maxDim = maxWidth;
+                        if (width > maxDim || height > maxDim) {
+                            if (width >= height) {
+                                height = (maxDim / width) * height;
+                                width = maxDim;
+                            } else {
+                                width = (maxDim / height) * width;
+                                height = maxDim;
+                            }
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.round(width);
+                        canvas.height = Math.round(height);
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                });
+            }
+
+            // Image handling
+            async function handleImgFiles(files) {
+                for (const f of Array.from(files)) {
+                    if (selectedImages.length >= 5) break;
+
+                    const reader = new FileReader();
+                    const readerPromise = new Promise(resolve => {
+                        reader.onload = async (e) => {
+                            const optimizedSrc = await optimizeImage(e.target.result);
+                            addImgThumb(optimizedSrc, f.name);
+                            resolve();
+                        };
+                    });
+                    reader.readAsDataURL(f);
+                    await readerPromise;
+                }
+            }
+
+            async function handleImgDrop(e) {
+                e.preventDefault();
+                document.getElementById('upload-zone').classList.remove('over');
+                await handleImgFiles(e.dataTransfer.files);
+            }
+
+            function addImgThumb(src, name) {
+                const id = 'img-' + Date.now() + Math.random();
+                selectedImages.push({ id, src, name });
+                renderThumbs();
+            }
+
+            function removeImg(id) {
+                selectedImages = selectedImages.filter(i => i.id !== id);
+                renderThumbs();
+            }
+
+            function renderThumbs() {
+                document.getElementById('img-thumbs').innerHTML = selectedImages.map(img =>
+                    `<div class="img-thumb">
+                        <img src="${img.src}" alt="artwork" />
+                        <button class="delete-btn" onclick="event.stopPropagation();removeImg('${img.id}')" aria-label="삭제">&times;</button>
+                    </div>`
+                ).join('');
+                document.getElementById('upload-zone').style.display = selectedImages.length >= 5 ? 'none' : '';
+            }
+
+            // Progress bar helpers
+            function showProgress(current, total) {
+                const el = document.getElementById('upload-progress');
+                const bar = document.getElementById('progress-bar-fill');
+                const text = document.getElementById('progress-text');
+                el.classList.add('active');
+                const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+                bar.style.width = pct + '%';
+                text.textContent = `업로드 중... ${current}/${total}장 (${pct}%)`;
+            }
+
+            function hideProgress() {
+                document.getElementById('upload-progress').classList.remove('active');
+            }
+
+            async function submitReview() {
+                const classTitle = document.getElementById('class-select').value;
+                const studentName = document.getElementById('student-name').value.trim();
+                const displayName = document.getElementById('display-name').value.trim();
+                const artName = document.getElementById('art-name').value.trim();
+                const text = document.getElementById('review-text').value.trim();
+                const isPublic = document.getElementById('public-toggle').checked;
+
+                // Use display name if provided, otherwise student name
+                const nickname = displayName || studentName;
+                const artistName = studentName;
+
+                const lang = lwGetLang();
+                if (!classTitle) { alert(lwT('rev_alert_select', lang) || '수업을 선택해주세요'); return; }
+                if (!studentName) { alert(lwT('rev_alert_nick', lang) || '학생 이름을 입력해주세요'); return; }
+                if (selectedRating === 0) { alert(lwT('rev_alert_rating', lang) || '별점을 선택해주세요'); return; }
+
+                const btn = document.getElementById('submit-btn');
+
+                try {
+                    const origHtml = btn.innerHTML;
+                    btn.innerHTML = '업로드 중...';
+                    btn.disabled = true;
+                    btn.style.opacity = '0.6';
+
+                    const db = window.LunaAuth ? window.LunaAuth.getDb() : firebase.firestore();
+                    const storage = window.LunaAuth ? window.LunaAuth.getStorage() : firebase.storage();
+                    const user = window.LunaAuth ? window.LunaAuth.getCurrentUser() : firebase.auth().currentUser;
+
+                     if (!user) {
+                        alert('로그인이 필요합니다. 먼저 로그인 해주세요. (You must be logged in to upload.)');
+                        btn.innerHTML = lwT('rev_submit', lang) || (isEditMode ? 'Update Review' : '작품 올리기');
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        return;
+                    }
+
+                    const uploadedImageUrls = [];
+                    const uploadedThumbUrls = [];
+                    const newImages = selectedImages.filter(img => !img.isExisting);
+                    const totalToUpload = newImages.length;
+                    let uploadedCount = 0;
+
+                    for (const img of selectedImages) {
+                        if (img.isExisting) {
+                            uploadedImageUrls.push(img.src);
+                            uploadedThumbUrls.push(img.thumbSrc || img.src);
+                            continue;
+                        }
+
+                        if (totalToUpload > 0) {
+                            showProgress(uploadedCount, totalToUpload);
+                        }
+
+                        try {
+                            const fullData = img.src;
+                            const thumbData = await optimizeImage(fullData, 400, 0.7);
+
+                            const timestamp = Date.now();
+                            const randomId = Math.random().toString(36).substring(2, 9);
+
+                            // Upload Full
+                            const fullFileName = `reviews/full_${timestamp}_${randomId}.jpg`;
+                            const fullRef = storage.ref().child(fullFileName);
+                            await fullRef.putString(fullData.split(',')[1], 'base64', { contentType: 'image/jpeg' });
+                            const fullUrl = await fullRef.getDownloadURL();
+                            uploadedImageUrls.push(fullUrl);
+
+                            // Upload Thumb
+                            const thumbFileName = `reviews/thumb_${timestamp}_${randomId}.jpg`;
+                            const thumbRef = storage.ref().child(thumbFileName);
+                            await thumbRef.putString(thumbData.split(',')[1], 'base64', { contentType: 'image/jpeg' });
+                            const thumbUrl = await thumbRef.getDownloadURL();
+                            uploadedThumbUrls.push(thumbUrl);
+
+                            uploadedCount++;
+                            showProgress(uploadedCount, totalToUpload);
+
+                        } catch(uploadErr) {
+                            console.error('Error uploading image', uploadErr);
+                            throw new Error('Image upload failed: ' + uploadErr.message);
+                        }
+                    }
+
+                    hideProgress();
+
+                    // Prepare review data
+                    const reviewData = {
+                        nickname,
+                        artName: artName || '무제',
+                        artistName: artistName || nickname,
+                        classTitle,
+                        rating: selectedRating,
+                        text,
+                        images: uploadedImageUrls,
+                        thumbnails: uploadedThumbUrls,
+                        public: isPublic,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+
+                    if (isEditMode) {
+                        await db.collection('reviews').doc(editId).update(reviewData);
+                    } else {
+                        reviewData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                        reviewData.uid = user.uid;
+                        await db.collection('reviews').add(reviewData);
+                    }
+
+                    // Show success overlay
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.innerHTML = isEditMode ? 'Update Review' : (lwT('rev_submit', lang) || '작품 올리기');
+                    const overlay = document.getElementById('success-overlay');
+                    overlay.classList.remove('hidden');
+                    overlay.style.display = 'flex';
+                } catch (err) {
+                    console.error('Error submitting review', err);
+                    hideProgress();
+                    alert('업로드 실패 (Failed to submit review): ' + err.message);
+                    btn.innerHTML = isEditMode ? 'Update Review' : (lwT('rev_submit', lang) || '작품 올리기');
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+            }
+
+            function toggleLangRev() {
+                document.getElementById('lang-menu-rev').classList.toggle('open');
+            }
+            document.addEventListener('click', function (e) {
+                const c = document.getElementById('lang-container-rev');
+                if (c && !c.contains(e.target)) {
+                    document.getElementById('lang-menu-rev').classList.remove('open');
+                }
+            });
+            document.addEventListener('DOMContentLoaded', function () {
+                lwRenderLangPicker('lang-menu-rev');
+            });
+        </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+<!-- Luna Sound Effects -->
+<script src="../../assets/js/luna-sounds.js?v=0321"></script>
+</body>
+
+</html>

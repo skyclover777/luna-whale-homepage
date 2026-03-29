@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talk Rhythm! - 루나웨일 영어회화</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <style>
+        @font-face {
+            font-family: 'CookieRun-Bold';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Bold.woff') format('woff');
+            font-weight: bold; font-style: normal;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
+            overflow: hidden;
+            background: #0D1B2A;
+            color: white;
+        }
+
+        /* ─── Start Screen ─── */
+        #start-screen {
+            position: fixed; inset: 0;
+            background: linear-gradient(160deg, #0D1B2A 0%, #1B2838 50%, #2D1B69 100%);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 200;
+        }
+        .start-card {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 28px;
+            padding: 48px 44px 40px;
+            max-width: 440px; width: 90%;
+            text-align: center;
+        }
+        .start-emoji { font-size: 56px; margin-bottom: 8px; }
+        .start-title {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 42px;
+            background: linear-gradient(135deg, #FF6B6B, #FFE66D, #4ECDC4);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.15; margin-bottom: 6px;
+        }
+        .start-sub { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 28px; letter-spacing: 1px; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-label { display: block; font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+        .start-input {
+            width: 100%; padding: 14px 18px;
+            border: 2px solid rgba(255,255,255,0.15); border-radius: 14px;
+            font-size: 17px; font-family: 'Pretendard Variable', sans-serif; font-weight: 600;
+            outline: none; background: rgba(255,255,255,0.06); color: white;
+            transition: all 0.25s;
+        }
+        .start-input:focus { border-color: #4ECDC4; box-shadow: 0 0 0 3px rgba(78,205,196,0.2); }
+        .start-input::placeholder { color: rgba(255,255,255,0.25); }
+
+        .level-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+        .level-btn {
+            flex: 1; min-width: 55px; padding: 10px 6px;
+            border: 2px solid rgba(255,255,255,0.15); border-radius: 10px;
+            background: transparent; font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 13px; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s;
+        }
+        .level-btn.active { border-color: #4ECDC4; background: #4ECDC4; color: #0D1B2A; }
+        .level-btn:hover:not(.active) { border-color: rgba(255,255,255,0.3); }
+
+        .start-btn {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            color: white; font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 21px; border: none; border-radius: 14px;
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 6px 24px rgba(255,107,107,0.35); letter-spacing: 1px;
+        }
+        .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,107,107,0.5); }
+        .start-btn:active { transform: translateY(1px); }
+        .start-hint { margin-top: 16px; font-size: 12px; color: rgba(255,255,255,0.3); }
+        .start-stats {
+            margin-top: 12px; padding: 10px 14px;
+            background: rgba(78,205,196,0.1); border-radius: 10px;
+            font-size: 12px; color: rgba(255,255,255,0.6);
+        }
+        .start-stats strong { color: #4ECDC4; }
+
+        /* ─── Game Screen ─── */
+        #game-screen {
+            display: none; position: fixed; inset: 0;
+            background: linear-gradient(180deg, #0D1B2A 0%, #1B2838 100%);
+            flex-direction: column;
+        }
+
+        /* ── Top HUD ── */
+        .game-hud {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 20px; z-index: 10;
+        }
+        .hud-item {
+            background: rgba(255,255,255,0.06); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+            padding: 8px 14px; font-family: 'CookieRun-Bold', sans-serif;
+        }
+        .hud-item .label { font-size: 10px; opacity: 0.4; letter-spacing: 1px; }
+        .hud-item .val { font-size: 18px; }
+        .hud-score .val { color: #FFE66D; }
+        .hud-combo .val { color: #FF6B6B; }
+        .hud-mastered .val { color: #4ECDC4; }
+
+        /* ── Situation Banner ── */
+        .situation-bar {
+            text-align: center; padding: 8px 20px;
+            font-size: 14px; color: rgba(255,255,255,0.5);
+            font-weight: 600;
+        }
+
+        /* ── Speaker Area ── */
+        .speaker-area {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 0 24px; position: relative;
+        }
+
+        /* Character — 연애 시뮬레이션 스타일 (크게 중앙) */
+        .character {
+            font-size: 140px;
+            line-height: 1;
+            filter: drop-shadow(0 12px 40px rgba(0,0,0,0.4));
+            margin-bottom: 16px;
+            animation: float 3s ease-in-out infinite;
+            transition: transform 0.3s;
+        }
+        .character:hover { transform: scale(1.05); }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        /* Character glow ring */
+        .character-wrap {
+            position: relative;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .character-glow {
+            position: absolute; width: 180px; height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(78,205,196,0.15) 0%, transparent 70%);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.15); opacity: 1; }
+        }
+
+        /* Speech Bubble — 비주얼 노벨 스타일 */
+        .speech-bubble {
+            background: linear-gradient(180deg, rgba(13,27,42,0.92) 0%, rgba(13,27,42,0.98) 100%);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(78,205,196,0.2);
+            border-radius: 16px;
+            padding: 18px 28px 20px;
+            max-width: 580px; width: 95%;
+            text-align: left;
+            color: white;
+            font-size: 20px; font-weight: 600;
+            line-height: 1.6;
+            box-shadow: 0 -4px 32px rgba(0,0,0,0.4);
+            position: relative;
+            word-break: keep-all;
+        }
+        .speech-name {
+            display: inline-block;
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 14px;
+            color: #4ECDC4;
+            padding: 3px 12px;
+            background: rgba(78,205,196,0.15);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .speech-level {
+            display: inline-block; padding: 2px 10px; border-radius: 8px;
+            font-size: 11px; font-weight: 700; color: white; margin-left: 8px;
+        }
+
+        /* ── Timer Bar ── */
+        .timer-container {
+            width: 90%; max-width: 520px;
+            height: 8px; background: rgba(255,255,255,0.1);
+            border-radius: 4px; margin-top: 16px; overflow: hidden;
+        }
+        .timer-bar {
+            height: 100%; border-radius: 4px;
+            background: linear-gradient(90deg, #FF6B6B, #FFE66D, #4ECDC4);
+            transition: width 0.1s linear;
+            width: 100%;
+        }
+        .timer-bar.urgent { background: linear-gradient(90deg, #FF6B6B, #FF4444); }
+        .timer-container.shake {
+            animation: timerShake 0.08s infinite alternate;
+        }
+        @keyframes timerShake {
+            0% { transform: translateX(-2px) translateY(-1px); }
+            25% { transform: translateX(2px) translateY(1px); }
+            50% { transform: translateX(-1px) translateY(2px); }
+            75% { transform: translateX(1px) translateY(-2px); }
+            100% { transform: translateX(2px) translateY(1px); }
+        }
+        .timer-container.critical-shake {
+            animation: timerCriticalShake 0.05s infinite alternate;
+        }
+        @keyframes timerCriticalShake {
+            0% { transform: translateX(-3px) translateY(-2px) scale(1.02); }
+            50% { transform: translateX(3px) translateY(2px) scale(0.98); }
+            100% { transform: translateX(-2px) translateY(1px) scale(1.01); }
+        }
+
+        /* ── Answer Buttons ── */
+        .answers-area {
+            padding: 20px; padding-bottom: 40px;
+            display: flex; flex-direction: column; gap: 12px;
+            align-items: center;
+        }
+        .answer-btn {
+            width: 90%; max-width: 520px;
+            padding: 16px 24px;
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            color: white; font-size: 16px; font-weight: 600;
+            font-family: 'Pretendard Variable', sans-serif;
+            cursor: pointer; transition: all 0.15s;
+            text-align: left; line-height: 1.4;
+            opacity: 0; transform: translateY(30px);
+            animation: slideUp 0.4s ease-out forwards;
+        }
+        .answer-btn:nth-child(1) { animation-delay: 0.1s; }
+        .answer-btn:nth-child(2) { animation-delay: 0.2s; }
+        .answer-btn:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .answer-btn:hover { border-color: #4ECDC4; background: rgba(78,205,196,0.1); transform: translateY(-2px) !important; }
+        .answer-btn:active { transform: translateY(1px) !important; }
+        .answer-btn .key-hint {
+            display: inline-block; width: 28px; height: 28px;
+            background: rgba(255,255,255,0.1); border-radius: 8px;
+            text-align: center; line-height: 28px;
+            font-family: 'CookieRun-Bold', sans-serif; font-size: 14px;
+            margin-right: 12px; color: rgba(255,255,255,0.5);
+            flex-shrink: 0;
+        }
+        .answer-btn.correct {
+            border-color: #4ECDC4 !important;
+            background: rgba(78,205,196,0.2) !important;
+            animation: none; opacity: 1; transform: none;
+        }
+        .answer-btn.wrong {
+            border-color: #FF6B6B !important;
+            background: rgba(255,107,107,0.2) !important;
+            animation: none; opacity: 1; transform: none;
+        }
+        .answer-btn.disabled { pointer-events: none; opacity: 0.4; }
+
+        /* ── Judgment Popup ── */
+        .judgment {
+            position: fixed; top: 40%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 64px;
+            pointer-events: none; z-index: 150;
+            animation: judgePop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            text-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+        .judgment.perfect { color: #4ECDC4; }
+        .judgment.good { color: #FFE66D; }
+        .judgment.miss { color: #FF6B6B; }
+        @keyframes judgePop {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); opacity: 0; }
+            40% { transform: translate(-50%, -60%) scale(1.2) rotate(3deg); opacity: 1; }
+            100% { transform: translate(-50%, -80%) scale(1) rotate(0deg); opacity: 0; }
+        }
+
+        /* ── Combo ── */
+        .combo-popup {
+            position: fixed; top: 55%; left: 50%;
+            transform: translate(-50%, 0);
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 24px; color: #FFE66D;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            animation: comboPop 0.6s ease-out forwards;
+            pointer-events: none; z-index: 149;
+        }
+        @keyframes comboPop {
+            0% { transform: translate(-50%, 0) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -10px) scale(1.15); opacity: 1; }
+            100% { transform: translate(-50%, -30px) scale(1); opacity: 0; }
+        }
+
+        /* ── Mastered Popup ── */
+        .mastered-popup {
+            position: fixed; top: 60%; left: 50%;
+            transform: translate(-50%, 0);
+            font-family: 'CookieRun-Bold', sans-serif; font-size: 18px;
+            color: #4ECDC4; background: rgba(0,0,0,0.7);
+            padding: 8px 20px; border-radius: 20px;
+            animation: masteredPop 1.2s ease-out forwards;
+            pointer-events: none; z-index: 149;
+        }
+        @keyframes bubbleBounce {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.04) translateY(-3px); }
+            60% { transform: scale(0.98) translateY(1px); }
+            100% { transform: scale(1) translateY(0); }
+        }
+        @keyframes masteredPop {
+            0% { transform: translate(-50%, 0) scale(0); opacity: 0; }
+            30% { transform: translate(-50%, -10px) scale(1.1); opacity: 1; }
+            70% { opacity: 1; }
+            100% { transform: translate(-50%, -30px) scale(0.9); opacity: 0; }
+        }
+
+        /* ─── Game Over ─── */
+        #gameover-screen {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 200;
+        }
+        .go-card {
+            background: rgba(255,255,255,0.06); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 28px; padding: 40px 36px 32px;
+            max-width: 400px; width: 88%; text-align: center;
+        }
+        .go-title { font-family: 'CookieRun-Bold'; font-size: 32px; color: #4ECDC4; margin-bottom: 4px; }
+        .go-label { font-size: 12px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+        .go-score { font-family: 'CookieRun-Bold'; font-size: 48px; color: #FFE66D; margin: 8px 0 8px; }
+        .go-stats { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
+        .go-stat {
+            background: rgba(255,255,255,0.06); border-radius: 12px; padding: 10px 16px;
+            font-size: 12px; color: rgba(255,255,255,0.6);
+        }
+        .go-stat .val { font-family: 'CookieRun-Bold'; font-size: 20px; display: block; margin-top: 2px; }
+        .go-stat .val.perfect { color: #4ECDC4; }
+        .go-stat .val.good { color: #FFE66D; }
+        .go-stat .val.miss { color: #FF6B6B; }
+        .go-mastered {
+            background: rgba(78,205,196,0.1); border-radius: 12px;
+            padding: 12px; margin-bottom: 16px; font-size: 13px;
+            color: #4ECDC4; font-weight: 600;
+        }
+        .lb-list { text-align: left; margin-bottom: 20px; }
+        .lb-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.7);
+        }
+        .lb-row:nth-child(odd) { background: rgba(255,255,255,0.04); }
+        .lb-row .rank { color: #FF6B6B; font-family: 'CookieRun-Bold'; width: 24px; }
+        .lb-row .name { flex: 1; margin-left: 8px; }
+        .lb-row .pts { color: #FFE66D; font-family: 'CookieRun-Bold'; }
+        .lb-row:first-child { background: rgba(255,230,109,0.08); }
+        .lb-row:first-child .rank { color: #FFE66D; }
+        .go-btn {
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            color: white; font-family: 'CookieRun-Bold'; font-size: 19px;
+            border: none; border-radius: 14px; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 6px 24px rgba(255,107,107,0.35);
+        }
+        .go-btn:hover { transform: translateY(-2px); }
+        .go-btn-secondary {
+            width: 100%; padding: 13px; background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.7); font-family: 'CookieRun-Bold'; font-size: 14px;
+            border: none; border-radius: 14px; cursor: pointer; margin-top: 8px;
+        }
+
+        /* ── Particles ── */
+        .particle {
+            position: fixed; pointer-events: none; z-index: 0;
+            border-radius: 50%; opacity: 0;
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 600px) {
+            .start-card { padding: 32px 24px 28px; }
+            .start-title { font-size: 34px; }
+            .speech-bubble { font-size: 17px; padding: 16px 20px; }
+            .answer-btn { font-size: 14px; padding: 14px 18px; }
+            .character { font-size: 100px; }
+            .character-glow { width: 130px; height: 130px; }
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+    <!-- ─── Start Screen ─── -->
+    <div id="start-screen">
+        <div class="start-card">
+            <div class="start-emoji">🎙️</div>
+            <div class="start-title">Talk Rhythm!</div>
+            <div class="start-sub">외국인이 말을 걸면 리듬에 맞춰 대답하라!</div>
+            <div class="input-group">
+                <label class="input-label">닉네임</label>
+                <input type="text" id="nickname" class="start-input" placeholder="이름을 입력하세요" maxlength="12">
+            </div>
+            <div class="input-group">
+                <label class="input-label">난이도</label>
+                <div class="level-selector">
+                    <button class="level-btn active" onclick="setLevel('all',this)">전체</button>
+                    <button class="level-btn" onclick="setLevel('초등',this)">초등</button>
+                    <button class="level-btn" onclick="setLevel('중등',this)">중등</button>
+                    <button class="level-btn" onclick="setLevel('고등',this)">고등</button>
+                    <button class="level-btn" onclick="setLevel('대학',this)">대학</button>
+                </div>
+            </div>
+            <button onclick="startGame()" class="start-btn">Start!</button>
+            <div class="start-hint">1 2 3 키 또는 버튼 클릭</div>
+            <div class="start-stats" id="startStats"></div>
+        </div>
+    </div>
+
+    <!-- ─── Game Screen ─── -->
+    <div id="game-screen">
+        <div class="game-hud">
+            <div class="hud-item hud-combo">
+                <div class="label">COMBO</div>
+                <div class="val" id="hud-combo">0</div>
+            </div>
+            <div class="hud-item hud-round">
+                <div class="label">ROUND</div>
+                <div class="val" id="hud-round" style="color:#fff;">1</div>
+            </div>
+            <div class="hud-item hud-score">
+                <div class="label">SCORE</div>
+                <div class="val" id="hud-score">0</div>
+            </div>
+            <div class="hud-item hud-mastered">
+                <div class="label">MASTERED</div>
+                <div class="val" id="hud-mastered">0</div>
+            </div>
+        </div>
+
+        <!-- Lives & Speed -->
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0 20px 4px;">
+            <div id="hud-lives" style="font-size:22px;letter-spacing:2px;">❤️❤️❤️❤️❤️</div>
+            <div id="hud-speed" style="font-family:'CookieRun-Bold';font-size:13px;color:rgba(255,255,255,0.4);">⚡ 5.0s</div>
+        </div>
+
+        <div class="situation-bar" id="situation-bar">🙋 길에서 인사</div>
+
+        <div class="speaker-area">
+            <div class="character-wrap">
+                <div class="character-glow"></div>
+                <div class="character" id="character">🧑‍🦱</div>
+            </div>
+            <div class="speech-bubble">
+                <div>
+                    <span class="speech-name" id="speech-name">Stranger</span>
+                    <span class="speech-level" id="speech-level">초등</span>
+                </div>
+                <div id="speech-text">Loading...</div>
+            </div>
+            <div class="timer-container">
+                <div class="timer-bar" id="timer-bar"></div>
+            </div>
+        </div>
+
+        <div class="answers-area" id="answers-area"></div>
+    </div>
+
+    <!-- ─── Game Over ─── -->
+    <div id="gameover-screen">
+        <div class="go-card">
+            <div class="go-title">Great Talk!</div>
+            <div class="go-label">SCORE</div>
+            <div class="go-score" id="final-score">0</div>
+            <div class="go-stats">
+                <div class="go-stat"><span class="label">ROUND</span><span class="val" style="color:#fff" id="stat-round">0</span></div>
+                <div class="go-stat"><span class="label">PERFECT</span><span class="val perfect" id="stat-perfect">0</span></div>
+                <div class="go-stat"><span class="label">GOOD</span><span class="val good" id="stat-good">0</span></div>
+                <div class="go-stat"><span class="label">MISS</span><span class="val miss" id="stat-miss">0</span></div>
+                <div class="go-stat"><span class="label">MAX COMBO</span><span class="val" style="color:#FF6B6B" id="stat-maxcombo">0</span></div>
+            </div>
+            <div id="mastered-info" class="go-mastered" style="display:none"></div>
+            <div class="go-label" style="margin-bottom:8px">HALL OF FAME</div>
+            <div id="leaderboard-list" class="lb-list"></div>
+            <button onclick="restartGame()" class="go-btn">Try Again!</button>
+            <button onclick="window.location.href='../luna-en/index.html'" class="go-btn-secondary">🏠 홈으로</button>
+        </div>
+    </div>
+
+    <script src="../../assets/js/english-talk-data.js"></script>
+    <script>
+    /* ═══════════════════════════════════════
+       Talk Rhythm! — Rhythm English Conversation
+       ═══════════════════════════════════════ */
+
+    // ── Constants ──
+    const TIME_START = 5000; // 시작 5초
+    const TIME_MIN = 2000; // 최소 2초
+    const TIME_DECREASE = 100; // 라운드마다 0.1초 감소
+    const MASTERY_THRESHOLD = 3;
+    const MAX_LIVES = 5;
+    const MASTERY_KEY = 'lw_talk_mastery';
+
+    // ── Level colors ──
+    const LEVEL_COLORS = { '초등': '#4CAF50', '중등': '#2196F3', '고등': '#FF9800', '대학': '#9C27B0' };
+
+    // ── Characters (성별 구분) ──
+    const MALE_CHARS = ['🧑‍🦱','🧔','🧑‍🦳','👨‍🦲','👨‍🦱','🧑','🧓'];
+    const FEMALE_CHARS = ['👩‍🦰','👩','👩‍🦱','👱‍♀️','👩‍🦳'];
+    const CHARACTERS = [...MALE_CHARS, ...FEMALE_CHARS];
+    const MALE_NAMES = ['Alex','James','Oliver','Ethan','Noah','Jack','Tom','Max','Ryan','Daniel','Kevin','Chris'];
+    const FEMALE_NAMES = ['Emma','Sophia','Mia','Chloe','Lily','Sarah','Amy','Zoe','Grace','Luna','Kate','Anna'];
+    const CHAR_NAMES = [...MALE_NAMES, ...FEMALE_NAMES];
+
+    // ── TTS (남녀 음성 구별) ──
+    let ttsVoices = { male: null, female: null };
+    function initTTS() {
+        const voices = speechSynthesis.getVoices();
+        const enVoices = voices.filter(v => v.lang.startsWith('en'));
+        ttsVoices.female = enVoices.find(v => v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Karen'))
+            || enVoices.find(v => v.name.includes('Fiona') || v.name.includes('Victoria'))
+            || enVoices[0];
+        ttsVoices.male = enVoices.find(v => v.name.includes('Male') || v.name.includes('Daniel') || v.name.includes('Alex'))
+            || enVoices.find(v => v.name.includes('Fred') || v.name.includes('Thomas'))
+            || enVoices[1] || enVoices[0];
+    }
+    speechSynthesis.onvoiceschanged = initTTS;
+    setTimeout(initTTS, 300);
+
+    let currentCharGender = 'male';
+    function speakLine(text) {
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.voice = currentCharGender === 'female' ? ttsVoices.female : ttsVoices.male;
+        u.rate = 0.85; u.pitch = currentCharGender === 'female' ? 1.15 : 0.9;
+        u.lang = 'en-US';
+        // 말풍선 바운스 이펙트
+        const bubble = document.querySelector('.speech-bubble');
+        if (bubble) { bubble.style.animation = 'none'; bubble.offsetHeight; bubble.style.animation = 'bubbleBounce 0.4s ease'; }
+        speechSynthesis.speak(u);
+    }
+
+    // ── State ──
+    let selectedLevel = 'all';
+    let gameRunning = false;
+    let score = 0, combo = 0, maxCombo = 0;
+    let perfectCount = 0, goodCount = 0, missCount = 0;
+    let lives = MAX_LIVES;
+    let round = 0;
+    let currentTimeLimit = TIME_START;
+    let currentQ = null;
+    let timerStart = 0, timerRAF = null;
+    let answered = false;
+    let questionIndex = 0;
+    let shuffledQuestions = [];
+    let sessionMastered = [];
+
+    // ── Mastery ──
+    function getMastery() { try { return JSON.parse(localStorage.getItem(MASTERY_KEY) || '{}'); } catch { return {}; } }
+    function saveMastery(d) { localStorage.setItem(MASTERY_KEY, JSON.stringify(d)); }
+    function isMastered(key) { const d = getMastery(); return d[key] && d[key].mastered; }
+    function getMasteredCount() { return Object.values(getMastery()).filter(d => d.mastered).length; }
+
+    function recordCorrect(key) {
+        const d = getMastery();
+        if (!d[key]) d[key] = { streak: 0, mastered: false };
+        d[key].streak++;
+        if (d[key].streak >= MASTERY_THRESHOLD && !d[key].mastered) {
+            d[key].mastered = true; d[key].masteredAt = new Date().toISOString();
+            sessionMastered.push(key);
+            showMasteredPopup(key);
+        }
+        saveMastery(d); updateHudMastered();
+    }
+    function recordWrong(key) {
+        const d = getMastery();
+        if (!d[key]) d[key] = { streak: 0, mastered: false };
+        d[key].streak = 0;
+        saveMastery(d);
+    }
+
+    // ── 약한 단어 리포트 (단어장 연동) ──
+    function reportWeakWord(speaker, correct, level, reason) {
+        const data = JSON.parse(localStorage.getItem('lw_vocab_weak') || '{}');
+        const id = 'talk:' + speaker;
+        if (!data[id]) data[id] = { word:speaker, mean:correct, type:'talk', level, missCount:0, luckyCount:0, lastSeen:'', reviewStreak:0, source:'talk-rhythm' };
+        if (reason === 'miss') data[id].missCount++;
+        else data[id].luckyCount++;
+        data[id].lastSeen = new Date().toISOString().slice(0,10);
+        localStorage.setItem('lw_vocab_weak', JSON.stringify(data));
+    }
+
+    function getActiveQuestions() {
+        let qs = talkDataset;
+        if (selectedLevel !== 'all') qs = qs.filter(q => q.level === selectedLevel);
+        return qs.filter(q => !isMastered(q.speaker));
+    }
+
+    // ── Audio System ──
+    let audioCtx;
+    let tickInterval = null;
+    function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+    function playSound(type) {
+        if (!audioCtx) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const t = audioCtx.currentTime;
+
+        if (type === 'perfect') {
+            // 화려한 3연타 상승음
+            [880, 1100, 1320].forEach((f, i) => {
+                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                o.type = 'sine'; o.frequency.value = f;
+                g.gain.setValueAtTime(0.18, t + i * 0.07);
+                g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.07 + 0.25);
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start(t + i * 0.07); o.stop(t + i * 0.07 + 0.25);
+            });
+            // 반짝이 하이톤
+            const sparkle = audioCtx.createOscillator(), sg = audioCtx.createGain();
+            sparkle.type = 'sine'; sparkle.frequency.value = 2200;
+            sg.gain.setValueAtTime(0.06, t + 0.15); sg.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+            sparkle.connect(sg); sg.connect(audioCtx.destination);
+            sparkle.start(t + 0.15); sparkle.stop(t + 0.4);
+
+        } else if (type === 'good') {
+            // 2음 상승
+            [660, 880].forEach((f, i) => {
+                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                o.type = 'sine'; o.frequency.value = f;
+                g.gain.setValueAtTime(0.15, t + i * 0.1);
+                g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.1 + 0.2);
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start(t + i * 0.1); o.stop(t + i * 0.1 + 0.2);
+            });
+
+        } else if (type === 'miss') {
+            // 무거운 하강 + 잡음
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.type = 'sawtooth';
+            o.frequency.setValueAtTime(250, t);
+            o.frequency.linearRampToValueAtTime(80, t + 0.35);
+            g.gain.setValueAtTime(0.12, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(t); o.stop(t + 0.35);
+            // 두 번째 저음
+            const o2 = audioCtx.createOscillator(), g2 = audioCtx.createGain();
+            o2.type = 'square';
+            o2.frequency.setValueAtTime(120, t + 0.05);
+            o2.frequency.linearRampToValueAtTime(60, t + 0.3);
+            g2.gain.setValueAtTime(0.06, t + 0.05);
+            g2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+            o2.connect(g2); g2.connect(audioCtx.destination);
+            o2.start(t + 0.05); o2.stop(t + 0.3);
+
+        } else if (type === 'appear') {
+            // 새 캐릭터 등장 — 팝! 소리
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(400, t);
+            o.frequency.exponentialRampToValueAtTime(800, t + 0.08);
+            g.gain.setValueAtTime(0.12, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(t); o.stop(t + 0.15);
+
+        } else if (type === 'combo') {
+            // 콤보 보너스 — 징글
+            [1047, 1319, 1568].forEach((f, i) => {
+                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                o.type = 'triangle'; o.frequency.value = f;
+                g.gain.setValueAtTime(0.1, t + i * 0.06);
+                g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.15);
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start(t + i * 0.06); o.stop(t + i * 0.06 + 0.15);
+            });
+
+        } else if (type === 'tick') {
+            // 틱 소리 (카운트다운)
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.type = 'sine'; o.frequency.value = 1200;
+            g.gain.setValueAtTime(0.04, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(t); o.stop(t + 0.05);
+
+        } else if (type === 'urgentTick') {
+            // 긴급 틱 (마지막 1.5초)
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.type = 'square'; o.frequency.value = 1800;
+            g.gain.setValueAtTime(0.07, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(t); o.stop(t + 0.04);
+
+        } else if (type === 'heartbeat') {
+            // 심박 소리 (라이프 1-2개 남았을 때)
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.type = 'sine'; o.frequency.value = 60;
+            g.gain.setValueAtTime(0.15, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(t); o.stop(t + 0.15);
+            // 두 번째 박동
+            const o2 = audioCtx.createOscillator(), g2 = audioCtx.createGain();
+            o2.type = 'sine'; o2.frequency.value = 65;
+            g2.gain.setValueAtTime(0.1, t + 0.2);
+            g2.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+            o2.connect(g2); g2.connect(audioCtx.destination);
+            o2.start(t + 0.2); o2.stop(t + 0.35);
+        }
+    }
+
+    // ── 타이머 틱 사운드 시스템 ──
+    let lastTickTime = 0;
+    let lastUrgentTick = 0;
+
+    function handleTimerSounds(elapsed) {
+        if (!audioCtx || answered) return;
+        const remaining = currentTimeLimit - elapsed;
+        const now = Date.now();
+
+        // 마지막 1.5초: 빠른 긴급 틱
+        if (remaining < 1500 && remaining > 0) {
+            if (now - lastUrgentTick > 200) {
+                playSound('urgentTick');
+                lastUrgentTick = now;
+            }
+        }
+        // 마지막 3초: 일반 틱
+        else if (remaining < 3000 && remaining > 1500) {
+            if (now - lastTickTime > 500) {
+                playSound('tick');
+                lastTickTime = now;
+            }
+        }
+
+        // 라이프 1-2개 남으면 심박 소리
+        if (lives <= 2 && remaining < 2500 && now - lastTickTime > 800) {
+            playSound('heartbeat');
+        }
+    }
+
+    // ── UI helpers ──
+    function setLevel(level, btn) {
+        selectedLevel = level;
+        document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateStartStats();
+    }
+
+    function updateStartStats() {
+        const total = (selectedLevel === 'all' ? talkDataset : talkDataset.filter(q => q.level === selectedLevel)).length;
+        const mastered = getMasteredCount();
+        const active = getActiveQuestions().length;
+        document.getElementById('startStats').innerHTML = `전체 <strong>${total}</strong>문항 | 마스터 <strong>${mastered}</strong>개 | 남은 문항 <strong>${active}</strong>개`;
+    }
+
+    function updateHudMastered() {
+        const el = document.getElementById('hud-mastered');
+        if (el) el.textContent = getMasteredCount();
+    }
+
+    function showJudgment(type) {
+        const text = type === 'perfect' ? 'PERFECT!' : type === 'good' ? 'GOOD!' : 'MISS...';
+        const el = document.createElement('div');
+        el.className = `judgment ${type}`;
+        el.textContent = text;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 800);
+    }
+
+    function showCombo() {
+        if (combo > 1 && combo % 3 === 0) {
+            const el = document.createElement('div');
+            el.className = 'combo-popup';
+            el.textContent = `${combo} COMBO!`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 600);
+        }
+    }
+
+    function showMasteredPopup(key) {
+        const el = document.createElement('div');
+        el.className = 'mastered-popup';
+        el.textContent = `✅ 회화 마스터!`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1200);
+    }
+
+    // ── Shuffle ──
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    // ── Game Flow ──
+    function startGame() {
+        initAudio();
+        const id = document.getElementById('nickname').value.trim();
+        if (!id) { id = 'Guest'; document.getElementById('nickname').value = id; }
+
+        const active = getActiveQuestions();
+        if (active.length < 1) {
+            alert('남은 문항이 없습니다! 마스터리를 리셋하거나 다른 레벨을 선택하세요.');
+            return;
+        }
+
+        localStorage.setItem('lw_talk_user_id', id);
+        score = 0; combo = 0; maxCombo = 0;
+        perfectCount = 0; goodCount = 0; missCount = 0;
+        lives = MAX_LIVES; round = 0; questionIndex = 0;
+        currentTimeLimit = TIME_START;
+        sessionMastered = [];
+        shuffledQuestions = shuffle(active);
+
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'flex';
+        document.getElementById('hud-score').textContent = '0';
+        document.getElementById('hud-combo').textContent = '0';
+        document.getElementById('hud-round').textContent = '1';
+        updateLivesDisplay();
+        updateSpeedDisplay();
+        updateHudMastered();
+
+        gameRunning = true;
+        nextQuestion();
+    }
+
+    function restartGame() {
+        document.getElementById('gameover-screen').style.display = 'none';
+        startGame();
+    }
+
+    function nextQuestion() {
+        if (!gameRunning) return;
+
+        // Round up + speed increase
+        round++;
+        currentTimeLimit = Math.max(TIME_MIN, TIME_START - (round - 1) * TIME_DECREASE);
+        document.getElementById('hud-round').textContent = round;
+        updateSpeedDisplay();
+
+        // Refresh pool if ran out
+        if (questionIndex >= shuffledQuestions.length) {
+            const active = getActiveQuestions();
+            if (active.length < 1) { gameOver(); return; }
+            shuffledQuestions = shuffle(active);
+            questionIndex = 0;
+        }
+
+        currentQ = shuffledQuestions[questionIndex++];
+        answered = false;
+
+        // Character + Name (성별 매칭) + 등장음
+        currentCharGender = Math.random() > 0.5 ? 'female' : 'male';
+        const charPool = currentCharGender === 'female' ? FEMALE_CHARS : MALE_CHARS;
+        const namePool = currentCharGender === 'female' ? FEMALE_NAMES : MALE_NAMES;
+        document.getElementById('character').textContent = charPool[Math.floor(Math.random() * charPool.length)];
+        document.getElementById('speech-name').textContent = namePool[Math.floor(Math.random() * namePool.length)];
+        playSound('appear');
+        lastTickTime = 0; lastUrgentTick = 0;
+
+        // Situation
+        document.getElementById('situation-bar').textContent = currentQ.situation;
+
+        // Level badge
+        const lvlEl = document.getElementById('speech-level');
+        lvlEl.textContent = currentQ.level;
+        lvlEl.style.background = LEVEL_COLORS[currentQ.level] || '#999';
+
+        // Speech + TTS
+        document.getElementById('speech-text').textContent = currentQ.speaker;
+        setTimeout(() => speakLine(currentQ.speaker), 200);
+
+        // Answers — shuffle order
+        const answers = shuffle([
+            { text: currentQ.correct, isCorrect: true },
+            { text: currentQ.wrong1, isCorrect: false },
+            { text: currentQ.wrong2, isCorrect: false }
+        ]);
+
+        const area = document.getElementById('answers-area');
+        area.innerHTML = '';
+        answers.forEach((a, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'answer-btn';
+            btn.style.animation = 'none';
+            btn.offsetHeight; // reflow
+            btn.style.animation = '';
+            btn.innerHTML = `<span class="key-hint">${i + 1}</span>${a.text}`;
+            btn.onclick = () => selectAnswer(i, a.isCorrect, btn);
+            btn.dataset.correct = a.isCorrect;
+            area.appendChild(btn);
+        });
+
+        // Timer
+        timerStart = Date.now();
+        const bar = document.getElementById('timer-bar');
+        bar.style.width = '100%';
+        bar.classList.remove('urgent');
+        if (timerRAF) cancelAnimationFrame(timerRAF);
+        tickTimer();
+    }
+
+    function tickTimer() {
+        if (!gameRunning || answered) return;
+        const elapsed = Date.now() - timerStart;
+        const pct = Math.max(0, 1 - elapsed / currentTimeLimit) * 100;
+        const bar = document.getElementById('timer-bar');
+        const container = bar.parentElement;
+        bar.style.width = pct + '%';
+
+        // 긴급 색상
+        if (pct < 30) bar.classList.add('urgent');
+
+        // 떨림 효과
+        if (pct < 15) {
+            container.classList.remove('shake');
+            container.classList.add('critical-shake');
+        } else if (pct < 35) {
+            container.classList.add('shake');
+            container.classList.remove('critical-shake');
+        } else {
+            container.classList.remove('shake', 'critical-shake');
+        }
+
+        // 틱 사운드
+        handleTimerSounds(elapsed);
+
+        if (elapsed >= currentTimeLimit) {
+            container.classList.remove('shake', 'critical-shake');
+            handleMiss();
+            return;
+        }
+        timerRAF = requestAnimationFrame(tickTimer);
+    }
+
+    function selectAnswer(idx, isCorrect, btn) {
+        if (answered || !gameRunning) return;
+        answered = true;
+        if (timerRAF) cancelAnimationFrame(timerRAF);
+        // 떨림 초기화
+        const timerContainer = document.querySelector('.timer-container');
+        if (timerContainer) timerContainer.classList.remove('shake', 'critical-shake');
+
+        const elapsed = Date.now() - timerStart;
+        const btns = document.querySelectorAll('.answer-btn');
+
+        if (isCorrect) {
+            btn.classList.add('correct');
+            btns.forEach(b => { if (b !== btn) b.classList.add('disabled'); });
+
+            let judgment, pts;
+            const perfectThreshold = currentTimeLimit * 0.35; // 35% 이내 = Perfect
+            const goodThreshold = currentTimeLimit * 0.75; // 75% 이내 = Good
+            if (elapsed < perfectThreshold) {
+                judgment = 'perfect'; pts = 300; perfectCount++;
+            } else if (elapsed < goodThreshold) {
+                judgment = 'good'; pts = 150; goodCount++;
+            } else {
+                judgment = 'good'; pts = 100; goodCount++;
+            }
+
+            combo++;
+            if (combo > maxCombo) maxCombo = combo;
+            pts += combo * 10; // combo bonus
+            score += pts;
+
+            playSound(judgment);
+            showJudgment(judgment);
+            if (combo > 1 && combo % 3 === 0) playSound('combo');
+            showCombo();
+            recordCorrect(currentQ.speaker);
+            // 50% 이상 시간 소모 = 우연히 맞춤
+            if (elapsed >= currentTimeLimit * 0.50) {
+                reportWeakWord(currentQ.speaker, currentQ.correct, currentQ.level, 'lucky');
+            }
+        } else {
+            btn.classList.add('wrong');
+            // Highlight correct
+            btns.forEach(b => {
+                if (b.dataset.correct === 'true') b.classList.add('correct');
+                else if (b !== btn) b.classList.add('disabled');
+            });
+            combo = 0; missCount++;
+            playSound('miss');
+            showJudgment('miss');
+            recordWrong(currentQ.speaker);
+            reportWeakWord(currentQ.speaker, currentQ.correct, currentQ.level, 'miss');
+            lives--;
+            updateLivesDisplay();
+        }
+
+        document.getElementById('hud-score').textContent = score.toLocaleString();
+        document.getElementById('hud-combo').textContent = combo;
+
+        // 전환 속도도 점점 빨라짐
+        const transitionDelay = Math.max(600, 1200 - round * 20);
+        if (lives <= 0) {
+            setTimeout(() => gameOver(), 1000);
+        } else {
+            setTimeout(() => nextQuestion(), transitionDelay);
+        }
+    }
+
+    function handleMiss() {
+        answered = true;
+        combo = 0; missCount++;
+        lives--;
+        updateLivesDisplay();
+        playSound('miss');
+        showJudgment('miss');
+        recordWrong(currentQ.speaker);
+        reportWeakWord(currentQ.speaker, currentQ.correct, currentQ.level, 'miss');
+
+        // Show correct answer
+        const btns = document.querySelectorAll('.answer-btn');
+        btns.forEach(b => {
+            if (b.dataset.correct === 'true') b.classList.add('correct');
+            else b.classList.add('disabled');
+        });
+
+        document.getElementById('hud-combo').textContent = '0';
+
+        if (lives <= 0) {
+            setTimeout(() => gameOver(), 1000);
+        } else {
+            setTimeout(() => nextQuestion(), Math.max(600, 1200 - round * 20));
+        }
+    }
+
+    function gameOver() {
+        gameRunning = false;
+        if (timerRAF) cancelAnimationFrame(timerRAF);
+
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('gameover-screen').style.display = 'flex';
+        document.getElementById('final-score').textContent = score.toLocaleString();
+        document.getElementById('stat-round').textContent = round;
+        document.getElementById('stat-perfect').textContent = perfectCount;
+        document.getElementById('stat-good').textContent = goodCount;
+        document.getElementById('stat-miss').textContent = missCount;
+        document.getElementById('stat-maxcombo').textContent = maxCombo;
+
+        const mi = document.getElementById('mastered-info');
+        if (sessionMastered.length > 0) {
+            mi.style.display = 'block';
+            mi.textContent = `🎓 이번 게임에서 ${sessionMastered.length}개 회화 마스터!`;
+        } else { mi.style.display = 'none'; }
+
+        saveScore(score);
+    }
+
+    function updateLivesDisplay() {
+        const el = document.getElementById('hud-lives');
+        el.textContent = '❤️'.repeat(lives) + '🖤'.repeat(MAX_LIVES - lives);
+    }
+
+    function updateSpeedDisplay() {
+        const el = document.getElementById('hud-speed');
+        const sec = (currentTimeLimit / 1000).toFixed(1);
+        const color = currentTimeLimit <= 2500 ? '#FF6B6B' : currentTimeLimit <= 3500 ? '#FFE66D' : 'rgba(255,255,255,0.4)';
+        el.style.color = color;
+        el.textContent = `⚡ ${sec}s`;
+    }
+
+    function saveScore(s) {
+        const name = document.getElementById('nickname').value || 'GUEST';
+        let ranks = JSON.parse(localStorage.getItem('lw_talk_ranks') || '[]');
+        ranks.push({ name, score: s, date: new Date().toISOString() });
+        ranks.sort((a, b) => b.score - a.score);
+        ranks = ranks.slice(0, 8);
+        localStorage.setItem('lw_talk_ranks', JSON.stringify(ranks));
+        renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+        const el = document.getElementById('leaderboard-list');
+        const ranks = JSON.parse(localStorage.getItem('lw_talk_ranks') || '[]');
+        if (!ranks.length) {
+            el.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);padding:12px;font-size:13px;">아직 기록이 없어요</div>';
+            return;
+        }
+        el.innerHTML = ranks.map((r, i) => `
+            <div class="lb-row">
+                <span class="rank">${i + 1}</span>
+                <span class="name">${r.name}</span>
+                <span class="pts">${r.score.toLocaleString()}</span>
+            </div>
+        `).join('');
+    }
+
+    // ── Keyboard Input ──
+    window.addEventListener('keydown', e => {
+        if (!gameRunning || answered) return;
+        const key = parseInt(e.key);
+        if (key >= 1 && key <= 3) {
+            const btns = document.querySelectorAll('.answer-btn');
+            if (btns[key - 1]) {
+                const btn = btns[key - 1];
+                selectAnswer(key - 1, btn.dataset.correct === 'true', btn);
+            }
+        }
+    });
+
+    // Enter to start
+    document.getElementById('nickname').addEventListener('keydown', e => {
+        if (e.key === 'Enter') startGame();
+    });
+
+    // ── Init ──
+    const savedId = localStorage.getItem('lw_talk_user_id');
+    if (savedId) document.getElementById('nickname').value = savedId;
+    updateStartStats();
+    renderLeaderboard();
+    </script>
+</body>
+</html>

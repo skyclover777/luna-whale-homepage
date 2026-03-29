@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>고흐의 감정적 색채와 터치 — 인상주의 5강 | Luna Whale</title>
+<style>
+:root{
+  --g0:#0d0a04;--g1:#1a1508;--g2:#24200c;
+  --glow:#e8b830;--pale:#f0d060;--acc:#b88a10;
+  --cream:#faf5e0;--glass:rgba(255,255,255,.04);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Apple SD Gothic Neo','Noto Sans KR',system-ui,sans-serif;background:var(--g0);color:var(--cream);user-select:none;font-size:17px;line-height:1.8;-webkit-font-smoothing:antialiased;}
+#sw{width:100%;height:100%;position:relative;overflow:hidden;}
+
+/* ── slides ── */
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .8s cubic-bezier(.4,0,.2,1),transform .8s cubic-bezier(.4,0,.2,1);pointer-events:none;display:flex;flex-direction:column;overflow:hidden;min-height:0;transform:scale(.98) translateY(8px);}
+.slide.active{opacity:1;transform:scale(1) translateY(0);pointer-events:auto;z-index:10;}
+.slide.exit-left{opacity:0;transform:scale(1.02) translateY(-8px);z-index:5;}
+.bg{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(232,184,48,.03) 0%,transparent 50%),radial-gradient(ellipse at 80% 50%,rgba(184,138,16,.02) 0%,transparent 50%),linear-gradient(160deg,var(--g0) 0%,var(--g1) 40%,var(--g2) 100%);}
+
+/* ── topbar ── */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:rgba(13,10,4,.75);backdrop-filter:blur(30px) saturate(1.4);border-bottom:1px solid rgba(232,184,48,.06);transition:transform .4s;}
+.topbar.hidden{transform:translateY(-100%);}
+.tlogo{font-size:13px;font-weight:700;color:var(--glow);cursor:pointer;transition:.2s;text-decoration:none;letter-spacing:.5px;}.tlogo:hover{opacity:.7;}
+.tsc{font-size:12px;color:rgba(255,255,255,.3);font-variant-numeric:tabular-nums;}.tsc strong{color:rgba(255,255,255,.8);font-weight:700;}
+.tbadges{display:flex;gap:8px;}
+.badge{padding:3px 12px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.bl{background:rgba(232,184,48,.1);color:var(--glow);border:1px solid rgba(232,184,48,.2);}
+.ba{background:rgba(240,208,96,.08);color:var(--pale);border:1px solid rgba(240,208,96,.15);}
+
+/* ── progress bar ── */
+.progress-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--acc),var(--glow),var(--pale));z-index:250;transition:width .6s cubic-bezier(.4,0,.2,1);box-shadow:0 0 12px rgba(232,184,48,.4);}
+
+/* ── nav ── */
+.dots{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:200;display:flex;gap:6px;align-items:center;background:rgba(13,10,4,.6);backdrop-filter:blur(20px);padding:8px 16px;border-radius:30px;border:1px solid rgba(255,255,255,.06);}
+.dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.15);cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);}
+.dot:hover{background:rgba(255,255,255,.3);}
+.dot.active{width:28px;background:var(--glow);box-shadow:0 0 8px rgba(232,184,48,.4);}
+.arr{position:fixed;top:50%;z-index:200;transform:translateY(-50%);background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;transition:all .3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(12px);}
+.arr:hover{background:rgba(232,184,48,.15);color:var(--glow);border-color:rgba(232,184,48,.3);transform:translateY(-50%) scale(1.08);box-shadow:0 4px 24px rgba(232,184,48,.15);}
+.arr:disabled{opacity:0;cursor:default;pointer-events:none;}
+#bp{left:20px;}#bn{right:20px;}
+@media(max-width:768px){.arr{display:none;}.tsc{display:none;}.topbar{padding:12px 20px;}.dots{bottom:16px;padding:6px 12px;}}
+
+/* ── slide content ── */
+.sc{position:relative;z-index:2;flex:1;min-height:0;display:flex;flex-direction:column;padding:72px 80px 80px;overflow:hidden;}
+@media(max-width:900px){.sc{padding:66px 28px 70px;}}
+@media(max-width:768px){.sc{padding:60px 20px 70px;}}
+.sc-scroll{flex:1;min-height:0;overflow-y:auto;padding-right:8px;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;}
+.sc-scroll::-webkit-scrollbar{width:3px;}.sc-scroll::-webkit-scrollbar-track{background:transparent;}.sc-scroll::-webkit-scrollbar-thumb{background:rgba(232,184,48,.2);border-radius:4px;}
+
+/* ── typography ── */
+.ew{font-size:10px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:rgba(232,184,48,.6);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.ew::before{content:'';display:block;width:24px;height:1px;background:linear-gradient(90deg,var(--glow),transparent);}
+.stitle{font-size:clamp(28px,4vw,56px);font-weight:900;line-height:1.1;letter-spacing:-1.5px;margin-bottom:16px;background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,.9) 30%,var(--glow) 70%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ssub{font-size:clamp(15px,1.6vw,20px);color:rgba(255,255,255,.4);font-style:italic;margin-bottom:28px;font-weight:300;}
+
+/* ── reveal animations ── */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1);}
+.reveal.show{opacity:1;transform:translateY(0);}
+.reveal:nth-child(1){transition-delay:.05s;}
+.reveal:nth-child(2){transition-delay:.12s;}
+.reveal:nth-child(3){transition-delay:.19s;}
+.reveal:nth-child(4){transition-delay:.26s;}
+.reveal:nth-child(5){transition-delay:.33s;}
+.reveal:nth-child(6){transition-delay:.40s;}
+.reveal:nth-child(7){transition-delay:.47s;}
+.reveal:nth-child(8){transition-delay:.54s;}
+.reveal:nth-child(9){transition-delay:.61s;}
+.reveal:nth-child(10){transition-delay:.68s;}
+.reveal:nth-child(11){transition-delay:.75s;}
+.reveal:nth-child(12){transition-delay:.82s;}
+.reveal:nth-child(13){transition-delay:.89s;}
+
+/* ── S0 Gallery Marquee ── */
+.gal-marquee{position:absolute;inset:0;overflow:hidden;z-index:1;}
+.gal-row{display:flex;gap:8px;margin-bottom:8px;width:max-content;will-change:transform;}
+.gal-row-wrap{overflow:hidden;position:relative;}
+.gal-row-wrap::before,.gal-row-wrap::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none;}
+.gal-row-wrap::before{left:0;background:linear-gradient(90deg,var(--g0),transparent);}
+.gal-row-wrap::after{right:0;background:linear-gradient(270deg,var(--g0),transparent);}
+.gal-row.row-left{animation:scrollLeft 480s linear infinite;}
+.gal-row.row-right{animation:scrollRight 480s linear infinite;}
+@keyframes scrollLeft{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+@keyframes scrollRight{0%{transform:translateX(-50%);}100%{transform:translateX(0);}}
+.gal-item{flex-shrink:0;width:220px;height:160px;border-radius:8px;overflow:hidden;cursor:pointer;position:relative;transition:transform .4s,box-shadow .4s;}
+.gal-row-wrap:hover .gal-row{animation-play-state:paused;}
+.gal-item:hover{transform:scale(1.08);box-shadow:0 8px 32px rgba(232,184,48,.3);z-index:10;}
+.gal-item img{width:100%;height:100%;object-fit:cover;object-position:top;transition:filter .4s;}
+.gal-item:hover img{filter:brightness(1.1);}
+.gal-item .gal-title-bar{position:absolute;bottom:0;left:0;right:0;padding:6px 10px;background:linear-gradient(transparent,rgba(0,0,0,.8));font-size:11px;color:rgba(255,255,255,.85);opacity:0;transition:opacity .3s;line-height:1.3;white-space:normal;}
+.gal-item:hover .gal-title-bar{opacity:1;}
+@media(max-width:768px){.gal-item{width:160px;height:115px;}.gal-item .gal-title-bar{font-size:10px;}}
+
+/* ── Painting Info Popup ── */
+.paint-popup{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .5s ease;}
+.paint-popup.open{opacity:1;pointer-events:auto;}
+.paint-popup-bg{position:absolute;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);}
+.paint-popup-inner{position:relative;z-index:1;max-width:800px;width:100%;display:flex;flex-direction:column;align-items:center;gap:20px;transform:scale(.95) translateY(12px);transition:transform .5s cubic-bezier(.2,.8,.3,1),opacity .5s ease;opacity:0;}
+.paint-popup.open .paint-popup-inner{transform:scale(1) translateY(0);opacity:1;}
+.paint-popup-img{max-width:100%;max-height:55vh;border-radius:12px;box-shadow:0 16px 64px rgba(0,0,0,.5);}
+.paint-popup-info{text-align:center;max-width:600px;}
+.paint-popup-title{font-size:clamp(20px,3vw,32px);font-weight:900;color:#fff;margin-bottom:4px;}
+.paint-popup-sub{font-size:14px;color:var(--glow);margin-bottom:8px;font-weight:600;}
+.paint-popup-desc{font-size:15px;color:rgba(255,255,255,.6);line-height:1.7;}
+.paint-popup-loc{font-size:12px;color:rgba(255,255,255,.3);margin-top:6px;font-style:italic;}
+.paint-popup-close{position:absolute;top:-40px;right:0;background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.3s;}
+.paint-popup-close:hover{color:#fff;border-color:var(--glow);}
+
+/* ── cover (S0) Gallery ── */
+#s0 .hov{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,10,4,.97) 0%,rgba(13,10,4,.7) 25%,rgba(13,10,4,.3) 50%,rgba(13,10,4,.5) 100%);z-index:2;pointer-events:none;}
+#s0 .sc{justify-content:flex-end;padding-bottom:120px;}
+#s0 .typewriter{display:inline-block;overflow:hidden;white-space:nowrap;border-right:2px solid var(--glow);animation:typewriterBlink .6s infinite;font-size:clamp(32px,5vw,64px);font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,#fff 0%,var(--glow) 60%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;width:0;}
+#s0 .typewriter.animate{animation:typewriterExpand 2s 1s cubic-bezier(.25,.46,.45,.94) forwards,typewriterBlink .6s 1s 5;}
+@keyframes typewriterExpand{0%{width:0;}100%{width:100%;border-right-color:transparent;}}
+@keyframes typewriterBlink{0%,100%{border-right-color:var(--glow);}50%{border-right-color:transparent;}}
+#s0 .cover-meta{display:flex;gap:16px;flex-wrap:wrap;opacity:0;animation:fadeUp .8s 2.8s forwards;}
+.cover-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:30px;padding:8px 18px;font-size:13px;color:rgba(255,255,255,.6);backdrop-filter:blur(8px);transition:.3s;}
+.cover-chip:hover{border-color:rgba(232,184,48,.3);color:rgba(255,255,255,.8);}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(30px);}100%{opacity:1;transform:translateY(0);}}
+
+/* ── crossfade gallery ── */
+.slide-split{display:flex;gap:24px;flex:1;min-height:0;}
+.slide-split-left{width:45%;flex-shrink:0;display:flex;}
+.slide-split-right{width:55%;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;}
+.slide-split-right::-webkit-scrollbar{width:3px;}.slide-split-right::-webkit-scrollbar-track{background:transparent;}.slide-split-right::-webkit-scrollbar-thumb{background:rgba(232,184,48,.2);border-radius:4px;}
+.crossfade-gallery{position:relative;width:100%;height:100%;border-radius:16px;overflow:hidden;border:1px solid rgba(232,184,48,0.15);box-shadow:0 0 20px rgba(232,184,48,0.05);}
+.crossfade-gallery img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--g0);opacity:0;transition:opacity 2s ease-in-out;}
+.crossfade-gallery img.cf-active{opacity:1;}
+@media(max-width:768px){
+.slide-split{flex-direction:column;gap:16px;}
+.slide-split-left{width:100%;height:200px;flex-shrink:0;}
+.slide-split-right{width:100%;flex:1;min-height:0;}
+}
+
+/* ── interactive cards ── */
+.card-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:12px;}
+.info-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;cursor:pointer;transition:all .5s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;}
+.info-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--glow),transparent);opacity:0;transition:opacity .4s;}
+.info-card:hover{border-color:rgba(232,184,48,.25);background:rgba(255,255,255,.05);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.info-card:hover::before{opacity:1;}
+.info-card.expanded{background:rgba(232,184,48,.06);border-color:rgba(232,184,48,.2);transform:none;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+.info-card.expanded::before{opacity:1;}
+.card-header{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.card-num{font-size:11px;font-weight:800;color:var(--glow);letter-spacing:2px;opacity:.5;}
+.card-title{font-size:clamp(16px,1.8vw,20px);font-weight:800;color:#fff;line-height:1.3;}
+.card-chevron{color:rgba(255,255,255,.3);font-size:14px;transition:transform .4s;flex-shrink:0;}
+.info-card.expanded .card-chevron{transform:rotate(180deg);color:var(--glow);}
+.card-body{max-height:0;overflow:hidden;transition:max-height .6s cubic-bezier(.4,0,.2,1),opacity .4s,padding .4s;opacity:0;padding-top:0;}
+.info-card.expanded .card-body{max-height:500px;opacity:1;padding-top:16px;}
+.card-body p{font-size:15px;line-height:1.85;color:rgba(255,255,255,.7);}
+.card-body .artist-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.artist-tag{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.65);transition:.3s;}
+.artist-tag:hover{border-color:rgba(232,184,48,.3);color:var(--pale);}
+
+/* ── timeline ── */
+.timeline{position:relative;padding-left:40px;margin-top:8px;}
+.timeline::before{content:'';position:absolute;left:14px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,rgba(232,184,48,.3) 5%,rgba(232,184,48,.3) 95%,transparent);}
+.tl-item{position:relative;margin-bottom:4px;cursor:pointer;transition:all .3s;}
+.tl-dot{position:absolute;left:-33px;top:10px;width:12px;height:12px;border-radius:50%;background:var(--g1);border:2px solid rgba(232,184,48,.4);transition:all .4s;z-index:2;}
+.tl-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(232,184,48,.15);animation:dotPulse 3s ease-in-out infinite;}
+@keyframes dotPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(1.3);opacity:0;}}
+.tl-item:hover .tl-dot,.tl-item.expanded .tl-dot{background:var(--glow);border-color:var(--glow);box-shadow:0 0 12px rgba(232,184,48,.4);}
+.tl-year{font-size:13px;font-weight:800;color:var(--glow);margin-bottom:2px;}
+.tl-summary{font-size:14px;color:rgba(255,255,255,.5);line-height:1.6;transition:color .3s;}
+.tl-item:hover .tl-summary,.tl-item.expanded .tl-summary{color:rgba(255,255,255,.8);}
+.tl-detail{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1),opacity .3s;opacity:0;}
+.tl-item.expanded .tl-detail{max-height:200px;opacity:1;}
+.tl-detail p{font-size:14px;line-height:1.8;color:rgba(255,255,255,.65);margin-top:6px;padding:10px 14px;background:rgba(232,184,48,.04);border-radius:10px;border-left:2px solid rgba(232,184,48,.2);}
+
+/* ── masterpiece ── */
+.mp-cinema{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;flex:1;align-items:start;min-height:0;}
+@media(max-width:900px){.mp-cinema{grid-template-columns:1fr;gap:20px;}}
+.mp-img-hero{position:relative;border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 1px rgba(255,255,255,.1);transition:transform .4s,box-shadow .4s;max-height:68vh;}
+.mp-img-hero:hover{transform:scale(1.01);box-shadow:0 32px 100px rgba(0,0,0,.7),0 0 40px rgba(232,184,48,.08);}
+.mp-img-hero img{width:100%;height:100%;object-fit:contain;display:block;}
+.mp-img-hero .view-hint{position:absolute;bottom:16px;right:16px;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);color:rgba(255,255,255,.7);font-size:11px;padding:6px 14px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;border:1px solid rgba(255,255,255,.1);}
+.mp-img-hero:hover .view-hint{opacity:1;}
+.mp-analysis{overflow-y:auto;max-height:68vh;padding-right:8px;}
+.mp-analysis::-webkit-scrollbar{width:3px;}.mp-analysis::-webkit-scrollbar-thumb{background:rgba(232,184,48,.15);border-radius:3px;}
+.mp-analysis h3{font-size:clamp(22px,2.8vw,34px);font-weight:900;color:#fff;margin-bottom:4px;line-height:1.2;}
+.mp-analysis h3 em{color:var(--glow);font-style:normal;}
+.mp-analysis .mp-sub{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:18px;line-height:1.5;}
+
+/* analysis panels */
+.an-panel{margin-bottom:8px;border-radius:12px;overflow:hidden;transition:all .4s;cursor:pointer;}
+.an-panel-head{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;transition:all .3s;}
+.an-panel:hover .an-panel-head{background:rgba(255,255,255,.05);border-color:rgba(232,184,48,.15);}
+.an-panel.open .an-panel-head{background:rgba(232,184,48,.06);border-color:rgba(232,184,48,.2);border-radius:12px 12px 0 0;}
+.an-label{font-size:13px;font-weight:700;color:var(--pale);flex:1;}
+.an-icon{font-size:12px;color:rgba(255,255,255,.3);transition:transform .3s;}
+.an-panel.open .an-icon{transform:rotate(90deg);color:var(--glow);}
+.an-content{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1),opacity .3s;opacity:0;background:rgba(232,184,48,.03);border:1px solid rgba(232,184,48,.1);border-top:0;border-radius:0 0 12px 12px;}
+.an-panel.open .an-content{max-height:400px;opacity:1;}
+.an-content p{font-size:14px;line-height:1.85;color:rgba(255,255,255,.7);padding:14px 16px;}
+
+/* ── practice grid ── */
+.prac-section{margin-bottom:20px;}
+.prac-label{font-size:12px;font-weight:700;color:var(--pale);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;}
+.prac-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:768px){.prac-grid{grid-template-columns:repeat(2,1fr);}}
+.prac-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;}
+.prac-grid img:hover{transform:scale(1.05);border-color:rgba(232,184,48,.3);box-shadow:0 12px 40px rgba(0,0,0,.5);}
+.prac-label::before{content:'AI';display:inline-block;background:rgba(232,184,48,.9);color:#0d0a04;font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;letter-spacing:.5px;margin-right:8px;vertical-align:middle;}
+.prac-caption{font-size:12px;color:rgba(255,255,255,.3);text-align:center;margin-top:14px;font-style:italic;}
+
+/* ── ending slide ── */
+.end-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;flex:1;gap:20px;}
+.summary-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0;max-width:720px;width:100%;}
+@media(max-width:768px){.summary-cards{grid-template-columns:1fr;}}
+.sum-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px 20px;text-align:center;transition:all .4s;}
+.sum-card:hover{border-color:rgba(232,184,48,.25);transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.sum-card .sum-num{font-size:32px;font-weight:900;background:linear-gradient(135deg,var(--glow),var(--pale));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
+.sum-card .sum-text{font-size:14px;color:rgba(255,255,255,.6);line-height:1.6;}
+.sum-card .sum-text strong{color:var(--glow);-webkit-text-fill-color:var(--glow);}
+.next-info{background:rgba(232,184,48,.06);border:1px solid rgba(232,184,48,.15);border-radius:14px;padding:18px 28px;max-width:600px;font-size:15px;color:rgba(255,255,255,.65);line-height:1.7;}
+.next-info strong{color:var(--glow);}
+.museum-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
+.museum-pill{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:10px;font-size:12px;font-weight:600;text-decoration:none;transition:.3s;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5);}
+.museum-pill:hover{border-color:rgba(232,184,48,.3);color:var(--pale);background:rgba(232,184,48,.08);}
+.end-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px;}
+.end-btn{display:inline-block;padding:12px 28px;background:rgba(232,184,48,.1);border:1px solid rgba(232,184,48,.25);color:var(--glow);border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.3s;text-decoration:none;}
+.end-btn:hover{background:rgba(232,184,48,.2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(232,184,48,.12);}
+
+/* ── lightbox ── */
+#lbox{display:none;position:fixed;inset:0;z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+#lbox.open{display:flex;}
+#lbox .lbox-bg{position:absolute;inset:0;background:rgba(0,0,0,.97);backdrop-filter:blur(30px);animation:lboxBgIn .3s;}
+@keyframes lboxBgIn{0%{opacity:0;}100%{opacity:1;}}
+#lbox-img{max-width:92vw;max-height:78vh;object-fit:contain;border-radius:12px;box-shadow:0 40px 120px rgba(0,0,0,.8);position:relative;z-index:1;animation:lboxZoom .5s cubic-bezier(.4,0,.2,1);}
+@keyframes lboxZoom{0%{opacity:0;transform:scale(.85);}100%{opacity:1;transform:scale(1);}}
+.lbox-cap{margin-top:14px;font-size:14px;color:rgba(255,255,255,.45);max-width:600px;text-align:center;position:relative;z-index:1;}
+.lbox-actions{display:flex;gap:12px;margin-top:16px;position:relative;z-index:1;}
+.lbox-dl{padding:10px 24px;background:var(--glow);color:#000;border-radius:10px;font-weight:700;text-decoration:none;font-size:13px;transition:.2s;border:none;cursor:pointer;font-family:inherit;}
+.lbox-dl:hover{background:#fff;}
+.lbox-cl{padding:10px 24px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit;transition:.2s;}
+.lbox-cl:hover{background:rgba(255,255,255,.15);}
+
+/* ── scroll-triggered observer ── */
+.scroll-reveal{opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s;}
+.scroll-reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ── Text Blur Dissolve ── */
+.blur-in{display:inline-block;}
+.ew.blur-in{display:flex;}
+.blur-in .char{display:inline-block;opacity:0;filter:blur(8px);transform:translateY(12px);transition:opacity 1.2s ease,filter 1.6s ease,transform 1s cubic-bezier(.25,.46,.45,.94);}
+.blur-in.animate .char{opacity:1;filter:blur(0);transform:translateY(0);}
+.blur-in .char-space{width:0.3em;}
+
+/* ── Films & Books cards ── */
+.film-card{display:flex;gap:16px;padding:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:10px;transition:all .3s;}
+.film-card:hover{background:rgba(232,184,48,.06);border-color:rgba(232,184,48,.15);}
+.film-poster{width:70px;min-width:70px;height:100px;object-fit:cover;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.4);cursor:pointer;transition:transform .3s,box-shadow .3s;}
+.film-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:2px;}
+.film-title-ko{font-size:12px;color:var(--pale);margin-bottom:4px;}
+.film-meta{font-size:11px;color:rgba(255,255,255,.35);margin-bottom:4px;}
+.film-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;}
+
+.book-item{display:flex;gap:14px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:8px;transition:all .3s;align-items:flex-start;}
+.book-item:hover{background:rgba(232,184,48,.06);border-color:rgba(232,184,48,.15);}
+.book-icon{font-size:24px;min-width:32px;text-align:center;margin-top:2px;}
+.book-cover{width:55px;min-width:55px;height:80px;object-fit:cover;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.4);cursor:pointer;transition:transform .3s,box-shadow .3s;}
+.book-cover:hover,.film-poster:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(232,184,48,.3);}
+
+.book-title{font-size:14px;font-weight:800;color:#fff;margin-bottom:2px;}
+.book-author{font-size:11px;color:var(--pale);margin-bottom:4px;}
+.book-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;}
+
+/* ── Poems slide ── */
+.poem-bg-gallery{position:absolute;inset:0;z-index:1;}
+.poem-bg-gallery img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity 3s ease-in-out;}
+.poem-bg-gallery img.cf-active{opacity:.12;}
+.poem-overlay{position:absolute;inset:0;z-index:2;background:linear-gradient(to bottom,rgba(13,10,4,.92) 0%,rgba(13,10,4,.85) 50%,rgba(13,10,4,.95) 100%);}
+
+.poem-container{max-width:700px;margin:0 auto;}
+.poem-block{text-align:center;padding:24px 0;}
+.poem-quote{font-size:clamp(15px,1.8vw,20px);color:rgba(255,255,255,.75);font-style:italic;line-height:2.2;letter-spacing:.5px;font-weight:300;}
+.poem-quote-ko{font-size:clamp(14px,1.5vw,17px);color:var(--pale);line-height:2;margin-top:16px;font-weight:400;opacity:.7;}
+.poem-attr{font-size:12px;color:var(--glow);margin-top:14px;font-weight:700;letter-spacing:1px;}
+.poem-context{font-size:12px;color:rgba(255,255,255,.3);margin-top:6px;font-style:italic;}
+.poem-divider{width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--glow),transparent);margin:8px auto;opacity:.3;}
+
+/* ── Interactive Fullscreen Slides ── */
+.inter-full{position:absolute;inset:0;overflow:hidden;}
+.inter-full__img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;transition:filter 1s ease;}
+.inter-full__overlay{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:flex-end;pointer-events:none;}
+.inter-full__top{position:absolute;top:70px;left:0;right:0;z-index:3;padding:0 40px;pointer-events:none;}
+.inter-full__top .ew{color:rgba(255,255,255,.7);text-shadow:0 2px 12px rgba(0,0,0,.6);}
+.inter-full__top .stitle{text-shadow:0 2px 20px rgba(0,0,0,.7);}
+.inter-full__bottom{padding:0 40px 80px;pointer-events:auto;background:linear-gradient(to top,rgba(13,10,4,.85) 0%,rgba(13,10,4,.6) 50%,transparent 100%);padding-top:80px;}
+@media(max-width:768px){.inter-full__bottom{padding:60px 20px 70px;}.inter-full__top{padding:0 20px;top:60px;}}
+.toggle-btn{display:inline-flex;align-items:center;gap:10px;padding:12px 28px;background:rgba(232,184,48,.15);border:1px solid rgba(232,184,48,.4);color:var(--glow);border-radius:30px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .3s;backdrop-filter:blur(8px);}
+.toggle-btn:hover{background:rgba(232,184,48,.3);transform:translateY(-2px);}
+.toggle-btn.active{background:rgba(232,184,48,.25);box-shadow:0 0 20px rgba(232,184,48,.2);}
+.interactive-explain{margin-top:16px;padding:0;}
+.interactive-explain p{font-size:13px;line-height:1.8;color:rgba(255,255,255,.8);text-shadow:0 1px 6px rgba(0,0,0,.7);}
+.interactive-explain strong{color:var(--glow);text-shadow:0 1px 8px rgba(0,0,0,.6);}
+
+/* ── S8: Geometric Overlay ── */
+.geo-overlay{position:absolute;inset:0;opacity:0;transition:opacity .8s;pointer-events:none;z-index:1;}
+.geo-overlay.visible{opacity:.6;}
+
+/* ── S9: Color Dissection ── */
+.color-marker{position:absolute;width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.7);cursor:pointer;transition:all .3s;z-index:3;pointer-events:auto;}
+.color-marker:hover{transform:scale(1.3);}
+.color-marker.picked{border-color:var(--glow);box-shadow:0 0 12px rgba(232,184,48,.5);opacity:.5;}
+.palette-strip{display:flex;gap:6px;margin-top:12px;}
+.palette-slot{width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,.15);transition:background .5s;}
+
+/* ── S10: Broken Perspective ── */
+.persp-lines{position:absolute;inset:0;opacity:0;transition:opacity .8s;pointer-events:none;z-index:1;}
+.persp-lines.visible{opacity:1;}
+.persp-line{position:absolute;height:3px;background:repeating-linear-gradient(90deg,#e74c3c 0,#e74c3c 12px,transparent 12px,transparent 20px);box-shadow:0 0 8px rgba(231,76,60,.5);}
+.persp-label{position:absolute;background:rgba(231,76,60,.85);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;white-space:nowrap;}
+
+/* ── S11: Before/After Comparison ── */
+.compare-wrap{position:absolute;inset:0;}
+.compare-gray{position:absolute;inset:0;}
+.compare-gray img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.2);}
+.compare-color{position:absolute;inset:0;clip-path:inset(0 50% 0 0);}
+.compare-color img{width:100%;height:100%;object-fit:cover;}
+.compare-slider{-webkit-appearance:none;width:80%;max-width:500px;height:6px;border-radius:3px;background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(232,184,48,.4));outline:none;margin:12px 0;position:relative;z-index:5;}
+.compare-slider::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--glow);cursor:pointer;box-shadow:0 2px 16px rgba(232,184,48,.5);}
+.compare-labels{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.5);max-width:500px;width:80%;}
+
+/* ── print ── */
+@media print{
+  *{color:#222!important;background:white!important;box-shadow:none!important;text-shadow:none!important;border-color:#ddd!important;-webkit-text-fill-color:#222!important;}
+  html,body{overflow:visible!important;height:auto!important;}
+  .topbar,.dots,.arr,#bp,#bn,.pt,.hov,.bgimg,.gal-marquee,.paint-popup,#lbox,.lbox-actions,.progress-bar,.view-hint,.card-chevron,.an-icon{display:none!important;}
+  .slide{position:relative!important;opacity:1!important;transform:none!important;pointer-events:auto!important;page-break-inside:avoid;page-break-after:always;min-height:auto!important;height:auto!important;}
+  .bg{background:white!important;}
+  .sc{padding:20px!important;overflow:visible!important;}
+  .sc-scroll{overflow:visible!important;max-height:none!important;}
+  .stitle,.typewriter{-webkit-text-fill-color:#222!important;background:none!important;font-size:24pt!important;width:100%!important;overflow:visible!important;white-space:normal!important;border:none!important;animation:none!important;}
+  .reveal,.scroll-reveal{opacity:1!important;transform:none!important;}
+  .blur-in .char{opacity:1!important;filter:none!important;transform:none!important;}
+  .card-body,.tl-detail,.an-content{max-height:none!important;opacity:1!important;overflow:visible!important;}
+  .ew{color:#b88a10!important;}
+  img{max-width:100%!important;break-inside:avoid;}
+  .mp-cinema{grid-template-columns:1fr!important;}
+  .mp-img-hero{max-height:none!important;}
+  .mp-analysis{max-height:none!important;overflow:visible!important;}
+  .prac-grid{grid-template-columns:repeat(4,1fr)!important;}
+  .prac-grid img{border:1px solid #ccc!important;}
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar" id="pbar" style="width:0%"></div>
+
+<!-- TOPBAR -->
+<div class="topbar" id="topbar">
+  <a class="tlogo" href="../../index.html">Luna Whale</a>
+  <div class="tsc"><strong id="cn">1</strong> / <span id="tn">25</span></div>
+  <div class="tbadges"><span class="badge bl">Impressionism</span><span class="badge ba">Lesson 05</span></div>
+</div>
+
+<!-- NAV -->
+<button class="arr" id="bp" onclick="nav(-1)">&#8249;</button>
+<button class="arr" id="bn" onclick="nav(1)">&#8250;</button>
+<div class="dots" id="db"></div>
+
+<!-- PAINTING POPUP -->
+<div class="paint-popup" id="paintPopup" onclick="if(event.target===this||event.target.classList.contains('paint-popup-bg'))closePainting()">
+  <div class="paint-popup-bg"></div>
+  <div class="paint-popup-inner">
+    <button class="paint-popup-close" onclick="closePainting()">&#10005;</button>
+    <img class="paint-popup-img" id="ppImg" src="" alt="">
+    <div class="paint-popup-info">
+      <div class="paint-popup-title" id="ppTitle"></div>
+      <div class="paint-popup-sub" id="ppSub"></div>
+      <div class="paint-popup-desc" id="ppDesc"></div>
+      <div class="paint-popup-loc" id="ppLoc"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lbox" onclick="if(event.target===this||event.target.classList.contains('lbox-bg'))closeLb()">
+  <div class="lbox-bg"></div>
+  <img id="lbox-img" src="" alt="">
+  <div class="lbox-cap" id="lbox-cap"></div>
+  <div class="lbox-actions">
+    <a class="lbox-dl" id="lbox-dl" href="" download="">&#11015; &#45796;&#50868;&#47196;&#46300;</a>
+    <button class="lbox-cl" onclick="closeLb()">&#10005; &#45803;&#44592;</button>
+  </div>
+</div>
+
+<div id="sw">
+
+
+<!-- S0: COVER -->
+<div class="slide active" id="s0">
+  <div class="bg"></div>
+  <div class="gal-marquee">
+    <div style="position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);">
+      <div class="gal-row-wrap">
+        <div class="gal-row row-left">
+          <div class="gal-item" onclick="showPainting('vangogh_sunflowers')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_sunflowers.jpg" alt="해바라기" loading="lazy"><div class="gal-title-bar">해바라기 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_irises')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_irises.jpg" alt="아이리스" loading="lazy"><div class="gal-title-bar">아이리스 (1889)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_bedroom_arles')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_bedroom_arles.jpg" alt="아를의 침실" loading="lazy"><div class="gal-title-bar">아를의 침실 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_self_portrait_1889')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_self_portrait_1889.jpg" alt="자화상" loading="lazy"><div class="gal-title-bar">자화상 (1889)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_potato_eaters')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_potato_eaters.jpg" alt="감자 먹는 사람들" loading="lazy"><div class="gal-title-bar">감자 먹는 사람들 (1885)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_almond_blossoms')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_almond_blossoms.jpg" alt="아몬드 꽃" loading="lazy"><div class="gal-title-bar">아몬드 꽃 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_harvest')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_harvest.jpg" alt="추수" loading="lazy"><div class="gal-title-bar">추수 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_red_vineyard')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_red_vineyard.jpg" alt="붉은 포도밭" loading="lazy"><div class="gal-title-bar">붉은 포도밭 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_sunflowers')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_sunflowers.jpg" alt="해바라기" loading="lazy"><div class="gal-title-bar">해바라기 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_irises')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_irises.jpg" alt="아이리스" loading="lazy"><div class="gal-title-bar">아이리스 (1889)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_bedroom_arles')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_bedroom_arles.jpg" alt="아를의 침실" loading="lazy"><div class="gal-title-bar">아를의 침실 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_self_portrait_1889')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_self_portrait_1889.jpg" alt="자화상" loading="lazy"><div class="gal-title-bar">자화상 (1889)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_potato_eaters')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_potato_eaters.jpg" alt="감자 먹는 사람들" loading="lazy"><div class="gal-title-bar">감자 먹는 사람들 (1885)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_almond_blossoms')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_almond_blossoms.jpg" alt="아몬드 꽃" loading="lazy"><div class="gal-title-bar">아몬드 꽃 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_harvest')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_harvest.jpg" alt="추수" loading="lazy"><div class="gal-title-bar">추수 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_red_vineyard')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_red_vineyard.jpg" alt="붉은 포도밭" loading="lazy"><div class="gal-title-bar">붉은 포도밭 (1888)</div></div>
+        </div>
+      </div>
+      <div class="gal-row-wrap">
+        <div class="gal-row row-right">
+          <div class="gal-item" onclick="showPainting('vangogh_roses')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_roses.jpg" alt="장미" loading="lazy"><div class="gal-title-bar">장미 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_olive_trees')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_olive_trees.jpg" alt="올리브 나무" loading="lazy"><div class="gal-title-bar">올리브 나무 (1889)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_mulberry_tree')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_mulberry_tree.jpg" alt="뽕나무" loading="lazy"><div class="gal-title-bar">뽕나무 (1889)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_wheatfield_cypresses')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_wheatfield_cypresses.jpg" alt="사이프러스 밀밭" loading="lazy"><div class="gal-title-bar">사이프러스가 있는 밀밭 (1889)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_sower')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_sower.jpg" alt="씨 뿌리는 사람" loading="lazy"><div class="gal-title-bar">씨 뿌리는 사람 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_flowering_garden')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_flowering_garden.jpg" alt="꽃 피는 정원" loading="lazy"><div class="gal-title-bar">꽃 피는 정원 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_peach_trees')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_peach_trees.jpg" alt="복숭아 나무" loading="lazy"><div class="gal-title-bar">꽃 핀 복숭아 나무 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_roses')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_roses.jpg" alt="장미" loading="lazy"><div class="gal-title-bar">장미 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_olive_trees')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_olive_trees.jpg" alt="올리브 나무" loading="lazy"><div class="gal-title-bar">올리브 나무 (1889)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_mulberry_tree')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_mulberry_tree.jpg" alt="뽕나무" loading="lazy"><div class="gal-title-bar">뽕나무 (1889)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_wheatfield_cypresses')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_wheatfield_cypresses.jpg" alt="사이프러스 밀밭" loading="lazy"><div class="gal-title-bar">사이프러스가 있는 밀밭 (1889)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_sower')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_sower.jpg" alt="씨 뿌리는 사람" loading="lazy"><div class="gal-title-bar">씨 뿌리는 사람 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_flowering_garden')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_flowering_garden.jpg" alt="꽃 피는 정원" loading="lazy"><div class="gal-title-bar">꽃 피는 정원 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_peach_trees')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_peach_trees.jpg" alt="복숭아 나무" loading="lazy"><div class="gal-title-bar">꽃 핀 복숭아 나무 (1888)</div></div>
+        </div>
+      </div>
+      <div class="gal-row-wrap">
+        <div class="gal-row row-left">
+          <div class="gal-item" onclick="showPainting('vangogh_self_portrait_hat')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_self_portrait_hat.jpg" alt="밀짚모자 자화상" loading="lazy"><div class="gal-title-bar">밀짚모자 자화상 (1887)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_chair')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_chair.jpg" alt="고흐의 의자" loading="lazy"><div class="gal-title-bar">고흐의 의자 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_field_poppies')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_field_poppies.jpg" alt="양귀비 들판" loading="lazy"><div class="gal-title-bar">양귀비 들판 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_plowed_fields')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_plowed_fields.jpg" alt="쟁기질한 밭" loading="lazy"><div class="gal-title-bar">쟁기질한 밭 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_road_cypresses')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_road_cypresses.jpg" alt="사이프러스 길" loading="lazy"><div class="gal-title-bar">사이프러스가 있는 길 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_willows_sunset')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_willows_sunset.jpg" alt="버드나무 석양" loading="lazy"><div class="gal-title-bar">석양의 버드나무 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_church_auvers')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_church_auvers.jpg" alt="오베르 교회" loading="lazy"><div class="gal-title-bar">오베르 교회 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_self_portrait_hat')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_self_portrait_hat.jpg" alt="밀짚모자 자화상" loading="lazy"><div class="gal-title-bar">밀짚모자 자화상 (1887)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_chair')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_chair.jpg" alt="고흐의 의자" loading="lazy"><div class="gal-title-bar">고흐의 의자 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_field_poppies')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_field_poppies.jpg" alt="양귀비 들판" loading="lazy"><div class="gal-title-bar">양귀비 들판 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_plowed_fields')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_plowed_fields.jpg" alt="쟁기질한 밭" loading="lazy"><div class="gal-title-bar">쟁기질한 밭 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_road_cypresses')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_road_cypresses.jpg" alt="사이프러스 길" loading="lazy"><div class="gal-title-bar">사이프러스가 있는 길 (1890)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_willows_sunset')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_willows_sunset.jpg" alt="버드나무 석양" loading="lazy"><div class="gal-title-bar">석양의 버드나무 (1888)</div></div>
+          <div class="gal-item" onclick="showPainting('vangogh_church_auvers')"><img src="../../assets/images/paintings/vangogh/thumb/vangogh_church_auvers.jpg" alt="오베르 교회" loading="lazy"><div class="gal-title-bar">오베르 교회 (1890)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hov"></div>
+  <div class="sc" style="z-index:3;">
+    <div style="flex:1;"></div>
+    <div class="ew" style="opacity:0;animation:fadeUp .8s .6s forwards;">Impressionism Lesson 05</div>
+    <div style="overflow:hidden;margin-bottom:16px;">
+      <h1 class="typewriter" id="cover-title">고흐의 감정적 색채와 터치</h1>
+    </div>
+    <p class="ssub" style="opacity:0;animation:fadeUp .8s 2.4s forwards;">유럽 회화 여행 &mdash; 인상주의 5강</p>
+    <div class="cover-meta">
+      <div class="cover-chip">Vincent van Gogh (1853&ndash;1890)</div>
+      <div class="cover-chip">감정적 색채</div>
+      <div class="cover-chip">표현적 붓터치</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- S1: 감정의 색채란? -->
+<div class="slide" id="s1">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Emotional Color</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(26px,3.5vw,46px);">감정의 색채란?</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s1">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_wheatfield_crows.jpg" alt="까마귀가 있는 밀밭">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_starry_night.jpg" alt="별이 빛나는 밤">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_sunflowers.jpg" alt="해바라기">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_irises.jpg" alt="아이리스">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_red_vineyard.jpg" alt="붉은 포도밭">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_road_cypresses.jpg" alt="사이프러스와 별이 있는 길">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+        <div class="card-grid">
+          <div class="info-card reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">01</div><div class="card-title">색은 감정이다</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>고흐에게 색채는 현실의 재현이 아니라 감정의 표현이었다. &ldquo;나는 빨강과 초록으로 인간의 끔찍한 열정을 표현하고 싶다&rdquo; &mdash; 밤의 카페를 그리며 남긴 말. 세잔이 구조를 위해 색을 사용했다면, 고흐는 감정을 위해 색을 폭발시켰다.</p>
+            </div>
+          </div>
+          <div class="info-card reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">02</div><div class="card-title">붓터치가 말한다</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>두꺼운 임파스토, 소용돌이치는 곡선, 짧고 격렬한 터치 &mdash; 고흐의 붓질은 그 자체로 감정의 언어다. 불안할 때 터치는 격렬해지고, 평온할 때 리듬이 규칙적으로 변한다. 붓터치로 심리 상태를 읽을 수 있는 화가.</p>
+            </div>
+          </div>
+          <div class="info-card reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">03</div><div class="card-title">10년, 900점</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>화가로 활동한 기간은 단 10년(1880&ndash;1890). 그 사이에 유화 900점, 드로잉 1100점 이상을 남겼다. 하루에 한 점 이상을 그린 셈이다. 생전에 팔린 그림은 &laquo;붉은 포도밭&raquo; 단 1점.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S2: Timeline -->
+<div class="slide" id="s2">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Life Timeline (1853&ndash;1890)</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(24px,3.2vw,42px);">고흐의 생애</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s2">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_self_portrait_1889.jpg" alt="자화상">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_potato_eaters.jpg" alt="감자 먹는 사람들">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_sower.jpg" alt="씨 뿌리는 사람">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_night_cafe.jpg" alt="밤의 카페">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_bedroom_arles.jpg" alt="아를의 침실">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_wheatfield_crows.jpg" alt="까마귀가 있는 밀밭">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+        <div class="timeline">
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1853</div><div class="tl-summary">네덜란드 준데르트 출생, 목사의 아들</div><div class="tl-detail"><p>브라반트 지방의 작은 마을에서 개혁교회 목사의 아들로 태어남. 삼촌들이 미술상이었지만 빈센트는 처음에 화가가 되려 하지 않았다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1869</div><div class="tl-summary">구필 화랑 견습생 &mdash; 미술과의 첫 만남</div><div class="tl-detail"><p>16세에 헤이그의 구필 화랑에서 일하며 밀레, 렘브란트를 접함. 런던, 파리 지점에서도 근무. 하지만 종교적 열정에 사로잡혀 해고당한다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1880</div><div class="tl-summary">27세에 화가가 되기로 결심</div><div class="tl-detail"><p>벨기에 보리나주 탄광촌에서 전도사로 일하다 극심한 가난과 광부들의 고통을 목격. 그림으로 이들의 삶을 기록하겠다고 결심한다. 동생 테오에게 첫 편지: &ldquo;나는 그림을 그려야 한다.&rdquo;</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1885</div><div class="tl-summary">&laquo;감자 먹는 사람들&raquo; &mdash; 어둠의 시기</div><div class="tl-detail"><p>네덜란드 시기의 대표작. 어두운 색조로 농민의 삶을 그렸다. 아직 인상주의의 영향을 받기 전, 렘브란트와 밀레에게 영감을 받은 시기.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1886</div><div class="tl-summary">파리 &mdash; 인상주의와 만남, 팔레트의 폭발</div><div class="tl-detail"><p>동생 테오가 있는 파리로 이주. 모네, 피사로, 시냐크를 만나며 밝은 팔레트로 전환. 일본 우키요에 판화에 열광하며 동양의 색채 감각을 흡수한다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1888</div><div class="tl-summary">아를 &mdash; 노란 집, 고갱과의 62일</div><div class="tl-detail"><p>남프랑스 아를에서 &ldquo;예술가 공동체&rdquo;를 꿈꾸며 노란 집을 빌린다. 해바라기 연작, 밤의 카페, 침실 등 걸작을 쏟아냄. 고갱이 합류하지만 62일 만에 격렬한 다툼 끝에 고흐가 자신의 귀를 자른다.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1889</div><div class="tl-summary">생레미 요양원 &mdash; &laquo;별이 빛나는 밤&raquo;</div><div class="tl-detail"><p>자발적으로 생레미드프로방스의 정신병원에 입원. 입원 중에도 150점 이상을 그렸다. &laquo;별이 빛나는 밤&raquo;은 병실 창에서 본 풍경에 상상력을 더한 걸작.</p></div></div>
+          <div class="tl-item reveal scroll-reveal" onclick="toggleTimeline(this)"><div class="tl-dot"></div><div class="tl-year">1890</div><div class="tl-summary">오베르 &mdash; 70일간 70점, 37세로 사망</div><div class="tl-detail"><p>파리 근교 오베르쉬르우아즈에서 가셰 박사의 돌봄을 받으며 하루에 한 점씩 그림을 그렸다. 7월 27일 밀밭에서 권총으로 자신을 쏘고 이틀 뒤 사망. &ldquo;슬픔은 영원히 계속될 것이다.&rdquo;</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S3: 대표작 1 — 까마귀가 있는 밀밭 -->
+<div class="slide" id="s3">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 01</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../assets/images/paintings/vangogh/large/vangogh_wheatfield_crows.jpg','까마귀가 있는 밀밭 — Wheatfield with Crows (1890)')">
+        <img src="../../assets/images/paintings/vangogh/large/vangogh_wheatfield_crows.jpg" loading="lazy" alt="까마귀가 있는 밀밭">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>까마귀가 있는 밀밭</em></h3>
+        <div class="mp-sub">Wheatfield with Crows | 1890년 | 캔버스에 유채 | 50.5 &times; 103 cm | Van Gogh Museum, Amsterdam</div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128269; 감정의 폭풍</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>격렬한 파란 하늘, 황금빛 밀밭, 검은 까마귀 떼 &mdash; 보색 대비가 극대화된 화면에서 불안과 아름다움이 동시에 폭발한다. 고흐의 마지막 작품 중 하나로, 그의 내면의 혼란이 붓터치 하나하나에 새겨져 있다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#127912; 세 갈래 길</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>밀밭을 가로지르는 세 갈래 길은 어디로도 이어지지 않는다. 왼쪽은 가장자리로, 가운데는 밀밭 속으로 사라지고, 오른쪽은 화면 밖으로 나간다. 선택의 불가능성, 막다른 길의 상징으로 해석된다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#10024; 임파스토의 극치</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>물감이 1cm 이상 두껍게 쌓여 있다. 팔레트 나이프와 붓을 번갈아 사용하며 물감 자체가 밀밭의 질감이 된다. 캔버스 위의 물감 덩어리가 곧 밀이삭의 물리적 존재감을 만든다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128172; 마지막 편지</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>테오에게 보낸 마지막 편지: &ldquo;이 광활한 밀밭들 아래 폭풍우 치는 하늘, 나는 내 슬픔과 극도의 고독을 표현하려 했다.&rdquo; 2주 후 고흐는 이 밀밭에서 자신에게 총을 쏘았다.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S4: 대표작 2 — 꽃 피는 아몬드 나무 -->
+<div class="slide" id="s4">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 02</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../assets/images/paintings/vangogh/large/vangogh_almond_blossoms.jpg','꽃 피는 아몬드 나무 — Almond Blossom (1890)')">
+        <img src="../../assets/images/paintings/vangogh/large/vangogh_almond_blossoms.jpg" loading="lazy" alt="꽃 피는 아몬드 나무">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>꽃 피는 아몬드 나무</em></h3>
+        <div class="mp-sub">Almond Blossom | 1890년 | 캔버스에 유채 | 73.3 &times; 92.4 cm | Van Gogh Museum, Amsterdam</div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128269; 우키요에의 영향</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>히로시게와 호쿠사이의 일본 판화에서 직접적인 영감을 받았다. 평면적인 배경, 선명한 윤곽선, 자연 모티프의 클로즈업 &mdash; 동양의 미학이 고흐의 색채와 만나 독특한 조화를 이룬다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#127912; 생명의 환희</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>터키석 블루 하늘 위로 하얀 꽃이 피어오른다. 고흐의 작품 중 가장 밝고 희망에 찬 그림. 정신병원에서 퇴원 직전, 봄의 도래와 새로운 생명을 축하하며 그렸다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#10024; 조카를 위한 선물</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>동생 테오의 아들(빈센트 빌럼)의 탄생을 축하하기 위해 그린 그림. 테오에게 보낸 편지: &ldquo;갓 태어난 아기의 침대 위에 걸어두게.&rdquo; 고흐의 작품 중 가장 사적이고 따뜻한 의미를 가진 걸작.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S5: 대표작 3 — 밤의 카페 -->
+<div class="slide" id="s5">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 03</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../assets/images/paintings/vangogh/large/vangogh_night_cafe.jpg','밤의 카페 — The Night Café (1888)')">
+        <img src="../../assets/images/paintings/vangogh/large/vangogh_night_cafe.jpg" loading="lazy" alt="밤의 카페">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>밤의 카페</em></h3>
+        <div class="mp-sub">The Night Caf&eacute; | 1888년 | 캔버스에 유채 | 72.4 &times; 92.1 cm | Yale University Art Gallery</div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128269; 의도적 불쾌함</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>&ldquo;밤의 카페에서 나는 사람이 미쳐버릴 수 있고 범죄를 저지를 수 있는 장소를 표현하려 했다&rdquo; &mdash; 빨강과 초록의 보색 충돌이 불안과 타락을 물리적으로 느끼게 만든다. 색채로 심리적 공간을 구축한 혁명적 시도.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#127912; 과장된 원근법</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>바닥의 선이 극단적으로 수렴하며 공간이 왜곡된다. 당구대가 비현실적으로 기울어지고 벽이 쓰러질 듯 압박한다. 술과 고독에 취한 사람의 시선으로 공간을 경험하게 만드는 주관적 원근법.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#10024; 3일 밤을 새며</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>아를의 라마르틴 광장에 있던 실제 카페에서 3일 밤을 꼬박 새우며 완성했다. 밤에만 작업하여 가스등 아래의 인공 조명 효과를 직접 관찰하며 그렸다.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S6: 대표작 4 — 해바라기 -->
+<div class="slide" id="s6">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 04</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../assets/images/paintings/vangogh/large/vangogh_sunflowers.jpg','해바라기 — Sunflowers (1888)')">
+        <img src="../../assets/images/paintings/vangogh/large/vangogh_sunflowers.jpg" loading="lazy" alt="해바라기">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>해바라기</em></h3>
+        <div class="mp-sub">Sunflowers | 1888년 | 캔버스에 유채 | 92.1 &times; 73 cm | National Gallery, London</div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128269; 노랑의 교향곡</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>크롬 옐로, 카드뮴 옐로, 네이플스 옐로 &mdash; 수십 가지 노랑만으로 화면을 구성했다. 배경도 노랑, 꽃병도 노랑. 단일 색상의 무한한 변주로 풍요와 생명력을 표현한 고흐 색채론의 정수.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#127912; 고갱을 위한 장식</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>고갱이 아를에 오기 전 노란 집의 방을 장식하기 위해 그린 연작. &ldquo;이 꽃들은 나의 것이다&rdquo; &mdash; 해바라기가 고흐의 트레이드마크가 된 순간. 총 7점의 해바라기 연작이 존재한다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#10024; $39.9M &mdash; 세계를 놀라게 하다</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>1987년 크리스티 경매에서 당시 사상 최고가인 $39.9M에 일본 야스다 화재보험이 낙찰. 생전에 그림을 거의 팔지 못한 화가의 그림이 세계 최고가를 기록한 극적인 순간.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S7: 대표작 5 — 별이 빛나는 밤 -->
+<div class="slide" id="s7">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Masterpiece 05</div>
+    <div class="mp-cinema">
+      <div class="mp-img-hero reveal" onclick="openLb('../../assets/images/paintings/vangogh/large/vangogh_starry_night.jpg','별이 빛나는 밤 — The Starry Night (1889)')">
+        <img src="../../assets/images/paintings/vangogh/large/vangogh_starry_night.jpg" loading="lazy" alt="별이 빛나는 밤">
+        <div class="view-hint">클릭하여 크게 보기</div>
+      </div>
+      <div class="mp-analysis reveal">
+        <h3 class="blur-in"><em>별이 빛나는 밤</em></h3>
+        <div class="mp-sub">The Starry Night | 1889년 | 캔버스에 유채 | 73.7 &times; 92.1 cm | Museum of Modern Art, New York</div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128269; 소용돌이치는 우주</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>하늘 전체가 소용돌이치는 곡선으로 가득하다. 별과 달이 빛의 후광을 발하며 회전한다. 과학자들은 이 소용돌이가 난류(turbulence)의 수학적 패턴과 일치한다는 것을 발견했다 &mdash; 고흐의 직관이 유체역학을 포착한 것이다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#127912; 기억과 상상의 풍경</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>병실 창에서 본 실제 풍경에 네덜란드 교회 첨탑과 상상의 마을을 합성했다. 고향에 대한 향수와 현실의 고통이 밤하늘에 녹아든 &ldquo;내면의 풍경&rdquo;이다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#10024; 사이프러스 나무</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>왼쪽의 어두운 사이프러스가 불꽃처럼 하늘을 향해 솟아오른다. 전통적으로 죽음과 장례의 상징인 사이프러스가 소용돌이치는 생명의 에너지로 변환되어, 죽음과 삶의 경계를 허문다.</p></div>
+        </div>
+        <div class="an-panel" onclick="togglePanel(this)">
+          <div class="an-panel-head"><span class="an-label">&#128172; MoMA의 아이콘</span><span class="an-icon">&#9654;</span></div>
+          <div class="an-content"><p>뉴욕 MoMA의 영구 소장품. 연간 수백만 명이 이 그림 앞에 선다. 고흐 자신은 이 그림을 &ldquo;실패작&rdquo;이라 여겼지만, 오늘날 세계에서 가장 유명한 그림 중 하나가 되었다.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S8: Interactive — Emotional Brushwork (감정의 붓터치) -->
+<div class="slide" id="s8">
+  <div class="inter-full">
+    <img class="inter-full__img" src="../../assets/images/paintings/vangogh/large/vangogh_wheatfield_crows.jpg" alt="까마귀가 있는 밀밭">
+    <div class="persp-lines" id="perspOverlay">
+      <svg width="100%" height="100%" viewBox="0 0 1000 700" preserveAspectRatio="none" style="position:absolute;inset:0;">
+        <path d="M50,400 Q200,350 400,380 Q600,410 800,370 Q900,360 950,380" fill="none" stroke="#e8b830" stroke-width="4" stroke-dasharray="12,6" opacity=".8"/>
+        <text x="60" y="390" fill="#e8b830" font-size="14" font-weight="700">격렬한 수평 터치 &mdash; 밀밭의 요동</text>
+        <path d="M100,200 Q300,100 500,150 Q700,200 900,120" fill="none" stroke="#3498db" stroke-width="4" stroke-dasharray="12,6" opacity=".8"/>
+        <text x="110" y="250" fill="#3498db" font-size="14" font-weight="700">소용돌이치는 하늘 &mdash; 내면의 폭풍</text>
+        <path d="M400,300 L420,280 L440,310 L460,270 L480,320 L500,260 L520,300" fill="none" stroke="#e74c3c" stroke-width="3" opacity=".7"/>
+        <text x="530" y="290" fill="#e74c3c" font-size="14" font-weight="700">짧고 급격한 터치 &mdash; 불안감</text>
+      </svg>
+    </div>
+    <div class="inter-full__overlay">
+      <div class="inter-full__top">
+        <div class="ew reveal blur-in">Interactive &mdash; Emotional Brushwork</div>
+        <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">감정의 붓터치</h2>
+      </div>
+      <div class="inter-full__bottom">
+        <button class="toggle-btn" id="perspBtn" onclick="togglePerspective()">&#128270; 붓터치 분석 보기</button>
+        <div class="interactive-explain">
+          <p>고흐의 붓터치는 감정의 언어다. <strong>밀밭의 수평 터치</strong>는 요동치는 자연을, <strong>하늘의 곡선</strong>은 내면의 폭풍을, <strong>짧고 급격한 터치</strong>는 불안과 고독을 직접 전달한다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S9: Interactive — Color Temperature (보색 대비 체험) -->
+<div class="slide" id="s9">
+  <div class="inter-full">
+    <img class="inter-full__img" id="modulationImg" src="../../assets/images/paintings/vangogh/large/vangogh_night_cafe.jpg" alt="밤의 카페">
+    <div class="inter-full__overlay">
+      <div class="inter-full__top">
+        <div class="ew reveal blur-in">Interactive &mdash; Complementary Colors</div>
+        <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">보색 대비의 힘</h2>
+      </div>
+      <div class="inter-full__bottom">
+        <div class="modulation-control">
+          <div class="modulation-labels">
+            <span>&#10052; 차가운 톤 (Cool)</span>
+            <span>&#9728; 따뜻한 톤 (Warm)</span>
+          </div>
+          <input type="range" class="modulation-slider" id="modulationSlider" min="0" max="360" value="0" oninput="updateModulation(this.value)">
+          <div class="modulation-value" id="modulationValue">0&deg;</div>
+        </div>
+        <div class="interactive-explain">
+          <p><strong>고흐의 보색 대비:</strong> 빨강-초록, 파랑-주황, 노랑-보라 &mdash; 보색을 나란히 놓으면 서로를 <strong>더 강렬하게</strong> 만든다. 슬라이더로 색 온도를 변화시켜 보색 충돌의 힘을 체험해보세요.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S10: Interactive — Impasto Texture (임파스토 질감) -->
+<div class="slide" id="s10">
+  <div class="inter-full">
+    <img class="inter-full__img" src="../../assets/images/paintings/vangogh/large/vangogh_sunflowers.jpg" alt="해바라기">
+    <div class="geo-overlay" id="geoOverlay">
+      <svg width="100%" height="100%" viewBox="0 0 1000 700" preserveAspectRatio="none" style="position:absolute;inset:0;">
+        <circle cx="500" cy="350" r="150" fill="none" stroke="#e8b830" stroke-width="3" opacity=".7"/>
+        <text x="360" y="200" fill="#e8b830" font-size="16" font-weight="700">두꺼운 임파스토 (1cm+)</text>
+        <path d="M300,350 Q350,320 400,350 Q450,380 500,350" fill="none" stroke="#e74c3c" stroke-width="4" opacity=".8"/>
+        <text x="310" y="420" fill="#e74c3c" font-size="14" font-weight="700">나선형 붓터치</text>
+        <rect x="650" y="250" width="200" height="150" rx="8" fill="none" stroke="#3498db" stroke-width="3" opacity=".7"/>
+        <text x="660" y="240" fill="#3498db" font-size="14" font-weight="700">직선 터치 (배경)</text>
+      </svg>
+    </div>
+    <div class="inter-full__overlay">
+      <div class="inter-full__top">
+        <div class="ew reveal blur-in">Interactive &mdash; Impasto Texture</div>
+        <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">임파스토 질감</h2>
+      </div>
+      <div class="inter-full__bottom">
+        <button class="toggle-btn" id="geoBtn" onclick="toggleGeometry()">&#128316; 질감 분석 보기</button>
+        <div class="interactive-explain">
+          <p><strong>임파스토(Impasto):</strong> 물감을 두껍게 쌓아 올려 물리적 질감을 만드는 기법. 고흐는 때로 튜브에서 직접 캔버스에 물감을 짜며 <strong>꽃잎의 실제 두께</strong>를 표현했다. 그림이 2D를 넘어 3D 조각이 되는 순간.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S11: Van Gogh → Expressionism (표현주의로의 길) -->
+<div class="slide" id="s11">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Van Gogh &rarr; Expressionism</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">표현주의로의 길</h2>
+    <div class="sc-scroll">
+      <div class="comparison-grid reveal">
+        <div class="comparison-item">
+          <div class="comparison-img" onclick="openLb('../../assets/images/paintings/vangogh/large/vangogh_starry_night.jpg','고흐 &mdash; 별이 빛나는 밤 (1889)')">
+            <img src="../../assets/images/paintings/vangogh/web/vangogh_starry_night.jpg" alt="별이 빛나는 밤" loading="lazy">
+          </div>
+          <div class="comparison-label">
+            <strong>Van Gogh</strong><br>
+            별이 빛나는 밤 (1889)
+          </div>
+        </div>
+        <div class="comparison-vs reveal">&#8594;</div>
+        <div class="comparison-item">
+          <div class="comparison-img" onclick="openLb('../../assets/images/paintings/vangogh/large/vangogh_cypresses.jpg','고흐의 영향 &mdash; 사이프러스')">
+            <img src="../../assets/images/paintings/vangogh/web/vangogh_cypresses.jpg" alt="사이프러스" loading="lazy">
+          </div>
+          <div class="comparison-label">
+            <strong>Expressionism</strong><br>
+            고흐의 유산 (20세기)
+          </div>
+        </div>
+      </div>
+      <div class="comparison-explain reveal scroll-reveal">
+        <p>고흐의 <strong>감정적 색채</strong>와 <strong>격렬한 붓터치</strong>는 독일 표현주의(Die Br&uuml;cke, Der Blaue Reiter)의 직접적인 원천이 되었다. 뭉크의 &laquo;절규&raquo;, 키르히너의 거리 장면, 칸딘스키의 초기 풍경화 모두 고흐의 색채적 폭발에서 출발했다.</p>
+      </div>
+      <div class="card-grid" style="margin-top:16px;">
+        <div class="info-card reveal scroll-reveal" onclick="toggleCard(this)">
+          <div class="card-header">
+            <div><div class="card-num">01</div><div class="card-title">900점의 편지</div></div>
+            <div class="card-chevron">&#9660;</div>
+          </div>
+          <div class="card-body">
+            <p>고흐는 동생 테오에게 650통 이상의 편지를 남겼다. 이 편지들은 예술론, 색채 이론, 감정의 기록이 담긴 세계 미술사 최고의 1차 자료다. 편지 자체가 문학 작품이다.</p>
+          </div>
+        </div>
+        <div class="info-card reveal scroll-reveal" onclick="toggleCard(this)">
+          <div class="card-header">
+            <div><div class="card-num">02</div><div class="card-title">색채가 감정을 지배하다</div></div>
+            <div class="card-chevron">&#9660;</div>
+          </div>
+          <div class="card-body">
+            <p>고흐 이전에는 색채가 현실을 재현하는 도구였다. 고흐 이후 색채는 감정의 직접적 표현이 되었다. 야수파(마티스), 표현주의(뭉크), 추상표현주의(드 쿠닝)가 모두 이 유산 위에 서 있다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S12: Art Market + Legacy (미술시장과 유산) -->
+<div class="slide" id="s12">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Art Market &amp; Legacy</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">미술시장과 유산</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s12market">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_sunflowers.jpg" alt="해바라기" loading="lazy">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_starry_night.jpg" alt="별이 빛나는 밤" loading="lazy">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_self_portrait_1889.jpg" alt="자화상" loading="lazy">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_irises.jpg" alt="아이리스" loading="lazy">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_wheatfield_crows.jpg" alt="까마귀가 있는 밀밭" loading="lazy">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+        <div class="card-grid">
+          <div class="info-card reveal scroll-reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">01</div><div class="card-title">생전 판매: 단 1점</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>&laquo;붉은 포도밭&raquo;이 400프랑(약 $2,000)에 팔린 것이 유일한 생전 판매 기록. 오늘날 고흐의 작품은 수억 달러에 거래된다. 미술사 최대의 역설.</p>
+            </div>
+          </div>
+          <div class="info-card reveal scroll-reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">02</div><div class="card-title">$82.5M &mdash; 가셰 박사의 초상</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>1990년 크리스티 경매에서 당시 사상 최고가 기록. 일본 다이쇼 제지 사장이 낙찰. &ldquo;죽으면 함께 화장해달라&rdquo;고 말해 전 세계적 논란을 일으켰다.</p>
+            </div>
+          </div>
+          <div class="info-card reveal scroll-reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">03</div><div class="card-title">반 고흐 미술관</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>암스테르담의 반 고흐 미술관은 연간 200만 명 이상이 방문하는 세계 최고의 인기 미술관 중 하나. 유화 200점, 드로잉 500점, 편지 700통을 소장.</p>
+            </div>
+          </div>
+          <div class="info-card reveal scroll-reveal" onclick="toggleCard(this)">
+            <div class="card-header">
+              <div><div class="card-num">04</div><div class="card-title">테오의 유산</div></div>
+              <div class="card-chevron">&#9660;</div>
+            </div>
+            <div class="card-body">
+              <p>동생 테오는 고흐 사후 6개월 만에 세상을 떠났다. 테오의 아내 요한나가 작품을 보존하고 편지를 출판하며 고흐의 명성을 세계에 알렸다. 한 여성의 헌신이 미술사를 바꾸었다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S13: Films (영화) -->
+<div class="slide" id="s13">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Films &amp; Documentaries</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">고흐 관련 영화</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s13films">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_starry_night.jpg" alt="별이 빛나는 밤" loading="lazy">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_sunflowers.jpg" alt="해바라기" loading="lazy">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_self_portrait_hat.jpg" alt="자화상" loading="lazy">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_wheatfield_crows.jpg" alt="까마귀가 있는 밀밭" loading="lazy">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_night_cafe.jpg" alt="밤의 카페" loading="lazy">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(232,184,48,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">Loving Vincent</div>
+            <div class="film-title-ko">러빙 빈센트</div>
+            <div class="film-meta">2017 &middot; 감독: Dorota Kobiela &middot; 애니메이션</div>
+            <div class="film-desc">세계 최초 유화 애니메이션. 65,000장의 유화 프레임으로 고흐의 마지막 날들을 재현</div>
+          </div>
+        </div>
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(232,184,48,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">At Eternity&rsquo;s Gate</div>
+            <div class="film-title-ko">영원의 문에서</div>
+            <div class="film-meta">2018 &middot; 감독: Julian Schnabel &middot; Willem Dafoe 주연</div>
+            <div class="film-desc">화가 출신 감독이 고흐의 아를 시절을 햄디카메라로 촬영. 감각적 몰입감</div>
+          </div>
+        </div>
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(232,184,48,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">Lust for Life</div>
+            <div class="film-title-ko">열정의 랩소디</div>
+            <div class="film-meta">1956 &middot; 감독: Vincente Minnelli &middot; Kirk Douglas 주연</div>
+            <div class="film-desc">고흐 전기 영화의 고전. Kirk Douglas의 열연으로 아카데미 노미네이션</div>
+          </div>
+        </div>
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(232,184,48,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">Vincent &amp; Theo</div>
+            <div class="film-title-ko">빈센트와 테오</div>
+            <div class="film-meta">1990 &middot; 감독: Robert Altman &middot; Tim Roth 주연</div>
+            <div class="film-desc">알트먼 감독이 그린 형제의 이야기. 고흐와 테오의 복잡한 관계에 집중</div>
+          </div>
+        </div>
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(232,184,48,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">Van Gogh (1991)</div>
+            <div class="film-title-ko">반 고흐</div>
+            <div class="film-meta">1991 &middot; 감독: Maurice Pialat &middot; Jacques Dutronc 주연</div>
+            <div class="film-desc">고흐의 오베르 마지막 67일을 담담하게 그린 프랑스 영화. 칸 황금종려상 노미네이션</div>
+          </div>
+        </div>
+        <div class="film-card reveal scroll-reveal">
+          <div style="width:70px;min-width:70px;height:100px;border-radius:8px;background:rgba(232,184,48,.1);display:flex;align-items:center;justify-content:center;font-size:28px;">&#127916;</div>
+          <div class="film-info">
+            <div class="film-title">Doctor Who: Vincent and the Doctor</div>
+            <div class="film-title-ko">닥터 후: 빈센트와 닥터</div>
+            <div class="film-meta">2010 &middot; BBC &middot; TV 에피소드</div>
+            <div class="film-desc">고흐가 미래의 미술관에서 자신의 작품을 보는 감동적인 장면으로 유명</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S14: Books (도서) -->
+<div class="slide" id="s14">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Books</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(22px,3vw,38px);">고흐 관련 도서</h2>
+    <div class="slide-split">
+      <div class="slide-split-left">
+        <div class="crossfade-gallery" data-gallery="s14books">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_sower.jpg" alt="씨 뿌리는 사람" loading="lazy">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_potato_eaters.jpg" alt="감자 먹는 사람들" loading="lazy">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_bedroom_arles.jpg" alt="아를의 침실" loading="lazy">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_harvest.jpg" alt="수확" loading="lazy">
+          <img src="../../assets/images/paintings/vangogh/web/vangogh_red_vineyard.jpg" alt="붉은 포도밭" loading="lazy">
+        </div>
+      </div>
+      <div class="slide-split-right sc-scroll">
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">Van Gogh: The Life</div>
+            <div class="book-author">Steven Naifeh &amp; Gregory White Smith &middot; 2011</div>
+            <div class="book-desc">퓰리처상 수상 작가들의 결정판 전기. 953페이지의 대작</div>
+          </div>
+        </div>
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">The Letters of Vincent van Gogh</div>
+            <div class="book-author">Van Gogh Museum (ed.) &middot; 2009</div>
+            <div class="book-desc">고흐 편지 전집. 미술론, 색채 이론, 감정의 기록이 담긴 필독서</div>
+          </div>
+        </div>
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">Dear Theo</div>
+            <div class="book-author">Irving Stone (ed.) &middot; 1937</div>
+            <div class="book-desc">테오에게 보낸 편지 선집. 고흐의 일상과 예술관을 가장 가까이서 볼 수 있는 책</div>
+          </div>
+        </div>
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">Van Gogh&rsquo;s Starry Night Notebook</div>
+            <div class="book-author">Jean-Pierre Isbouts &middot; 2019</div>
+            <div class="book-desc">별이 빛나는 밤의 천문학적, 수학적, 예술적 분석</div>
+          </div>
+        </div>
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">The Yellow House</div>
+            <div class="book-author">Martin Gayford &middot; 2006</div>
+            <div class="book-desc">고흐와 고갱이 아를 노란 집에서 함께한 62일의 기록</div>
+          </div>
+        </div>
+        <div class="book-item reveal scroll-reveal">
+          <div class="book-icon">&#128214;</div>
+          <div class="book-info">
+            <div class="book-title">Lust for Life</div>
+            <div class="book-author">Irving Stone &middot; 1934</div>
+            <div class="book-desc">고흐의 삶을 소설로 쓴 고전. 전 세계적 베스트셀러</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S15: Poems (시) -->
+<div class="slide" id="s15">
+  <div class="bg"></div>
+  <div class="poem-bg-gallery crossfade-gallery" data-gallery="poems">
+    <img src="../../assets/images/paintings/vangogh/web/vangogh_starry_night.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/vangogh/web/vangogh_wheatfield_crows.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/vangogh/web/vangogh_sunflowers.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/vangogh/web/vangogh_road_cypresses.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/vangogh/web/vangogh_almond_blossoms.jpg" alt="" loading="lazy">
+    <img src="../../assets/images/paintings/vangogh/web/vangogh_sower.jpg" alt="" loading="lazy">
+  </div>
+  <div class="poem-overlay"></div>
+  <div class="sc" style="z-index:3;">
+    <div class="ew reveal blur-in">Poetry for Van Gogh</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.8vw,34px);">고흐를 위한 시</h2>
+    <div class="sc-scroll">
+      <div class="poem-container">
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">&ldquo;Starry, starry night,<br>paint your palette blue and grey,<br>look out on a summer&rsquo;s day<br>with eyes that know the darkness in my soul.&rdquo;</div>
+          <div class="poem-quote-ko">&ldquo;별이 빛나는, 별이 빛나는 밤,<br>팔레트를 파랑과 회색으로 칠하고,<br>여름날을 바라보라<br>내 영혼의 어둠을 아는 눈으로.&rdquo;</div>
+          <div class="poem-attr">&mdash; Don McLean, &laquo;Vincent (Starry, Starry Night)&raquo; (1971)</div>
+          <div class="poem-context">빌보드 차트 12위. 고흐에게 바치는 노래로 세계적으로 가장 유명한 고흐 헌정곡</div>
+        </div>
+        <div class="poem-divider reveal scroll-reveal"></div>
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">&ldquo;I feel that there is nothing more truly<br>artistic than to love people.&rdquo;</div>
+          <div class="poem-quote-ko">&ldquo;사람을 사랑하는 것보다<br>더 진정으로 예술적인 것은 없다고 느낀다.&rdquo;</div>
+          <div class="poem-attr">&mdash; Vincent van Gogh, Letter to Theo (1888)</div>
+          <div class="poem-context">아를 시절 테오에게 보낸 편지. 고흐의 예술 철학의 핵심</div>
+        </div>
+        <div class="poem-divider reveal scroll-reveal"></div>
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">&ldquo;I want to touch people with my art.<br>I want them to say:<br>&lsquo;he feels deeply, he feels tenderly.&rsquo;&rdquo;</div>
+          <div class="poem-quote-ko">&ldquo;나는 내 예술로 사람들을 감동시키고 싶다.<br>그들이 이렇게 말하기를 바란다:<br>&lsquo;그는 깊이 느끼고, 부드럽게 느낀다.&rsquo;&rdquo;</div>
+          <div class="poem-attr">&mdash; Vincent van Gogh, Letter to Theo (1882)</div>
+          <div class="poem-context">화가가 되기로 결심한 직후의 편지. 감정적 소통에 대한 열망</div>
+        </div>
+        <div class="poem-divider reveal scroll-reveal"></div>
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">&ldquo;I dream my painting<br>and I paint my dream.&rdquo;</div>
+          <div class="poem-quote-ko">&ldquo;나는 내 그림을 꿈꾸고,<br>내 꿈을 그린다.&rdquo;</div>
+          <div class="poem-attr">&mdash; Vincent van Gogh</div>
+          <div class="poem-context">고흐의 가장 유명한 격언. 상상과 현실의 경계를 넘나드는 그의 예술관</div>
+        </div>
+        <div class="poem-divider reveal scroll-reveal"></div>
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">&ldquo;The sadness will last forever.&rdquo;</div>
+          <div class="poem-quote-ko">&ldquo;슬픔은 영원히 계속될 것이다.&rdquo;</div>
+          <div class="poem-attr">&mdash; Vincent van Gogh, last words (July 29, 1890)</div>
+          <div class="poem-context">동생 테오의 품에서 37세로 숨을 거두며 남긴 마지막 말</div>
+        </div>
+        <div class="poem-divider reveal scroll-reveal"></div>
+        <div class="poem-block reveal scroll-reveal">
+          <div class="poem-quote">&ldquo;If you hear a voice within you say<br>&lsquo;you cannot paint,&rsquo; then by all means paint,<br>and that voice will be silenced.&rdquo;</div>
+          <div class="poem-quote-ko">&ldquo;마음속에서 &lsquo;넌 그림을 그릴 수 없어&rsquo;라고<br>말하는 목소리가 들리거든,<br>반드시 그림을 그려라,<br>그러면 그 목소리는 잠잠해질 것이다.&rdquo;</div>
+          <div class="poem-attr">&mdash; Vincent van Gogh, Letter to Theo</div>
+          <div class="poem-context">27세에 화가가 되기로 결심한 남자의 자기 격려. 모든 예술가에게 보내는 메시지</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S16: Practice Reference 01 -->
+<div class="slide" id="s16">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 01</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 01 — 까마귀 밀밭 ⭐⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-01-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-01-1.jpg','까마귀 밀밭 1')" loading="lazy" alt="까마귀 밀밭 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-01-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-01-2.jpg','까마귀 밀밭 2')" loading="lazy" alt="까마귀 밀밭 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-01-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-01-3.jpg','까마귀 밀밭 3')" loading="lazy" alt="까마귀 밀밭 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-01-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-01-4.jpg','까마귀 밀밭 4')" loading="lazy" alt="까마귀 밀밭 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 04 — 폭풍 밀밭, 수채화 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-04-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-04-1.jpg','폭풍 밀밭, 수채화 1')" loading="lazy" alt="폭풍 밀밭, 수채화 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-04-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-04-2.jpg','폭풍 밀밭, 수채화 2')" loading="lazy" alt="폭풍 밀밭, 수채화 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-04-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-04-3.jpg','폭풍 밀밭, 수채화 3')" loading="lazy" alt="폭풍 밀밭, 수채화 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-04-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-04-4.jpg','폭풍 밀밭, 수채화 4')" loading="lazy" alt="폭풍 밀밭, 수채화 4">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-04-5.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-04-5.jpg','폭풍 밀밭, 수채화 5')" loading="lazy" alt="폭풍 밀밭, 수채화 5">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-04-6.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-04-6.jpg','폭풍 밀밭, 수채화 6')" loading="lazy" alt="폭풍 밀밭, 수채화 6">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-04-7.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-04-7.jpg','폭풍 밀밭, 수채화 7')" loading="lazy" alt="폭풍 밀밭, 수채화 7">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-04-8.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-04-8.jpg','폭풍 밀밭, 수채화 8')" loading="lazy" alt="폭풍 밀밭, 수채화 8">
+        </div>
+      </div>
+      <div class="prac-caption">밀밭 — 감정의 폭풍</div>
+    </div>
+  </div>
+</div>
+
+<!-- S17: Practice Reference 02 -->
+<div class="slide" id="s17">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 02</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 05 — 별이 빛나는 밤 ⭐⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-05-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-05-1.jpg','별이 빛나는 밤 1')" loading="lazy" alt="별이 빛나는 밤 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-05-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-05-2.jpg','별이 빛나는 밤 2')" loading="lazy" alt="별이 빛나는 밤 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-05-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-05-3.jpg','별이 빛나는 밤 3')" loading="lazy" alt="별이 빛나는 밤 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-05-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-05-4.jpg','별이 빛나는 밤 4')" loading="lazy" alt="별이 빛나는 밤 4">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-05-5.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-05-5.jpg','별이 빛나는 밤 5')" loading="lazy" alt="별이 빛나는 밤 5">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-05-6.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-05-6.jpg','별이 빛나는 밤 6')" loading="lazy" alt="별이 빛나는 밤 6">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-05-7.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-05-7.jpg','별이 빛나는 밤 7')" loading="lazy" alt="별이 빛나는 밤 7">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-05-8.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-05-8.jpg','별이 빛나는 밤 8')" loading="lazy" alt="별이 빛나는 밤 8">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 13 — 까마귀 밀밭, 임파스토 ⭐⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-13-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-13-1.jpg','까마귀 밀밭, 임파스토 1')" loading="lazy" alt="까마귀 밀밭, 임파스토 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-13-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-13-2.jpg','까마귀 밀밭, 임파스토 2')" loading="lazy" alt="까마귀 밀밭, 임파스토 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-13-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-13-3.jpg','까마귀 밀밭, 임파스토 3')" loading="lazy" alt="까마귀 밀밭, 임파스토 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-13-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-13-4.jpg','까마귀 밀밭, 임파스토 4')" loading="lazy" alt="까마귀 밀밭, 임파스토 4">
+        </div>
+      </div>
+      <div class="prac-caption">별이 빛나는 밤 & 까마귀 밀밭 — 임파스토</div>
+    </div>
+  </div>
+</div>
+
+<!-- S18: Practice Reference 03 -->
+<div class="slide" id="s18">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 03</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 02 — 꽃 피는 아몬드 나무 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-02-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-02-1.jpg','꽃 피는 아몬드 나무 1')" loading="lazy" alt="꽃 피는 아몬드 나무 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-02-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-02-2.jpg','꽃 피는 아몬드 나무 2')" loading="lazy" alt="꽃 피는 아몬드 나무 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-02-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-02-3.jpg','꽃 피는 아몬드 나무 3')" loading="lazy" alt="꽃 피는 아몬드 나무 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-02-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-02-4.jpg','꽃 피는 아몬드 나무 4')" loading="lazy" alt="꽃 피는 아몬드 나무 4">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-02-5.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-02-5.jpg','꽃 피는 아몬드 나무 5')" loading="lazy" alt="꽃 피는 아몬드 나무 5">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-02-6.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-02-6.jpg','꽃 피는 아몬드 나무 6')" loading="lazy" alt="꽃 피는 아몬드 나무 6">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-02-7.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-02-7.jpg','꽃 피는 아몬드 나무 7')" loading="lazy" alt="꽃 피는 아몬드 나무 7">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-02-8.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-02-8.jpg','꽃 피는 아몬드 나무 8')" loading="lazy" alt="꽃 피는 아몬드 나무 8">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 12 — 해바라기 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-12-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-12-1.jpg','해바라기 1')" loading="lazy" alt="해바라기 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-12-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-12-2.jpg','해바라기 2')" loading="lazy" alt="해바라기 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-12-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-12-3.jpg','해바라기 3')" loading="lazy" alt="해바라기 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-12-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-12-4.jpg','해바라기 4')" loading="lazy" alt="해바라기 4">
+        </div>
+      </div>
+      <div class="prac-caption">아몬드 꽃 & 해바라기 — 생명의 색채</div>
+    </div>
+  </div>
+</div>
+
+<!-- S19: Practice Reference 04 -->
+<div class="slide" id="s19">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 04</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 03 — 밤의 카페 ⭐⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-03-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-03-1.jpg','밤의 카페 1')" loading="lazy" alt="밤의 카페 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-03-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-03-2.jpg','밤의 카페 2')" loading="lazy" alt="밤의 카페 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-03-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-03-3.jpg','밤의 카페 3')" loading="lazy" alt="밤의 카페 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-03-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-03-4.jpg','밤의 카페 4')" loading="lazy" alt="밤의 카페 4">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-03-5.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-03-5.jpg','밤의 카페 5')" loading="lazy" alt="밤의 카페 5">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-03-6.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-03-6.jpg','밤의 카페 6')" loading="lazy" alt="밤의 카페 6">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-03-7.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-03-7.jpg','밤의 카페 7')" loading="lazy" alt="밤의 카페 7">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-03-8.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-03-8.jpg','밤의 카페 8')" loading="lazy" alt="밤의 카페 8">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 10 — 아를의 침실 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-10-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-10-1.jpg','아를의 침실 1')" loading="lazy" alt="아를의 침실 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-10-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-10-2.jpg','아를의 침실 2')" loading="lazy" alt="아를의 침실 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-10-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-10-3.jpg','아를의 침실 3')" loading="lazy" alt="아를의 침실 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-10-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-10-4.jpg','아를의 침실 4')" loading="lazy" alt="아를의 침실 4">
+        </div>
+      </div>
+      <div class="prac-caption">밤의 카페 & 아를의 침실 — 실내 풍경</div>
+    </div>
+  </div>
+</div>
+
+<!-- S20: Practice Reference 05 -->
+<div class="slide" id="s20">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 05</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 06 — 낡은 구두 ⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-06-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-06-1.jpg','낡은 구두 1')" loading="lazy" alt="낡은 구두 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-06-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-06-2.jpg','낡은 구두 2')" loading="lazy" alt="낡은 구두 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-06-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-06-3.jpg','낡은 구두 3')" loading="lazy" alt="낡은 구두 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-06-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-06-4.jpg','낡은 구두 4')" loading="lazy" alt="낡은 구두 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 11 — 자화상 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-11-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-11-1.jpg','자화상 1')" loading="lazy" alt="자화상 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-11-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-11-2.jpg','자화상 2')" loading="lazy" alt="자화상 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-11-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-11-3.jpg','자화상 3')" loading="lazy" alt="자화상 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-11-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-11-4.jpg','자화상 4')" loading="lazy" alt="자화상 4">
+        </div>
+      </div>
+      <div class="prac-caption">구두 & 자화상 — 존재의 기록</div>
+    </div>
+  </div>
+</div>
+
+<!-- S21: Practice Reference 06 -->
+<div class="slide" id="s21">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 06</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 07 — 씨 뿌리는 사람, 석양 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-07-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-07-1.jpg','씨 뿌리는 사람, 석양 1')" loading="lazy" alt="씨 뿌리는 사람, 석양 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-07-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-07-2.jpg','씨 뿌리는 사람, 석양 2')" loading="lazy" alt="씨 뿌리는 사람, 석양 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-07-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-07-3.jpg','씨 뿌리는 사람, 석양 3')" loading="lazy" alt="씨 뿌리는 사람, 석양 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-07-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-07-4.jpg','씨 뿌리는 사람, 석양 4')" loading="lazy" alt="씨 뿌리는 사람, 석양 4">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 08 — 붉은 포도밭, 임파스토 ⭐⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-08-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-08-1.jpg','붉은 포도밭, 임파스토 1')" loading="lazy" alt="붉은 포도밭, 임파스토 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-08-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-08-2.jpg','붉은 포도밭, 임파스토 2')" loading="lazy" alt="붉은 포도밭, 임파스토 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-08-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-08-3.jpg','붉은 포도밭, 임파스토 3')" loading="lazy" alt="붉은 포도밭, 임파스토 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-08-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-08-4.jpg','붉은 포도밭, 임파스토 4')" loading="lazy" alt="붉은 포도밭, 임파스토 4">
+        </div>
+      </div>
+      <div class="prac-caption">씨 뿌리는 사람 & 붉은 포도밭</div>
+    </div>
+  </div>
+</div>
+
+<!-- S22: Practice Reference 07 -->
+<div class="slide" id="s22">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 07</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 09 — 저녁 수확 풍경 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-09-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-09-1.jpg','저녁 수확 풍경 1')" loading="lazy" alt="저녁 수확 풍경 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-09-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-09-2.jpg','저녁 수확 풍경 2')" loading="lazy" alt="저녁 수확 풍경 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-09-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-09-3.jpg','저녁 수확 풍경 3')" loading="lazy" alt="저녁 수확 풍경 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-09-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-09-4.jpg','저녁 수확 풍경 4')" loading="lazy" alt="저녁 수확 풍경 4">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-09-5.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-09-5.jpg','저녁 수확 풍경 5')" loading="lazy" alt="저녁 수확 풍경 5">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-09-6.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-09-6.jpg','저녁 수확 풍경 6')" loading="lazy" alt="저녁 수확 풍경 6">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-09-7.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-09-7.jpg','저녁 수확 풍경 7')" loading="lazy" alt="저녁 수확 풍경 7">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-09-8.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-09-8.jpg','저녁 수확 풍경 8')" loading="lazy" alt="저녁 수확 풍경 8">
+        </div>
+      </div>
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 14 — 프로방스 길 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-14-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-14-1.jpg','프로방스 길 1')" loading="lazy" alt="프로방스 길 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-14-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-14-2.jpg','프로방스 길 2')" loading="lazy" alt="프로방스 길 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-14-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-14-3.jpg','프로방스 길 3')" loading="lazy" alt="프로방스 길 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-14-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-14-4.jpg','프로방스 길 4')" loading="lazy" alt="프로방스 길 4">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-14-5.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-14-5.jpg','프로방스 길 5')" loading="lazy" alt="프로방스 길 5">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-14-6.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-14-6.jpg','프로방스 길 6')" loading="lazy" alt="프로방스 길 6">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-14-7.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-14-7.jpg','프로방스 길 7')" loading="lazy" alt="프로방스 길 7">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-14-8.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-14-8.jpg','프로방스 길 8')" loading="lazy" alt="프로방스 길 8">
+        </div>
+      </div>
+      <div class="prac-caption">저녁 수확 & 프로방스 길</div>
+    </div>
+  </div>
+</div>
+
+<!-- S23: Practice Reference 08 -->
+<div class="slide" id="s23">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="ew reveal blur-in">Practice Reference 08</div>
+    <h2 class="stitle reveal blur-in" style="font-size:clamp(20px,2.5vw,32px);">실기 참고 이미지</h2>
+    <div class="sc-scroll">
+      <div class="prac-section reveal scroll-reveal">
+        <div class="prac-label">Style 15 — 아이리스 ⭐⭐</div>
+        <div class="prac-grid">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-15-1.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-15-1.jpg','아이리스 1')" loading="lazy" alt="아이리스 1">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-15-2.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-15-2.jpg','아이리스 2')" loading="lazy" alt="아이리스 2">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-15-3.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-15-3.jpg','아이리스 3')" loading="lazy" alt="아이리스 3">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-15-4.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-15-4.jpg','아이리스 4')" loading="lazy" alt="아이리스 4">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-15-5.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-15-5.jpg','아이리스 5')" loading="lazy" alt="아이리스 5">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-15-6.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-15-6.jpg','아이리스 6')" loading="lazy" alt="아이리스 6">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-15-7.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-15-7.jpg','아이리스 7')" loading="lazy" alt="아이리스 7">
+          <img src="../../images/lessons/impressionism/05-vangogh-emotional-color/thumbs/style-15-8.jpg" onclick="openLb('../../images/lessons/impressionism/05-vangogh-emotional-color/style-15-8.jpg','아이리스 8')" loading="lazy" alt="아이리스 8">
+        </div>
+      </div>
+      <div class="prac-caption">아이리스 — 동양의 미학</div>
+    </div>
+  </div>
+</div>
+
+<!-- Total practice slides: 9 (S16-S23) -->
+
+
+<!-- S24: Ending Slide -->
+<div class="slide" id="s24">
+  <div class="bg"></div>
+  <div class="sc">
+    <div class="sc-scroll">
+    <div class="end-wrap">
+      <div class="ew reveal blur-in">Lesson Complete</div>
+      <h2 class="stitle reveal blur-in">오늘 배운 핵심 3가지</h2>
+      <div class="summary-cards">
+        <div class="sum-card reveal">
+          <div class="sum-num blur-in">900</div>
+          <div class="sum-text"><strong>점의 유화</strong><br>10년간 900점의 유화. 하루에 한 점씩 &mdash; 역사상 가장 격렬한 창작의 불꽃</div>
+        </div>
+        <div class="sum-card reveal">
+          <div class="sum-num blur-in">1점</div>
+          <div class="sum-text"><strong>생전 판매</strong><br>살아있는 동안 팔린 그림은 단 1점. 사후 수억 달러의 가치를 인정받다</div>
+        </div>
+        <div class="sum-card reveal">
+          <div class="sum-num blur-in">&#10084;</div>
+          <div class="sum-text"><strong>감정이 곧 색채</strong><br>색과 붓터치로 감정을 직접 전달하는 &mdash; 표현주의의 문을 열었다</div>
+        </div>
+      </div>
+      <div class="next-info reveal">
+        다음 강: <strong>6강 &mdash; 고흐의 야경과 별빛 표현</strong><br>
+        별이 빛나는 밤, 론 강의 별밤 등 고흐만의 야경 세계로 들어갑니다.
+      </div>
+      <div class="reveal" style="margin-top:8px;">
+        <div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:8px;letter-spacing:1px;">추천 감상</div>
+        <div class="museum-pills">
+          <a class="museum-pill" href="https://www.vangoghmuseum.nl/" target="_blank" rel="noopener">Van Gogh Museum</a>
+          <a class="museum-pill" href="https://artsandculture.google.com/partner/musee-dorsay-paris" target="_blank" rel="noopener">Mus&eacute;e d'Orsay</a>
+          <a class="museum-pill" href="https://www.moma.org/" target="_blank" rel="noopener">MoMA</a>
+        </div>
+      </div>
+      <div class="end-btns reveal">
+        <button class="end-btn" onclick="location.href='../main/classes.html'">&#8592; 수업 목록</button>
+        <button class="end-btn" onclick="location.href='../../index.html'">메인 페이지</button>
+      </div>
+    </div>
+    </div><!-- /sc-scroll -->
+  </div>
+</div>
+
+</div><!-- /sw -->
+
+
+<!-- POSTER MINI POPUP -->
+<div class="poster-popup" id="posterPopup" onclick="closePoster()">
+  <div class="poster-popup-bg"></div>
+  <img id="posterImg" src="" alt="">
+  <div class="poster-popup-title" id="posterTitle"></div>
+  <div class="poster-popup-sub" id="posterSub"></div>
+</div>
+
+<!-- ADDITIONAL STYLES -->
+<style>
+.modulation-control{max-width:500px;}
+.modulation-labels{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.5);margin-bottom:6px;}
+.modulation-slider{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:linear-gradient(90deg,#3498db,#e67e22,#e74c3c);outline:none;position:relative;z-index:5;}
+.modulation-slider::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--glow);cursor:pointer;box-shadow:0 2px 16px rgba(232,184,48,.5);}
+.modulation-value{text-align:center;font-size:13px;color:var(--pale);margin-top:6px;font-weight:700;}
+.comparison-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:center;margin-bottom:20px;}
+@media(max-width:768px){.comparison-grid{grid-template-columns:1fr;gap:12px;}}
+.comparison-item{text-align:center;}
+.comparison-img{border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .4s,box-shadow .4s;border:1px solid rgba(255,255,255,.08);}
+.comparison-img:hover{transform:scale(1.02);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.comparison-img img{width:100%;height:auto;display:block;max-height:45vh;object-fit:cover;}
+.comparison-label{margin-top:10px;font-size:14px;color:rgba(255,255,255,.6);line-height:1.5;}
+.comparison-label strong{color:var(--pale);font-size:15px;}
+.comparison-vs{font-size:32px;color:var(--glow);font-weight:900;text-align:center;}
+@media(max-width:768px){.comparison-vs{font-size:24px;}}
+.comparison-explain{background:rgba(232,184,48,.04);border:1px solid rgba(232,184,48,.12);border-radius:12px;padding:18px 20px;}
+.comparison-explain p{font-size:15px;line-height:1.85;color:rgba(255,255,255,.7);}
+.comparison-explain strong{color:var(--glow);}
+.poster-popup{position:fixed;inset:0;z-index:600;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .4s;}
+.poster-popup.open{opacity:1;pointer-events:auto;}
+.poster-popup-bg{position:absolute;inset:0;background:rgba(0,0,0,.9);backdrop-filter:blur(20px);}
+.poster-popup img{position:relative;z-index:1;max-width:320px;max-height:60vh;object-fit:contain;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.poster-popup-title{position:relative;z-index:1;margin-top:16px;font-size:18px;font-weight:800;color:#fff;}
+.poster-popup-sub{position:relative;z-index:1;margin-top:6px;font-size:13px;color:rgba(255,255,255,.5);}
+</style>
+
+<script>
+/* ── CORE ENGINE ── */
+var total=25,cur=0,isAnimating=false;
+
+function buildDots(){
+  var db=document.getElementById('db');db.innerHTML='';
+  for(var i=0;i<total;i++){
+    var d=document.createElement('div');
+    d.className='dot'+(i===0?' active':'');
+    d.onclick=(function(x){return function(){go(x);};})(i);
+    db.appendChild(d);
+  }
+}
+
+function go(n){
+  if(n===cur||n<0||n>=total||isAnimating)return;
+  isAnimating=true;
+  var slides=document.querySelectorAll('.slide');
+  var dots=document.querySelectorAll('.dot');
+  slides[cur].querySelectorAll('.blur-in').forEach(function(el){el.classList.remove('animate');});
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('exit-left');
+  slides[n].classList.remove('exit-left');
+  slides[n].classList.add('active');
+  dots[cur].classList.remove('active');
+  dots[n].classList.add('active');
+  var prev=cur;
+  cur=n;
+  document.getElementById('cn').textContent=cur+1;
+  document.getElementById('bp').disabled=cur===0;
+  document.getElementById('bn').disabled=cur===total-1;
+  document.getElementById('pbar').style.width=((cur/(total-1))*100)+'%';
+  var scr=slides[n].querySelector('.sc-scroll');
+  if(scr)scr.scrollTop=0;
+  triggerReveals(slides[n]);
+  setTimeout(function(){
+    slides[prev].classList.remove('exit-left');
+    isAnimating=false;
+  },900);
+}
+
+function nav(d){if(cur+d>=0&&cur+d<total)go(cur+d);}
+
+/* ── REVEAL SYSTEM ── */
+function triggerReveals(slide){
+  var els=slide.querySelectorAll('.reveal');
+  els.forEach(function(el){el.classList.remove('show');});
+  slide.querySelectorAll('.blur-in').forEach(function(el){el.classList.remove('animate');});
+  requestAnimationFrame(function(){
+    setTimeout(function(){
+      els.forEach(function(el){el.classList.add('show');});
+      slide.querySelectorAll('.blur-in').forEach(function(el){el.classList.add('animate');});
+    },100);
+  });
+}
+
+function setupScrollObserver(){
+  if(!('IntersectionObserver' in window))return;
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+      }
+    });
+  },{threshold:0.15,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.scroll-reveal').forEach(function(el){
+    observer.observe(el);
+  });
+}
+
+/* ── INTERACTIVE CARDS ── */
+function toggleCard(card){
+  var wasExpanded=card.classList.contains('expanded');
+  card.parentElement.querySelectorAll('.info-card').forEach(function(c){c.classList.remove('expanded');});
+  if(!wasExpanded)card.classList.add('expanded');
+}
+
+/* ── TIMELINE ── */
+function toggleTimeline(item){
+  var wasExpanded=item.classList.contains('expanded');
+  item.parentElement.querySelectorAll('.tl-item').forEach(function(t){t.classList.remove('expanded');});
+  if(!wasExpanded)item.classList.add('expanded');
+}
+
+/* ── ANALYSIS PANELS ── */
+function togglePanel(panel){
+  var wasOpen=panel.classList.contains('open');
+  panel.parentElement.querySelectorAll('.an-panel').forEach(function(p){p.classList.remove('open');});
+  if(!wasOpen)panel.classList.add('open');
+}
+
+/* ── KEYBOARD NAV ── */
+document.addEventListener('keydown',function(e){
+  if(document.getElementById('lbox').classList.contains('open')){
+    if(e.key==='Escape')closeLb();
+    return;
+  }
+  if(document.getElementById('paintPopup').classList.contains('open')){
+    if(e.key==='Escape')closePainting();
+    return;
+  }
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nav(1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();nav(-1);}
+  if(e.key==='Home'){e.preventDefault();go(0);}
+  if(e.key==='End'){e.preventDefault();go(total-1);}
+});
+
+/* ── TOUCH / SWIPE ── */
+var tx=0,ty=0,swiping=false;
+var swEl=document.getElementById('sw');
+swEl.addEventListener('touchstart',function(e){
+  tx=e.touches[0].clientX;ty=e.touches[0].clientY;swiping=true;
+},{passive:true});
+swEl.addEventListener('touchmove',function(e){},{passive:true});
+swEl.addEventListener('touchend',function(e){
+  if(!swiping)return;swiping=false;
+  var dx=e.changedTouches[0].clientX-tx;
+  var dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>60){nav(dx<0?1:-1);}
+});
+
+/* ── PAINTING POPUP ── */
+var PAINTINGS={
+  vangogh_sunflowers:{t:'해바라기',e:'Sunflowers',y:1888,d:'아를 시기의 대표작. 강렬한 노란색의 변주로 감정의 에너지를 표현한 연작',l:'National Gallery, London'},
+  vangogh_irises:{t:'아이리스',e:'Irises',y:1889,d:'생레미 요양원 정원에서 그린 작품. 보라색과 노란색의 보색 대비가 강렬하다',l:'J. Paul Getty Museum, Los Angeles'},
+  vangogh_bedroom_arles:{t:'아를의 침실',e:'The Bedroom',y:1888,d:'고흐가 꿈꾼 안식처. 평면적 색면과 왜곡된 원근법으로 심리적 안정을 표현',l:'Van Gogh Museum, Amsterdam'},
+  vangogh_self_portrait_1889:{t:'자화상',e:'Self-Portrait',y:1889,d:'생레미 요양원 시기의 자화상. 소용돌이치는 배경이 내면의 불안을 반영한다',l:'Musée d\'Orsay, Paris'},
+  vangogh_potato_eaters:{t:'감자 먹는 사람들',e:'The Potato Eaters',y:1885,d:'초기 네덜란드 시기의 대표작. 어두운 색조로 농민의 삶을 사실적으로 표현',l:'Van Gogh Museum, Amsterdam'},
+  vangogh_almond_blossoms:{t:'아몬드 꽃',e:'Almond Blossom',y:1890,d:'조카의 탄생을 축하하며 그린 작품. 일본 판화의 영향이 뚜렷한 밝고 희망적인 그림',l:'Van Gogh Museum, Amsterdam'},
+  vangogh_harvest:{t:'추수',e:'The Harvest',y:1888,d:'아를의 황금빛 밀밭. 고흐가 가장 성공적이라 평가한 풍경화 중 하나',l:'Van Gogh Museum, Amsterdam'},
+  vangogh_red_vineyard:{t:'붉은 포도밭',e:'The Red Vineyard',y:1888,d:'고흐 생전에 유일하게 판매된 것으로 알려진 작품. 석양 아래 붉게 물든 포도밭',l:'Pushkin Museum, Moscow'},
+  vangogh_roses:{t:'장미',e:'Roses',y:1890,d:'생레미 시기 마지막 작품 중 하나. 원래 분홍색이었으나 시간이 지나 흰색으로 변했다',l:'National Gallery of Art, Washington D.C.'},
+  vangogh_olive_trees:{t:'올리브 나무',e:'Olive Trees',y:1889,d:'프로방스의 올리브 나무를 소용돌이치는 터치로 표현. 자연의 생명력을 담았다',l:'Various museums'},
+  vangogh_mulberry_tree:{t:'뽕나무',e:'The Mulberry Tree',y:1889,d:'가을 뽕나무의 폭발적인 색채. 노란색, 주황색, 초록색이 격렬하게 소용돌이친다',l:'Norton Simon Museum, Pasadena'},
+  vangogh_wheatfield_cypresses:{t:'사이프러스가 있는 밀밭',e:'Wheat Field with Cypresses',y:1889,d:'생레미 시기의 걸작. 바람에 일렁이는 밀밭과 불꽃 같은 사이프러스',l:'Metropolitan Museum of Art, New York'},
+  vangogh_sower:{t:'씨 뿌리는 사람',e:'The Sower',y:1888,d:'밀레에 대한 오마주. 거대한 태양과 씨 뿌리는 농부의 실루엣이 상징적이다',l:'Van Gogh Museum, Amsterdam'},
+  vangogh_flowering_garden:{t:'꽃 피는 정원',e:'Flowering Garden',y:1888,d:'아를의 정원을 밝고 생동감 있는 색채로 표현한 작품',l:'Various museums'},
+  vangogh_peach_trees:{t:'꽃 핀 복숭아 나무',e:'Peach Trees in Blossom',y:1888,d:'아를 도착 직후 봄의 과수원 연작. 일본 판화의 영향이 강하다',l:'Various museums'},
+  vangogh_self_portrait_hat:{t:'밀짚모자 자화상',e:'Self-Portrait with Straw Hat',y:1887,d:'파리 시기의 자화상. 인상주의 점묘법의 영향이 보이는 밝은 색채',l:'Van Gogh Museum, Amsterdam'},
+  vangogh_chair:{t:'고흐의 의자',e:'Van Gogh\'s Chair',y:1888,d:'소박한 의자와 파이프. 고갱의 의자와 대비되는 고흐 자신의 상징',l:'National Gallery, London'},
+  vangogh_field_poppies:{t:'양귀비 들판',e:'Field with Poppies',y:1890,d:'오베르 시기의 풍경. 붉은 양귀비가 초록 들판 위에 점점이 흩어져 있다',l:'Gemeentemuseum Den Haag'},
+  vangogh_plowed_fields:{t:'쟁기질한 밭',e:'Plowed Fields',y:1888,d:'아를의 농경지를 강렬한 색채 대비로 표현한 풍경화',l:'Van Gogh Museum, Amsterdam'},
+  vangogh_road_cypresses:{t:'사이프러스가 있는 길',e:'Road with Cypress and Star',y:1890,d:'불꽃처럼 타오르는 사이프러스와 소용돌이치는 하늘이 인상적인 야경',l:'Kröller-Müller Museum, Otterlo'},
+  vangogh_willows_sunset:{t:'석양의 버드나무',e:'Willows at Sunset',y:1888,d:'석양에 물든 버드나무를 격렬한 붓터치로 표현한 작품',l:'Kröller-Müller Museum, Otterlo'},
+  vangogh_church_auvers:{t:'오베르 교회',e:'The Church at Auvers',y:1890,d:'고흐 만년의 걸작. 어두운 하늘 아래 물결치듯 일그러진 교회 건물',l:'Musée d\'Orsay, Paris'}
+};
+function showPainting(id){
+  var p=PAINTINGS[id];
+  if(!p)return;
+  document.getElementById('ppImg').src='../../assets/images/paintings/vangogh/web/'+id+'.jpg';
+  document.getElementById('ppTitle').textContent=p.t;
+  document.getElementById('ppSub').textContent=p.e+' ('+p.y+')';
+  document.getElementById('ppDesc').textContent=p.d;
+  document.getElementById('ppLoc').textContent='\uD83D\uDCCD '+p.l;
+  document.getElementById('paintPopup').classList.add('open');
+}
+function closePainting(){
+  document.getElementById('paintPopup').classList.remove('open');
+}
+
+/* ── LIGHTBOX ── */
+function openLb(src,cap){
+  var lb=document.getElementById('lbox');
+  document.getElementById('lbox-img').src=src;
+  document.getElementById('lbox-cap').textContent=cap||'';
+  var dl=document.getElementById('lbox-dl');
+  dl.href=src;dl.download=src.split('/').pop();
+  lb.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeLb(){
+  document.getElementById('lbox').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+/* ── COVER TYPEWRITER ── */
+function initCover(){
+  var title=document.getElementById('cover-title');
+  if(title)title.classList.add('animate');
+}
+
+/* ── TOPBAR AUTO-HIDE ── */
+var lastScrollY=0;
+function setupTopbarHide(){
+  document.querySelectorAll('.sc-scroll').forEach(function(scr){
+    scr.addEventListener('scroll',function(){
+      var tb=document.getElementById('topbar');
+      if(this.scrollTop>80&&this.scrollTop>lastScrollY){tb.classList.add('hidden');}
+      else{tb.classList.remove('hidden');}
+      lastScrollY=this.scrollTop;
+    },{passive:true});
+  });
+}
+
+/* ── Blur Dissolve Text ── */
+function initBlurText(){
+  document.querySelectorAll('.blur-in').forEach(function(el){
+    if(el.dataset.processed)return;
+    el.dataset.processed='1';
+    var text=el.textContent;
+    while(el.firstChild)el.removeChild(el.firstChild);
+    var wrapper=document.createElement('span');
+    wrapper.style.display='inline';
+    for(var i=0;i<text.length;i++){
+      var span=document.createElement('span');
+      if(text[i]===' '){span.className='char char-space';span.innerHTML='&nbsp;';}
+      else{span.className='char';span.textContent=text[i];}
+      span.style.transitionDelay=(i*120)+'ms';
+      wrapper.appendChild(span);
+    }
+    el.appendChild(wrapper);
+  });
+}
+
+/* ── POSTER MINI POPUP ── */
+function openPoster(imgEl){
+  var card=imgEl.closest('.film-card')||imgEl.closest('.book-item');
+  if(!card)return;
+  var title='',sub='';
+  var ft=card.querySelector('.film-title');
+  var fk=card.querySelector('.film-title-ko');
+  var fm=card.querySelector('.film-meta');
+  var bt=card.querySelector('.book-title');
+  var ba=card.querySelector('.book-author');
+  if(ft){title=ft.textContent;sub=(fk?fk.textContent+' \u00b7 ':'')+((fm)?fm.textContent:'');}
+  if(bt){title=bt.textContent;sub=ba?ba.textContent:'';}
+  document.getElementById('posterImg').src=imgEl.src;
+  document.getElementById('posterTitle').textContent=title;
+  document.getElementById('posterSub').textContent=sub;
+  document.getElementById('posterPopup').classList.add('open');
+}
+function closePoster(){
+  document.getElementById('posterPopup').classList.remove('open');
+}
+document.querySelectorAll('.film-poster,.book-cover').forEach(function(img){
+  img.addEventListener('click',function(e){e.stopPropagation();openPoster(this);});
+});
+
+/* ── INTERACTIVE: S8 Perspective Toggle ── */
+function togglePerspective(){
+  var overlay=document.getElementById('perspOverlay');
+  var btn=document.getElementById('perspBtn');
+  overlay.classList.toggle('visible');
+  btn.classList.toggle('active');
+  btn.innerHTML=overlay.classList.contains('visible')?'&#128270; \uc2dc\uc810 \ubd84\uc11d \uc228\uae30\uae30':'&#128270; \uc2dc\uc810 \ubd84\uc11d \ubcf4\uae30';
+}
+
+/* ── INTERACTIVE: S9 Modulation ── */
+function updateModulation(val){
+  var img=document.getElementById('modulationImg');
+  if(img)img.style.filter='hue-rotate('+val+'deg)';
+  var disp=document.getElementById('modulationValue');
+  if(disp)disp.textContent=val+'\u00b0';
+}
+
+/* ── INTERACTIVE: S10 Geometry Toggle ── */
+function toggleGeometry(){
+  var overlay=document.getElementById('geoOverlay');
+  var btn=document.getElementById('geoBtn');
+  overlay.classList.toggle('visible');
+  btn.classList.toggle('active');
+  btn.innerHTML=overlay.classList.contains('visible')?'&#128316; \uae30\ud558\ud559 \uc624\ubc84\ub808\uc774 \uc228\uae30\uae30':'&#128316; \uae30\ud558\ud559 \uc624\ubc84\ub808\uc774 \ubcf4\uae30';
+}
+
+/* ── CROSSFADE GALLERIES ── */
+function initCrossfade(){
+  document.querySelectorAll('.crossfade-gallery').forEach(function(gal){
+    var imgs=gal.querySelectorAll('img');
+    if(imgs.length===0)return;
+    var current=0;
+    imgs[0].classList.add('cf-active');
+    setInterval(function(){
+      imgs[current].classList.remove('cf-active');
+      current=(current+1)%imgs.length;
+      imgs[current].classList.add('cf-active');
+    },5000);
+  });
+}
+
+/* ── INIT ── */
+initBlurText();
+buildDots();
+document.getElementById('tn').textContent=total;
+document.getElementById('bp').disabled=true;
+document.getElementById('pbar').style.width='0%';
+initCover();
+setupScrollObserver();
+setupTopbarHide();
+initCrossfade();
+triggerReveals(document.getElementById('s0'));
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>🤖 로봇 출동!</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; overflow:hidden; font-family:'Noto Sans KR',sans-serif; }
+canvas { display:block; width:100vw; height:100vh; }
+
+/* ── HUD ── */
+#hud { position:fixed; inset:0; pointer-events:none; display:flex; flex-direction:column; }
+
+#hud-top {
+  padding:10px 18px; display:flex; align-items:center; gap:10px;
+  background:linear-gradient(180deg,rgba(0,0,0,.75) 0%,transparent 100%);
+}
+.htitle { font-family:'Jua',sans-serif; font-size:20px; color:#00ffcc; text-shadow:0 0 14px #00ffcc99; letter-spacing:1px; }
+.hbadge { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; border:1px solid; backdrop-filter:blur(4px); }
+.hbadge.tp  { border-color:#44aaff; color:#44aaff; background:rgba(68,170,255,.12); }
+.hbadge.cp  { border-color:#ff8800; color:#ff8800; background:rgba(255,136,0,.12); }
+
+.hbtn {
+  pointer-events:all; cursor:pointer;
+  padding:6px 14px; font-size:11px; font-family:'Jua',sans-serif;
+  background:rgba(0,10,30,.8); border:1px solid #224;
+  border-radius:20px; color:#55aaff; transition:all .2s;
+  backdrop-filter:blur(6px);
+}
+.hbtn:hover { border-color:#55aaff; color:#aaddff; background:rgba(10,40,100,.8); }
+.hbtn.red { color:#ff6644; border-color:#443; }
+.hbtn.red:hover { border-color:#ff6644; background:rgba(80,20,10,.8); }
+
+/* Crosshair */
+#crosshair {
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:24px; height:24px; pointer-events:none; display:none;
+}
+#crosshair::before,#crosshair::after { content:''; position:absolute; background:#00ffcc; box-shadow:0 0 6px #00ffcc; }
+#crosshair::before { width:24px; height:1.5px; top:50%; left:0; transform:translateY(-50%); }
+#crosshair::after  { width:1.5px; height:24px; left:50%; top:0; transform:translateX(-50%); }
+
+/* HUD Bottom */
+#hud-bot {
+  margin-top:auto;
+  padding:12px 18px 14px;
+  background:linear-gradient(0deg,rgba(0,0,0,.8) 0%,transparent 100%);
+  display:flex; align-items:flex-end; gap:12px;
+}
+.sbox {
+  background:rgba(0,15,35,.75); border:1px solid #113355;
+  border-radius:10px; padding:7px 14px; backdrop-filter:blur(6px);
+  min-width:72px;
+}
+.slabel { font-size:9px; color:#336; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:2px; }
+.sval { font-size:18px; color:#00ffcc; font-family:'Jua',sans-serif; text-shadow:0 0 10px #00ffcc66; }
+
+/* Speed bar */
+#spbar-bg { height:3px; background:#112; border-radius:2px; margin-top:4px; }
+#spbar { height:3px; background:linear-gradient(90deg,#00ffcc,#0088ff); border-radius:2px; width:0%; transition:width .08s; box-shadow:0 0 6px #00ffcc; }
+
+/* Keys legend */
+#keys-legend { margin-left:auto; display:flex; flex-direction:column; gap:4px; align-items:flex-end; }
+.krow { display:flex; gap:5px; align-items:center; font-size:10px; color:#336; }
+.kbd {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:20px; height:20px; padding:0 4px;
+  background:rgba(255,255,255,.06); border:1px solid #224;
+  border-bottom:2px solid #113; border-radius:4px;
+  color:#55aaff; font-size:10px; font-weight:700;
+}
+
+/* Mini-map */
+#minimap {
+  width:90px; height:90px; border-radius:50%;
+  border:2px solid #113355; background:rgba(0,10,25,.8);
+  position:relative; overflow:hidden; backdrop-filter:blur(4px);
+  flex-shrink:0;
+}
+#minimap-player {
+  position:absolute; top:50%; left:50%;
+  width:6px; height:6px; background:#00ffcc;
+  border-radius:50%; transform:translate(-50%,-50%);
+  box-shadow:0 0 6px #00ffcc;
+}
+#minimap-dir {
+  position:absolute; top:50%; left:50%;
+  width:0; height:0;
+  border-left:3px solid transparent; border-right:3px solid transparent;
+  border-bottom:10px solid #00ffcc66;
+  transform-origin:bottom center;
+  margin-left:-3px; margin-top:-10px;
+}
+
+/* Boost flash */
+#boost-flash { position:fixed; inset:0; background:rgba(0,255,200,.05); pointer-events:none; opacity:0; transition:opacity .1s; }
+
+/* Cockpit frame */
+#cockpit-frame {
+  position:fixed; inset:0; pointer-events:none;
+  display:none;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 50%, transparent 60%, rgba(0,0,0,.7) 100%),
+    linear-gradient(180deg, rgba(0,20,40,.3) 0%, transparent 20%, transparent 80%, rgba(0,20,40,.3) 100%);
+}
+#cockpit-frame::before {
+  content:'';
+  position:absolute; inset:0;
+  border:3px solid rgba(0,200,180,.15);
+  border-radius:8px;
+  box-shadow:inset 0 0 60px rgba(0,200,180,.08), 0 0 30px rgba(0,200,180,.05);
+}
+
+/* No robot overlay */
+#no-robot {
+  position:fixed; inset:0; background:rgba(0,0,0,.9);
+  display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  font-family:'Jua',sans-serif;
+}
+#no-robot h2 { font-size:28px; color:#55aaff; }
+#no-robot p  { font-size:13px; color:#335; }
+#no-robot a  { padding:12px 28px; background:linear-gradient(135deg,#2244cc,#4466ff); border-radius:12px; color:#fff; font-size:16px; text-decoration:none; font-family:'Jua',sans-serif; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="boost-flash"></div>
+<div id="cockpit-frame"></div>
+<div id="crosshair"></div>
+
+<div id="hud">
+  <div id="hud-top">
+    <span class="htitle">🤖 로봇 출동!</span>
+    <span class="hbadge tp" id="mode-badge">📷 3인칭 모드</span>
+    <button class="hbtn" id="mode-btn" onclick="toggleMode()">🎮 콕피트 전환</button>
+    <a class="hbtn red" href="voxel-robot.html">← 빌더로</a>
+  </div>
+
+  <div id="hud-bot">
+    <div class="sbox">
+      <div class="slabel">속도</div>
+      <div class="sval" id="sv-speed">0</div>
+      <div id="spbar-bg"><div id="spbar"></div></div>
+    </div>
+    <div class="sbox">
+      <div class="slabel">X</div>
+      <div class="sval" id="sv-x">0</div>
+    </div>
+    <div class="sbox">
+      <div class="slabel">Z</div>
+      <div class="sval" id="sv-z">0</div>
+    </div>
+    <div id="minimap">
+      <div id="minimap-player"></div>
+      <div id="minimap-dir"></div>
+    </div>
+    <div id="keys-legend">
+      <div class="krow"><span class="kbd">W</span> 앞으로</div>
+      <div class="krow"><span class="kbd">S</span> 뒤로</div>
+      <div class="krow"><span class="kbd">A</span><span class="kbd">D</span> 회전</div>
+      <div class="krow"><span class="kbd">Shift</span> 부스트</div>
+      <div class="krow"><span class="kbd">F</span> 콕피트 전환</div>
+    </div>
+  </div>
+</div>
+
+<div id="no-robot">
+  <h2>🤖 로봇이 없어요!</h2>
+  <p>먼저 빌더에서 로봇을 만들고 출동해주세요.</p>
+  <a href="voxel-robot.html">← 로봇 빌더로</a>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// ROBOT DATA
+// ─────────────────────────────────────────
+let robotData = null;
+const raw = sessionStorage.getItem('luna-robot-data');
+if (raw) { try { robotData = JSON.parse(raw); } catch(e){} }
+
+if (!robotData) {
+  // Default demo robot
+  function dbox(x1,y1,z1,x2,y2,z2,c){ const m={}; for(let x=x1;x<=x2;x++) for(let y=y1;y<=y2;y++) for(let z=z1;z<=z2;z++) m[`${x},${y},${z}`]=c; return m; }
+  const TC='#7a8ea8', TD='#3a5068';
+  robotData = {
+    head:     dbox(0,0,0,5,5,5,TC),
+    torso:    {...dbox(0,0,0,7,9,5,TC), ...dbox(2,3,0,5,6,0,'#aabbdd')},
+    leftArm:  dbox(0,0,0,3,9,3,TC),
+    rightArm: dbox(0,0,0,3,9,3,TC),
+    leftLeg:  dbox(0,0,0,3,11,3,TD),
+    rightLeg: dbox(0,0,0,3,11,3,TD),
+  };
+}
+
+// ─────────────────────────────────────────
+// THREE.JS
+// ─────────────────────────────────────────
+const canvas = document.getElementById('c');
+const R = new THREE.WebGLRenderer({ canvas, antialias:true });
+R.setPixelRatio(devicePixelRatio);
+R.setSize(innerWidth, innerHeight);
+R.shadowMap.enabled = true;
+R.shadowMap.type = THREE.PCFSoftShadowMap;
+R.setClearColor(0x020814);
+R.toneMapping = THREE.ACESFilmicToneMapping;
+R.toneMappingExposure = 0.9;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x020814, 0.006);
+
+const cam = new THREE.PerspectiveCamera(65, innerWidth/innerHeight, 0.1, 800);
+
+// ── Lights ──
+scene.add(new THREE.AmbientLight(0x112233, 1.2));
+const sun = new THREE.DirectionalLight(0x88aaff, 1.2);
+sun.position.set(60, 100, 40);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.far = 400;
+sun.shadow.camera.near = 1;
+[-120,120].forEach(v=>{ sun.shadow.camera.left=sun.shadow.camera.bottom=-120; sun.shadow.camera.right=sun.shadow.camera.top=120; });
+scene.add(sun);
+scene.add(new THREE.DirectionalLight(0x3344aa, 0.5).position.set(-40,20,-30) && sun);
+const fill = new THREE.DirectionalLight(0x334488, 0.5); fill.position.set(-40,20,-30); scene.add(fill);
+
+// ── Ground ──
+const GROUND_Y = -17.5 * 0.45;
+const gGeo = new THREE.PlaneGeometry(600, 600, 1, 1);
+const gMat = new THREE.MeshStandardMaterial({ color:0x010a18, roughness:0.9, metalness:0.1 });
+const ground = new THREE.Mesh(gGeo, gMat);
+ground.rotation.x = -Math.PI/2;
+ground.position.y = GROUND_Y;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Neon grid
+const grid = new THREE.GridHelper(600, 150, 0x002244, 0x001122);
+grid.position.y = GROUND_Y + 0.05;
+scene.add(grid);
+
+// ── Voxel city ──
+const BCOLS = [0x0d1a33,0x1a0d33,0x0d331a,0x331a0d,0x1a1a33];
+const ACOLS = [0x0055ff,0x5500ff,0x00ff88,0xff5500,0xff0055];
+function seededRand(seed){ let s=seed; return ()=>{ s=(s*9301+49297)%233280; return s/233280; }; }
+const rnd = seededRand(77);
+for(let i=0;i<50;i++){
+  const bx=(rnd()-.5)*450, bz=(rnd()-.5)*450;
+  if(Math.sqrt(bx*bx+bz*bz)<35) continue;
+  const w=8+rnd()*22, d=8+rnd()*22, h=10+rnd()*70;
+  const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshStandardMaterial({color:BCOLS[i%5],roughness:.75,metalness:.3}));
+  mesh.position.set(bx,GROUND_Y+h/2,bz);
+  mesh.castShadow=true; mesh.receiveShadow=true; scene.add(mesh);
+  // glow strip
+  const strip=new THREE.Mesh(new THREE.BoxGeometry(w+.2,.6,d+.2),new THREE.MeshBasicMaterial({color:ACOLS[i%5]}));
+  strip.position.set(bx,GROUND_Y+h-.5,bz); scene.add(strip);
+  // window dots (random bright spots on faces)
+  if(h>25){
+    for(let j=0;j<8;j++){
+      const wy=GROUND_Y+3+rnd()*(h-6);
+      const wdot=new THREE.Mesh(new THREE.BoxGeometry(.4,.6,d+.3),new THREE.MeshBasicMaterial({color:0xaaccff,transparent:true,opacity:.6+rnd()*.4}));
+      wdot.position.set(bx+(w/2+.2)*(rnd()>.5?1:-1),wy,bz); scene.add(wdot);
+    }
+  }
+}
+
+// ── Stars ──
+const starGeo = new THREE.BufferGeometry();
+const starPos = []; for(let i=0;i<3000;i++){ starPos.push((Math.random()-.5)*800,(Math.random()-.5)*400+100,(Math.random()-.5)*800); }
+starGeo.setAttribute('position',new THREE.Float32BufferAttribute(starPos,3));
+scene.add(new THREE.Points(starGeo,new THREE.PointsMaterial({color:0xaaccff,size:0.3,sizeAttenuation:true})));
+
+// ─────────────────────────────────────────
+// ROBOT ASSEMBLY
+// ─────────────────────────────────────────
+const VSCALE = 0.45;
+const ASM_OFFSET = { head:[-3,5,-3], torso:[-4,-5,-3], leftArm:[-8,-5,-2], rightArm:[4,-5,-2], leftLeg:[-4,-17,-2], rightLeg:[0,-17,-2] };
+const PIVOTS    = { head:[0,5,0], torso:[0,0,0], leftArm:[-6,5,0], rightArm:[6,5,0], leftLeg:[-2,-5,0], rightLeg:[2,-5,0] };
+const PNAMES = ['head','torso','leftArm','rightArm','leftLeg','rightLeg'];
+
+const robotRoot = new THREE.Group();
+scene.add(robotRoot);
+const PG = {}; // pivot groups
+
+function buildRobot(data){
+  for(const n of PNAMES){ if(PG[n]) robotRoot.remove(PG[n]); PG[n]=null; }
+  for(const pn of PNAMES){
+    const vox=data[pn]; if(!vox||!Object.keys(vox).length) continue;
+    const [ox,oy,oz]=ASM_OFFSET[pn],[px,py,pz]=PIVOTS[pn];
+    const pivot=new THREE.Group(); pivot.position.set(px*VSCALE,py*VSCALE,pz*VSCALE);
+    robotRoot.add(pivot); PG[pn]=pivot;
+    const inner=new THREE.Group(); inner.position.set((ox-px)*VSCALE,(oy-py)*VSCALE,(oz-pz)*VSCALE); pivot.add(inner);
+    for(const [key,color] of Object.entries(vox)){
+      const [x,y,z]=key.split(',').map(Number);
+      const m=new THREE.Mesh(new THREE.BoxGeometry(.96*VSCALE,.96*VSCALE,.96*VSCALE),new THREE.MeshLambertMaterial({color:new THREE.Color(color)}));
+      m.position.set((x+.5)*VSCALE,(y+.5)*VSCALE,(z+.5)*VSCALE); m.castShadow=true; inner.add(m);
+    }
+  }
+}
+
+buildRobot(robotData);
+
+// ─────────────────────────────────────────
+// PLAYER STATE
+// ─────────────────────────────────────────
+const P = { x:0, z:0, rot:0, speed:0, moving:false };
+robotRoot.position.set(0, GROUND_Y, 0);
+
+const SPEED_NORM = 16, SPEED_BOOST = 40, ROT_SPEED = 2.0;
+
+// ─────────────────────────────────────────
+// KEYS
+// ─────────────────────────────────────────
+const KEYS = {};
+window.addEventListener('keydown', e=>{ KEYS[e.code]=true; if(e.code==='KeyF') toggleMode(); e.preventDefault(); });
+window.addEventListener('keyup',   e=>{ KEYS[e.code]=false; });
+
+// ─────────────────────────────────────────
+// CAMERA MODE
+// ─────────────────────────────────────────
+let cockpit = false;
+const camPos = new THREE.Vector3(0,20,30);
+
+function toggleMode(){
+  cockpit=!cockpit;
+  document.getElementById('crosshair').style.display=cockpit?'block':'none';
+  document.getElementById('cockpit-frame').style.display=cockpit?'block':'none';
+  document.getElementById('mode-badge').textContent=cockpit?'🎮 콕피트 모드':'📷 3인칭 모드';
+  document.getElementById('mode-badge').className='hbadge '+(cockpit?'cp':'tp');
+  document.getElementById('mode-btn').textContent=cockpit?'📷 3인칭 전환':'🎮 콕피트 전환';
+  // In cockpit: tighter FOV
+  cam.fov=cockpit?80:65; cam.updateProjectionMatrix();
+}
+
+// ─────────────────────────────────────────
+// ANIMATION
+// ─────────────────────────────────────────
+function animRobot(t, moving, speed){
+  const boost = speed > 70;
+  if(moving){
+    const freq = boost ? 14 : 8;
+    const amp  = boost ? 0.8 : 0.6;
+    const sw = Math.sin(t*freq)*amp;
+    const bob= Math.abs(Math.sin(t*freq*2))*(boost?.8:.5)*VSCALE;
+    if(PG.leftArm)  PG.leftArm.rotation.x=sw;
+    if(PG.rightArm) PG.rightArm.rotation.x=-sw;
+    if(PG.leftLeg)  PG.leftLeg.rotation.x=-sw;
+    if(PG.rightLeg) PG.rightLeg.rotation.x=sw;
+    for(const n of PNAMES) if(PG[n]) PG[n].position.y=PIVOTS[n][1]*VSCALE+bob;
+    if(PG.head) PG.head.rotation.y=Math.sin(t*freq*.5)*.06;
+  } else {
+    const idle=Math.sin(t*1.6)*.08*VSCALE;
+    for(const n of PNAMES) if(PG[n]){
+      PG[n].rotation.x*=.88;
+      PG[n].position.y=PIVOTS[n][1]*VSCALE+idle;
+    }
+    if(PG.head) PG.head.rotation.y=Math.sin(t*.8)*.12;
+  }
+}
+
+// ─────────────────────────────────────────
+// UPDATE
+// ─────────────────────────────────────────
+let lastT=0;
+const tmpVec = new THREE.Vector3();
+
+function update(now){
+  const t=now*.001, dt=Math.min(t-lastT,.05); lastT=t;
+  const boost=KEYS['ShiftLeft']||KEYS['ShiftRight'];
+  const spd = boost?SPEED_BOOST:SPEED_NORM;
+
+  P.moving=false; let tgtSpeed=0;
+  if(KEYS['KeyW']){ P.x+=Math.sin(P.rot)*spd*dt; P.z+=Math.cos(P.rot)*spd*dt; P.moving=true; tgtSpeed=boost?100:60; }
+  if(KEYS['KeyS']){ P.x-=Math.sin(P.rot)*spd*.6*dt; P.z-=Math.cos(P.rot)*spd*.6*dt; P.moving=true; tgtSpeed=36; }
+  if(KEYS['KeyA']){ P.rot+=ROT_SPEED*dt; P.moving=true; }
+  if(KEYS['KeyD']){ P.rot-=ROT_SPEED*dt; P.moving=true; }
+
+  P.speed+=(tgtSpeed-P.speed)*.14;
+
+  // Robot position
+  robotRoot.position.set(P.x, GROUND_Y, P.z);
+  robotRoot.rotation.y=P.rot;
+
+  // Camera
+  if(cockpit){
+    // Cockpit: inside head
+    const headY=GROUND_Y+(PIVOTS.head[1]+3)*VSCALE;
+    cam.position.set(P.x, headY, P.z);
+    cam.rotation.set(0, P.rot+Math.PI, 0); // looking forward (rot + PI because we look in -Z by default)
+  } else {
+    // 3rd person smooth follow
+    const fdist = 28, fheight=14;
+    const tx=P.x-Math.sin(P.rot)*fdist;
+    const tz=P.z-Math.cos(P.rot)*fdist;
+    camPos.lerp(tmpVec.set(tx, GROUND_Y+fheight, tz), .1);
+    cam.position.copy(camPos);
+    cam.lookAt(P.x, GROUND_Y+4*VSCALE, P.z);
+  }
+
+  // Robot anim
+  animRobot(t, P.moving, P.speed);
+
+  // Boost flash
+  document.getElementById('boost-flash').style.opacity = (boost&&P.moving)?.15:0;
+
+  // HUD
+  document.getElementById('sv-speed').textContent=Math.round(P.speed);
+  document.getElementById('sv-x').textContent=Math.round(P.x);
+  document.getElementById('sv-z').textContent=Math.round(P.z);
+  document.getElementById('spbar').style.width=P.speed+'%';
+
+  // Minimap direction indicator
+  document.getElementById('minimap-dir').style.transform=`rotate(${-P.rot}rad)`;
+}
+
+// ─────────────────────────────────────────
+// LOOP
+// ─────────────────────────────────────────
+function loop(now){
+  requestAnimationFrame(loop);
+  update(now);
+  R.render(scene,cam);
+}
+
+window.addEventListener('resize',()=>{ R.setSize(innerWidth,innerHeight); cam.aspect=innerWidth/innerHeight; cam.updateProjectionMatrix(); });
+loop(0);
+</script>
+</body>
+</html>

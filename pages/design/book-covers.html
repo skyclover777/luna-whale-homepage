@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <title>북커버 디자인 아카이브 - Luna Whale</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0d0d14;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            color: #e8e8f0;
+        }
+
+        /* ─── Grain texture overlay ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        /* ─── Book card 3D ─── */
+        .book-card-container {
+            width: 100%;
+        }
+
+        .book-card {
+            position: relative;
+            cursor: pointer;
+            /* CSS custom property --tilt-z는 JS에서 각 카드마다 설정 */
+            transform: perspective(900px) rotateY(-22deg) rotateX(3deg) rotateZ(var(--tilt-z, 0deg));
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 1s ease;
+            transform-style: preserve-3d;
+            transform-origin: center center;
+        }
+
+        .book-card:hover {
+            /* 정면으로 회전 + 살짝 확대 */
+            transform: perspective(900px) rotateY(0deg) rotateX(0deg) rotateZ(0deg) scale(1.06);
+            z-index: 50;
+        }
+
+        .book-card .cover-img {
+            width: 100%;
+            aspect-ratio: 2/3.2;
+            object-fit: cover;
+            display: block;
+            border-radius: 2px 8px 8px 2px;
+            box-shadow:
+                -8px 0 20px rgba(0, 0, 0, 0.5),
+                8px 12px 30px rgba(0, 0, 0, 0.4),
+                inset -2px 0 5px rgba(255, 255, 255, 0.1);
+            transition: box-shadow 1s ease;
+        }
+
+        .book-card:hover .cover-img {
+            box-shadow:
+                -2px 0 10px rgba(0, 0, 0, 0.3),
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                inset -1px 0 3px rgba(255, 255, 255, 0.05);
+        }
+
+        /* Spine detailing */
+        .book-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 10px;
+            background: linear-gradient(to right,
+                    rgba(0, 0, 0, 0.4) 0%,
+                    rgba(0, 0, 0, 0.1) 20%,
+                    rgba(255, 255, 255, 0.1) 40%,
+                    rgba(0, 0, 0, 0.1) 60%,
+                    rgba(0, 0, 0, 0.4) 100%);
+            border-radius: 2px 0 0 2px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* ─── Grid ─── */
+        .covers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 40px 30px;
+            padding: 30px 0 80px;
+        }
+
+        @media (max-width: 768px) {
+            .covers-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 30px 20px;
+            }
+        }
+
+        /* ─── Pagination ─── */
+        .page-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(200, 200, 220, 0.7);
+        }
+
+        .page-btn:hover {
+            background: rgba(160, 140, 255, 0.2);
+            border-color: rgba(160, 140, 255, 0.4);
+            color: #c8b8ff;
+        }
+
+        .page-btn.active {
+            background: linear-gradient(135deg, #7c5fdb, #a07cff);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 2px 12px rgba(120, 80, 255, 0.4);
+        }
+
+        /* ─── Scrollbar ─── */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(140, 120, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        /* ─── Detail badge ─── */
+        .detail-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.5);
+            z-index: 2;
+        }
+
+        /* ─── Fade in animation ─── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeUp 0.5s ease both;
+        }
+
+        /* ─── Header shimmer ─── */
+        @keyframes shimmer {
+
+            0%,
+            100% {
+                opacity: 0.7;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .title-shimmer {
+            animation: shimmer 3s ease-in-out infinite;
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body>
+
+    <!-- ─── Background gradient ─── -->
+    <div
+        style="position:fixed;inset:0;background:radial-gradient(ellipse at 20% 30%, rgba(80,50,160,0.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, rgba(40,80,140,0.12) 0%, transparent 60%);pointer-events:none;z-index:0;">
+    </div>
+
+    <!-- ─── Main container ─── -->
+    <div style="position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:0 40px;">
+
+        <!-- ─── Header ─── -->
+        <header style="padding:28px 0 20px;display:flex;align-items:center;gap:14px;">
+            <!-- Home button -->
+            <button onclick="window.location.href='../../index.html'"
+                style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;flex-shrink:0;"
+                onmouseover="this.style.background='rgba(255,255,255,0.14)'"
+                onmouseout="this.style.background='rgba(255,255,255,0.07)'">
+                <span class="material-symbols-outlined" style="font-size:18px;color:#c8c8e0;">home</span>
+            </button>
+
+            <div style="flex:1;">
+                <div style="display:flex;align-items:baseline;gap:10px;">
+                    <h1 class="title-shimmer"
+                        style="margin:0;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#e8e0ff;letter-spacing:-0.3px;">
+                        북커버 디자인 아카이브
+                    </h1>
+                    <span style="font-size:11px;color:rgba(160,160,200,0.6);font-style:italic;">Book Cover
+                        Archive</span>
+                </div>
+                <p style="margin:3px 0 0;font-size:11px;color:rgba(160,160,200,0.55);">
+                    역사적인 책 표지 디자인들을 한 눈에
+                </p>
+            </div>
+
+            <!-- Lang toggle -->
+            <button id="lang-toggle" onclick="toggleLang()"
+                style="padding:5px 12px;border-radius:20px;border:1.5px solid rgba(160,140,255,0.3);background:rgba(160,140,255,0.1);font-size:11px;font-weight:600;color:#c0b0ff;cursor:pointer;transition:all 0.2s;flex-shrink:0;">
+                EN
+            </button>
+        </header>
+
+        <!-- ─── Stats bar ─── -->
+        <div id="stats-bar"
+            style="display:flex;align-items:center;gap:16px;padding:10px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;margin-bottom:24px;font-size:11px;color:rgba(160,160,200,0.6);">
+            <span id="total-count">📚 0권 수록</span>
+            <span style="color:rgba(255,255,255,0.1);">|</span>
+            <span id="page-info">페이지 1 / 1</span>
+            <span style="color:rgba(255,255,255,0.1);">|</span>
+            <span id="today-seed" style="font-size:10px;">🎲 오늘의 배열</span>
+        </div>
+
+        <!-- ─── Grid ─── -->
+        <div id="covers-grid" class="covers-grid"></div>
+
+        <!-- ─── Pagination ─── -->
+        <div id="pagination" style="display:flex;justify-content:center;gap:8px;padding:20px 0 40px;"></div>
+
+    </div>
+
+    <!-- ─── Detail Modal ─── -->
+    <div id="detail-modal"
+        style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(5,5,10,0.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);overflow:hidden;display:none;align-items:center;justify-content:center;">
+        <div
+            style="width:100%;height:100%;max-width:1400px;max-height:900px;margin:auto;display:flex;flex-direction:column;position:relative;">
+            <!-- Close button (floating) -->
+            <button onclick="closeDetail()"
+                style="position:absolute;top:30px;right:30px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:1001;transition:all 0.3s;"
+                onmouseover="this.style.background='rgba(255,0,0,0.2)'"
+                onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                <span class="material-symbols-outlined" style="font-size:30px;">close</span>
+            </button>
+
+            <div id="modal-content" style="flex:1;display:flex;overflow:hidden;">
+                <!-- Content will be injected here: Left(Cover), Right(Scrollable Info) -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─────────────────────────────────────────────
+        // DATA
+        // ─────────────────────────────────────────────
+        let BOOKS = [];
+        let currentLang = 'ko';
+        let currentPage = 1;
+        const ITEMS_PER_PAGE = 20;
+
+        // ─────────────────────────────────────────────
+        // SEEDED RANDOM (daily rotation)
+        // ─────────────────────────────────────────────
+        function seededRandom(seed) {
+            let x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        }
+
+        function getDailySeed() {
+            const d = new Date();
+            return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+        }
+
+        function shuffleWithSeed(arr, seed) {
+            const a = [...arr.keys()]; // indices
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(seededRandom(seed + i) * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a.map(i => arr[i]);
+        }
+
+        // ─────────────────────────────────────────────
+        // TILT ANGLES (per-card, consistent)
+        // ─────────────────────────────────────────────
+        function getTiltAngle(index) {
+            const tilts = [-3, 2, -1.5, 3, -2.5, 1, -3.5, 2.5, -1, 3, -2, 1.5, -3, 2, -0.5, 3.5, -2, 1, -3, 2];
+            return tilts[index % tilts.length];
+        }
+
+        // ─────────────────────────────────────────────
+        // RENDER GRID
+        // ─────────────────────────────────────────────
+        function renderGrid() {
+            const grid = document.getElementById('covers-grid');
+            grid.innerHTML = '';
+
+            const seed = getDailySeed();
+            const shuffled = shuffleWithSeed(BOOKS, seed);
+            const total = shuffled.length;
+            const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+            const start = (currentPage - 1) * ITEMS_PER_PAGE;
+            const pageBooks = shuffled.slice(start, start + ITEMS_PER_PAGE);
+
+            // Stats
+            document.getElementById('total-count').textContent = `📚 ${total}권 수록`;
+            document.getElementById('page-info').textContent = `페이지 ${currentPage} / ${totalPages}`;
+            const today = new Date();
+            const nextMidnight = new Date(today);
+            nextMidnight.setDate(today.getDate() + 1);
+            nextMidnight.setHours(0, 0, 0, 0);
+            document.getElementById('today-seed').textContent =
+                `🎲 매일 자정 새 배열 (오늘: ${today.getMonth() + 1}/${today.getDate()})`;
+
+            pageBooks.forEach((book, idx) => {
+                const globalIdx = start + idx;
+                const tilt = getTiltAngle(globalIdx);
+                const hasDetail = book.design_analysis &&
+                    (book.design_analysis.ko || book.design_analysis.en);
+
+                const card = document.createElement('div');
+                card.className = 'book-card fade-in';
+                // CSS custom property로 Z축 기울기 설정 — CSS의 rotateY() transform을 덮어쓰지 않음
+                card.style.setProperty('--tilt-z', `${tilt}deg`);
+                card.style.animationDelay = `${idx * 0.03}s`;
+                card.onclick = () => openDetail(book);
+
+                // Build cover content
+                let coverHtml = '';
+                if (book.img_thumb) {
+                    // Try to load image, fallback to placeholder
+                    coverHtml = `<img
+                class="cover-img"
+                src="../../${book.img_thumb}"
+                alt="${book.title}"
+                loading="lazy"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+            />
+            <div class="cover-placeholder" style="display:none;background:${getBookColor(book.title)};">
+                <span style="font-size:24px;">${getBookEmoji(book)}</span>
+                <span style="font-weight:700;font-size:10px;line-height:1.3;color:rgba(255,255,255,0.9);">${book.title}</span>
+                <span style="font-size:9px;color:rgba(255,255,255,0.6);">${book.year || ''}</span>
+            </div>`;
+                } else {
+                    coverHtml = `<div class="cover-placeholder" style="background:${getBookColor(book.title)};">
+                <span style="font-size:24px;">${getBookEmoji(book)}</span>
+                <span style="font-weight:700;font-size:10px;line-height:1.3;color:rgba(255,255,255,0.9);">${book.title}</span>
+                <span style="font-size:9px;color:rgba(255,255,255,0.6);">${book.year || ''}</span>
+            </div>`;
+                }
+
+                card.innerHTML = `
+            ${coverHtml}
+            ${hasDetail ? `<div class="detail-badge">✦</div>` : ''}
+            <div class="hover-label">${book.title.length > 18 ? book.title.slice(0, 18) + '…' : book.title}</div>
+        `;
+
+                grid.appendChild(card);
+            });
+
+            renderPagination(totalPages);
+        }
+
+        function getBookColor(title) {
+            const colors = [
+                'linear-gradient(135deg,#1a1a4e,#2d2d7e)',
+                'linear-gradient(135deg,#3d1515,#7a2a2a)',
+                'linear-gradient(135deg,#0f2a1a,#1e5a3a)',
+                'linear-gradient(135deg,#2a1a3d,#5a2a7a)',
+                'linear-gradient(135deg,#1a2a3d,#2a4a6a)',
+                'linear-gradient(135deg,#3d2a1a,#7a5a2a)',
+            ];
+            let hash = 0;
+            for (let c of title) hash = (hash * 31 + c.charCodeAt(0)) & 0xffffffff;
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function getBookEmoji(book) {
+            const genres = ['📖', '🔮', '🌙', '⭐', '🗝️', '📜', '🌹', '🦋', '🌊', '🔥'];
+            let hash = 0;
+            for (let c of book.title) hash = (hash * 31 + c.charCodeAt(0)) & 0xffffffff;
+            return genres[Math.abs(hash) % genres.length];
+        }
+
+        // ─────────────────────────────────────────────
+        // PAGINATION
+        // ─────────────────────────────────────────────
+        function renderPagination(totalPages) {
+            const container = document.getElementById('pagination');
+            container.innerHTML = '';
+            if (totalPages <= 1) return;
+
+            const addBtn = (label, page, isActive) => {
+                const btn = document.createElement('button');
+                btn.className = 'page-btn' + (isActive ? ' active' : '');
+                btn.textContent = label;
+                btn.onclick = () => {
+                    currentPage = page;
+                    renderGrid();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                container.appendChild(btn);
+            };
+
+            if (currentPage > 1) {
+                addBtn('‹', currentPage - 1, false);
+            }
+            const maxVisible = 10;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            if (endPage - startPage + 1 < maxVisible) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                addBtn(i, i, i === currentPage);
+            }
+            if (currentPage < totalPages) {
+                addBtn('›', currentPage + 1, false);
+            }
+        }
+
+        // ─────────────────────────────────────────────
+        // LANG TOGGLE
+        // ─────────────────────────────────────────────
+        function toggleLang() {
+            currentLang = currentLang === 'ko' ? 'en' : 'ko';
+            document.getElementById('lang-toggle').textContent = currentLang === 'ko' ? 'EN' : 'KO';
+        }
+
+        // ─────────────────────────────────────────────
+        // DETAIL MODAL
+        // ─────────────────────────────────────────────
+        // 초기 선언 (loadBooks 후 오버라이드됨)
+        function openDetail(book, forceLang) {
+            const modal = document.getElementById('detail-modal');
+            const content = document.getElementById('modal-content');
+
+            // Check if has a dedicated page
+            const detailPages = {
+                'book_0001_the-great-gatsby': 'book-detail-gatsby.html',
+                'book_0002_beloved': 'book-detail-beloved.html',
+                'book_0003_the-bell-jar': 'book-detail-belljar.html',
+            };
+
+            if (detailPages[book.id]) {
+                window.location.href = detailPages[book.id];
+                return;
+            }
+
+            // Inline modal — 현재 언어 기준으로 렌더
+            const buildModalContent = (b, lang) => {
+                const analysis = b.design_analysis?.[lang];
+                const colorBg = getBookColor(b.title);
+                const isKo = lang === 'ko';
+
+                return `
+                <div style="display:flex;width:100%;height:100%;flex-direction:row;align-items:stretch;">
+                    <!-- Left: 커버 고정 -->
+                    <div style="width:42%;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 40px;background:rgba(0,0,0,0.25);position:relative;gap:20px;">
+                        <div style="perspective:1400px;">
+                            <div style="transform:perspective(1400px) rotateY(-12deg) rotateX(4deg);transition:transform 1s ease;">
+                                ${b.img_full
+                                    ? `<img src="../../${b.img_full}" alt="${b.title}"
+                                        style="width:220px;max-width:100%;height:auto;border-radius:2px 12px 12px 2px;box-shadow:-18px 18px 50px rgba(0,0,0,0.7),10px 10px 30px rgba(0,0,0,0.4);display:block;"
+                                        onerror="this.style.display='none'">`
+                                    : `<div style="width:200px;aspect-ratio:2/3;background:${colorBg};border-radius:2px 12px 12px 2px;display:flex;align-items:center;justify-content:center;font-size:64px;">${getBookEmoji(b)}</div>`
+                                }
+                            </div>
+                        </div>
+                        <!-- 책 기본 정보 -->
+                        <div style="text-align:center;">
+                            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#e8e0ff;">${b.author || ''}</p>
+                            <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;">
+                                ${b.year ? `<span style="padding:3px 10px;background:rgba(160,140,255,0.15);border:1px solid rgba(160,140,255,0.3);border-radius:20px;font-size:11px;color:#c0b0ff;">${b.year}</span>` : ''}
+                                ${b.publisher ? `<span style="padding:3px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:20px;font-size:11px;color:rgba(190,190,220,0.7);">${b.publisher}</span>` : ''}
+                                ${b.designer ? `<span style="padding:3px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:20px;font-size:11px;color:rgba(190,190,220,0.7);">Design: ${b.designer}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: 스크롤 가능한 분석 -->
+                    <div style="flex:1;padding:70px 60px 60px 50px;overflow-y:auto;background:linear-gradient(160deg,rgba(15,12,30,0.6),transparent);">
+                        <!-- 헤더 -->
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                            <span style="font-size:10px;font-weight:700;color:rgba(160,140,255,0.6);letter-spacing:2px;text-transform:uppercase;">✦ 북커버 디자인 아카이브</span>
+                            <button onclick="window.__modalBook && openDetail(window.__modalBook, '${lang === 'ko' ? 'en' : 'ko'}')"
+                                style="padding:4px 12px;background:rgba(160,140,255,0.1);border:1.5px solid rgba(160,140,255,0.25);border-radius:20px;font-size:10px;font-weight:700;color:#b0a0f0;cursor:pointer;">
+                                ${isKo ? '🌐 EN' : '🌐 KO'}
+                            </button>
+                        </div>
+
+                        <h2 style="margin:16px 0 6px;font-family:'Playfair Display',serif;font-size:36px;color:#fff;line-height:1.1;letter-spacing:-0.5px;">${b.title}</h2>
+                        ${analysis?.headline ? `<p style="margin:0 0 28px;font-size:15px;color:rgba(180,165,255,0.75);font-style:italic;line-height:1.5;">${analysis.headline}</p>` : '<div style="height:28px;"></div>'}
+
+                        <!-- 디자인 분석 섹션 -->
+                        <div style="border-left:2px solid rgba(160,140,255,0.35);padding-left:24px;margin-bottom:40px;">
+                            <h4 style="font-size:11px;font-weight:800;color:#c0b0ff;text-transform:uppercase;letter-spacing:2px;margin:0 0 12px;display:flex;align-items:center;gap:8px;">
+                                <span class="material-symbols-outlined" style="font-size:16px;">auto_awesome</span>
+                                ${isKo ? '디자인 분석' : 'Design Analysis'}
+                            </h4>
+                            <p style="font-size:15px;color:rgba(215,210,240,0.88);line-height:1.8;margin:0 0 22px;">${analysis?.summary || (isKo ? '이 표지의 디자인 분석을 큐레이팅 중입니다.' : 'Design analysis for this cover is being curated.')}</p>
+                            ${(analysis?.features || []).map(f => `
+                                <div style="margin-bottom:18px;">
+                                    <h5 style="font-size:13px;font-weight:700;color:#e0daff;margin:0 0 5px;">✦ ${f.title}</h5>
+                                    <p style="font-size:13px;color:rgba(170,165,205,0.82);line-height:1.7;margin:0;">${f.text}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <!-- 버튼 -->
+                        <div style="display:flex;gap:12px;">
+                            ${b.buy_url ? `<a href="${b.buy_url}" target="_blank"
+                                style="padding:13px 28px;background:linear-gradient(135deg,#7c5fdb,#a07cff);border-radius:12px;font-size:13px;font-weight:700;color:white;text-decoration:none;box-shadow:0 8px 24px rgba(120,80,255,0.3);">${isKo ? '📦 구매하기' : '📦 Purchase'}</a>` : ''}
+                            ${b.source_url ? `<a href="${b.source_url}" target="_blank"
+                                style="padding:13px 22px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;font-size:13px;font-weight:600;color:rgba(210,210,240,0.85);text-decoration:none;">${isKo ? '🔗 원본 보기' : '🔗 View Archive'}</a>` : ''}
+                        </div>
+                    </div>
+                </div>
+                `;
+            };
+
+            // 전역 변수로 현재 책 저장 (언어 토글용)
+            window.__modalBook = book;
+            content.innerHTML = buildModalContent(book, currentLang);
+            window.openDetail = function(b, forceLang) {
+                const modal = document.getElementById('detail-modal');
+                const content = document.getElementById('modal-content');
+                const detailPages = {
+                    'book_0001_the-great-gatsby': 'book-detail-gatsby.html',
+                    'book_0002_beloved': 'book-detail-beloved.html',
+                    'book_0003_the-bell-jar': 'book-detail-belljar.html',
+                };
+                if (!forceLang && detailPages[b.id]) {
+                    window.location.href = detailPages[b.id];
+                    return;
+                }
+                const useLang = forceLang || currentLang;
+                window.__modalBook = b;
+                content.innerHTML = buildModalContent(b, useLang);
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            };
+
+        }
+
+        function closeDetail() {
+            document.getElementById('detail-modal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('detail-modal').addEventListener('click', function (e) {
+            if (e.target === this) closeDetail();
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeDetail();
+        });
+
+        // ─────────────────────────────────────────────
+        // LOAD DATA
+        // ─────────────────────────────────────────────
+        async function loadBooks() {
+            try {
+                const res = await fetch('../../data/book-covers/books.json');
+                BOOKS = await res.json();
+            } catch (e) {
+                console.warn('Failed to load books.json, using demo data');
+                BOOKS = getDemoBooks();
+            }
+            renderGrid();
+        }
+
+        function getDemoBooks() {
+            return [
+                {
+                    id: 'book_0001_the-great-gatsby',
+                    title: 'The Great Gatsby',
+                    author: 'F. Scott Fitzgerald',
+                    designer: 'Francis Cugat',
+                    publisher: 'Scribner',
+                    year: '1925',
+                    img_thumb: 'images/book-covers/thumbnails/book_0001_the-great-gatsby.jpg',
+                    img_full: 'images/book-covers/full/book_0001_the-great-gatsby.jpg',
+                    buy_url: 'https://www.amazon.com/s?k=The+Great+Gatsby',
+                    design_analysis: {
+                        ko: {
+                            headline: '코발트 밤하늘에 떠오른 두 눈',
+                            summary: '프란시스 쿠갓이 그린 이 표지는 짙푸른 밤하늘을 배경으로 두 개의 눈과 입술이 빛나는 초현실적 이미지를 담고 있습니다.',
+                            features: [
+                                { title: '색채의 대비', text: '짙은 코발트 블루 배경과 황금빛 조명이 극적인 대비를 만들어냅니다.' }
+                            ]
+                        }
+                    }
+                },
+                {
+                    id: 'book_0002_beloved',
+                    title: 'Beloved',
+                    author: 'Toni Morrison',
+                    designer: 'R.D. Scudellari',
+                    publisher: 'Alfred A. Knopf',
+                    year: '1987',
+                    img_thumb: 'images/book-covers/thumbnails/book_0002_beloved.jpg',
+                    img_full: 'images/book-covers/full/book_0002_beloved.jpg',
+                    buy_url: 'https://www.amazon.com/s?k=Beloved+Toni+Morrison',
+                    design_analysis: {
+                        ko: {
+                            headline: '붉은 침묵',
+                            summary: '강렬한 붉은 배경 위에 단 한 단어 Beloved. 미니멀 디자인의 교과서입니다.',
+                            features: []
+                        }
+                    }
+                },
+                {
+                    id: 'book_0003_the-bell-jar',
+                    title: 'The Bell Jar',
+                    author: 'Sylvia Plath',
+                    designer: 'Shirley Tucker',
+                    publisher: 'Heinemann',
+                    year: '1963',
+                    img_thumb: 'images/book-covers/thumbnails/book_0003_the-bell-jar.jpg',
+                    img_full: 'images/book-covers/full/book_0003_the-bell-jar.jpg',
+                    buy_url: 'https://www.amazon.com/s?k=The+Bell+Jar+Sylvia+Plath',
+                    design_analysis: {
+                        ko: {
+                            headline: '유리 안의 침묵',
+                            summary: '갇힘의 감각을 시각화하는 표지. 투명한 유리 돔이 보이지 않는 감옥을 표현합니다.',
+                            features: []
+                        }
+                    }
+                }
+            ];
+        }
+
+        // ─────────────────────────────────────────────
+        // INIT
+        // ─────────────────────────────────────────────
+        loadBooks();
+    </script>
+</body>
+
+</html>

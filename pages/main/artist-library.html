@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>작가가 되기 위한 100강 - Luna Whale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #faf5ee;
+            font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+            color: #2a1f14;
+        }
+
+        .library-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Back button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: #6b5020;
+            font-size: 14px;
+            font-family: 'Noto Serif KR', serif;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+            margin-bottom: 10px;
+        }
+        .back-btn:hover { opacity: 1; }
+
+        /* Header */
+        .lib-header {
+            text-align: center;
+            padding: 10px 0 20px;
+        }
+
+        .lib-header h1 {
+            font-size: 28px;
+            color: #3a2a15;
+            margin-bottom: 16px;
+        }
+
+        .category-pills {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .cat-pill {
+            padding: 6px 16px;
+            border: 1px solid #c4a265;
+            background: transparent;
+            color: #6b5020;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .cat-pill.active,
+        .cat-pill:hover {
+            background: #6b5020;
+            color: #fff;
+        }
+
+        /* Record count */
+        .record-count {
+            text-align: center;
+            font-size: 13px;
+            color: #a08050;
+            margin-bottom: 16px;
+        }
+
+        /* Grid */
+        .record-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 10px 0 40px;
+        }
+
+        /* Each record card */
+        .record-card {
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .record-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        /* Cover image - SQUARE */
+        .record-cover {
+            width: 100%;
+            aspect-ratio: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .record-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Title overlay on cover (bottom) */
+        .cover-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+        }
+
+        .cover-overlay .lesson-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 14px;
+            opacity: 0.8;
+            letter-spacing: 1px;
+        }
+
+        .cover-overlay .cover-title {
+            font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            margin: 4px 0;
+            letter-spacing: 0.5px;
+        }
+
+        .cover-overlay .cover-artist {
+            font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+            font-size: 13px;
+            font-weight: 300;
+            opacity: 0.85;
+            letter-spacing: 0.5px;
+        }
+
+        /* Card info below cover */
+        .record-info {
+            padding: 10px 12px;
+        }
+
+        .record-info .artist-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #3a2a15;
+        }
+
+        .record-info .lesson-title {
+            font-size: 12px;
+            color: #8a7a6a;
+            margin-top: 2px;
+        }
+
+        .record-info .cat-badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            background: #f0e8d8;
+            color: #6b5020;
+            border-radius: 10px;
+            margin-top: 6px;
+        }
+
+        /* Placeholder for lessons without images */
+        .record-cover.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 6px;
+            background: linear-gradient(135deg, #d4b896, #a08050);
+            color: white;
+        }
+
+        .record-cover.placeholder .ph-num {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .record-cover.placeholder .ph-artist {
+            font-size: 13px;
+            opacity: 0.85;
+            text-align: center;
+            padding: 0 12px;
+        }
+
+        .record-cover.placeholder .ph-lock {
+            font-size: 20px;
+            opacity: 0.5;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(42, 26, 10, 0.9);
+            color: #faf5ee;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.4s;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .record-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .record-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .lib-header h1 { font-size: 22px; }
+            .library-page { padding: 14px; }
+        }
+        @media (max-width: 480px) {
+            .record-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .record-info { padding: 6px 8px; }
+            .record-info .artist-name { font-size: 12px; }
+            .record-info .lesson-title { font-size: 11px; }
+            .cover-overlay .cover-title { font-size: 13px; }
+            .cover-overlay .cover-artist { font-size: 11px; }
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="library-page">
+    <a href="classes.html" class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        수업
+    </a>
+
+    <header class="lib-header">
+        <h1>작가가 되기 위한 100강</h1>
+        <a href="artist-packages.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:#6b5020;color:#fff;border-radius:20px;text-decoration:none;font-size:13px;margin-bottom:14px;transition:background 0.3s;" onmouseover="this.style.background='#8b6928'" onmouseout="this.style.background='#6b5020'">📦 10강 패키지로 보기 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></a>
+        <div class="category-pills" id="categoryPills">
+            <button class="cat-pill active" data-cat="all">전체</button>
+            <button class="cat-pill" data-cat="Abstract">추상</button>
+            <button class="cat-pill" data-cat="Expressionism">표현주의</button>
+            <button class="cat-pill" data-cat="Cubism">입체파</button>
+            <button class="cat-pill" data-cat="Surrealism">초현실</button>
+            <button class="cat-pill" data-cat="Impressionism">인상파</button>
+            <button class="cat-pill" data-cat="Pop Art">팝아트</button>
+            <button class="cat-pill" data-cat="Modern Art">현대</button>
+            <button class="cat-pill" data-cat="Minimalism">미니멀</button>
+        </div>
+        <div class="record-count" id="recordCount"></div>
+    </header>
+
+    <main class="record-grid" id="recordGrid"></main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Load lesson data -->
+<script src="../../assets/data/artist-100-data.js"></script>
+
+<script>
+// ───── Sound ─────
+function playDrop() {
+    const a = new Audio('../../assets/sounds/SonSounds/DA - Book Drop - 1.mp3');
+    a.volume = 0.05;
+    a.play().catch(() => {});
+}
+
+// ───── Toast ─────
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ───── Render Library ─────
+function renderLibrary(category) {
+    const grid = document.getElementById('recordGrid');
+    grid.innerHTML = '';
+
+    let lessons = (typeof ARTIST_LESSONS !== 'undefined') ? ARTIST_LESSONS : [];
+    if (category && category !== 'all') {
+        lessons = lessons.filter(l => l.category === category);
+    }
+
+    document.getElementById('recordCount').textContent = lessons.length + '개 수업';
+
+    lessons.forEach(lesson => {
+        const card = document.createElement('div');
+        card.className = 'record-card';
+        card.onclick = () => {
+            playDrop();
+            if (lesson.imageCount > 0) {
+                window.location.href = 'artist-lesson.html?lesson=' + lesson.id;
+            } else {
+                showToast('준비 중입니다. 곧 만나요!');
+            }
+        };
+
+        const NNN = String(lesson.id).padStart(3, '0');
+        const hasCover = lesson.imageCount > 0;
+
+        card.innerHTML =
+            '<div class="record-cover ' + (hasCover ? '' : 'placeholder') + '">' +
+                (hasCover
+                    ? '<img src="../../images/artist-100/' + NNN + '/thumbs/' + NNN + '_001.jpg" loading="lazy" alt="' + lesson.title + '">'
+                    : '<span class="ph-num">제' + lesson.id + '강</span>' +
+                      '<span class="ph-artist">' + lesson.artist + '</span>' +
+                      '<span class="ph-lock">&#128274;</span>'
+                ) +
+                '<div class="cover-overlay">' +
+                    '<div class="lesson-num">제' + lesson.id + '강</div>' +
+                    '<div class="cover-title">' + lesson.title + '</div>' +
+                    '<div class="cover-artist">' + lesson.artist + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="record-info">' +
+                '<div class="artist-name">' + lesson.artist + ' (' + (lesson.artistEn || lesson.en || '') + ')</div>' +
+                '<div class="lesson-title">' + lesson.title + '</div>' +
+                '<div class="cat-badge">' + lesson.category + '</div>' +
+            '</div>';
+
+        grid.appendChild(card);
+    });
+}
+
+// ───── Category filter ─────
+document.querySelectorAll('.cat-pill').forEach(btn => {
+    btn.onclick = () => {
+        document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderLibrary(btn.dataset.cat);
+    };
+});
+
+// ───── Initial render ─────
+renderLibrary('all');
+</script>
+
+</body>
+</html>

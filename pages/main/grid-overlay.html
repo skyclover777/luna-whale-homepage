@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>격자 오버레이 + 명암 - Luna Whale</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lexend:wght@300;400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lexend',sans-serif;background:#f8f6f3;min-height:100vh;color:#2c2420}
+
+.top-bar{position:sticky;top:0;z-index:50;background:rgba(248,246,243,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,0,0,.04);padding:14px 24px;display:flex;align-items:center;gap:14px}
+.back-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.back-btn:hover{background:rgba(0,0,0,.04)}
+.top-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#2c2420;flex:1;letter-spacing:-.5px}
+
+.container{max-width:900px;margin:0 auto;padding:24px}
+.subtitle{text-align:center;font-family:'Cormorant Garamond',serif;font-size:14px;color:#a09890;margin-bottom:24px;letter-spacing:-.2px}
+
+/* Controls */
+.ctrl-section{margin-bottom:16px}
+.ctrl-label{font-size:11px;font-weight:600;color:#8b7355;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.ctrl-label .material-symbols-outlined{font-size:16px}
+.ctrl-row{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;align-items:center}
+.control-group{display:flex;align-items:center;gap:8px}
+.control-group label{font-size:12px;color:#6b5c4e;font-weight:400}
+.control-group input[type=range]{width:100px;accent-color:#8b7355}
+.control-group .val{font-size:13px;color:#2c2420;min-width:20px;text-align:center;font-weight:600}
+.color-pick{width:28px;height:28px;border:2px solid rgba(0,0,0,.1);border-radius:6px;cursor:pointer;padding:0;background:none}
+
+/* Toggle buttons */
+.toggle-row{display:flex;justify-content:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.toggle-btn{padding:7px 16px;border-radius:8px;border:1px solid rgba(0,0,0,.1);background:#fff;font-family:'Lexend',sans-serif;font-size:11px;color:#6b5c4e;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:5px}
+.toggle-btn:hover{background:rgba(0,0,0,.03)}
+.toggle-btn.active{background:#2c2420;color:#fff;border-color:#2c2420}
+.toggle-btn .material-symbols-outlined{font-size:16px}
+
+/* Panel */
+.panel{background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,.06);overflow:hidden}
+.panel-header{padding:14px 20px;border-bottom:1px solid rgba(0,0,0,.04);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:13px;font-weight:600;color:#2c2420}
+.panel-badge{font-size:10px;color:#a09890;background:rgba(0,0,0,.04);padding:3px 10px;border-radius:20px}
+.panel-body{display:flex;align-items:center;justify-content:center;padding:20px;position:relative;min-height:400px}
+
+/* Drop zone */
+.drop-zone{width:100%;height:100%;min-height:380px;border:2px dashed rgba(0,0,0,.12);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:.3s;position:relative}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#8b7355;background:rgba(139,115,85,.04)}
+.drop-zone .material-symbols-outlined{font-size:48px;color:#c4b8a8}
+.drop-zone p{font-size:13px;color:#a09890}
+.drop-zone small{font-size:11px;color:#c4b8a8}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.drop-zone.has-image{border:none;cursor:default}
+.drop-zone.has-image .placeholder{display:none}
+.drop-zone.has-image input{display:none}
+
+.canvas-wrap{display:none;max-width:100%}
+.canvas-wrap canvas{max-width:100%;max-height:700px;border-radius:4px;display:block}
+
+/* Tone legend */
+.tone-legend{display:none;justify-content:center;gap:4px;margin-top:12px;flex-wrap:wrap}
+.tone-legend.visible{display:flex}
+.tone-chip{display:flex;align-items:center;gap:4px;font-size:10px;color:#a09890}
+.tone-chip span{display:inline-block;width:20px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.1)}
+
+/* Buttons */
+.btn-row{display:flex;justify-content:center;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:10px 24px;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:#fff;font-family:'Lexend',sans-serif;font-size:13px;font-weight:400;color:#2c2420;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
+.btn:hover{background:rgba(0,0,0,.03)}
+.btn:disabled{opacity:.35;cursor:default}
+.btn-primary{background:#2c2420;color:#fff;border-color:#2c2420}
+.btn-primary:hover{background:#3d3530}
+.btn .material-symbols-outlined{font-size:18px}
+
+/* Print */
+@media print{
+  .top-bar,.ctrl-section,.toggle-row,.btn-row,.subtitle,.panel-header,.drop-zone .placeholder,.tone-legend{display:none!important}
+  body{background:#fff}
+  .panel{border:none;box-shadow:none}
+  .panel-body{padding:0}
+  .canvas-wrap canvas{max-width:100%;max-height:none;border-radius:0}
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">
+    <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+  </button>
+  <div class="top-title">Grid & Tone</div>
+</div>
+
+<div class="container">
+  <div class="subtitle">격자선 + 명암 단순화 — 데생 연습의 필수 도구</div>
+
+  <!-- Mode toggles -->
+  <div class="toggle-row">
+    <button class="toggle-btn active" id="mode-color" onclick="setMode('color')">
+      <span class="material-symbols-outlined">image</span> 원본 컬러
+    </button>
+    <button class="toggle-btn" id="mode-gray" onclick="setMode('gray')">
+      <span class="material-symbols-outlined">contrast</span> 흑백
+    </button>
+    <button class="toggle-btn" id="mode-3" onclick="setMode('tone3')">
+      <span class="material-symbols-outlined">gradient</span> 3단계 명암
+    </button>
+    <button class="toggle-btn" id="mode-5" onclick="setMode('tone5')">
+      <span class="material-symbols-outlined">gradient</span> 5단계 명암
+    </button>
+    <button class="toggle-btn" id="mode-7" onclick="setMode('tone7')">
+      <span class="material-symbols-outlined">gradient</span> 7단계 명암
+    </button>
+  </div>
+
+  <!-- Grid controls -->
+  <div class="ctrl-section">
+    <div class="ctrl-row">
+      <div class="control-group">
+        <label>격자 수</label>
+        <input type="range" id="grid-count" min="0" max="8" value="4"/>
+        <span class="val" id="grid-val">4</span>
+      </div>
+      <div class="control-group">
+        <label>선 굵기</label>
+        <input type="range" id="line-w" min="1" max="5" value="1"/>
+        <span class="val" id="linew-val">1</span>
+      </div>
+      <div class="control-group">
+        <label>선 색상</label>
+        <input type="color" class="color-pick" id="line-color" value="#000000"/>
+      </div>
+      <div class="control-group">
+        <label>투명도</label>
+        <input type="range" id="line-opacity" min="10" max="100" value="40"/>
+        <span class="val" id="opacity-val">40%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">격자 + 명암 오버레이</span>
+      <span class="panel-badge" id="img-size"></span>
+    </div>
+    <div class="panel-body">
+      <div class="drop-zone" id="drop-zone">
+        <div class="placeholder">
+          <span class="material-symbols-outlined">grid_on</span>
+          <p>이미지를 드래그하거나 클릭하세요</p>
+          <small>PNG, JPG, WEBP</small>
+        </div>
+        <input type="file" accept="image/*" id="file-input"/>
+        <div class="canvas-wrap" id="canvas-wrap">
+          <canvas id="main-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tone-legend" id="tone-legend"></div>
+
+  <div class="btn-row">
+    <button class="btn" id="btn-reset" disabled onclick="resetAll()">
+      <span class="material-symbols-outlined">restart_alt</span> 초기화
+    </button>
+    <button class="btn" id="btn-dl" disabled onclick="downloadGrid()">
+      <span class="material-symbols-outlined">download</span> 이미지 저장
+    </button>
+    <button class="btn btn-primary" id="btn-print" disabled onclick="window.print()">
+      <span class="material-symbols-outlined">print</span> 인쇄
+    </button>
+  </div>
+</div>
+
+<script>
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const mainCanvas = document.getElementById('main-canvas');
+const canvasWrap = document.getElementById('canvas-wrap');
+const gridSlider = document.getElementById('grid-count');
+const lineWSlider = document.getElementById('line-w');
+const lineColorInput = document.getElementById('line-color');
+const opacitySlider = document.getElementById('line-opacity');
+const toneLegend = document.getElementById('tone-legend');
+
+let currentImage = null;
+let currentMode = 'color';
+
+// Slider events
+gridSlider.oninput = () => { document.getElementById('grid-val').textContent = gridSlider.value == 0 ? '없음' : gridSlider.value; if(currentImage) render(); };
+lineWSlider.oninput = () => { document.getElementById('linew-val').textContent = lineWSlider.value; if(currentImage) render(); };
+lineColorInput.oninput = () => { if(currentImage) render(); };
+opacitySlider.oninput = () => { document.getElementById('opacity-val').textContent = opacitySlider.value + '%'; if(currentImage) render(); };
+
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mode-' + (mode === 'tone3' ? '3' : mode === 'tone5' ? '5' : mode === 'tone7' ? '7' : mode)).classList.add('active');
+  if(currentImage) render();
+}
+
+// Drag & Drop
+['dragenter','dragover'].forEach(e => {
+  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag-over'); });
+});
+['dragleave','drop'].forEach(e => {
+  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('drag-over'); });
+});
+dropZone.addEventListener('drop', ev => {
+  const file = ev.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) loadImage(file);
+});
+fileInput.addEventListener('change', ev => {
+  if(ev.target.files[0]) loadImage(ev.target.files[0]);
+});
+
+function loadImage(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      currentImage = img;
+      currentImage._name = file.name;
+      dropZone.classList.add('has-image');
+      canvasWrap.style.display = 'block';
+      document.getElementById('img-size').textContent = img.width + ' × ' + img.height;
+      document.getElementById('btn-reset').disabled = false;
+      document.getElementById('btn-dl').disabled = false;
+      document.getElementById('btn-print').disabled = false;
+      render();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function render() {
+  const img = currentImage;
+  const n = parseInt(gridSlider.value);
+  const lw = parseInt(lineWSlider.value);
+  const hex = lineColorInput.value;
+  const opacity = parseInt(opacitySlider.value) / 100;
+
+  const w = img.width, h = img.height;
+  mainCanvas.width = w;
+  mainCanvas.height = h;
+  const ctx = mainCanvas.getContext('2d');
+
+  // Draw image
+  ctx.drawImage(img, 0, 0);
+
+  // Apply tone mode
+  if(currentMode !== 'color') {
+    const imageData = ctx.getImageData(0, 0, w, h);
+    const px = imageData.data;
+
+    const steps = currentMode === 'tone3' ? 3 : currentMode === 'tone5' ? 5 : currentMode === 'tone7' ? 7 : 0;
+
+    for(let i = 0; i < px.length; i += 4) {
+      const gray = Math.round(px[i] * 0.299 + px[i+1] * 0.587 + px[i+2] * 0.114);
+
+      if(steps > 0) {
+        // Quantize to N levels
+        const step = 255 / (steps - 1);
+        const quantized = Math.round(Math.round(gray / step) * step);
+        px[i] = px[i+1] = px[i+2] = quantized;
+      } else {
+        // Simple grayscale
+        px[i] = px[i+1] = px[i+2] = gray;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    // Show legend
+    if(steps > 0) {
+      toneLegend.innerHTML = '';
+      toneLegend.classList.add('visible');
+      const step = 255 / (steps - 1);
+      for(let s = 0; s < steps; s++) {
+        const v = Math.round(s * step);
+        const chip = document.createElement('div');
+        chip.className = 'tone-chip';
+        chip.innerHTML = `<span style="background:rgb(${v},${v},${v})"></span>${s+1}단계`;
+        toneLegend.appendChild(chip);
+      }
+    } else {
+      toneLegend.classList.remove('visible');
+    }
+  } else {
+    toneLegend.classList.remove('visible');
+  }
+
+  // Draw grid
+  if(n > 0) {
+    const r = parseInt(hex.slice(1,3), 16);
+    const g = parseInt(hex.slice(3,5), 16);
+    const b = parseInt(hex.slice(5,7), 16);
+    ctx.strokeStyle = `rgba(${r},${g},${b},${opacity})`;
+    ctx.lineWidth = lw;
+    ctx.setLineDash([]);
+
+    for(let i = 1; i < n; i++) {
+      const x = Math.round(w / n * i);
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    }
+    for(let i = 1; i < n; i++) {
+      const y = Math.round(h / n * i);
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+    ctx.strokeRect(0, 0, w, h);
+  }
+}
+
+function downloadGrid() {
+  mainCanvas.toBlob(blob => {
+    const link = document.createElement('a');
+    const base = (currentImage._name || 'image').replace(/\.[^.]+$/, '');
+    const n = gridSlider.value;
+    const suffix = currentMode === 'color' ? '' : '_' + currentMode;
+    link.download = `${base}_grid${n}${suffix}.jpg`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+  }, 'image/jpeg', 0.95);
+}
+
+function resetAll() {
+  currentImage = null;
+  dropZone.classList.remove('has-image');
+  canvasWrap.style.display = 'none';
+  toneLegend.classList.remove('visible');
+  document.getElementById('img-size').textContent = '';
+  document.getElementById('btn-reset').disabled = true;
+  document.getElementById('btn-dl').disabled = true;
+  document.getElementById('btn-print').disabled = true;
+  fileInput.value = '';
+}
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <title>3D Perspective Observer Tool</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            touch-action: none;
+        }
+
+        .canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+        }
+
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .pointer-events-auto {
+            pointer-events: auto;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            cursor: pointer;
+            margin-top: -6px;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #334155;
+            border-radius: 2px;
+        }
+
+        .dpad-btn {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            backdrop-filter: blur(4px);
+        }
+
+        .dpad-btn:active {
+            background: rgba(99, 102, 241, 0.6);
+        }
+    </style>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "three": "https://esm.sh/three@0.160.0",
+            "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.15.12?external=react,react-dom,three",
+            "@react-three/drei": "https://esm.sh/@react-three/drei@9.96.1?external=react,react-dom,three,@react-three/fiber"
+        }
+    }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <!-- Home Button -->
+    <a href="../../index.html"
+        class="absolute top-4 left-4 z-50 w-11 h-11 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-xl flex items-center justify-center text-white transition-all shadow-lg hover:scale-105 active:scale-95 group">
+        <span class="material-symbols-outlined text-2xl group-hover:text-primary transition-colors">home</span>
+    </a>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef, useMemo } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import * as THREE from 'three';
+        import { Canvas, useFrame, useThree } from '@react-three/fiber';
+        import { PerspectiveCamera, Sky, Environment, Grid } from '@react-three/drei';
+
+        // Custom First Person Movement & Look Hook
+        const CameraController = ({ mobileMovement, gravity = false }) => {
+            const { camera, gl } = useThree();
+            const euler = useRef(new THREE.Euler(0, 0, 0, 'YXZ'));
+            const isDragging = useRef(false);
+            const keys = useRef({ w: false, a: false, s: false, d: false });
+
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    const code = e.code;
+                    if (code === 'KeyW' || code === 'ArrowUp' || code === 'w' || code === 'W') keys.current.w = true;
+                    if (code === 'KeyA' || code === 'ArrowLeft' || code === 'a' || code === 'A') keys.current.a = true;
+                    if (code === 'KeyS' || code === 'ArrowDown' || code === 's' || code === 'S') keys.current.s = true;
+                    if (code === 'KeyD' || code === 'ArrowRight' || code === 'd' || code === 'D') keys.current.d = true;
+                };
+                const handleKeyUp = (e) => {
+                    const code = e.code;
+                    if (code === 'KeyW' || code === 'ArrowUp' || code === 'w' || code === 'W') keys.current.w = false;
+                    if (code === 'KeyA' || code === 'ArrowLeft' || code === 'a' || code === 'A') keys.current.a = false;
+                    if (code === 'KeyS' || code === 'ArrowDown' || code === 's' || code === 'S') keys.current.s = false;
+                    if (code === 'KeyD' || code === 'ArrowRight' || code === 'd' || code === 'D') keys.current.d = false;
+                };
+                // Bind to document to ensure we catch events even if specific elements are focused
+                document.addEventListener('keydown', handleKeyDown);
+                document.addEventListener('keyup', handleKeyUp);
+
+                const touchArea = gl.domElement;
+                let lastX = 0; let lastY = 0;
+
+                const onPointerDown = (e) => {
+                    isDragging.current = true;
+                    lastX = e.clientX || (e.touches && e.touches[0].clientX);
+                    lastY = e.clientY || (e.touches && e.touches[0].clientY);
+                };
+
+                const onPointerMove = (e) => {
+                    if (!isDragging.current) return;
+                    const currentX = e.clientX || (e.touches && e.touches[0].clientX);
+                    const currentY = e.clientY || (e.touches && e.touches[0].clientY);
+
+                    const deltaX = currentX - lastX;
+                    const deltaY = currentY - lastY;
+                    lastX = currentX;
+                    lastY = currentY;
+
+                    euler.current.y -= deltaX * 0.005;
+                    euler.current.x -= deltaY * 0.005;
+                    euler.current.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.current.x));
+                    camera.quaternion.setFromEuler(euler.current);
+                };
+
+                const onPointerUp = () => { isDragging.current = false; };
+
+                touchArea.addEventListener('pointerdown', onPointerDown);
+                window.addEventListener('pointermove', onPointerMove);
+                window.addEventListener('pointerup', onPointerUp);
+
+                // prevent context menu on right click dragging
+                touchArea.addEventListener('contextmenu', e => e.preventDefault());
+
+                return () => {
+                    document.removeEventListener('keydown', handleKeyDown);
+                    document.removeEventListener('keyup', handleKeyUp);
+                    touchArea.removeEventListener('pointerdown', onPointerDown);
+                    window.removeEventListener('pointermove', onPointerMove);
+                    window.removeEventListener('pointerup', onPointerUp);
+                };
+            }, [camera, gl]);
+
+            useFrame((state, delta) => {
+                const speed = 10 * delta;
+                const velocity = new THREE.Vector3();
+
+                if (keys.current.w || mobileMovement.w) velocity.z -= speed;
+                if (keys.current.s || mobileMovement.s) velocity.z += speed;
+                if (keys.current.a || mobileMovement.a) velocity.x -= speed;
+                if (keys.current.d || mobileMovement.d) velocity.x += speed;
+
+                if (gravity) {
+                    // Extract yaw to ensure horizontal movement regardless of pitch
+                    const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+                    const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), euler.y);
+                    velocity.applyQuaternion(yawQuat);
+
+                    if (velocity.lengthSq() > 0) velocity.normalize().multiplyScalar(speed);
+
+                    camera.position.add(velocity);
+
+                    // Clamp to ground level and within village bounds
+                    camera.position.y = 1.6;
+                    camera.position.x = Math.max(-70, Math.min(70, camera.position.x));
+                    camera.position.z = Math.max(-70, Math.min(70, camera.position.z));
+                } else {
+                    velocity.applyQuaternion(camera.quaternion);
+                    camera.position.add(velocity);
+                }
+            });
+
+            return null;
+        };
+
+        // Volumetric 3D Grid using InstancedMesh for thickness
+        const AxisGrid = ({ showX, showY, showZ, interval = 1, thickness = 1, size = 60 }) => {
+            // Three.js basic lines do not support thickness > 1px in WebGL natively.
+            // Using InstancedMesh of boxes to draw thick lines.
+            const halfSize = size / 2;
+            const lineCount = Math.floor(size / interval) + 1;
+            const totalLinesPerAxis = lineCount * lineCount;
+
+            const instX = useRef(null);
+            const instY = useRef(null);
+            const instZ = useRef(null);
+
+            const thickScale = thickness * 0.02; // Convert px thickness to world size roughly
+
+            useEffect(() => {
+                const dummy = new THREE.Object3D();
+                let idxX = 0, idxY = 0, idxZ = 0;
+
+                for (let i = -halfSize; i <= halfSize; i += interval) {
+                    for (let j = -halfSize; j <= halfSize; j += interval) {
+                        // X parallel (changing x, spans from -halfSize to halfSize)
+                        if (instX.current) {
+                            dummy.position.set(0, i, j);
+                            dummy.scale.set(size, thickScale, thickScale);
+                            dummy.updateMatrix();
+                            instX.current.setMatrixAt(idxX++, dummy.matrix);
+                        }
+
+                        // Y parallel (changing y)
+                        if (instY.current) {
+                            dummy.position.set(i, 0, j);
+                            dummy.scale.set(thickScale, size, thickScale);
+                            dummy.updateMatrix();
+                            instY.current.setMatrixAt(idxY++, dummy.matrix);
+                        }
+
+                        // Z parallel (changing z)
+                        if (instZ.current) {
+                            dummy.position.set(i, j, 0);
+                            dummy.scale.set(thickScale, thickScale, size);
+                            dummy.updateMatrix();
+                            instZ.current.setMatrixAt(idxZ++, dummy.matrix);
+                        }
+                    }
+                }
+                if (instX.current) instX.current.instanceMatrix.needsUpdate = true;
+                if (instY.current) instY.current.instanceMatrix.needsUpdate = true;
+                if (instZ.current) instZ.current.instanceMatrix.needsUpdate = true;
+            }, [interval, size, thickness, showX, showY, showZ]);
+
+            // Add slight Y offset to prevent Z-fighting with ground
+            return (
+                <group position={[0, 0.01, 0]}>
+                    {showX && (
+                        <instancedMesh ref={instX} args={[null, null, totalLinesPerAxis]}>
+                            <boxGeometry />
+                            <meshBasicMaterial color="#ef4444" opacity={0.6} transparent depthWrite={false} />
+                        </instancedMesh>
+                    )}
+                    {showY && (
+                        <instancedMesh ref={instY} args={[null, null, totalLinesPerAxis]}>
+                            <boxGeometry />
+                            <meshBasicMaterial color="#38bdf8" opacity={0.25} transparent depthWrite={false} />
+                        </instancedMesh>
+                    )}
+                    {showZ && (
+                        <instancedMesh ref={instZ} args={[null, null, totalLinesPerAxis]}>
+                            <boxGeometry />
+                            <meshBasicMaterial color="#a855f7" opacity={0.6} transparent depthWrite={false} />
+                        </instancedMesh>
+                    )}
+                </group>
+            );
+        };
+
+        const BuildingForest = () => {
+            const buildings = useMemo(() => {
+                const arr = [];
+                for (let i = 0; i < 300; i++) {
+                    const w = 1 + Math.random() * 4;
+                    const d = 1 + Math.random() * 4;
+                    const h = 2 + Math.random() * 18;
+                    const x = (Math.random() - 0.5) * 60;
+                    const z = (Math.random() - 0.5) * 60;
+
+                    if (Math.abs(x) < 3 && Math.abs(z) < 3) continue;
+
+                    arr.push({ position: [x, h / 2 - 2, z], scale: [w, h, d] });
+                }
+                return arr;
+            }, []);
+
+            return (
+                <group>
+                    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]}>
+                        <planeGeometry args={[100, 100]} />
+                        <meshStandardMaterial color="#0f172a" />
+                    </mesh>
+
+                    {buildings.map((b, i) => (
+                        <mesh key={i} position={b.position}>
+                            <boxGeometry args={b.scale} />
+                            <meshStandardMaterial color="#334155" roughness={0.8} />
+                            <lineSegments>
+                                <edgesGeometry args={[new THREE.BoxGeometry(...b.scale)]} />
+                                <lineBasicMaterial color="#64748b" />
+                            </lineSegments>
+                        </mesh>
+                    ))}
+                </group>
+            );
+        };
+
+        // Generative Alleyway Village (Dense buildings, 5-lane crossroads)
+        const AlleywayVillage = () => {
+            const buildings = useMemo(() => {
+                const arr = [];
+                const roadHalfWidth = 7.5; // 15m wide road / 2
+                const villageSize = 80;
+
+                for (let i = 0; i < 400; i++) {
+                    const w = 2 + Math.random() * 6;
+                    const d = 2 + Math.random() * 6;
+                    const h = 5 + Math.random() * 25;
+
+                    let x = (Math.random() - 0.5) * villageSize;
+                    let z = (Math.random() - 0.5) * villageSize;
+
+                    // Push out of the intersection and lanes
+                    if (Math.abs(x) < roadHalfWidth + w / 2) {
+                        x = Math.sign(x) * (roadHalfWidth + w / 2 + Math.random() * 2);
+                        if (x === 0) x = roadHalfWidth + w / 2;
+                    }
+                    if (Math.abs(z) < roadHalfWidth + d / 2) {
+                        z = Math.sign(z) * (roadHalfWidth + d / 2 + Math.random() * 2);
+                        if (z === 0) z = roadHalfWidth + d / 2;
+                    }
+
+                    arr.push({ position: [x, h / 2, z], scale: [w, h, d] });
+                }
+                return arr;
+            }, []);
+
+            return (
+                <group>
+                    {/* Ground plane for alleyway at y=0 */}
+                    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+                        <planeGeometry args={[150, 150]} />
+                        <meshStandardMaterial color="#0f172a" />
+                    </mesh>
+
+                    {buildings.map((b, i) => (
+                        <mesh key={i} position={b.position}>
+                            <boxGeometry args={b.scale} />
+                            <meshStandardMaterial color="#1e293b" roughness={0.9} />
+                            <lineSegments>
+                                <edgesGeometry args={[new THREE.BoxGeometry(...b.scale)]} />
+                                <lineBasicMaterial color="#475569" />
+                            </lineSegments>
+                        </mesh>
+                    ))}
+                </group>
+            );
+        };
+
+        // Infinite colored extension lines directly off the cube's edges for 'Single Cube' mode
+        const ExtendedCubeEdges = ({ showX, showY, showZ, thickness = 1 }) => {
+            const edgeLength = 1000; // sufficiently long to look infinite
+            const t = thickness * 0.02; // matching thickness scale
+            const c = 1; // half-size of 2x2x2 cube
+
+            return (
+                <group>
+                    {showX && (
+                        <group>
+                            <mesh position={[0, c, c]}><boxGeometry args={[edgeLength, t, t]} /><meshBasicMaterial color="#ef4444" opacity={0.6} transparent depthWrite={false} /></mesh>
+                            <mesh position={[0, c, -c]}><boxGeometry args={[edgeLength, t, t]} /><meshBasicMaterial color="#ef4444" opacity={0.6} transparent depthWrite={false} /></mesh>
+                            <mesh position={[0, -c, c]}><boxGeometry args={[edgeLength, t, t]} /><meshBasicMaterial color="#ef4444" opacity={0.6} transparent depthWrite={false} /></mesh>
+                            <mesh position={[0, -c, -c]}><boxGeometry args={[edgeLength, t, t]} /><meshBasicMaterial color="#ef4444" opacity={0.6} transparent depthWrite={false} /></mesh>
+                        </group>
+                    )}
+                    {showY && (
+                        <group>
+                            <mesh position={[c, 0, c]}><boxGeometry args={[t, edgeLength, t]} /><meshBasicMaterial color="#38bdf8" opacity={0.5} transparent depthWrite={false} /></mesh>
+                            <mesh position={[c, 0, -c]}><boxGeometry args={[t, edgeLength, t]} /><meshBasicMaterial color="#38bdf8" opacity={0.5} transparent depthWrite={false} /></mesh>
+                            <mesh position={[-c, 0, c]}><boxGeometry args={[t, edgeLength, t]} /><meshBasicMaterial color="#38bdf8" opacity={0.5} transparent depthWrite={false} /></mesh>
+                            <mesh position={[-c, 0, -c]}><boxGeometry args={[t, edgeLength, t]} /><meshBasicMaterial color="#38bdf8" opacity={0.5} transparent depthWrite={false} /></mesh>
+                        </group>
+                    )}
+                    {showZ && (
+                        <group>
+                            <mesh position={[c, c, 0]}><boxGeometry args={[t, t, edgeLength]} /><meshBasicMaterial color="#a855f7" opacity={0.6} transparent depthWrite={false} /></mesh>
+                            <mesh position={[c, -c, 0]}><boxGeometry args={[t, t, edgeLength]} /><meshBasicMaterial color="#a855f7" opacity={0.6} transparent depthWrite={false} /></mesh>
+                            <mesh position={[-c, c, 0]}><boxGeometry args={[t, t, edgeLength]} /><meshBasicMaterial color="#a855f7" opacity={0.6} transparent depthWrite={false} /></mesh>
+                            <mesh position={[-c, -c, 0]}><boxGeometry args={[t, t, edgeLength]} /><meshBasicMaterial color="#a855f7" opacity={0.6} transparent depthWrite={false} /></mesh>
+                        </group>
+                    )}
+                </group>
+            );
+        };
+
+        const App = () => {
+            const [viewMode, setViewMode] = useState('alleyway'); // 'forest', 'alleyway', or 'single'
+            const [fov, setFov] = useState(75);
+            const [showX, setShowX] = useState(true);
+            const [showY, setShowY] = useState(true);
+            const [showZ, setShowZ] = useState(true);
+            const [interval, setIntervalVal] = useState(5);
+            const [thickness, setThickness] = useState(1);
+
+            const [mobileMovement, setMobileMovement] = useState({ w: false, a: false, s: false, d: false });
+
+            const handleMove = (dir, isDown) => (e) => {
+                e.preventDefault();
+                setMobileMovement(prev => ({ ...prev, [dir]: isDown }));
+            };
+
+            return (
+                <div className="w-full h-full">
+                    {/* 3D Canvas */}
+                    <div className="canvas-container">
+                        <Canvas>
+                            <PerspectiveCamera makeDefault fov={fov} position={[0, 1.6, 5]} near={0.1} far={200} />
+                            <CameraController mobileMovement={mobileMovement} gravity={viewMode === 'alleyway'} />
+
+                            <ambientLight intensity={0.5} />
+                            <directionalLight position={[10, 20, 10]} intensity={1.5} />
+                            <Sky sunPosition={[10, 20, 10]} />
+                            <Environment preset="city" />
+
+                            {viewMode !== 'single' && <AxisGrid showX={showX} showY={showY} showZ={showZ} interval={interval} thickness={thickness} size={60} />}
+
+                            {viewMode === 'forest' && <BuildingForest />}
+                            {viewMode === 'alleyway' && <AlleywayVillage />}
+                            {viewMode === 'single' && (
+                                <group>
+                                    <ExtendedCubeEdges showX={showX} showY={showY} showZ={showZ} thickness={thickness} />
+                                    <mesh position={[0, 0, 0]}>
+                                        <boxGeometry args={[2, 2, 2]} />
+                                        <meshStandardMaterial color="#8b5cf6" roughness={0.4} metalness={0.2} />
+                                        <lineSegments>
+                                            <edgesGeometry args={[new THREE.BoxGeometry(2, 2, 2)]} />
+                                            <lineBasicMaterial color="#c4b5fd" />
+                                        </lineSegments>
+                                    </mesh>
+                                </group>
+                            )}
+
+                            {/* Visual center crosshair helper */}
+                            <mesh position={[0, 1.6, 2]}>
+                                <sphereGeometry args={[0.02, 8, 8]} />
+                                <meshBasicMaterial color="white" />
+                            </mesh>
+                        </Canvas>
+                    </div>
+
+                    {/* Overlay UI */}
+                    <div className="ui-layer p-4 md:p-6 text-slate-200">
+                        <div className="flex justify-between items-start pointer-events-none w-full">
+                            <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-700/50 backdrop-blur pointer-events-auto">
+                                <h1 className="text-xl font-bold text-white mb-1">3D Perspective Observer</h1>
+                                <p className="text-sm text-slate-400">Drag to look around. WASD to move.</p>
+                            </div>
+
+                            {/* Right Controls */}
+                            <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-700/50 backdrop-blur w-64 pointer-events-auto shadow-xl">
+
+                                <div className="mb-6">
+                                    <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">View Mode</h2>
+                                    <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
+                                        <button
+                                            onClick={() => setViewMode('alleyway')}
+                                            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${viewMode === 'alleyway' ? 'bg-indigo-500 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                                        >
+                                            Alleyway
+                                        </button>
+                                        <button
+                                            onClick={() => setViewMode('forest')}
+                                            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${viewMode === 'forest' ? 'bg-indigo-500 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                                        >
+                                            Sci-Fi City
+                                        </button>
+                                        <button
+                                            onClick={() => setViewMode('single')}
+                                            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${viewMode === 'single' ? 'bg-indigo-500 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                                        >
+                                            Single Cube
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="mb-6 pt-4 border-t border-slate-700/50">
+                                    <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">Perspective Distortion</h2>
+                                    <div className="flex justify-between text-xs text-slate-400 mb-2">
+                                        <span>Telephoto</span>
+                                        <span className="text-white font-medium">{fov}°</span>
+                                        <span>Wide Angle</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="20" max="140"
+                                        value={fov}
+                                        onChange={(e) => setFov(Number(e.target.value))}
+                                    />
+                                    <p className="text-[10px] text-slate-500 mt-2 leading-relaxed">
+                                        Higher FOV values create more perspective distortion, making the "vanishing point" more apparent.
+                                    </p>
+                                </div>
+
+                                <div className="border-t border-slate-700/50 pt-4">
+                                    <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">Reference Grids</h2>
+                                    <div className="space-y-2">
+                                        <label className="flex items-center gap-3 cursor-pointer">
+                                            <input type="checkbox" checked={showX} onChange={e => setShowX(e.target.checked)} className="rounded text-red-500 focus:ring-red-500 bg-slate-800 border-slate-600" />
+                                            <span className="text-sm font-medium flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-red-500"></div> X-Axis (Horizontal)</span>
+                                        </label>
+                                        <label className="flex items-center gap-3 cursor-pointer">
+                                            <input type="checkbox" checked={showY} onChange={e => setShowY(e.target.checked)} className="rounded text-sky-400 focus:ring-sky-400 bg-slate-800 border-slate-600" />
+                                            <span className="text-sm font-medium flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-sky-400"></div> Y-Axis (Vertical)</span>
+                                        </label>
+                                        <label className="flex items-center gap-3 cursor-pointer">
+                                            <input type="checkbox" checked={showZ} onChange={e => setShowZ(e.target.checked)} className="rounded text-purple-500 focus:ring-purple-500 bg-slate-800 border-slate-600" />
+                                            <span className="text-sm font-medium flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-purple-500"></div> Z-Axis (Depth)</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-slate-700/50 pt-4 mt-4">
+                                    <h2 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Grid Settings</h2>
+
+                                    <div className="mb-4">
+                                        <div className="flex justify-between text-xs text-slate-400 mb-2">
+                                            <span>Thickness</span>
+                                            <span className="text-white font-medium">{thickness}px</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="1" max="5" step="0.5"
+                                            value={thickness}
+                                            onChange={(e) => setThickness(Number(e.target.value))}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <div className="flex justify-between text-xs text-slate-400 mb-2">
+                                            <span>Interval (Spacing)</span>
+                                            <span className="text-white font-medium">{interval}m</span>
+                                        </div>
+                                        <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
+                                            {[1, 2, 5].map(val => (
+                                                <button
+                                                    key={val}
+                                                    onClick={() => setIntervalVal(val)}
+                                                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${interval === val ? 'bg-slate-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                                                >
+                                                    {val}m
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* On-Screen D-Pad */}
+                        <div className="pb-4 pl-4 pointer-events-auto w-fit">
+                            <div className="grid grid-cols-3 gap-2 w-[150px] h-[150px]">
+                                <div className="col-start-2">
+                                    <button
+                                        className="dpad-btn w-full h-full"
+                                        onPointerDown={handleMove('w', true)} onPointerUp={handleMove('w', false)} onPointerLeave={handleMove('w', false)}
+                                    >
+                                        <span className="material-symbols-outlined">expand_less</span>
+                                    </button>
+                                </div>
+                                <div className="col-start-1 row-start-2">
+                                    <button
+                                        className="dpad-btn w-full h-full"
+                                        onPointerDown={handleMove('a', true)} onPointerUp={handleMove('a', false)} onPointerLeave={handleMove('a', false)}
+                                    >
+                                        <span className="material-symbols-outlined">chevron_left</span>
+                                    </button>
+                                </div>
+                                <div className="col-start-2 row-start-2">
+                                    <button
+                                        className="dpad-btn w-full h-full"
+                                        onPointerDown={handleMove('s', true)} onPointerUp={handleMove('s', false)} onPointerLeave={handleMove('s', false)}
+                                    >
+                                        <span className="material-symbols-outlined">expand_more</span>
+                                    </button>
+                                </div>
+                                <div className="col-start-3 row-start-2">
+                                    <button
+                                        className="dpad-btn w-full h-full"
+                                        onPointerDown={handleMove('d', true)} onPointerUp={handleMove('d', false)} onPointerLeave={handleMove('d', false)}
+                                    >
+                                        <span className="material-symbols-outlined">chevron_right</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

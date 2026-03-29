@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Luna Whale Art Lab - Art Cosmos</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../../assets/data/i18n.js?v=0319"></script>
+    <script src="../../assets/js/app.js?v=0319"></script>
+    <script src="../../assets/data/classes-data.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js"></script>
+    <script src="../../assets/data/art-archive.js?v=0319"></script>
+    <script src="../../assets/js/voice-engine.js?v=0319"></script>
+    <script src="../../assets/js/archive-search-ui.js?v=0319"></script>
+    <script src="../../assets/js/archive-viewer.js?v=0319"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "primary": "#1337ec", "background-light": "#f6f6f8", "background-dark": "#101322", "accent-purple": "#8b5cf6" },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] },
+                },
+            },
+        }
+    </script>
+    <style>
+        body { font-family: 'Lexend', sans-serif; margin: 0; overflow: hidden; }
+        @media (min-width: 1024px) {
+            .app-sidebar { display: flex !important; }
+            .main-content { margin-left: 240px; }
+        }
+
+        /* 3D container */
+        #cosmos-3d canvas { display: block; }
+        .main-content { position: relative; z-index: 1; }
+
+        /* Starfield background */
+        .starfield {
+            position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse at 50% 50%, #0d0d2b 0%, #050510 100%);
+        }
+        .starfield::before, .starfield::after {
+            content: ''; position: absolute; inset: 0;
+            background-image:
+                radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.6), transparent),
+                radial-gradient(1.5px 1.5px at 50% 10%, rgba(255,255,255,0.9), transparent),
+                radial-gradient(1px 1px at 70% 40%, rgba(200,220,255,0.7), transparent),
+                radial-gradient(1px 1px at 90% 80%, rgba(255,255,255,0.5), transparent),
+                radial-gradient(1.5px 1.5px at 20% 90%, rgba(255,200,255,0.6), transparent),
+                radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.4), transparent),
+                radial-gradient(1px 1px at 80% 15%, rgba(200,255,255,0.7), transparent);
+            background-size: 200px 200px;
+            animation: twinkle 4s ease-in-out infinite alternate;
+        }
+        .starfield::after {
+            background-size: 300px 300px;
+            animation-delay: -2s;
+            opacity: 0.6;
+        }
+        @keyframes twinkle { from { opacity: 0.5; } to { opacity: 1; } }
+
+        /* Nebula blobs */
+        .nebula {
+            position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.15; z-index: 0;
+            animation: drift 20s ease-in-out infinite alternate;
+        }
+        .nebula-1 { width: 400px; height: 400px; background: #6366f1; top: 10%; left: 20%; }
+        .nebula-2 { width: 350px; height: 350px; background: #ec4899; top: 50%; right: 10%; animation-delay: -7s; }
+        .nebula-3 { width: 300px; height: 300px; background: #06b6d4; bottom: 10%; left: 40%; animation-delay: -14s; }
+        @keyframes drift {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(30px, -20px) scale(1.1); }
+        }
+
+        /* Image Panel */
+        .image-panel {
+            position: fixed; right: -420px; top: 0; width: 400px; height: 100vh;
+            background: rgba(10,10,30,0.95); backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(99,102,241,0.3);
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 50; overflow-y: auto;
+        }
+        .image-panel.open { right: 0; }
+        .image-panel::-webkit-scrollbar { width: 6px; }
+        .image-panel::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.4); border-radius: 3px; }
+
+        .panel-image {
+            border-radius: 12px; overflow: hidden; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .panel-image:hover { transform: scale(1.03); box-shadow: 0 0 20px rgba(99,102,241,0.3); }
+        .panel-image img { width: 100%; display: block; }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+            z-index: 40; display: flex; align-items: center; gap: 8px;
+            background: rgba(10,10,30,0.8); backdrop-filter: blur(12px);
+            border: 1px solid rgba(99,102,241,0.2); border-radius: 999px;
+            padding: 8px 20px; font-size: 13px; color: #94a3b8;
+        }
+        .breadcrumb span { color: #818cf8; font-weight: 600; }
+        .breadcrumb .sep { color: #475569; margin: 0 2px; }
+
+        /* Tooltip */
+        .cosmos-tooltip {
+            position: fixed; z-index: 60; padding: 8px 14px;
+            background: rgba(30,30,60,0.95); border: 1px solid rgba(99,102,241,0.3);
+            border-radius: 10px; color: #e2e8f0; font-size: 12px;
+            pointer-events: none; opacity: 0; transition: opacity 0.2s;
+            backdrop-filter: blur(8px);
+        }
+        .cosmos-tooltip.show { opacity: 1; }
+
+        /* Lightbox */
+        .cosmos-lightbox {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 70;
+            background: rgba(0,0,0,0.92); display: none;
+            align-items: center; justify-content: center;
+        }
+        .cosmos-lightbox.active { display: flex; }
+        .cosmos-lightbox img {
+            max-width: 85vw; max-height: 85vh; border-radius: 16px;
+            box-shadow: 0 0 60px rgba(99,102,241,0.3);
+            object-fit: contain;
+        }
+
+        /* Mobile sidebar toggle */
+        .mobile-menu-btn {
+            position: fixed; top: 16px; left: 16px; z-index: 45;
+            width: 40px; height: 40px; border-radius: 12px;
+            background: rgba(10,10,30,0.8); border: 1px solid rgba(99,102,241,0.3);
+            display: flex; align-items: center; justify-content: center;
+            color: #818cf8; cursor: pointer; backdrop-filter: blur(8px);
+        }
+        @media (min-width: 1024px) { .mobile-menu-btn { display: none; } }
+
+        /* Search */
+        .cosmos-search {
+            position: fixed; top: 16px; right: 16px; z-index: 45;
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(10,10,30,0.8); backdrop-filter: blur(12px);
+            border: 1px solid rgba(99,102,241,0.2); border-radius: 999px;
+            padding: 6px 16px;
+        }
+        .cosmos-search input {
+            background: transparent; border: none; outline: none;
+            color: #e2e8f0; font-size: 13px; width: 160px;
+            font-family: 'Lexend', sans-serif;
+        }
+        .cosmos-search input::placeholder { color: #475569; }
+
+        /* ─── VOICE UI ──────────────────────────── */
+        .voice-btn {
+            position: fixed; bottom: 24px; right: 24px; z-index: 45;
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: 2px solid rgba(255,255,255,0.15); color: white; cursor: pointer;
+            box-shadow: 0 4px 24px rgba(99,102,241,0.4);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .voice-btn:hover { transform: scale(1.1); }
+        .voice-btn .material-symbols-outlined { font-size: 28px; }
+        .voice-btn.listening {
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            animation: pulse-ring 1.5s ease-out infinite;
+            box-shadow: 0 4px 24px rgba(239,68,68,0.5);
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+            70% { box-shadow: 0 0 0 20px rgba(239,68,68,0); }
+            100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+        }
+
+        .voice-indicator {
+            position: fixed; bottom: 96px; right: 24px; z-index: 46;
+            background: rgba(10,10,30,0.9); backdrop-filter: blur(12px);
+            border: 1px solid rgba(239,68,68,0.3); border-radius: 16px;
+            padding: 10px 16px; display: none; align-items: center; gap: 10px;
+            color: #e2e8f0; font-size: 13px; font-family: 'Lexend', sans-serif;
+            max-width: 280px;
+        }
+        .voice-indicator.active { display: flex; }
+        .voice-pulse {
+            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+            background: #ef4444; animation: pulse-dot 1s infinite;
+        }
+        @keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+        .voice-unsupported {
+            position: fixed; bottom: 96px; right: 24px; z-index: 46;
+            background: rgba(10,10,30,0.9); border-radius: 12px; padding: 10px 14px;
+            color: #94a3b8; font-size: 12px; display: none;
+        }
+
+        /* ─── ARCHIVE OVERLAY ─────────────────── */
+        .archive-overlay {
+            position: fixed; inset: 0; z-index: 55;
+            background: rgba(5,5,16,0.94); backdrop-filter: blur(16px);
+            display: none; flex-direction: column; padding: 24px;
+            overflow-y: auto;
+        }
+        .archive-overlay.active { display: flex; }
+        .archive-overlay::-webkit-scrollbar { width: 6px; }
+        .archive-overlay::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.4); border-radius: 3px; }
+
+        .archive-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px; flex-shrink: 0;
+        }
+        .archive-transcript {
+            color: #818cf8; font-size: 20px; font-weight: 700;
+            font-family: 'Lexend', sans-serif;
+        }
+        .archive-count {
+            color: #64748b; font-size: 13px; margin-bottom: 16px; flex-shrink: 0;
+        }
+        .archive-close-btn {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); border: none;
+            color: white; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .archive-close-btn:hover { background: rgba(255,255,255,0.2); }
+
+        .archive-status {
+            color: #94a3b8; font-size: 14px; margin-bottom: 16px;
+            text-align: center; flex-shrink: 0;
+        }
+
+        .archive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px; flex: 1;
+        }
+        @media (min-width: 768px) {
+            .archive-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+        }
+
+        .archive-card {
+            position: relative; border-radius: 14px;
+            overflow: hidden; cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s, transform 0.2s;
+            background: rgba(30,30,60,0.5);
+        }
+        .archive-card:hover { border-color: #818cf8; transform: scale(1.04); }
+        .archive-card-selected { border-color: #f59e0b !important; }
+        .archive-card img {
+            width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block;
+        }
+        .archive-card-label {
+            padding: 6px 10px; font-size: 11px; color: #94a3b8;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .archive-number {
+            position: absolute; top: 8px; left: 8px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(99,102,241,0.9);
+            color: white; font-size: 14px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Lexend', sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+
+        .archive-empty {
+            grid-column: 1 / -1; text-align: center; padding: 60px 20px;
+            color: #64748b; font-size: 14px;
+        }
+        .archive-empty-sub { font-size: 12px; color: #475569; margin-top: 8px; }
+
+        /* ─── ARCHIVE VIEWER (LIGHTBOX) ──────── */
+        #archive-lightbox {
+            position: fixed; inset: 0; z-index: 70;
+            display: none; align-items: center; justify-content: center;
+        }
+        #archive-lightbox.active { display: flex; }
+
+        .viewer-backdrop {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.92); cursor: pointer;
+        }
+        .viewer-content {
+            position: relative; z-index: 1;
+            max-width: 90vw; max-height: 80vh;
+        }
+        .viewer-image {
+            max-width: 90vw; max-height: 80vh;
+            border-radius: 16px; object-fit: contain;
+            box-shadow: 0 0 60px rgba(99,102,241,0.3);
+        }
+        .viewer-number-badge {
+            position: absolute; top: 16px; left: 16px;
+            background: rgba(99,102,241,0.9); color: white;
+            padding: 6px 14px; border-radius: 999px;
+            font-size: 14px; font-weight: 700;
+            font-family: 'Lexend', sans-serif;
+        }
+        .viewer-controls {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            z-index: 2; display: flex; align-items: center; gap: 8px;
+            background: rgba(10,10,30,0.9); backdrop-filter: blur(12px);
+            border: 1px solid rgba(99,102,241,0.2); border-radius: 999px;
+            padding: 8px 16px;
+        }
+        .viewer-btn {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255,255,255,0.08); border: none;
+            color: #e2e8f0; cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .viewer-btn:hover:not(:disabled) { background: rgba(255,255,255,0.15); }
+        .viewer-btn:disabled { opacity: 0.3; cursor: default; }
+        .viewer-btn-action:hover { background: rgba(99,102,241,0.3); }
+        .viewer-counter {
+            color: #94a3b8; font-size: 13px; padding: 0 8px;
+            font-family: 'Lexend', sans-serif;
+        }
+        .viewer-divider {
+            width: 1px; height: 24px; background: rgba(255,255,255,0.1);
+            margin: 0 4px;
+        }
+
+        /* ─── PRINT ──────────────────────────── */
+        #print-container { display: none; }
+        @media print {
+            body > *:not(#print-container) { display: none !important; }
+            #print-container {
+                display: block !important; position: static;
+                width: 100%; text-align: center;
+            }
+            #print-container img {
+                max-width: 100%; max-height: 90vh; object-fit: contain;
+            }
+        }
+
+        /* Legend */
+        .cosmos-legend {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 40; display: flex; gap: 16px; align-items: center;
+            background: rgba(10,10,30,0.7); backdrop-filter: blur(8px);
+            border: 1px solid rgba(99,102,241,0.15); border-radius: 999px;
+            padding: 8px 20px; font-size: 11px; color: #64748b;
+        }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="bg-[#0a0a1a]">
+    <!-- Starfield Background -->
+    <div class="starfield"></div>
+    <div class="nebula nebula-1"></div>
+    <div class="nebula nebula-2"></div>
+    <div class="nebula nebula-3"></div>
+
+    <!-- 3D Force Graph Container -->
+    <div id="cosmos-3d" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1"></div>
+
+    <!-- Sidebar (same as classes.html) -->
+    <aside class="app-sidebar hidden fixed left-0 top-0 h-full w-60 bg-[#0a0a1a] border-r border-slate-800 flex-col z-40 p-4">
+        <a href="../../index.html" class="flex items-center gap-3 px-2 py-4 mb-6 hover:opacity-80 transition-opacity">
+            <img src="../../logo.png" alt="Luna Whale" class="w-10 h-10 object-contain rounded-xl" />
+            <div>
+                <div class="text-sm font-black text-primary leading-none">Luna Whale</div>
+                <div class="text-xs text-slate-500 font-medium">Art Lab</div>
+            </div>
+        </a>
+        <!-- 프로필 레벨 표시 제거됨 -->
+        <nav class="flex-1 min-h-0 space-y-1 overflow-y-auto pr-2">
+            <a href="classes.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/5 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">school</span>
+                <span data-i18n="nav_classes">Classes</span>
+            </a>
+            <a href="art-shop.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/5 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">palette</span>
+                <span data-i18n="nav_illustration">Illustration</span>
+            </a>
+            <a href="art-cosmos.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary/10 text-primary font-semibold text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">hub</span>
+                <span data-i18n="nav_art_cosmos">Art Cosmos</span>
+            </a>
+            <a href="artists-eye.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/5 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">visibility</span>
+                <span data-i18n="cat_artists_eye">Artist's Eye</span>
+            </a>
+            <a href="encyclopedia.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/5 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">book</span>
+                <span data-i18n="nav_encyclopedia">Encyclopedia</span>
+            </a>
+            <a href="gallery.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/5 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">gallery_thumbnail</span>
+                <span data-i18n="nav_gallery">Student Works</span>
+            </a>
+            <a href="my-classes.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/5 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">folder_special</span>
+                <span data-i18n="nav_my_classes">My Classes</span>
+            </a>
+            <a href="profile.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/5 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">account_circle</span>
+                <span data-i18n="nav_profile">Profile</span>
+            </a>
+            <a href="pricing.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/5 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">card_membership</span>
+                <span data-i18n="nav_membership">Membership</span>
+            </a>
+            <a href="support.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/5 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">help</span>
+                <span data-i18n="nav_support">Support</span>
+            </a>
+            <a href="settings.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/5 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">settings</span>
+                <span data-i18n="nav_settings">Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Mobile menu button -->
+    <button class="mobile-menu-btn" onclick="document.querySelector('.app-sidebar').classList.toggle('!flex')">
+        <span class="material-symbols-outlined">menu</span>
+    </button>
+
+    <!-- Search bar + Language toggle -->
+    <div class="cosmos-search">
+        <span class="material-symbols-outlined text-[#475569] text-lg">search</span>
+        <input type="text" id="cosmos-search-input" placeholder="Search keywords..." />
+        <button id="lang-toggle" onclick="toggleCosmosLang()" style="
+            background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.3);
+            border-radius:8px;padding:2px 10px;color:#818cf8;font-size:12px;
+            font-weight:700;cursor:pointer;font-family:'Lexend',sans-serif;
+            white-space:nowrap;transition:background 0.2s;
+        " title="한/EN 전환">한</button>
+    </div>
+
+    <!-- Breadcrumb + Camera Reset -->
+    <div class="breadcrumb" id="breadcrumb">
+        <span>Art Cosmos</span>
+    </div>
+    <button onclick="resetCamera()" style="
+        position:fixed;top:16px;left:50%;transform:translateX(200px);z-index:40;
+        width:36px;height:36px;border-radius:50%;
+        background:rgba(10,10,30,0.8);border:1px solid rgba(99,102,241,0.3);
+        color:#818cf8;cursor:pointer;display:flex;align-items:center;justify-content:center;
+        backdrop-filter:blur(8px);
+    " title="카메라 초기화">
+        <span class="material-symbols-outlined" style="font-size:18px">restart_alt</span>
+    </button>
+
+    <!-- Image Side Panel -->
+    <div class="image-panel" id="image-panel">
+        <div class="p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-white font-bold text-lg" id="panel-title">Images</h3>
+                <button onclick="closePanel()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition">
+                    <span class="material-symbols-outlined text-white text-sm">close</span>
+                </button>
+            </div>
+            <div class="text-xs text-slate-400 mb-4" id="panel-count">0 images</div>
+            <div class="grid grid-cols-2 gap-3" id="panel-grid"></div>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="cosmos-tooltip" id="tooltip"></div>
+
+    <!-- Lightbox -->
+    <div class="cosmos-lightbox" id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="" />
+    </div>
+
+    <!-- Archive Overlay -->
+    <div id="archive-overlay" class="archive-overlay">
+        <div class="archive-header">
+            <div>
+                <div class="archive-transcript" id="archive-transcript"></div>
+                <div class="archive-count" id="archive-count"></div>
+            </div>
+            <button onclick="archiveUI.close()" class="archive-close-btn">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="archive-status" id="archive-status"></div>
+        <div class="archive-grid" id="archive-grid"></div>
+    </div>
+
+    <!-- Archive Viewer (lightbox) -->
+    <div id="archive-lightbox"></div>
+
+    <!-- Voice Mic Button (FAB) -->
+    <button id="voice-btn" class="voice-btn" onclick="toggleVoice()">
+        <span class="material-symbols-outlined">mic</span>
+    </button>
+
+    <!-- Voice Listening Indicator -->
+    <div id="voice-indicator" class="voice-indicator">
+        <div class="voice-pulse"></div>
+        <span id="voice-transcript-live">듣고 있어요...</span>
+    </div>
+
+    <!-- Print Container -->
+    <div id="print-container"></div>
+
+    <!-- Search Log Modal -->
+    <div id="search-log-modal" style="position:fixed;inset:0;z-index:65;background:rgba(5,5,16,0.9);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px)">
+        <div style="background:#1e1e3e;border:1px solid rgba(99,102,241,0.3);border-radius:20px;padding:24px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <h3 style="color:#e2e8f0;font-size:16px;font-weight:700;font-family:'Lexend',sans-serif">인기 검색어 TOP 20</h3>
+                <button onclick="closeSearchLog()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center">
+                    <span class="material-symbols-outlined" style="font-size:18px">close</span>
+                </button>
+            </div>
+            <p style="color:#64748b;font-size:12px;margin-bottom:16px">자주 검색하는 키워드 → 미드저니로 고퀄 이미지 제작 추천</p>
+            <div id="search-log-list"></div>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="cosmos-legend" id="legend">
+        <div><span class="legend-dot" style="background:#6366f1"></span>Root</div>
+        <div><span class="legend-dot" style="background:#818cf8"></span>Category</div>
+        <div><span class="legend-dot" style="background:#a78bfa"></span>Month</div>
+        <div><span class="legend-dot" style="background:#c4b5fd"></span>Lesson</div>
+        <div><span class="legend-dot" style="background:#f472b6"></span>Theme</div>
+        <div style="color:#818cf8;cursor:pointer" onclick="openSearchLog()">
+            <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle">analytics</span> 검색 로그
+        </div>
+    </div>
+
+    <script>
+    // ─── MONTH LABELS ─────────────────────────────────
+    const MONTH_LABELS = {
+        '2025-10': '2025 Oct', '2025-11': '2025 Nov', '2025-12': '2025 Dec',
+        '2026-01': '2026 Jan', '2026-02': '2026 Feb', '2026-03': '2026 Mar'
+    };
+    const MONTH_COLORS = {
+        '2025-10': '#a78bfa', '2025-11': '#a78bfa', '2025-12': '#a78bfa',
+        '2026-01': '#a78bfa', '2026-02': '#a78bfa', '2026-03': '#a78bfa'
+    };
+
+    // ─── BUILD COSMOS_TREE DYNAMICALLY ───────────────
+    function buildLessonChildren() {
+        const monthMap = {};
+        const monthOrder = ['2025-10','2025-11','2025-12','2026-01','2026-02','2026-03'];
+        monthOrder.forEach(m => { monthMap[m] = []; });
+
+        if (typeof CLASSES_DATA !== 'undefined') {
+            CLASSES_DATA.forEach(cls => {
+                if (cls.month && monthMap[cls.month] !== undefined) {
+                    const parts = cls.id.split('-');
+                    const lessonNum = parseInt(parts[2], 10);
+                    monthMap[cls.month].push({
+                        id: cls.id,
+                        name: cls.title,
+                        color: '#c4b5fd',
+                        folder: 'lessons/' + cls.month,
+                        lessonNum: lessonNum,
+                        isLesson: true
+                    });
+                }
+            });
+        }
+
+        // Sort each month's lessons by lesson number
+        monthOrder.forEach(m => {
+            monthMap[m].sort((a, b) => a.lessonNum - b.lessonNum);
+        });
+
+        return monthOrder.map(m => ({
+            id: m,
+            name: MONTH_LABELS[m] || m,
+            color: MONTH_COLORS[m] || '#a78bfa',
+            children: monthMap[m],
+            lessonCount: monthMap[m].length
+        }));
+    }
+
+    // ─── 한글/영어 이름 매핑 ──────────────────────────
+    let cosmosLang = localStorage.getItem('cosmos-lang') || 'ko';
+    const NAMES = {
+        'root':          { en: 'Art Cosmos',           ko: '아트 코스모스' },
+        'lessons':       { en: 'Monthly Lessons',      ko: '월간 수업' },
+        'themes':        { en: 'Themed Collections',   ko: '테마 컬렉션' },
+        'impressionism': { en: 'Impressionism',        ko: '인상파' },
+        'materials':     { en: 'Materials Archive',    ko: '재료 아카이브' },
+        'coloring':      { en: 'Coloring & Illustration', ko: '색칠 & 일러스트' },
+        'special':       { en: 'Special Projects',     ko: '특별 프로젝트' },
+        'traditional-patterns': { en: 'Traditional Patterns', ko: '전통 문양' },
+        'space-scenery':  { en: 'Space Scenery',       ko: '우주 풍경' },
+        'wooden-pencil-case': { en: 'Wooden Pencil Case', ko: '나무 필통' },
+        'album-cover':    { en: 'Album Cover Art',     ko: '앨범 커버 아트' },
+        'miniature-studio': { en: 'Miniature Studio',  ko: '미니어처 스튜디오' },
+        'machine-animals': { en: 'Machine Animals',    ko: '기계 동물' },
+        'ecological-guardian': { en: 'Ecological Guardian', ko: '생태 수호자' },
+        'forest-village': { en: 'Forest Village',      ko: '숲속 마을' },
+        'animal-stamps':  { en: 'Animal Stamps',       ko: '동물 우표' },
+        'seasonal-glasses': { en: 'Seasonal Glasses',  ko: '계절 안경' },
+        'hand-music':     { en: 'Hand Music',          ko: '손 음악' },
+        'light-box':      { en: 'Light Box',           ko: '라이트박스' },
+        'action-poster':  { en: 'Action Poster',       ko: '액션 포스터' },
+        'fruit-anatomy':  { en: 'Fruit Anatomy',       ko: '과일 해부학' },
+        'fruit-patterns': { en: 'Fruit Patterns',      ko: '과일 패턴' },
+        'imp-lessons':    { en: 'Impressionist Lessons', ko: '인상파 수업' },
+        'materials-archive': { en: 'Craft Materials',  ko: '공예 재료' },
+        'adult-illust':   { en: 'Adult Illustration',  ko: '성인 일러스트' },
+        'midjourney-1':   { en: 'Midjourney Session 1', ko: '미드저니 세션 1' },
+        'midjourney-2':   { en: 'Midjourney Session 2', ko: '미드저니 세션 2' },
+        'fantasy-typewriter': { en: 'Fantasy Typewriter', ko: '판타지 타자기' },
+        'luna-science':   { en: 'Luna Whale Science',  ko: '루나웨일 과학' },
+        'marquee':        { en: 'Marquee Gallery',     ko: '마퀴 갤러리' },
+    };
+    // 월 이름
+    ['2025-10','2025-11','2025-12','2026-01','2026-02','2026-03'].forEach(m => {
+        const [y, mo] = m.split('-');
+        const moNames = { '10':'10월','11':'11월','12':'12월','01':'1월','02':'2월','03':'3월' };
+        NAMES[m] = { en: `${y} ${['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mo]}`, ko: `${y}년 ${moNames[mo]}` };
+    });
+
+    function N(id, fallback) {
+        const entry = NAMES[id];
+        if (entry) return entry[cosmosLang] || entry.en || fallback;
+        return fallback;
+    }
+
+    const COSMOS_TREE = {
+        id: "root",
+        name: N("root", "Art Cosmos"),
+        color: "#6366f1",
+        children: [
+            {
+                id: "lessons", name: N("lessons", "Monthly Lessons"), color: "#818cf8",
+                children: buildLessonChildren()
+            },
+            {
+                id: "themes", name: N("themes", "Themed Collections"), color: "#ec4899",
+                children: [
+                    { id: "traditional-patterns", name: N("traditional-patterns", "Traditional Patterns"), color: "#f472b6", folder: "traditional-patterns", count: 94 },
+                    { id: "space-scenery", name: N("space-scenery", "Space Scenery"), color: "#f472b6", folder: "space-scenery", count: 59 },
+                    { id: "wooden-pencil-case", name: N("wooden-pencil-case", "Wooden Pencil Case"), color: "#f472b6", folder: "wooden-pencil-case", count: 59 },
+                    { id: "album-cover", name: N("album-cover", "Album Cover Art"), color: "#f472b6", folder: "album-cover", count: 48 },
+                    { id: "miniature-studio", name: N("miniature-studio", "Miniature Studio"), color: "#f472b6", folder: "miniature-studio", count: 45 },
+                    { id: "machine-animals", name: N("machine-animals", "Machine Animals"), color: "#f472b6", folder: "machine-animals", count: 44 },
+                    { id: "ecological-guardian", name: N("ecological-guardian", "Ecological Guardian"), color: "#f472b6", folder: "ecological-guardian", count: 55 },
+                    { id: "forest-village", name: N("forest-village", "Forest Village"), color: "#f472b6", folder: "forest-village", count: 19 },
+                    { id: "animal-stamps", name: N("animal-stamps", "Animal Stamps"), color: "#f472b6", folder: "animal-stamps", count: 36 },
+                    { id: "seasonal-glasses", name: N("seasonal-glasses", "Seasonal Glasses"), color: "#f472b6", folder: "seasonal-glasses", count: 21 },
+                    { id: "hand-music", name: N("hand-music", "Hand Music"), color: "#f472b6", folder: "hand-music", count: 26 },
+                    { id: "light-box", name: N("light-box", "Light Box"), color: "#f472b6", folder: "light-box", count: 21 },
+                    { id: "action-poster", name: N("action-poster", "Action Poster"), color: "#f472b6", folder: "action-poster", count: 20 },
+                    { id: "fruit-anatomy", name: N("fruit-anatomy", "Fruit Anatomy"), color: "#f472b6", folder: "fruit-anatomy", count: 8 },
+                    { id: "fruit-patterns", name: N("fruit-patterns", "Fruit Patterns"), color: "#f472b6", folder: "fruit-patterns", count: 8 },
+                ]
+            },
+            {
+                id: "impressionism", name: N("impressionism", "Impressionism"), color: "#f59e0b",
+                children: [
+                    { id: "imp-lessons", name: N("imp-lessons", "Impressionist Lessons"), color: "#fbbf24", folder: "lessons/impressionism", count: 90 },
+                ]
+            },
+            {
+                id: "materials", name: N("materials", "Materials Archive"), color: "#10b981",
+                children: [
+                    { id: "materials-archive", name: N("materials-archive", "Craft Materials"), color: "#34d399", folder: "LUNA_Materials_Archive", count: 172 },
+                ]
+            },
+            {
+                id: "coloring", name: N("coloring", "Coloring & Illustration"), color: "#06b6d4",
+                children: [
+                    { id: "adult-illust", name: N("adult-illust", "Adult Illustration"), color: "#22d3ee", folder: "coloring-book/adult-illustration", count: 100 },
+                    { id: "midjourney-1", name: N("midjourney-1", "Midjourney Session 1"), color: "#22d3ee", folder: "coloring-book/midjourney_session", count: 89 },
+                    { id: "midjourney-2", name: N("midjourney-2", "Midjourney Session 2"), color: "#22d3ee", folder: "coloring-book/midjourney_session_2", count: 33 },
+                ]
+            },
+            {
+                id: "special", name: N("special", "Special Projects"), color: "#f97316",
+                children: [
+                    { id: "fantasy-typewriter", name: N("fantasy-typewriter", "Fantasy Typewriter"), color: "#fb923c", folder: "Fantasy typewriter", count: 30 },
+                    { id: "luna-science", name: N("luna-science", "Luna Whale Science"), color: "#fb923c", folder: "Luna Whale Science", count: 20 },
+                    { id: "marquee", name: N("marquee", "Marquee Gallery"), color: "#fb923c", folder: "lessons/marquee", count: 40 },
+                ]
+            }
+        ]
+    };
+
+    // ─── FOLDER_FILES (file name mappings) ───────────
+    const FOLDER_FILES = {
+        'traditional-patterns': ['master1.jpeg','master10.jpg','master11.jpg','master12.png','master13.jpg','master14.jpg','master2.jpg','master3.jpg','master4.jpg','master5.jpg','master6.jpg','master7.jpg','master8.jpg','master9.jpg','mat1.png','mat2.png','mat3.png','mat4.png','result1.png','result10.png','result11.png','result12.png','result13.png','result14.png','result15.png','result16.png','result17.png','result18.png','result19.png','result2.png','result20.png','result21.png','result22.png','result23.png','result24.png','result25.png','result26.png','result27.png','result28.png','result29.png','result3.png','result30.png','result31.png','result32.png','result33.png','result34.png','result35.png','result36.png','result37.png','result38.png','result39.png','result4.png','result40.png','result41.png','result42.png','result43.png','result44.png','result45.png','result46.png','result47.png','result48.png','result49.png','result5.png','result50.png','result51.png','result52.png','result53.png','result54.png','result55.png','result56.png','result57.png','result58.png','result59.png','result6.png','result60.png','result61.png','result62.png','result63.png','result64.png','result65.png','result66.png','result67.png','result68.png','result7.png','result8.png','result9.png','step1.png','step2.png','step3.png','step4.png','step5.png','step6.png','step7.png','step8.png'],
+        'space-scenery': ['master1.jpg','master2.jpg','master3.jpg','master4.jpg','master5.jpg','master6.jpg','master7.jpg','result1.png','result10.png','result11.png','result12.png','result13.png','result14.png','result15.png','result16.png','result17.png','result18.png','result19.png','result2.png','result20.png','result21.png','result22.png','result23.png','result24.png','result25.png','result26.png','result27.png','result28.png','result29.png','result3.png','result30.png','result31.png','result32.png','result33.png','result34.png','result35.png','result36.png','result37.png','result38.png','result39.png','result4.png','result40.png','result41.png','result42.png','result43.png','result44.png','result45.png','result46.png','result47.png','result5.png','result6.png','result7.png','result8.png','result9.png'],
+        'wooden-pencil-case': ['master1.png','master10.png','master11.png','master12.png','master13.png','master14.png','master15.png','master16.png','master2.png','master3.png','master4.png','master5.png','master6.png','master7.png','master8.png','master9.png','result1.png','result10.png','result11.png','result12.png','result13.png','result14.png','result15.png','result16.png','result17.png','result18.png','result19.png','result2.png','result20.png','result21.png','result22.png','result23.png','result24.png','result25.png','result26.png','result27.png','result28.png','result29.png','result3.png','result30.png','result31.png','result32.png','result33.png','result34.png','result35.png','result36.png','result37.png','result38.png','result39.png','result4.png','result40.png','result41.png','result42.png','result43.png','result5.png','result6.png','result7.png','result8.png','result9.png'],
+        'album-cover': ['master1.png','master10.png','master11.png','master12.png','master13.png','master14.png','master15.png','master16.png','master17.png','master18.png','master19.png','master2.png','master20.png','master21.png','master22.png','master23.png','master24.png','master3.png','master4.png','master5.png','master6.png','master7.png','master8.png','master9.png','result1.png','result10.png','result11.png','result12.png','result13.png','result14.png','result15.png','result16.png','result17.png','result18.png','result19.png','result2.png','result20.png','result21.png','result22.png','result23.png','result24.png','result3.png','result4.png','result5.png','result6.png','result7.png','result8.png','result9.png'],
+        'miniature-studio': ['master1.png','master10.png','master11.png','master12.png','master2.png','master3.png','master4.png','master5.png','master6.png','master7.png','master8.png','master9.png','result1.png','result10.png','result11.png','result12.png','result13.png','result14.png','result15.png','result16.png','result17.png','result18.png','result19.png','result2.png','result20.png','result21.png','result22.png','result23.png','result24.png','result25.png','result26.png','result27.png','result28.png','result29.png','result3.png','result30.png','result31.png','result32.png','result33.png','result4.png','result5.png','result6.png','result7.png','result8.png','result9.png'],
+        'machine-animals': ['result1.png','result10.png','result11.png','result12.png','result13.png','result14.png','result15.png','result16.png','result17.png','result18.png','result19.png','result2.png','result20.png','result21.png','result22.png','result23.png','result24.png','result25.png','result26.png','result27.png','result28.png','result29.png','result3.png','result30.png','result31.png','result32.png','result33.png','result34.png','result35.png','result36.png','result37.png','result38.png','result39.png','result4.png','result40.png','result41.png','result42.png','result43.png','result44.png','result5.png','result6.png','result7.png','result8.png','result9.png'],
+        'ecological-guardian': ['result1.png','result10.png','result11.png','result12.png','result13.png','result14.png','result15.png','result16.png','result17.png','result18.png','result19.png','result2.png','result20.png','result21.png','result22.png','result23.png','result24.png','result25.png','result26.png','result27.png','result28.png','result29.png','result3.png','result30.png','result31.png','result32.png','result33.png','result34.png','result35.png','result36.png','result37.png','result38.png','result39.png','result4.png','result40.png','result41.png','result42.png','result43.png','result44.png','result45.png','result46.png','result47.png','result48.png','result49.png','result5.png','result50.png','result51.png','result52.png','result53.png','result54.png','result55.png','result6.png','result7.png','result8.png','result9.png'],
+        'forest-village': ['master1.png','master2.png','master3.png','master4.png','master5.png','master6.png','master7.png','result1.png','result10.png','result11.png','result12.png','result2.png','result3.png','result4.png','result5.png','result6.png','result7.png','result8.png','result9.png'],
+        'animal-stamps': ['result1.png','result10.png','result11.png','result12.png','result13.png','result14.png','result15.png','result16.png','result17.png','result18.png','result19.png','result2.png','result20.png','result21.png','result22.png','result23.png','result24.png','result25.png','result26.png','result27.png','result28.png','result29.png','result3.png','result30.png','result31.png','result32.png','result33.png','result34.png','result35.png','result36.png','result4.png','result5.png','result6.png','result7.png','result8.png','result9.png'],
+        'seasonal-glasses': ['master1.png','master10.png','master11.png','master12.png','master13.png','master2.png','master3.png','master4.png','master5.png','master6.png','master7.png','master8.png','master9.png','result1.png','result2.png','result3.png','result4.png','result5.png'],
+        'hand-music': ['master1.png','master10.png','master11.png','master12.png','master13.png','master14.png','master15.png','master16.png','master2.png','master3.png','master4.png','master5.png','master6.png','master7.png','master8.png','master9.png','result1.png','result10.png','result2.png','result3.png','result4.png','result5.png','result6.png','result7.png','result8.png','result9.png'],
+        'light-box': ['master1.png','master2.png','master3.png','master4.png','master5.png','master6.png','master7.png','master8.png','master9.png','result1.png','result10.png','result11.png','result12.png','result2.png','result3.png','result4.png','result5.png','result6.png','result7.png','result8.png','result9.png'],
+        'action-poster': ['result1.png','result10.png','result11.png','result12.png','result13.png','result14.png','result15.png','result16.png','result17.png','result18.png','result19.png','result2.png','result20.png','result3.png','result4.png','result5.png','result6.png','result7.png','result8.png','result9.png'],
+        'fruit-anatomy': ['result1.png','result2.png','result3.png','result4.png','result5.png','result6.png','result7.png','result8.png'],
+        'fruit-patterns': ['result1.png','result2.png','result3.png','result4.png','result5.png','result6.png','result7.png','result8.png'],
+        'LUNA_Materials_Archive': null,
+        'lessons/marquee': ['m001.jpg','m002.jpg','m003.jpg','m004.jpg','m005.jpg','m006.jpg','m007.jpg','m008.jpg','m009.jpg','m010.jpg','m011.jpg','m012.jpg','m013.jpg','m014.jpg','m015.jpg','m016.jpg','m017.jpg','m018.jpg','m019.jpg','m020.jpg','m021.jpg','m022.jpg','m023.jpg','m024.jpg','m025.jpg','m026.jpg','m027.jpg','m028.jpg','m029.jpg','m030.jpg','m031.jpg','m032.jpg','m033.jpg','m034.jpg','m035.jpg','m036.jpg','m037.jpg','m038.jpg','m039.jpg','m040.jpg','m041.jpg','m042.jpg','m043.jpg','m044.jpg','m045.jpg','m046.jpg','m047.jpg','m048.jpg','m049.jpg','m050.jpg','m051.jpg','m052.jpg','m053.jpg','m054.jpg','m055.jpg','m056.jpg','m057.jpg','m058.jpg','m059.jpg','m060.jpg','m061.jpg','m062.jpg','m063.jpg','m064.jpg','m065.jpg','m066.jpg','m067.jpg','m068.jpg','m069.jpg','m070.jpg','m071.jpg','m072.jpg','m073.jpg','m074.jpg','m075.jpg','m076.jpg','m077.jpg','m078.jpg','m079.jpg','m080.jpg','m081.jpg','m082.jpg','m083.jpg','m084.jpg','m085.jpg','m086.jpg','m087.jpg','m088.jpg','m089.jpg','m090.jpg','m091.jpg','m092.jpg','m093.jpg','m094.jpg','m095.jpg','m096.jpg','m097.jpg','m098.jpg','m099.jpg','m100.jpg','m101.jpg','m102.jpg','m103.jpg','m104.jpg','m105.jpg','m106.jpg','m107.jpg','m108.jpg','m109.jpg','m110.jpg','m111.jpg','m112.jpg','m113.jpg','m114.jpg','m115.jpg','m116.jpg','m117.jpg','m118.jpg','m119.jpg','m120.jpg'],
+    };
+
+    // ─── 3D FORCE GRAPH ──────────────────────────────
+    // Track which nodes are expanded
+    let expandedNodes = new Set(["root"]);
+    // Node lookup map
+    let nodeMap = {};
+
+    // Flatten tree into { nodes, links } based on expanded state
+    // 색상 유틸: hex → HSL → hex (부모 계열 색 변형)
+    function hexToHsl(hex) {
+        let r = parseInt(hex.slice(1,3),16)/255, g = parseInt(hex.slice(3,5),16)/255, b = parseInt(hex.slice(5,7),16)/255;
+        const max = Math.max(r,g,b), min = Math.min(r,g,b), l = (max+min)/2;
+        let h=0, s=0;
+        if (max !== min) {
+            const d = max-min;
+            s = l > 0.5 ? d/(2-max-min) : d/(max+min);
+            if (max===r) h = ((g-b)/d + (g<b?6:0))/6;
+            else if (max===g) h = ((b-r)/d+2)/6;
+            else h = ((r-g)/d+4)/6;
+        }
+        return [h*360, s*100, l*100];
+    }
+    function hslToHex(h, s, l) {
+        h /= 360; s /= 100; l /= 100;
+        let r, g, b;
+        if (s === 0) { r = g = b = l; }
+        else {
+            const hue2rgb = (p, q, t) => { if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p; };
+            const q = l < 0.5 ? l*(1+s) : l+s-l*s, p = 2*l-q;
+            r = hue2rgb(p,q,h+1/3); g = hue2rgb(p,q,h); b = hue2rgb(p,q,h-1/3);
+        }
+        return '#' + [r,g,b].map(x => Math.round(x*255).toString(16).padStart(2,'0')).join('');
+    }
+    function childColor(parentHex, index, total) {
+        const [h, s, l] = hexToHsl(parentHex);
+        // 색상(hue)을 부모 기준 ±30도 범위에서 분산
+        const spread = 30;
+        const hueShift = total > 1 ? -spread/2 + (index / (total-1)) * spread : 0;
+        const newH = (h + hueShift + 360) % 360;
+        // 밝기도 살짝 변화
+        const lShift = -8 + (index / Math.max(total-1, 1)) * 16;
+        const newL = Math.min(75, Math.max(30, l + lShift));
+        return hslToHex(newH, Math.min(s, 85), newL);
+    }
+
+    function buildGraphData() {
+        const nodes = [];
+        const links = [];
+
+        function walk(treeNode, parentId, depth, parentColor) {
+            const n = {
+                id: treeNode.id,
+                name: treeNode.name,
+                color: treeNode.color || parentColor || '#6366f1',
+                depth: depth,
+                folder: treeNode.folder,
+                count: treeNode.count,
+                lessonCount: treeNode.lessonCount,
+                lessonNum: treeNode.lessonNum,
+                isLesson: treeNode.isLesson,
+                _hasChildren: !!(treeNode.children && treeNode.children.length > 0),
+                _childCount: treeNode.children ? treeNode.children.length : 0
+            };
+            nodes.push(n);
+            nodeMap[n.id] = n;
+
+            if (parentId) {
+                links.push({ source: parentId, target: n.id });
+            }
+
+            if (expandedNodes.has(treeNode.id) && treeNode.children) {
+                const pColor = n.color;
+                treeNode.children.forEach((child, idx) => {
+                    // 하위 행성: 부모 계열 색상 변형
+                    if (!child._origColor) child._origColor = child.color;
+                    child.color = childColor(pColor, idx, treeNode.children.length);
+                    walk(child, treeNode.id, depth + 1, pColor);
+                });
+            }
+        }
+
+        nodeMap = {};
+        walk(COSMOS_TREE, null, 0, '#6366f1');
+        return { nodes, links };
+    }
+
+    // Node size based on depth
+    function nodeSize(node) {
+        if (node.id === 'root') return 18;
+        if (node.depth === 1) return 12;
+        if (node.depth === 2) return 8;
+        if (node.isLesson) return 5;
+        return 6;
+    }
+
+    // ─── 썸네일 URL 매핑 ────────────────────────────
+    const textureLoader = new THREE.TextureLoader();
+    const textureCache = {};
+
+    function getNodeThumb(node) {
+        const base = '../../images/';
+        // 개별 수업 노드
+        if (node.isLesson && node.folder && node.lessonNum) {
+            const ln = String(node.lessonNum).padStart(2, '0');
+            return `${base}${node.folder}/thumbs/l${ln}.jpg`;
+        }
+        // 월 노드: 첫 번째 수업 커버
+        if (node.id && node.id.match(/^\d{4}-\d{2}$/) && node.folder) {
+            return `${base}${node.folder}/thumbs/l01.jpg`;
+        }
+        // 테마 컬렉션: 첫 번째 파일
+        if (node.folder && FOLDER_FILES[node.folder] && FOLDER_FILES[node.folder].length > 0) {
+            return `${base}${node.folder}/${FOLDER_FILES[node.folder][0]}`;
+        }
+        return null;
+    }
+
+    function loadTexture(url) {
+        if (!url) return null;
+        if (textureCache[url]) return textureCache[url];
+        const tex = textureLoader.load(url, () => {}, () => {}, () => {});
+        textureCache[url] = tex;
+        return tex;
+    }
+
+    // ─── 파티클 링 반짝임 트래커 ──────────────────────
+    const ringAnimTargets = [];
+
+    // ─── 궤도 파티클 트래커 ──────────────────────────
+    const orbitGroups = [];
+
+    function createOrbitParticles(group, size, color, count) {
+        const orbitData = { particles: [], radius: size * 2.2, speed: 0.5 + Math.random() * 0.8, group };
+        for (let i = 0; i < count; i++) {
+            const geo = new THREE.SphereGeometry(0.5, 6, 6);
+            const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color(color), transparent: true, opacity: 0.9 });
+            const p = new THREE.Mesh(geo, mat);
+            const angle = (i / count) * Math.PI * 2;
+            const tilt = Math.random() * Math.PI;
+            p.userData = { angle, tilt, i };
+            group.add(p);
+            orbitData.particles.push(p);
+        }
+        orbitGroups.push(orbitData);
+    }
+
+    // ─── 그래프 초기화 ──────────────────────────────
+    const container = document.getElementById('cosmos-3d');
+    const Graph = ForceGraph3D()(container)
+        .backgroundColor('#00000000')
+        .showNavInfo(false)
+        .nodeLabel(node => {
+            let html = `<div style="background:rgba(30,30,60,0.95);border:1px solid rgba(99,102,241,0.3);border-radius:10px;padding:8px 14px;font-family:Lexend,sans-serif;font-size:12px;color:#e2e8f0">`;
+            html += `<b>${node.name}</b>`;
+            if (node.count) html += `<br/>${node.count} images`;
+            if (node._hasChildren && !node.folder && !node.isLesson) html += `<br/>${node._childCount} sub-categories`;
+            if (node.folder || node.isLesson) html += `<br/><span style="color:#818cf8">Click to view</span>`;
+            else if (node._hasChildren) html += `<br/><span style="color:#818cf8">Click to expand</span>`;
+            html += `</div>`;
+            return html;
+        })
+        .linkColor(link => {
+            const sid = typeof link.source === 'object' ? link.source.id : link.source;
+            const sNode = nodeMap[sid];
+            return sNode ? sNode.color + '44' : 'rgba(100,100,200,0.15)';
+        })
+        .linkWidth(0.5)
+        .linkOpacity(0.15)
+        .linkDirectionalParticles(link => {
+            // 클릭된 경로(확장된 노드)의 링크만 파티클 표시
+            const sid = typeof link.source === 'object' ? link.source.id : link.source;
+            return expandedNodes.has(sid) ? 3 : 0;
+        })
+        .linkDirectionalParticleWidth(1.5)
+        .linkDirectionalParticleSpeed(0.003)
+        .linkDirectionalParticleColor(link => {
+            const sid = typeof link.source === 'object' ? link.source.id : link.source;
+            const sNode = nodeMap[sid];
+            return sNode ? sNode.color : '#818cf8';
+        })
+        .onNodeClick(node => handleNodeClick3D(node))
+        .onNodeHover(node => {
+            container.style.cursor = node ? 'pointer' : 'default';
+        })
+        .warmupTicks(0)
+        .cooldownTicks(2000)
+        .cooldownTime(45000)
+        .d3AlphaDecay(0.001)
+        .d3VelocityDecay(0.6);
+
+    // ─── Force 설정 ──────────────────────────────────
+    Graph.d3Force('charge').strength(-200);
+    Graph.d3Force('link').distance(80);
+
+    // ─── 커스텀 노드 (썸네일 구체 + 글로우 + 궤도 + 라벨) ─
+    Graph.nodeThreeObjectExtend(false)
+        .nodeThreeObject(node => {
+            const group = new THREE.Group();
+            const size = nodeSize(node);
+            const color = new THREE.Color(node.color || '#6366f1');
+
+            // 1) 파티클 링 (점들이 원형 테두리 + 반짝이며 회전)
+            const thumbUrl = getNodeThumb(node);
+
+            if (node.id !== 'root') {
+                const ptCount = node.depth <= 1 ? 400 : node.isLesson ? 200 : 300;
+                const ringGeo = new THREE.BufferGeometry();
+                const ringPos = new Float32Array(ptCount * 3);
+                const ringAlphas = new Float32Array(ptCount);
+
+                // ─── 행성별 고유 파티클 형태 ───────────
+                const style = {
+                    'lessons': 'spiral',          // 피보나치 나선
+                    'themes': 'vortex',           // 소용돌이
+                    'impressionism': 'bands',     // 위도선 밴드 (Gemini)
+                    'materials': 'fibonacci',     // 균등 피보나치 구
+                    'coloring': 'helix',          // DNA 이중 나선
+                    'special': 'cluster',         // 별자리 클러스터
+                }[node.id] || (node.isLesson ? 'compact'
+                    : node.id && node.id.match(/^\d{4}-\d{2}$/) ? 'spiral'   // 월 노드 → 나선
+                    : 'fibonacci');
+
+                for (let i = 0; i < ptCount; i++) {
+                    const t = i / ptCount;
+                    let x, y, z;
+
+                    switch (style) {
+                        case 'spiral': {
+                            // 나선형 — Claude 스타일
+                            const phi = Math.acos(1 - 2 * t);
+                            const theta = Math.PI * (1 + Math.sqrt(5)) * i * 2.5;
+                            x = Math.sin(phi) * Math.cos(theta) * size;
+                            y = Math.sin(phi) * Math.sin(theta) * size;
+                            z = Math.cos(phi) * size;
+                            break;
+                        }
+                        case 'vortex': {
+                            // 소용돌이 — ChatGPT 스타일
+                            const a = t * Math.PI * 8;
+                            const r = size * (0.3 + t * 0.7);
+                            const h = (t - 0.5) * size * 1.6;
+                            x = Math.cos(a) * r;
+                            y = h;
+                            z = Math.sin(a) * r;
+                            break;
+                        }
+                        case 'bands': {
+                            // 위도선 밴드 — Gemini 스타일
+                            const bandCount = 12;
+                            const band = Math.floor(i / (ptCount / bandCount));
+                            const bandAngle = (band / bandCount) * Math.PI;
+                            const ringR = Math.sin(bandAngle) * size;
+                            const posInBand = (i % Math.floor(ptCount / bandCount)) / Math.floor(ptCount / bandCount);
+                            const a2 = posInBand * Math.PI * 2 + band * 0.3;
+                            x = Math.cos(a2) * ringR;
+                            y = Math.cos(bandAngle) * size;
+                            z = Math.sin(a2) * ringR;
+                            break;
+                        }
+                        case 'helix': {
+                            // 이중 나선 — DNA
+                            const strand = i < ptCount / 2 ? 0 : 1;
+                            const si = strand === 0 ? i : i - ptCount / 2;
+                            const ht = si / (ptCount / 2);
+                            const ha = ht * Math.PI * 6 + strand * Math.PI;
+                            const hr = size * 0.8;
+                            x = Math.cos(ha) * hr;
+                            y = (ht - 0.5) * size * 2;
+                            z = Math.sin(ha) * hr;
+                            break;
+                        }
+                        case 'cluster': {
+                            // 별자리 클러스터 — 몇 개 중심점 주위에 밀집
+                            const centers = 5;
+                            const ci = i % centers;
+                            const cAngle = (ci / centers) * Math.PI * 2;
+                            const cx2 = Math.cos(cAngle) * size * 0.5;
+                            const cz2 = Math.sin(cAngle) * size * 0.5;
+                            const spread = size * 0.5;
+                            x = cx2 + (Math.random() - 0.5) * spread;
+                            y = (Math.random() - 0.5) * spread;
+                            z = cz2 + (Math.random() - 0.5) * spread;
+                            break;
+                        }
+                        case 'compact': {
+                            // 하위 수업용 — 작고 촘촘한 구
+                            const phi2 = Math.acos(1 - 2 * t);
+                            const theta2 = Math.PI * (1 + Math.sqrt(5)) * i;
+                            x = Math.sin(phi2) * Math.cos(theta2) * size;
+                            y = Math.sin(phi2) * Math.sin(theta2) * size;
+                            z = Math.cos(phi2) * size;
+                            break;
+                        }
+                        default: { // fibonacci
+                            const phi3 = Math.acos(1 - 2 * t);
+                            const theta3 = Math.PI * (1 + Math.sqrt(5)) * i;
+                            x = Math.sin(phi3) * Math.cos(theta3) * size;
+                            y = Math.sin(phi3) * Math.sin(theta3) * size;
+                            z = Math.cos(phi3) * size;
+                        }
+                    }
+
+                    ringPos[i * 3] = x;
+                    ringPos[i * 3 + 1] = y;
+                    ringPos[i * 3 + 2] = z;
+                    ringAlphas[i] = Math.random();
+                }
+                ringGeo.setAttribute('position', new THREE.BufferAttribute(ringPos, 3));
+
+                const ringMat = new THREE.PointsMaterial({
+                    color: new THREE.Color(node.color),
+                    size: node.depth <= 1 ? 0.8 : node.isLesson ? 0.4 : 0.6,
+                    transparent: true,
+                    opacity: 0.85,
+                    sizeAttenuation: true,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false,
+                });
+                const ring = new THREE.Points(ringGeo, ringMat);
+                ring.userData.ringAlphas = ringAlphas;
+                ring.userData.style = style;
+                ringAnimTargets.push(ring);
+                group.add(ring);
+
+                // 코어: 제거 (검정 원 방지)
+            }
+
+            // 2) 방사형 글로우 스프라이트 (행성 대기 느낌, 행성별 개성)
+            const glowCanvas = document.createElement('canvas');
+            const gctx = glowCanvas.getContext('2d');
+            glowCanvas.width = 256; glowCanvas.height = 256;
+            const gc = 128;
+            // 행성별 글로우 스타일
+            const glowInner = node.depth <= 1 ? '1a' : '11';
+            const glowMid = node.depth <= 1 ? '0a' : '06';
+            const radGrad = gctx.createRadialGradient(gc, gc, size * 1.5, gc, gc, gc);
+            radGrad.addColorStop(0, node.color + glowInner);
+            radGrad.addColorStop(0.35, node.color + glowMid);
+            radGrad.addColorStop(0.65, node.color + '15');
+            radGrad.addColorStop(1, node.color + '00');
+            gctx.fillStyle = radGrad;
+            gctx.fillRect(0, 0, 256, 256);
+            // 수평 글리치/스캔 라인 (은은한 행성 대기 줄)
+            gctx.globalAlpha = 0.08;
+            for (let y = 60; y < 196; y += 6 + Math.floor(Math.random() * 10)) {
+                const w = 40 + Math.random() * 60;
+                const x = gc - w / 2 + (Math.random() - 0.5) * 15;
+                gctx.fillStyle = node.color;
+                gctx.fillRect(x, y, w, 1);
+            }
+            gctx.globalAlpha = 1;
+            const glowTex = new THREE.CanvasTexture(glowCanvas);
+            const glowSprite = new THREE.Sprite(
+                new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })
+            );
+            const glowScale = size * (node.depth <= 1 ? 3.5 : 2.8);
+            glowSprite.scale.set(glowScale, glowScale, 1);
+            group.add(glowSprite);
+
+            // 3) 어안렌즈 썸네일 스프라이트 (항상 카메라 방향)
+            if (thumbUrl && node.id !== 'root') {
+                const fishCanvas = document.createElement('canvas');
+                const fctx = fishCanvas.getContext('2d');
+                const fSize = 256;
+                fishCanvas.width = fSize; fishCanvas.height = fSize;
+                // 투명 배경
+                fctx.clearRect(0, 0, fSize, fSize);
+
+                const fishTex = new THREE.CanvasTexture(fishCanvas);
+                const fishSprite = new THREE.Sprite(
+                    new THREE.SpriteMaterial({ map: fishTex, transparent: true, depthWrite: false })
+                );
+                const thumbScale = size * 1.7;
+                fishSprite.scale.set(thumbScale, thumbScale, 1);
+                fishSprite.renderOrder = 10;
+                group.add(fishSprite);
+
+                // 이미지 비동기 로드
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    // 원형 클립 + 어안렌즈 + 하이라이트
+                    fctx.save();
+                    fctx.beginPath();
+                    fctx.arc(fSize/2, fSize/2, fSize * 0.45, 0, Math.PI * 2);
+                    fctx.clip();
+                    // 어안렌즈: 중앙 부풀리기
+                    const bulge = fSize * 0.52;
+                    fctx.drawImage(img, fSize/2 - bulge, fSize/2 - bulge * 0.85, bulge * 2, bulge * 1.7);
+                    fctx.restore();
+                    // 유리 하이라이트
+                    const hlGrad = fctx.createRadialGradient(fSize*0.38, fSize*0.33, 0, fSize*0.42, fSize*0.38, fSize*0.32);
+                    hlGrad.addColorStop(0, 'rgba(255,255,255,0.4)');
+                    hlGrad.addColorStop(0.5, 'rgba(255,255,255,0.08)');
+                    hlGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                    fctx.fillStyle = hlGrad;
+                    fctx.beginPath();
+                    fctx.arc(fSize/2, fSize/2, fSize * 0.45, 0, Math.PI * 2);
+                    fctx.fill();
+                    // 비네팅 테두리
+                    const vigGrad = fctx.createRadialGradient(fSize/2, fSize/2, fSize*0.28, fSize/2, fSize/2, fSize*0.48);
+                    vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                    vigGrad.addColorStop(1, 'rgba(0,0,0,0.45)');
+                    fctx.fillStyle = vigGrad;
+                    fctx.beginPath();
+                    fctx.arc(fSize/2, fSize/2, fSize * 0.45, 0, Math.PI * 2);
+                    fctx.fill();
+                    fishTex.needsUpdate = true;
+                };
+                img.onerror = () => {}; // 이미지 없으면 무시
+                img.src = thumbUrl;
+            }
+
+            // 4) 궤도 파티클 (카테고리/월 노드만)
+            if (node.depth >= 1 && node.depth <= 2 && !node.isLesson) {
+                const particleCount = node.depth === 1 ? 4 : 2;
+                createOrbitParticles(group, size, node.color, particleCount);
+            }
+
+            // 4) 텍스트 라벨 스프라이트
+            const labelCanvas = document.createElement('canvas');
+            const lctx = labelCanvas.getContext('2d');
+            const fontSize = node.id === 'root' ? 52 : node.depth === 1 ? 48 : node.isLesson ? 32 : 40;
+            labelCanvas.width = 512;
+            labelCanvas.height = 64;
+            lctx.clearRect(0, 0, 512, 64);
+            lctx.font = `${node.depth <= 1 ? 'bold ' : ''}${fontSize}px Lexend, sans-serif`;
+            lctx.fillStyle = node.depth <= 1 ? '#e2e8f0' : '#94a3b8';
+            lctx.textAlign = 'center';
+            lctx.textBaseline = 'middle';
+            let label = node.name;
+            if (lctx.measureText(label).width > 490) {
+                while (lctx.measureText(label + '…').width > 490 && label.length > 3) label = label.slice(0, -1);
+                label += '…';
+            }
+            lctx.fillText(label, 256, 32);
+
+            const labelTex = new THREE.CanvasTexture(labelCanvas);
+            const labelSprite = new THREE.Sprite(
+                new THREE.SpriteMaterial({ map: labelTex, transparent: true, depthWrite: false })
+            );
+            const labelScale = node.isLesson ? 30 : node.depth <= 1 ? 42 : 34;
+            labelSprite.scale.set(labelScale, labelScale * (64 / 512), 1);
+            labelSprite.position.y = -(size + 6);
+            group.add(labelSprite);
+
+            // 루트: 슈퍼마리오 별 — 눈 깜빡이는 애니메이션
+            if (node.id === 'root') {
+                const starCanvas = document.createElement('canvas');
+                const sctx = starCanvas.getContext('2d');
+                starCanvas.width = 256; starCanvas.height = 256;
+                const starTex = new THREE.CanvasTexture(starCanvas);
+                const starSprite = new THREE.Sprite(
+                    new THREE.SpriteMaterial({ map: starTex, transparent: true, depthWrite: false })
+                );
+                starSprite.scale.set(size * 2.5, size * 2.5, 1);
+                starSprite.center.set(0.5, 0.5);  // 정중앙 기준
+                starSprite.renderOrder = 999;
+                group.add(starSprite);
+
+                // 별 그리기 함수
+                let blinkOpen = true;
+                function drawStar(eyeOpen) {
+                    const c = sctx; const cx = 128, cy = 128;
+                    c.clearRect(0, 0, 256, 256);
+                    // 별 몸체 (꼭짓점 평평하게 깎은 도트 별)
+                    c.beginPath();
+                    const R = 100, r = 45, flat = 14; // flat = 꼭짓점 잘리는 정도
+                    for (let i = 0; i < 5; i++) {
+                        const outerA = (i * 72 - 90) * Math.PI / 180;
+                        const innerA = ((i * 72) + 36 - 90) * Math.PI / 180;
+                        // 꼭짓점을 2개 포인트로 분리 (평평한 팁)
+                        const perpA = outerA + Math.PI / 2;
+                        const ox = cx + Math.cos(outerA) * (R - 8);
+                        const oy = cy + Math.sin(outerA) * (R - 8);
+                        const fl = cx + Math.cos(outerA) * R * 0.88 - Math.cos(perpA) * flat;
+                        const fr = cx + Math.cos(outerA) * R * 0.88 + Math.cos(perpA) * flat;
+                        const ftl = cy + Math.sin(outerA) * R * 0.88 - Math.sin(perpA) * flat;
+                        const ftr = cy + Math.sin(outerA) * R * 0.88 + Math.sin(perpA) * flat;
+                        const ix = cx + Math.cos(innerA) * r;
+                        const iy = cy + Math.sin(innerA) * r;
+                        if (i === 0) c.moveTo(fl, ftl);
+                        else c.lineTo(fl, ftl);
+                        c.lineTo(fr, ftr); // 평평한 꼭짓점
+                        c.lineTo(ix, iy);
+                    }
+                    c.closePath();
+                    const grad = c.createRadialGradient(cx, cy, 10, cx, cy, 100);
+                    grad.addColorStop(0, '#fff7a0');
+                    grad.addColorStop(0.5, '#ffd700');
+                    grad.addColorStop(1, '#f59e0b');
+                    c.fillStyle = grad;
+                    c.fill();
+                    c.strokeStyle = '#d97706'; c.lineWidth = 3; c.stroke();
+                    // 눈
+                    const eyeY = cy - 10; const eyeL = cx - 22; const eyeR = cx + 22;
+                    if (eyeOpen) {
+                        // 열린 눈 (큰 반짝이)
+                        c.fillStyle = '#1a1a2e';
+                        c.beginPath(); c.arc(eyeL, eyeY, 10, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(eyeR, eyeY, 10, 0, Math.PI * 2); c.fill();
+                        // 하이라이트
+                        c.fillStyle = '#fff';
+                        c.beginPath(); c.arc(eyeL + 3, eyeY - 3, 4, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(eyeR + 3, eyeY - 3, 4, 0, Math.PI * 2); c.fill();
+                    } else {
+                        // 감은 눈 (곡선)
+                        c.strokeStyle = '#1a1a2e'; c.lineWidth = 3; c.lineCap = 'round';
+                        c.beginPath(); c.arc(eyeL, eyeY, 8, 0.1 * Math.PI, 0.9 * Math.PI); c.stroke();
+                        c.beginPath(); c.arc(eyeR, eyeY, 8, 0.1 * Math.PI, 0.9 * Math.PI); c.stroke();
+                    }
+                    // 입 (웃는 입)
+                    c.strokeStyle = '#92400e'; c.lineWidth = 3; c.lineCap = 'round';
+                    c.beginPath(); c.arc(cx, cy + 12, 14, 0.15 * Math.PI, 0.85 * Math.PI); c.stroke();
+                    // 볼 홍조
+                    c.fillStyle = 'rgba(251,146,60,0.4)';
+                    c.beginPath(); c.arc(eyeL - 8, cy + 6, 8, 0, Math.PI * 2); c.fill();
+                    c.beginPath(); c.arc(eyeR + 8, cy + 6, 8, 0, Math.PI * 2); c.fill();
+                    starTex.needsUpdate = true;
+                }
+                drawStar(true);
+                // 깜빡이기 타이머
+                setInterval(() => {
+                    blinkOpen = !blinkOpen;
+                    drawStar(blinkOpen);
+                    if (!blinkOpen) setTimeout(() => { blinkOpen = true; drawStar(true); }, 200);
+                }, 3000 + Math.random() * 2000);
+            }
+
+            return group;
+        });
+
+    // ─── 파티클 반짝임 + 스타일별 회전 애니메이션 ─────
+    (function animateRings() {
+        const t = performance.now() * 0.001;
+        ringAnimTargets.forEach(ring => {
+            if (!ring.parent) return;
+            const s = ring.userData.style;
+            // 스타일별 다른 회전
+            switch (s) {
+                case 'spiral':
+                    ring.rotation.y = t * 0.12;
+                    ring.rotation.x = Math.sin(t * 0.08) * 0.15;
+                    break;
+                case 'vortex':
+                    ring.rotation.y = t * 0.25;
+                    break;
+                case 'bands':
+                    ring.rotation.y = t * 0.08;
+                    ring.rotation.x = 0.2;
+                    break;
+                case 'helix':
+                    ring.rotation.y = t * 0.2;
+                    break;
+                case 'cluster':
+                    ring.rotation.y = t * 0.05;
+                    ring.rotation.z = Math.sin(t * 0.1) * 0.1;
+                    break;
+                default:
+                    ring.rotation.y = t * 0.1;
+                    ring.rotation.x = Math.sin(t * 0.06) * 0.08;
+            }
+            // 반짝임
+            if (ring.material) {
+                ring.material.opacity = 0.6 + Math.sin(t * 1.5 + ring.id) * 0.25;
+            }
+        });
+        requestAnimationFrame(animateRings);
+    })();
+
+    // ─── 우주 배경 별 파티클 ─────────────────────────
+    (function addStarField() {
+        const starCount = 600;
+        const starGeo = new THREE.BufferGeometry();
+        const positions = new Float32Array(starCount * 3);
+        const colors = new Float32Array(starCount * 3);
+        const sizes = new Float32Array(starCount);
+        for (let i = 0; i < starCount; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 1200;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 1200;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 1200;
+            // 별 색상: 흰색 ~ 약간 파랑/노랑
+            const t = Math.random();
+            colors[i * 3] = 0.8 + t * 0.2;
+            colors[i * 3 + 1] = 0.8 + t * 0.15;
+            colors[i * 3 + 2] = 0.9 + t * 0.1;
+            sizes[i] = 0.3 + Math.random() * 1.2;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        starGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        const starMat = new THREE.PointsMaterial({
+            size: 1.5,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.7,
+            sizeAttenuation: true,
+        });
+        const starField = new THREE.Points(starGeo, starMat);
+        Graph.scene().add(starField);
+
+        // 네뷸라 제거됨 — 별만 남김
+    })();
+
+    // ─── 가끔 지나가는 유성/우주선 ─────────────────
+    (function shootingStars() {
+        function launchStar() {
+            const geo = new THREE.BufferGeometry();
+            const len = 8 + Math.random() * 12;  // 꼬리 길이
+            const pts = [];
+            for (let i = 0; i < len; i++) pts.push(i * 2, 0, 0);
+            geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts), 3));
+            const mat = new THREE.PointsMaterial({
+                color: Math.random() > 0.5 ? 0xffffff : 0x818cf8,
+                size: 0.8,
+                transparent: true,
+                opacity: 0.6,
+                sizeAttenuation: true,
+            });
+            const star = new THREE.Points(geo, mat);
+            const startX = (Math.random() - 0.5) * 800;
+            const startY = 200 + Math.random() * 200;
+            const startZ = (Math.random() - 0.5) * 400;
+            star.position.set(startX, startY, startZ);
+            star.rotation.z = -0.3 - Math.random() * 0.4;
+            Graph.scene().add(star);
+
+            const speed = 2 + Math.random() * 3;
+            let frame = 0;
+            function animate() {
+                frame++;
+                star.position.x += speed;
+                star.position.y -= speed * 0.6;
+                mat.opacity = Math.max(0, 0.6 - frame * 0.008);
+                if (frame < 120) requestAnimationFrame(animate);
+                else Graph.scene().remove(star);
+            }
+            animate();
+        }
+        // 8~20초마다 유성 하나
+        setInterval(launchStar, 8000 + Math.random() * 12000);
+        setTimeout(launchStar, 3000); // 처음 3초 후 하나
+    })();
+
+    // ─── 궤도 파티클 애니메이션 ────────────────────
+    (function animateOrbits() {
+        const t = performance.now() * 0.001;
+        orbitGroups.forEach(od => {
+            od.particles.forEach(p => {
+                const a = p.userData.angle + t * od.speed;
+                const tilt = p.userData.tilt;
+                const r = od.radius;
+                p.position.set(
+                    Math.cos(a) * r * Math.cos(tilt),
+                    Math.sin(a) * r * 0.6,
+                    Math.cos(a) * r * Math.sin(tilt)
+                );
+            });
+        });
+        requestAnimationFrame(animateOrbits);
+    })();
+
+    // ─── Bloom 글로우 이펙트 ────────────────────────
+    // ES module import for UnrealBloomPass
+    import('https://esm.sh/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js')
+        .then(({ UnrealBloomPass }) => {
+            const bloomPass = new UnrealBloomPass(
+                new THREE.Vector2(window.innerWidth, window.innerHeight),
+                0.5,   // strength (아주 은은하게)
+                0.6,   // radius
+                0.6    // threshold (밝은 것만 bloom)
+            );
+            Graph.postProcessingComposer().addPass(bloomPass);
+            console.log('[ArtCosmos] Bloom effect applied');
+        })
+        .catch(e => console.warn('[ArtCosmos] Bloom not available:', e));
+
+    // ─── 데이터 로드 ────────────────────────────────
+    function refreshGraph() {
+        orbitGroups.length = 0;
+        ringAnimTargets.length = 0;
+        const data = buildGraphData();
+        Graph.graphData(data);
+    }
+
+    refreshGraph();
+
+    // 카메라 초기 위치
+    setTimeout(() => {
+        Graph.cameraPosition({ x: 0, y: 0, z: 400 });
+    }, 500);
+
+    // ─── 카메라 리셋 ─────────────────────────────────
+    window.resetCamera = function() {
+        Graph.cameraPosition({ x: 0, y: 0, z: 400 }, { x: 0, y: 0, z: 0 }, 2000);
+    };
+
+    // ─── 언어 토글 ──────────────────────────────────
+    window.toggleCosmosLang = function() {
+        cosmosLang = cosmosLang === 'ko' ? 'en' : 'ko';
+        localStorage.setItem('cosmos-lang', cosmosLang);
+        document.getElementById('lang-toggle').textContent = cosmosLang === 'ko' ? '한' : 'EN';
+        // 트리 이름 업데이트 후 리빌드
+        function updateNames(node) {
+            node.name = N(node.id, node.name);
+            if (node.children) node.children.forEach(updateNames);
+        }
+        updateNames(COSMOS_TREE);
+        refreshGraph();
+    };
+    // 초기 버튼 텍스트
+    document.getElementById('lang-toggle').textContent = cosmosLang === 'ko' ? '한' : 'EN';
+
+    // ─── 선택 안 된 형제 노드 서서히 투명화 (3초) ──────
+    let focusedNodeId = null;
+    let dimAnimId = null;
+
+    function dimSiblings(clickedNode) {
+        if (dimAnimId) cancelAnimationFrame(dimAnimId);
+        const gData = Graph.graphData();
+        focusedNodeId = clickedNode.id;
+
+        // 각 노드의 opacity + scale 타겟 설정
+        const targets = [];
+        gData.nodes.forEach(n => {
+            const obj = n.__threeObj;
+            if (!obj) return;
+            const isSibling = n.depth === clickedNode.depth && n.id !== clickedNode.id && n.id !== 'root';
+            const isClicked = n.id === clickedNode.id;
+            const dimTarget = isSibling ? 0.25 : 1.0;     // 투명도 25%까지
+            const scaleTarget = isSibling ? 0.6 : isClicked ? 1.3 : 1.0;  // 선택된 건 130%
+            obj.traverse(child => {
+                if (child.material && child.material.opacity !== undefined) {
+                    targets.push({
+                        mat: child.material,
+                        from: child.material.opacity,
+                        to: child.material.opacity * dimTarget,
+                    });
+                }
+            });
+            // 그룹 스케일 애니메이션 (형제: 축소, 선택: 확대)
+            if (isSibling || isClicked) {
+                targets.push({
+                    isScale: true,
+                    obj: obj,
+                    from: obj.scale.x,
+                    to: scaleTarget,
+                });
+            }
+        });
+
+        // 3초 동안 서서히 변환
+        const duration = 3000;
+        const startTime = performance.now();
+        function animateDim(now) {
+            const elapsed = now - startTime;
+            const t = Math.min(elapsed / duration, 1);
+            const ease = t * (2 - t); // ease-out
+            targets.forEach(tg => {
+                if (tg.isScale) {
+                    const s = tg.from + (tg.to - tg.from) * ease;
+                    tg.obj.scale.set(s, s, s);
+                } else {
+                    tg.mat.opacity = tg.from + (tg.to - tg.from) * ease;
+                    tg.mat.needsUpdate = true;
+                }
+            });
+            if (t < 1) dimAnimId = requestAnimationFrame(animateDim);
+        }
+        dimAnimId = requestAnimationFrame(animateDim);
+    }
+
+    // ─── INTERACTIONS ────────────────────────────────
+    function handleNodeClick3D(node) {
+        // Lesson leaf node: open image panel with lesson images
+        if (node.isLesson) {
+            openLessonPanel(node);
+            return;
+        }
+        // Folder node (themed collection): open image panel
+        if (node.folder && !node._hasChildren) {
+            openImagePanel(node);
+            return;
+        }
+        // Expandable node: toggle
+        if (node._hasChildren) {
+            if (expandedNodes.has(node.id)) {
+                collapseNode(node.id);
+            } else {
+                expandedNodes.add(node.id);
+            }
+            refreshGraph();
+            updateBreadcrumb(node);
+            // 형제 노드 투명화
+            setTimeout(() => dimSiblings(node), 200);
+
+            // Focus camera — 클릭된 노드를 포함한 전체가 보이도록 적절한 거리
+            const nodePos = node;
+            if (nodePos.x !== undefined) {
+                const dist = node.depth === 0 ? 400 : node.depth === 1 ? 350 : 250;
+                // lookAt은 노드와 루트의 중간점
+                const lx = nodePos.x * 0.5, ly = nodePos.y * 0.5, lz = nodePos.z * 0.5;
+                Graph.cameraPosition(
+                    { x: lx, y: ly, z: lz + dist },
+                    { x: lx, y: ly, z: lz },
+                    3000
+                );
+            }
+        }
+    }
+
+    function collapseNode(id) {
+        expandedNodes.delete(id);
+        function removeChildren(nodeId) {
+            const tree = findInTree(COSMOS_TREE, nodeId);
+            if (tree && tree.children) {
+                tree.children.forEach(c => {
+                    expandedNodes.delete(c.id);
+                    removeChildren(c.id);
+                });
+            }
+        }
+        removeChildren(id);
+    }
+
+    function findInTree(node, id) {
+        if (node.id === id) return node;
+        if (node.children) {
+            for (const child of node.children) {
+                const found = findInTree(child, id);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    function updateBreadcrumb(d) {
+        const bc = document.getElementById("breadcrumb");
+        let path = [];
+        function findPath(node, targetId, trail) {
+            if (node.id === targetId) { trail.push(node); return true; }
+            if (node.children) {
+                for (const child of node.children) {
+                    trail.push(node);
+                    if (findPath(child, targetId, trail)) return true;
+                    trail.pop();
+                }
+            }
+            return false;
+        }
+        findPath(COSMOS_TREE, d.id, path);
+        bc.innerHTML = path.map((p, i) => {
+            if (i === path.length - 1) return `<span>${p.name}</span>`;
+            return `<span style="cursor:pointer;color:#64748b" onclick="navigateTo('${p.id}')">${p.name}</span><span class="sep">/</span>`;
+        }).join('');
+    }
+
+    function navigateTo(id) {
+        expandedNodes.clear();
+        expandedNodes.add("root");
+        function expandPath(node, targetId) {
+            if (node.id === targetId) return true;
+            if (node.children) {
+                for (const child of node.children) {
+                    if (expandPath(child, targetId)) {
+                        expandedNodes.add(node.id);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        expandPath(COSMOS_TREE, id);
+        refreshGraph();
+        const nd = nodeMap[id];
+        if (nd) updateBreadcrumb(nd);
+    }
+
+    // ─── IMAGE PANEL (for lesson nodes) ──────────────
+    function openLessonPanel(d) {
+        const panel = document.getElementById("image-panel");
+        const grid = document.getElementById("panel-grid");
+        const title = document.getElementById("panel-title");
+        const countEl = document.getElementById("panel-count");
+        const base = "../../images/";
+
+        title.textContent = d.name;
+        grid.innerHTML = '<div class="col-span-2 text-center py-8 text-slate-500 text-sm">Loading images...</div>';
+        panel.classList.add("open");
+
+        const ln = String(d.lessonNum).padStart(2, '0');
+        const images = [];
+        images.push({ src: `${base}${d.folder}/l${ln}-cover.jpg`, name: `Cover` });
+        for (let g = 1; g <= 14; g++) {
+            const gn = String(g).padStart(2, '0');
+            images.push({ src: `${base}${d.folder}/l${ln}-gal${gn}.jpg`, name: `Gallery ${g}` });
+        }
+
+        countEl.textContent = `${images.length} images`;
+        grid.innerHTML = images.map((img, i) => `
+            <div class="panel-image" onclick="openLightbox('${img.src}')">
+                <img src="${img.src}" alt="${img.name}" loading="lazy"
+                     onerror="this.parentElement.style.display='none'" />
+                <div class="text-xs text-slate-400 mt-1 truncate px-1">${img.name}</div>
+            </div>
+        `).join('');
+
+        updateBreadcrumb(d);
+    }
+
+    // ─── IMAGE PANEL (for themed collections) ────────
+    function openImagePanel(d) {
+        const panel = document.getElementById("image-panel");
+        const grid = document.getElementById("panel-grid");
+        const title = document.getElementById("panel-title");
+        const countEl = document.getElementById("panel-count");
+
+        title.textContent = d.name;
+        grid.innerHTML = '<div class="col-span-2 text-center py-8 text-slate-500 text-sm">Loading images...</div>';
+        panel.classList.add("open");
+
+        const images = generateImagePaths(d);
+        countEl.textContent = `${images.length} images`;
+
+        grid.innerHTML = images.map((img, i) => `
+            <div class="panel-image" onclick="openLightbox('${img.src}')">
+                <img src="${img.src}" alt="${img.name}" loading="lazy"
+                     onerror="this.parentElement.style.display='none'" />
+                <div class="text-xs text-slate-400 mt-1 truncate px-1">${img.name}</div>
+            </div>
+        `).join('');
+
+        updateBreadcrumb(d);
+    }
+
+    function generateImagePaths(d) {
+        const base = "../../images/";
+        const images = [];
+
+        if (d.lessonCount && !d.isLesson) {
+            // Month folder: all lessons
+            for (let l = 1; l <= d.lessonCount; l++) {
+                const ln = String(l).padStart(2, '0');
+                images.push({ src: `${base}${d.folder}/l${ln}-cover.jpg`, name: `Lesson ${l} Cover` });
+                for (let g = 1; g <= 14; g++) {
+                    const gn = String(g).padStart(2, '0');
+                    images.push({ src: `${base}${d.folder}/l${ln}-gal${gn}.jpg`, name: `L${l} Gallery ${g}` });
+                }
+            }
+        } else if (FOLDER_FILES[d.folder]) {
+            const files = FOLDER_FILES[d.folder];
+            files.forEach((file, i) => {
+                images.push({ src: `${base}${d.folder}/${file}`, name: file.replace(/\.[^.]+$/, '') });
+            });
+        } else {
+            const count = d.count || 20;
+            for (let i = 1; i <= count; i++) {
+                images.push({ src: `${base}${d.folder}/result${i}.png`, name: `${d.name} ${i}` });
+            }
+        }
+        return images;
+    }
+
+    function closePanel() {
+        document.getElementById("image-panel").classList.remove("open");
+    }
+
+    // ─── LIGHTBOX ────────────────────────────────────
+    function openLightbox(src) {
+        const lb = document.getElementById("lightbox");
+        document.getElementById("lightbox-img").src = src;
+        lb.classList.add("active");
+    }
+    function closeLightbox() {
+        document.getElementById("lightbox").classList.remove("active");
+        document.getElementById("lightbox-img").src = "";
+    }
+
+    // ─── SEARCH ──────────────────────────────────────
+    document.getElementById("cosmos-search-input").addEventListener("input", (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        if (!query) {
+            // Reset all nodes to full visibility
+            refreshGraph();
+            return;
+        }
+        // Highlight matching nodes by expanding paths to them
+        // For now, we dim non-matching nodes visually via nodeThreeObject opacity
+        const data = Graph.graphData();
+        data.nodes.forEach(node => {
+            const match = node.name.toLowerCase().includes(query);
+            const obj = Graph.nodeThreeObject()(node);
+            // We can't easily change opacity of existing objects, so just do a visual search hint
+        });
+    });
+
+    // ─── KEYBOARD ────────────────────────────────────
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            closeLightbox();
+            closePanel();
+        }
+    });
+    </script>
+
+    <!-- ─── VOICE ARCHIVE CONTROLLER ──────────────── -->
+    <script>
+    const voiceEngine = new VoiceEngine({ lang: 'ko-KR' });
+    const commandParser = new CommandParser();
+    const archiveUI = new ArchiveSearchUI();
+    const archiveViewer = new ArchiveViewer();
+
+    // Init
+    archiveUI.init();
+    archiveViewer.init();
+    const voiceSupported = voiceEngine.init();
+
+    if (!voiceSupported) {
+        document.getElementById('voice-btn').title = '이 브라우저는 음성 인식을 지원하지 않습니다';
+    }
+
+    // 음성 결과 처리
+    voiceEngine.addEventListener('result', (e) => {
+        const { transcript, isFinal } = e.detail;
+        document.getElementById('voice-transcript-live').textContent = transcript;
+
+        if (!isFinal) return;
+
+        const cmd = commandParser.parse(transcript);
+        handleVoiceCommand(cmd);
+    });
+
+    // 리스닝 상태 UI
+    voiceEngine.addEventListener('listening', (e) => {
+        const btn = document.getElementById('voice-btn');
+        const indicator = document.getElementById('voice-indicator');
+        if (e.detail) {
+            btn.classList.add('listening');
+            indicator.classList.add('active');
+            document.getElementById('voice-transcript-live').textContent = '듣고 있어요...';
+        } else {
+            btn.classList.remove('listening');
+            indicator.classList.remove('active');
+        }
+    });
+
+    voiceEngine.addEventListener('error', (e) => {
+        const err = e.detail;
+        if (err === 'not-allowed') {
+            document.getElementById('voice-transcript-live').textContent = '마이크 권한을 허용해주세요';
+        }
+    });
+
+    // 명령 실행
+    async function handleVoiceCommand(cmd) {
+        switch (cmd.type) {
+            case 'search': {
+                archiveUI.showLoading(cmd.query);
+                const { results, source } = await searchArchive(cmd.query, cmd.count || 10);
+                if (results.length > 0) {
+                    archiveUI.showResults(results, cmd.query, source);
+                } else {
+                    archiveUI.showNoResults(cmd.query);
+                }
+                break;
+            }
+            case 'zoom': {
+                if (cmd.number && archiveUI.currentResults[cmd.number - 1]) {
+                    archiveUI.selectImage(cmd.number - 1);
+                }
+                break;
+            }
+            case 'print': {
+                if (cmd.number && archiveUI.currentResults[cmd.number - 1]) {
+                    archiveUI.selectImage(cmd.number - 1);
+                    setTimeout(() => archiveViewer.printCurrent(), 500);
+                }
+                break;
+            }
+            case 'close': {
+                if (archiveViewer.isOpen) archiveViewer.close();
+                else if (archiveUI.isOpen()) archiveUI.close();
+                break;
+            }
+            case 'next': archiveViewer.next(); break;
+            case 'prev': archiveViewer.prev(); break;
+        }
+    }
+
+    function toggleVoice() {
+        voiceEngine.toggle();
+    }
+
+    // Enter키로 텍스트 검색
+    document.getElementById('cosmos-search-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const query = e.target.value.trim();
+            if (!query) return;
+            const cmd = commandParser.parse(query);
+            handleVoiceCommand(cmd);
+        }
+    });
+
+    // ESC로 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (archiveViewer.isOpen) archiveViewer.close();
+            else if (archiveUI.isOpen()) archiveUI.close();
+            closeSearchLog();
+            closeLightbox();
+            closePanel();
+        }
+    });
+
+    // ─── 검색 로그 UI ────────────────────────────
+    function openSearchLog() {
+        const modal = document.getElementById('search-log-modal');
+        const list = document.getElementById('search-log-list');
+        const top = getTopSearches(20);
+
+        if (top.length === 0) {
+            list.innerHTML = '<p style="color:#475569;text-align:center;padding:24px">아직 검색 기록이 없습니다</p>';
+        } else {
+            list.innerHTML = top.map((item, i) => {
+                const hasLocal = ART_ARCHIVE.some(img =>
+                    img.keywords.some(kw => kw.toLowerCase().includes(item.query))
+                );
+                const badge = hasLocal
+                    ? '<span style="background:#10b981;color:white;padding:2px 8px;border-radius:99px;font-size:10px">로컬 있음</span>'
+                    : '<span style="background:#f59e0b;color:white;padding:2px 8px;border-radius:99px;font-size:10px">미드저니 추천</span>';
+                const date = new Date(item.lastSearched).toLocaleDateString('ko-KR');
+                return `
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;background:rgba(255,255,255,0.03);margin-bottom:6px">
+                        <span style="color:#6366f1;font-weight:700;font-size:14px;width:28px;text-align:right">${i + 1}</span>
+                        <span style="color:#e2e8f0;font-weight:600;flex:1">${item.query}</span>
+                        <span style="color:#64748b;font-size:12px">${item.count}회</span>
+                        ${badge}
+                        <span style="color:#475569;font-size:11px">${date}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    function closeSearchLog() {
+        document.getElementById('search-log-modal').style.display = 'none';
+    }
+    </script>
+<!-- Art Cosmos Widget (art-archive.js, voice-engine.js already loaded in head) -->
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

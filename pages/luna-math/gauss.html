@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가우스의 번개 계산기 - Luna Math</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1729;--card:#1a2640;--accent:#f59e0b;--accent2:#d97706;--text:#e2e8f0;--dim:#64748b;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--radius:16px}
+body{font-family:'Pretendard Variable',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+
+/* Header */
+.header{padding:16px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.back-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+.back-btn:hover{background:rgba(255,255,255,0.14)}
+.header-title{font-size:18px;font-weight:700;color:var(--accent)}
+
+/* Intro */
+.intro-card{max-width:900px;margin:24px auto 0;padding:0 24px}
+.intro-inner{background:linear-gradient(135deg,#1a2640 0%,#1e293b 50%,#1a2640 100%);border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius);padding:28px 32px;position:relative;overflow:hidden}
+.intro-inner::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(245,158,11,0.12) 0%,transparent 70%);pointer-events:none}
+.intro-inner::after{content:'';position:absolute;bottom:-30px;left:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(59,130,246,0.1) 0%,transparent 70%);pointer-events:none}
+.intro-title{font-size:20px;font-weight:800;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.intro-text{font-size:14px;line-height:1.8;color:#94a3b8;word-break:keep-all}
+.intro-text strong{color:var(--accent);font-weight:700}
+.intro-formula{display:inline-block;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:4px 12px;margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--accent);letter-spacing:1px}
+
+/* Grid */
+.grid-wrap{max-width:900px;margin:0 auto;padding:24px}
+.grid-title{font-size:13px;color:var(--dim);letter-spacing:2px;margin-bottom:14px;font-weight:600;text-transform:uppercase}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:14px}
+.sc-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:20px 16px;text-align:center;cursor:pointer;transition:all .25s;position:relative}
+.sc-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 24px rgba(245,158,11,0.15)}
+.sc-card.active{border-color:var(--accent);background:rgba(245,158,11,0.08)}
+.sc-emoji{font-size:36px;margin-bottom:8px}
+.sc-name{font-size:15px;font-weight:700;margin-bottom:4px}
+.sc-desc{font-size:12px;color:var(--dim);margin-bottom:6px}
+.sc-diff{font-size:11px;color:var(--dim);letter-spacing:1px}
+.sc-card .done-badge{position:absolute;top:8px;right:8px;font-size:16px}
+
+/* Game Area */
+.game-area{max-width:900px;margin:0 auto;padding:0 24px 60px;display:none}
+.game-area.visible{display:block}
+.canvas-wrap{background:var(--card);border-radius:var(--radius);overflow:hidden;border:1px solid rgba(255,255,255,0.08);margin-bottom:16px;position:relative}
+canvas{width:100%;display:block}
+
+/* Info Panel */
+.info-panel{background:var(--card);border-radius:var(--radius);padding:24px;border:1px solid rgba(255,255,255,0.08)}
+.info-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.info-label{font-size:13px;color:var(--dim);font-weight:600;min-width:80px}
+.info-val{font-size:15px;font-weight:600}
+.info-val.accent{color:var(--accent)}
+.info-formula{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--accent);background:rgba(245,158,11,0.1);padding:6px 14px;border-radius:8px;border:1px solid rgba(245,158,11,0.2)}
+.btn-row{display:flex;gap:10px;margin:14px 0;flex-wrap:wrap}
+.action-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border:none;padding:10px 22px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit}
+.action-btn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(245,158,11,0.3)}
+.action-btn:active{transform:scale(0.97)}
+.action-btn.secondary{background:rgba(255,255,255,0.08);color:var(--text);border:1px solid rgba(255,255,255,0.12)}
+.action-btn.secondary:hover{background:rgba(255,255,255,0.14);border-color:var(--accent)}
+.answer-wrap{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.answer-input{background:#000;border:2px solid var(--accent);border-radius:12px;padding:12px 16px;font-size:24px;font-weight:800;color:var(--accent);text-align:center;font-family:'JetBrains Mono',monospace;width:200px;outline:none;transition:box-shadow .2s}
+.answer-input:focus{box-shadow:0 0 16px rgba(245,158,11,0.3)}
+.result-msg{margin-top:12px;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;display:none}
+.result-msg.success{display:block;background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.25)}
+.result-msg.fail{display:block;background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.25)}
+
+/* Digit Spinner */
+.digit-spinner{display:flex;gap:2px;align-items:center;justify-content:center;margin:8px 0}
+.digit-col{display:flex;flex-direction:column;align-items:center;width:38px}
+.digit-col .digit-up,.digit-col .digit-down{width:36px;height:26px;border:none;border-radius:6px;cursor:pointer;background:rgba(255,255,255,0.08);color:var(--accent);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .15s;-webkit-user-select:none;user-select:none}
+.digit-col .digit-up:hover,.digit-col .digit-down:hover{background:rgba(245,158,11,0.25)}
+.digit-col .digit-up:active,.digit-col .digit-down:active{transform:scale(.9)}
+.digit-val{font-size:28px;font-weight:800;color:var(--text);line-height:1;width:36px;height:38px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);border-radius:8px;border:1.5px solid rgba(255,255,255,0.12);font-family:'JetBrains Mono',monospace}
+.digit-label{font-size:9px;color:var(--dim);margin-top:2px}
+
+/* Pairing Info */
+.pairing-summary{margin-top:12px;padding:14px 18px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:12px;display:none;font-size:14px;line-height:1.8}
+.pairing-summary.visible{display:block}
+.pairing-summary .ps-line{color:#94a3b8}
+.pairing-summary .ps-val{color:var(--accent);font-weight:700;font-family:'JetBrains Mono',monospace}
+
+/* Mobile */
+@media(max-width:700px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+  .sc-card{padding:14px 10px}
+  .sc-emoji{font-size:28px}
+  .info-panel{padding:16px}
+  .answer-input{width:150px;font-size:20px;padding:10px 12px}
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <button class="back-btn" onclick="location.href='index.html'">← Luna Math</button>
+  <span class="header-title">⚡ 가우스의 번개 계산기</span>
+</div>
+
+<!-- Intro Card -->
+<div class="intro-card">
+  <div class="intro-inner">
+    <div class="intro-title">⚡ 10살 천재의 비밀</div>
+    <div class="intro-text">
+      1787년, 독일의 한 초등학교. 선생님이 벌로 <strong>'1부터 100까지 더해라!'</strong>라고 시켰습니다.
+      다른 학생들이 끙끙대는 동안, 10살 소년 가우스는 단 몇 초 만에 답을 내놓았습니다.
+      <strong>'5,050입니다!'</strong><br>
+      어떻게 그렇게 빨랐을까요? 가우스의 비밀을 알아보세요!<br>
+      <span class="intro-formula">S = n(n+1) / 2</span>
+    </div>
+  </div>
+</div>
+
+<!-- Scenario Grid -->
+<div class="grid-wrap">
+  <div class="grid-title">⚡ 시나리오 선택</div>
+  <div class="grid" id="scenarioGrid"></div>
+</div>
+
+<!-- Game Area -->
+<div class="game-area" id="gameArea">
+  <div class="canvas-wrap">
+    <canvas id="cvs" width="880" height="500"></canvas>
+  </div>
+  <div class="info-panel">
+    <div class="info-row">
+      <span class="info-label">문제:</span>
+      <span class="info-val accent" id="problemText"></span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">가우스 공식:</span>
+      <span class="info-formula" id="formulaText">S = n(n+1) / 2</span>
+    </div>
+    <div class="btn-row">
+      <button class="action-btn secondary" id="trickBtn" onclick="showGaussTrick()">⚡ 가우스 트릭 보기</button>
+      <button class="action-btn secondary" onclick="resetGame()">↻ 다시하기</button>
+    </div>
+    <div class="pairing-summary" id="pairingSummary">
+      <div class="ps-line">쌍의 개수: <span class="ps-val" id="psCount"></span></div>
+      <div class="ps-line">각 쌍의 합: <span class="ps-val" id="psSum"></span></div>
+      <div class="ps-line">결과: <span class="ps-val" id="psResult"></span></div>
+    </div>
+    <div class="answer-wrap" style="flex-direction:column;align-items:stretch">
+      <span class="info-label" style="margin-bottom:6px">답 (마우스로 ▲▼ 클릭!):</span>
+      <div class="digit-spinner" id="digitSpinner">
+        <div class="digit-col"><button class="digit-up" onclick="spinDigit(4,1)">▲</button><div class="digit-val" id="d4">0</div><button class="digit-down" onclick="spinDigit(4,-1)">▼</button><div class="digit-label">만</div></div>
+        <div class="digit-col"><button class="digit-up" onclick="spinDigit(3,1)">▲</button><div class="digit-val" id="d3">0</div><button class="digit-down" onclick="spinDigit(3,-1)">▼</button><div class="digit-label">천</div></div>
+        <div class="digit-col"><button class="digit-up" onclick="spinDigit(2,1)">▲</button><div class="digit-val" id="d2">0</div><button class="digit-down" onclick="spinDigit(2,-1)">▼</button><div class="digit-label">백</div></div>
+        <div class="digit-col"><button class="digit-up" onclick="spinDigit(1,1)">▲</button><div class="digit-val" id="d1">0</div><button class="digit-down" onclick="spinDigit(1,-1)">▼</button><div class="digit-label">십</div></div>
+        <div class="digit-col"><button class="digit-up" onclick="spinDigit(0,1)">▲</button><div class="digit-val" id="d0">0</div><button class="digit-down" onclick="spinDigit(0,-1)">▼</button><div class="digit-label">일</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-top:8px">
+        <input type="number" id="answerInput" class="answer-input" placeholder="또는 직접 입력">
+        <button class="action-btn" onclick="checkAnswer()">⚡ 확인!</button>
+      </div>
+    </div>
+    <div class="result-msg" id="resultMsg"></div>
+  </div>
+</div>
+
+<script>
+/* ── Data ── */
+const SCENARIOS = [
+  {id:0,emoji:'🔰',name:'쉬운 시작',desc:'1부터 10까지',type:'basic',start:1,end:10,step:1,answer:55,pairFormula:'(1+10)×5',difficulty:1},
+  {id:1,emoji:'📝',name:'가우스의 문제',desc:'1부터 50까지',type:'basic',start:1,end:50,step:1,answer:1275,pairFormula:'(1+50)×25',difficulty:2},
+  {id:2,emoji:'⚡',name:'클래식',desc:'1부터 100까지',type:'basic',start:1,end:100,step:1,answer:5050,pairFormula:'(1+100)×50',difficulty:2},
+  {id:3,emoji:'📅',name:'1년 저금',desc:'매일 1원씩 더 모으면?',type:'basic',start:1,end:365,step:1,answer:66795,pairFormula:'(1+365)×182.5',difficulty:3},
+  {id:4,emoji:'🔵',name:'짝수만!',desc:'2+4+6+...+20',type:'even',start:2,end:20,step:2,answer:110,pairFormula:'(2+20)×5',difficulty:2},
+  {id:5,emoji:'🔴',name:'홀수만!',desc:'1+3+5+...+19',type:'odd',start:1,end:19,step:2,answer:100,pairFormula:'(1+19)×5',difficulty:2},
+  {id:6,emoji:'🌟',name:'등차급수',desc:'5+10+15+...+100',type:'step',start:5,end:100,step:5,answer:1050,pairFormula:'(5+100)×10',difficulty:3}
+];
+
+let currentScenario = -1;
+let solved = JSON.parse(localStorage.getItem('gauss_solved')||'[]');
+
+/* ── Canvas state ── */
+const cvs = document.getElementById('cvs');
+const ctx = cvs.getContext('2d');
+let blocks = [];       // {val, x, y, tx, ty, w, h, color, paired:false}
+let pairs = [];         // {a, b, sum, arcY, alpha}
+let sparks = [];        // background lightning sparks
+let particles = [];     // success particles
+let lightningBolts = [];
+let pairingPhase = false;
+let pairingStep = 0;
+let pairingTotal = 0;
+let pairingDone = false;
+let lightningFlash = 0;
+let showEureka = 0;
+let animFrame;
+let numbers = [];
+
+/* ── Audio ── */
+const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+function playTone(freq,dur,type='sine',vol=0.12){
+  const g=audioCtx.createGain();const o=audioCtx.createOscillator();
+  o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(vol,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+  o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur);
+}
+function sndSuccess(){playTone(880,.1);setTimeout(()=>playTone(1100,.1),100);setTimeout(()=>playTone(1320,.2),200);}
+function sndFail(){playTone(200,.3,'square',0.08);}
+function sndPair(){playTone(600+Math.random()*200,.08,'sine',0.06);}
+function sndLightning(){playTone(100,.5,'sawtooth',0.12);setTimeout(()=>playTone(150,.3,'square',0.08),50);}
+
+/* ── Build Grid ── */
+function buildGrid(){
+  const g=document.getElementById('scenarioGrid');
+  g.innerHTML='';
+  SCENARIOS.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='sc-card'+(currentScenario===i?' active':'');
+    const stars='⭐'.repeat(s.difficulty);
+    const done=solved.includes(s.id);
+    d.innerHTML=`${done?'<span class="done-badge">✅</span>':''}<div class="sc-emoji">${s.emoji}</div><div class="sc-name">${s.name}</div><div class="sc-desc">${s.desc}</div><div class="sc-diff">${stars}</div>`;
+    d.onclick=()=>selectScenario(i);
+    g.appendChild(d);
+  });
+}
+
+/* ── Select Scenario ── */
+function selectScenario(idx){
+  currentScenario=idx;
+  pairingPhase=false;pairingStep=0;pairingDone=false;
+  lightningFlash=0;showEureka=0;
+  pairs=[];particles=[];lightningBolts=[];
+
+  const sc=SCENARIOS[idx];
+  // Generate number list
+  numbers=[];
+  for(let n=sc.start;n<=sc.end;n+=sc.step) numbers.push(n);
+
+  // Problem text
+  if(sc.step===1) document.getElementById('problemText').textContent=`${sc.start}부터 ${sc.end}까지 모두 더하면?`;
+  else document.getElementById('problemText').textContent=`${sc.start}부터 ${sc.end}까지 ${sc.step}씩 모두 더하면?`;
+
+  // Formula
+  if(sc.type==='basic') document.getElementById('formulaText').textContent=`S = n(n+1)/2 = ${sc.end}×${sc.end+1}/2`;
+  else document.getElementById('formulaText').textContent=sc.pairFormula;
+
+  // Reset UI
+  document.getElementById('answerInput').value='';
+  if(typeof resetSpinner==='function') resetSpinner();
+  document.getElementById('resultMsg').className='result-msg';
+  document.getElementById('resultMsg').style.display='none';
+  document.getElementById('pairingSummary').classList.remove('visible');
+  document.getElementById('trickBtn').disabled=false;
+
+  // Show game area
+  document.getElementById('gameArea').classList.add('visible');
+  document.getElementById('gameArea').scrollIntoView({behavior:'smooth',block:'start'});
+
+  buildBlocks();
+  buildGrid();
+
+  if(animFrame) cancelAnimationFrame(animFrame);
+  initSparks();
+  animate();
+}
+
+/* ── Build Blocks ── */
+function buildBlocks(){
+  blocks=[];
+  const n=numbers.length;
+  const cw=cvs.width, ch=cvs.height;
+  const maxVisible=20;
+
+  // Determine display mode
+  let displayNums=[];
+  let ellipsis=false;
+  if(n<=maxVisible){
+    displayNums=numbers.slice();
+  } else {
+    displayNums=[...numbers.slice(0,5),-1,...numbers.slice(-5)]; // -1 = ellipsis
+    ellipsis=true;
+  }
+
+  const count=displayNums.length;
+  const blockW=Math.min(56, (cw-80)/count - 6);
+  const blockH=blockW;
+  const gap=blockW+6;
+  const totalW=count*gap-6;
+  const startX=(cw-totalW)/2;
+  const baseY=ch/2-blockH/2;
+
+  displayNums.forEach((val,i)=>{
+    const x=startX+i*gap;
+    // Color gradient: blue to gold
+    const t=val===-1?0.5:(val-numbers[0])/(numbers[numbers.length-1]-numbers[0]||1);
+    const r=Math.round(59+(245-59)*t);
+    const g2=Math.round(130+(158-130)*t);
+    const b=Math.round(246+(11-246)*t);
+    blocks.push({val,x,y:baseY,tx:x,ty:baseY,w:blockW,h:blockH,color:`rgb(${r},${g2},${b})`,paired:false,alpha:1});
+  });
+}
+
+/* ── Sparks (background lightning) ── */
+function initSparks(){
+  sparks=[];
+  for(let i=0;i<6;i++){
+    sparks.push({
+      x:Math.random()*cvs.width,
+      y:Math.random()*cvs.height*0.6,
+      life:0,
+      maxLife:30+Math.random()*40,
+      segments:generateLightningPath(0,0,0,60+Math.random()*80),
+      alpha:0
+    });
+  }
+}
+
+function generateLightningPath(sx,sy,ex,ey){
+  const segs=[];
+  const steps=4+Math.floor(Math.random()*4);
+  let cx=sx,cy=sy;
+  for(let i=0;i<steps;i++){
+    const nx=cx+(Math.random()-0.5)*40;
+    const ny=cy+(ey-sy)/steps;
+    segs.push({x1:cx,y1:cy,x2:nx,y2:ny});
+    cx=nx;cy=ny;
+  }
+  return segs;
+}
+
+/* ── Gauss Trick ── */
+function showGaussTrick(){
+  if(pairingPhase||pairingDone) return;
+  audioCtx.resume();
+  pairingPhase=true;
+  pairingStep=0;
+  pairs=[];
+  document.getElementById('trickBtn').disabled=true;
+
+  // Create actual pairing data (from the full number list, not display blocks)
+  const n=numbers.length;
+  pairingTotal=Math.floor(n/2);
+
+  animatePairingStep();
+}
+
+function animatePairingStep(){
+  if(pairingStep>=pairingTotal){
+    pairingDone=true;
+    showEureka=1;
+    sndLightning();
+
+    // Show pairing summary
+    const sc=SCENARIOS[currentScenario];
+    const pairSum=numbers[0]+numbers[numbers.length-1];
+    const ps=document.getElementById('pairingSummary');
+    document.getElementById('psCount').textContent=pairingTotal+(numbers.length%2===1?' (+ 가운데 수 '+numbers[Math.floor(numbers.length/2)]+')':'');
+    document.getElementById('psSum').textContent=pairSum;
+    const mid=numbers.length%2===1?` + ${numbers[Math.floor(numbers.length/2)]}`:'';
+    document.getElementById('psResult').textContent=`${pairingTotal} × ${pairSum}${mid} = ${sc.answer}`;
+    ps.classList.add('visible');
+    return;
+  }
+
+  sndPair();
+  const a=numbers[pairingStep];
+  const b=numbers[numbers.length-1-pairingStep];
+  const sum=a+b;
+  pairs.push({a,b,sum,step:pairingStep,alpha:0,grow:0});
+  pairingStep++;
+
+  setTimeout(animatePairingStep, Math.max(120, 500-pairingStep*15));
+}
+
+/* ── Check Answer ── */
+function checkAnswer(){
+  audioCtx.resume();
+  if(currentScenario<0) return;
+  const input=parseInt(document.getElementById('answerInput').value);
+  const sc=SCENARIOS[currentScenario];
+  const msg=document.getElementById('resultMsg');
+  if(isNaN(input)){msg.className='result-msg fail';msg.style.display='block';msg.textContent='숫자를 입력해주세요!';return;}
+  if(input===sc.answer){
+    sndSuccess();
+    lightningFlash=1;
+    spawnSuccessParticles();
+    spawnLightningBolts();
+    if(!solved.includes(sc.id)){solved.push(sc.id);localStorage.setItem('gauss_solved',JSON.stringify(solved));}
+    msg.className='result-msg success';msg.style.display='block';
+    msg.textContent=`⚡ 번개처럼 빨라요! 정답: ${sc.answer.toLocaleString()}!`;
+    buildGrid();
+  } else {
+    sndFail();
+    msg.className='result-msg fail';msg.style.display='block';
+    msg.textContent='❌ 다시 계산해보세요! 가우스 트릭을 사용해보세요.';
+  }
+}
+
+function resetGame(){
+  if(currentScenario>=0) selectScenario(currentScenario);
+}
+
+/* ── Particles ── */
+function spawnSuccessParticles(){
+  for(let i=0;i<60;i++){
+    particles.push({
+      x:cvs.width/2,y:cvs.height/2,
+      vx:(Math.random()-0.5)*12, vy:(Math.random()-0.5)*12,
+      life:60+Math.random()*40,
+      maxLife:100,
+      size:2+Math.random()*4,
+      color:Math.random()>0.5?'#f59e0b':'#3b82f6'
+    });
+  }
+}
+
+function spawnLightningBolts(){
+  for(let i=0;i<3;i++){
+    const sx=100+Math.random()*(cvs.width-200);
+    lightningBolts.push({
+      segments:generateBigLightning(sx,0,sx+(Math.random()-0.5)*100,cvs.height),
+      life:20+Math.random()*10,
+      maxLife:30,
+      alpha:1
+    });
+  }
+}
+
+function generateBigLightning(sx,sy,ex,ey){
+  const segs=[];
+  const steps=8+Math.floor(Math.random()*6);
+  let cx=sx,cy=sy;
+  for(let i=0;i<steps;i++){
+    const t=(i+1)/steps;
+    const nx=sx+(ex-sx)*t+(Math.random()-0.5)*80;
+    const ny=sy+(ey-sy)*t;
+    segs.push({x1:cx,y1:cy,x2:nx,y2:ny});
+    // Branch
+    if(Math.random()>0.6){
+      const bx=nx+(Math.random()-0.5)*60;
+      const by=ny+20+Math.random()*30;
+      segs.push({x1:nx,y1:ny,x2:bx,y2:by,branch:true});
+    }
+    cx=nx;cy=ny;
+  }
+  return segs;
+}
+
+/* ── Main Animation Loop ── */
+function animate(){
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+
+  // Background
+  drawBackground();
+  drawBackgroundSparks();
+  drawBlocks();
+  drawPairingArcs();
+  drawLightningBolts();
+  drawParticles();
+  drawLightningFlash();
+  drawEureka();
+
+  animFrame=requestAnimationFrame(animate);
+}
+
+/* ── Draw Functions ── */
+function drawBackground(){
+  // Dark gradient
+  const g=ctx.createLinearGradient(0,0,0,cvs.height);
+  g.addColorStop(0,'#0a0f1e');
+  g.addColorStop(0.5,'#0f1729');
+  g.addColorStop(1,'#0a0f1e');
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,cvs.width,cvs.height);
+
+  // Subtle grid
+  ctx.strokeStyle='rgba(245,158,11,0.03)';
+  ctx.lineWidth=1;
+  for(let x=0;x<cvs.width;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cvs.height);ctx.stroke();}
+  for(let y=0;y<cvs.height;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cvs.width,y);ctx.stroke();}
+}
+
+function drawBackgroundSparks(){
+  sparks.forEach(s=>{
+    s.life++;
+    if(s.life>s.maxLife){
+      s.x=Math.random()*cvs.width;
+      s.y=Math.random()*cvs.height*0.6;
+      s.life=0;
+      s.maxLife=30+Math.random()*50;
+      s.segments=generateLightningPath(0,0,0,60+Math.random()*80);
+    }
+    const t=s.life/s.maxLife;
+    const a=t<0.1?t*10:t>0.8?(1-t)*5:1;
+    s.alpha=a*0.15;
+
+    if(s.alpha>0.02){
+      ctx.save();
+      ctx.translate(s.x,s.y);
+      ctx.strokeStyle=`rgba(245,158,11,${s.alpha})`;
+      ctx.lineWidth=1;
+      ctx.shadowColor='#f59e0b';
+      ctx.shadowBlur=4;
+      s.segments.forEach(seg=>{
+        ctx.beginPath();ctx.moveTo(seg.x1,seg.y1);ctx.lineTo(seg.x2,seg.y2);ctx.stroke();
+      });
+      ctx.restore();
+    }
+  });
+}
+
+function drawBlocks(){
+  blocks.forEach((b,i)=>{
+    // Gentle float
+    const floatY=Math.sin(Date.now()*0.002+i*0.5)*3;
+
+    ctx.save();
+    ctx.globalAlpha=b.alpha;
+
+    // Shadow
+    ctx.shadowColor=b.color;
+    ctx.shadowBlur=8;
+
+    // Block
+    const rx=b.x, ry=b.y+floatY, rw=b.w, rh=b.h, r=8;
+    ctx.beginPath();
+    ctx.moveTo(rx+r,ry);ctx.lineTo(rx+rw-r,ry);ctx.quadraticCurveTo(rx+rw,ry,rx+rw,ry+r);
+    ctx.lineTo(rx+rw,ry+rh-r);ctx.quadraticCurveTo(rx+rw,ry+rh,rx+rw-r,ry+rh);
+    ctx.lineTo(rx+r,ry+rh);ctx.quadraticCurveTo(rx,ry+rh,rx,ry+rh-r);
+    ctx.lineTo(rx,ry+r);ctx.quadraticCurveTo(rx,ry,rx+r,ry);
+    ctx.closePath();
+
+    // Fill gradient
+    const grd=ctx.createLinearGradient(rx,ry,rx,ry+rh);
+    grd.addColorStop(0,b.color);
+    grd.addColorStop(1,shadeColor(b.color,-30));
+    ctx.fillStyle=grd;
+    ctx.fill();
+
+    // Border
+    ctx.strokeStyle='rgba(255,255,255,0.2)';
+    ctx.lineWidth=1;
+    ctx.stroke();
+
+    ctx.shadowBlur=0;
+
+    // Text
+    if(b.val===-1){
+      ctx.fillStyle='#fff';
+      ctx.font=`bold ${Math.max(11,b.w*0.35)}px 'Pretendard Variable',sans-serif`;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('···',rx+rw/2,ry+rh/2);
+    } else {
+      ctx.fillStyle='#fff';
+      const fs=b.val>=100?Math.max(9,b.w*0.28):Math.max(11,b.w*0.38);
+      ctx.font=`bold ${fs}px 'JetBrains Mono','Pretendard Variable',monospace`;
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(b.val,rx+rw/2,ry+rh/2);
+    }
+    ctx.restore();
+  });
+}
+
+function drawPairingArcs(){
+  if(!pairingPhase && pairs.length===0) return;
+
+  const n=blocks.length;
+  const hasEllipsis=blocks.some(b=>b.val===-1);
+
+  pairs.forEach((p,pi)=>{
+    // Animate alpha
+    if(p.alpha<1) p.alpha=Math.min(1,p.alpha+0.05);
+    if(p.grow<1) p.grow=Math.min(1,p.grow+0.04);
+
+    // Find block indices for display
+    let aIdx=-1,bIdx=-1;
+    blocks.forEach((bl,bi)=>{if(bl.val===p.a)aIdx=bi;if(bl.val===p.b)bIdx=bi;});
+
+    if(aIdx===-1||bIdx===-1){
+      // Numbers not visible — draw summarized at top
+      const cx=cvs.width/2;
+      const ty=30+pi*22;
+      ctx.save();
+      ctx.globalAlpha=p.alpha*0.8;
+      ctx.font="bold 13px 'JetBrains Mono',monospace";
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle='#f59e0b';
+      ctx.fillText(`${p.a} + ${p.b} = ${p.sum}`,cx,ty);
+      ctx.restore();
+      return;
+    }
+
+    const ax=blocks[aIdx].x+blocks[aIdx].w/2;
+    const ay=blocks[aIdx].y;
+    const bx=blocks[bIdx].x+blocks[bIdx].w/2;
+    const by=blocks[bIdx].y;
+    const midX=(ax+bx)/2;
+    const arcH=40+pi*14;
+
+    ctx.save();
+    ctx.globalAlpha=p.alpha*0.7;
+
+    // Arc
+    ctx.beginPath();
+    ctx.moveTo(ax,ay);
+    const cpx=midX;
+    const cpy=ay-arcH*p.grow;
+    ctx.quadraticCurveTo(cpx,cpy,bx,by);
+    ctx.strokeStyle=`rgba(245,158,11,${0.4+p.alpha*0.3})`;
+    ctx.lineWidth=2;
+    ctx.shadowColor='#f59e0b';
+    ctx.shadowBlur=6;
+    ctx.stroke();
+
+    // Sum label
+    if(p.grow>0.7){
+      ctx.shadowBlur=0;
+      ctx.globalAlpha=p.alpha;
+      ctx.font="bold 13px 'JetBrains Mono',monospace";
+      ctx.textAlign='center';ctx.textBaseline='middle';
+
+      // Background pill
+      const txt=`${p.a}+${p.b}=${p.sum}`;
+      const tw=ctx.measureText(txt).width+12;
+      ctx.fillStyle='rgba(15,23,41,0.85)';
+      roundRect(ctx,cpx-tw/2,cpy-10,tw,20,6);
+      ctx.fill();
+
+      ctx.fillStyle='#f59e0b';
+      ctx.fillText(txt,cpx,cpy);
+    }
+
+    ctx.restore();
+  });
+}
+
+function drawLightningBolts(){
+  lightningBolts.forEach((lb,i)=>{
+    lb.life--;
+    if(lb.life<=0){lightningBolts.splice(i,1);return;}
+    const a=lb.life/lb.maxLife;
+
+    ctx.save();
+    ctx.globalAlpha=a;
+    lb.segments.forEach(seg=>{
+      ctx.beginPath();
+      ctx.moveTo(seg.x1,seg.y1);
+      ctx.lineTo(seg.x2,seg.y2);
+      ctx.strokeStyle=seg.branch?'rgba(59,130,246,0.8)':'rgba(245,158,11,0.9)';
+      ctx.lineWidth=seg.branch?1.5:3;
+      ctx.shadowColor=seg.branch?'#3b82f6':'#f59e0b';
+      ctx.shadowBlur=12;
+      ctx.stroke();
+    });
+    ctx.restore();
+  });
+}
+
+function drawParticles(){
+  particles.forEach((p,i)=>{
+    p.x+=p.vx;p.y+=p.vy;
+    p.vx*=0.97;p.vy*=0.97;
+    p.vy+=0.1;
+    p.life--;
+    if(p.life<=0){particles.splice(i,1);return;}
+
+    const a=p.life/p.maxLife;
+    ctx.save();
+    ctx.globalAlpha=a;
+    ctx.fillStyle=p.color;
+    ctx.shadowColor=p.color;
+    ctx.shadowBlur=6;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.size*a,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+function drawLightningFlash(){
+  if(lightningFlash>0){
+    ctx.save();
+    ctx.globalAlpha=lightningFlash*0.5;
+    ctx.fillStyle='#fff';
+    ctx.fillRect(0,0,cvs.width,cvs.height);
+    ctx.restore();
+    lightningFlash=Math.max(0,lightningFlash-0.03);
+  }
+}
+
+function drawEureka(){
+  if(showEureka>0){
+    const a=Math.min(1,showEureka);
+    const pulse=1+Math.sin(Date.now()*0.005)*0.05;
+
+    ctx.save();
+    ctx.globalAlpha=a;
+    ctx.font=`bold ${36*pulse}px 'Pretendard Variable',sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='#f59e0b';
+    ctx.shadowColor='#f59e0b';
+    ctx.shadowBlur=20;
+    ctx.fillText('⚡ 모든 쌍의 합이 같다! ⚡',cvs.width/2,cvs.height-50);
+    ctx.restore();
+
+    if(showEureka<1) showEureka+=0.02;
+  }
+}
+
+/* ── Helpers ── */
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+function shadeColor(col,amt){
+  const m=col.match(/\d+/g);
+  if(!m)return col;
+  const r=Math.max(0,Math.min(255,parseInt(m[0])+amt));
+  const g=Math.max(0,Math.min(255,parseInt(m[1])+amt));
+  const b=Math.max(0,Math.min(255,parseInt(m[2])+amt));
+  return`rgb(${r},${g},${b})`;
+}
+
+/* ── Enter key ── */
+document.getElementById('answerInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter') checkAnswer();
+});
+document.getElementById('answerInput').addEventListener('input',e=>{
+  syncInputToSpinner();
+});
+
+/* ── Digit Spinner ── */
+const sDigits=[0,0,0,0,0];
+function spinDigit(pos,dir){
+  sDigits[pos]=(sDigits[pos]+dir+10)%10;
+  document.getElementById('d'+pos).textContent=sDigits[pos];
+  syncSpinnerToInput();
+}
+function syncSpinnerToInput(){
+  const val=sDigits[4]*10000+sDigits[3]*1000+sDigits[2]*100+sDigits[1]*10+sDigits[0];
+  document.getElementById('answerInput').value=val||'';
+}
+function syncInputToSpinner(){
+  let v=parseInt(document.getElementById('answerInput').value)||0;
+  if(v<0)v=0; if(v>99999)v=99999;
+  sDigits[4]=Math.floor(v/10000)%10;
+  sDigits[3]=Math.floor(v/1000)%10;
+  sDigits[2]=Math.floor(v/100)%10;
+  sDigits[1]=Math.floor(v/10)%10;
+  sDigits[0]=v%10;
+  for(let i=0;i<5;i++) document.getElementById('d'+i).textContent=sDigits[i];
+}
+function resetSpinner(){
+  for(let i=0;i<5;i++){sDigits[i]=0;document.getElementById('d'+i).textContent='0';}
+}
+
+/* ── Init ── */
+buildGrid();
+</script>
+</body>
+</html>

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Lunar Whale Visual Timer</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Fonts & Icons -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+
+    <!-- React & Three.js via esm.sh for browser-native ESM -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "canvas-confetti": "https://esm.sh/canvas-confetti@1.9.2"
+        }
+    }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#E6B325", // Golden yellow
+                        "secondary": "#1A2E56", // Navy blue
+                        "background-light": "#FFFFFF", // White background
+                    },
+                    fontFamily: {
+                        "display": ["Fredoka", "sans-serif"],
+                        "sans": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                    animation: {
+                        'float': 'float 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        :root {
+            --brand-gold: #E6B325;
+            --brand-navy: #1A2E56;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .whale-glow {
+            filter: drop-shadow(0 4px 10px rgba(26, 46, 86, 0.15));
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="bg-white font-display text-slate-800 antialiased overflow-x-hidden">
+    <!-- Root for React -->
+    <div id="root"></div>
+
+    <!-- Audio Element -->
+    <audio id="alarm-audio" src="../../assets/alarm.mp3" preload="auto"></audio>
+
+    <!-- React App Logic -->
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import confetti from 'canvas-confetti';
+
+        function VisualTimer() {
+            const [totalTime, setTotalTime] = useState(300); // 5 minutes default
+            const [timeLeft, setTimeLeft] = useState(300);
+            const [isActive, setIsActive] = useState(false);
+            const [isFinished, setIsFinished] = useState(false);
+            const audioRef = useRef(document.getElementById('alarm-audio'));
+
+            // Timer Intervals
+            useEffect(() => {
+                let interval = null;
+                if (isActive && timeLeft > 0) {
+                    interval = setInterval(() => {
+                        setTimeLeft(time => time - 1);
+                    }, 1000);
+                } else if (timeLeft === 0 && isActive) {
+                    setIsActive(false);
+                    setIsFinished(true);
+                    triggerFinish();
+                }
+                return () => clearInterval(interval);
+            }, [isActive, timeLeft]);
+
+            const triggerFinish = () => {
+                // Play Audio
+                if (audioRef.current) {
+                    audioRef.current.play().catch(e => console.log("Audio play prevented:", e));
+                }
+                // Fire Confetti / Water spout
+                var duration = 3000;
+                var end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({
+                        particleCount: 5,
+                        angle: 90,
+                        spread: 55,
+                        origin: { x: 0.5, y: 0.7 }, // Spout from whale area
+                        colors: ['#ffffff', '#60a5fa', '#3b82f6', '#E6B325']
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                }());
+            };
+
+            const toggleTimer = () => {
+                if (isFinished) resetTimer();
+                setIsActive(!isActive);
+            };
+
+            const resetTimer = () => {
+                setIsActive(false);
+                setIsFinished(false);
+                setTimeLeft(totalTime);
+                if (audioRef.current) {
+                    audioRef.current.pause();
+                    audioRef.current.currentTime = 0;
+                }
+            };
+
+            const setTime = (minutes) => {
+                const secs = minutes * 60;
+                setTotalTime(secs);
+                setTimeLeft(secs);
+                setIsActive(false);
+                setIsFinished(false);
+                if (audioRef.current) {
+                    audioRef.current.pause();
+                    audioRef.current.currentTime = 0;
+                }
+            };
+
+            // Calculate display and progress
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const progress = totalTime > 0 ? timeLeft / totalTime : 0; // 1.0 to 0.0
+
+            // Format time with leading zeros
+            const displayMin = String(minutes).padStart(2, '0');
+            const displaySec = String(seconds).padStart(2, '0');
+
+            // --- SVG Masking Logic for moon ---
+            // Moon fills up as time passes (Crescent -> Half -> Full)
+            // Progress = 1.0 (start): mask covers the right, revealing a left crescent.
+            // Progress = 0.0 (end): mask moves off to the right, revealing a full moon.
+            const maskCx = 270 - (progress * 135);
+            const maskCy = 100;
+
+            const timePresets = [1, 2, 3, 5, 10, 15, 30];
+            const [showCustom, setShowCustom] = useState(false);
+            const [customMin, setCustomMin] = useState('');
+            const [customSec, setCustomSec] = useState('');
+            const [isCustomActive, setIsCustomActive] = useState(false);
+
+            const applyCustomTime = () => {
+                const m = parseInt(customMin) || 0;
+                const s = parseInt(customSec) || 0;
+                const total = m * 60 + s;
+                if (total > 0 && total <= 5999) {
+                    setTotalTime(total);
+                    setTimeLeft(total);
+                    setIsActive(false);
+                    setIsFinished(false);
+                    setIsCustomActive(true);
+                    setShowCustom(false);
+                    if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; }
+                }
+            };
+
+            return (
+                <div className="relative flex min-h-screen w-full flex-col bg-white group/design-root z-0">
+                    <div className="absolute inset-0 pointer-events-none opacity-5 overflow-hidden -z-10">
+                        <div className="absolute top-10 left-[15%] text-slate-300"><span className="material-symbols-outlined text-[8px]">circle</span></div>
+                        <div className="absolute top-24 right-[20%] text-slate-300"><span className="material-symbols-outlined text-[10px]">spark</span></div>
+                        <div className="absolute bottom-40 left-[10%] text-slate-300"><span className="material-symbols-outlined text-[6px]">circle</span></div>
+                    </div>
+
+                    <div className="flex h-full grow flex-col z-10">
+                        <div className="px-6 md:px-12 flex flex-1 justify-center py-4">
+                            <div className="flex flex-col w-full max-w-[1200px] flex-1">
+
+                                {/* Header */}
+                                <header className="flex items-center justify-between px-4 py-4 mb-4">
+                                    <div className="flex items-center gap-4 cursor-pointer" onClick={() => window.location.href = '../../index.html'}>
+                                        <div className="flex items-center justify-center p-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition">
+                                            <span className="material-symbols-outlined text-slate-700">arrow_back</span>
+                                        </div>
+                                        {/* Simplified Logo matching the prompt request */}
+                                        <div className="flex items-center gap-2">
+                                            <div className="relative w-10 h-10 flex items-center justify-center shrink-0">
+                                                <svg viewBox="0 0 200 200" className="absolute w-[130%] h-[130%] -left-[15%] -top-[15%] drop-shadow-sm">
+                                                    <defs>
+                                                        <mask id="mini-moon-mask">
+                                                            <rect width="200" height="200" fill="white" />
+                                                            <circle cx="135" cy="100" r="85" fill="black" />
+                                                        </mask>
+                                                    </defs>
+                                                    <circle cx="100" cy="100" r="85" fill="#E6B325" mask="url(#mini-moon-mask)" />
+                                                </svg>
+                                                <img src="../../assets/images/whale-logo-no-bg.png" alt="Luna Whale" className="absolute w-[95%] h-[95%] top-[2.5%] left-[2.5%] object-contain z-10" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <h2 className="text-slate-900 text-lg font-bold leading-none tracking-tight">ART ACADEMY</h2>
+                                                <span className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">Luna Whale Timer</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="hidden md:flex flex-1 justify-end gap-8">
+                                        <div className="flex flex-1 justify-end gap-8">
+                                            <div className="hidden md:flex items-center gap-9 font-sans">
+                                                <a className="text-slate-500 text-sm font-medium hover:text-primary transition-colors" href="#">Classroom</a>
+                                                <a className="text-slate-500 text-sm font-medium hover:text-primary transition-colors" href="#">Gallery</a>
+                                            </div>
+                                            <div className="bg-slate-100 rounded-full size-10 flex items-center justify-center border border-slate-200">
+                                                <span className="material-symbols-outlined text-primary text-xl">account_circle</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </header>
+
+                                {/* Time Presets */}
+                                <div className="flex gap-2 p-2 flex-wrap justify-center mb-4 md:mb-8 relative">
+                                    {timePresets.map(min => (
+                                        <button
+                                            key={min}
+                                            onClick={() => { setTime(min); setIsCustomActive(false); setShowCustom(false); }}
+                                            className={`flex h-10 shrink-0 items-center justify-center rounded-full px-6 transition-all ${totalTime === min * 60 && !isCustomActive ? 'bg-primary text-white shadow-md shadow-primary/20 font-bold uppercase tracking-wider' : 'bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 font-semibold'} text-sm`}
+                                        >
+                                            {min}m
+                                        </button>
+                                    ))}
+                                    <button
+                                        onClick={() => setShowCustom(!showCustom)}
+                                        className={`flex h-10 shrink-0 items-center justify-center rounded-full px-5 gap-1.5 transition-all ${isCustomActive ? 'bg-primary text-white shadow-md shadow-primary/20 font-bold' : 'bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 font-semibold'} text-sm`}
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">tune</span>
+                                        커스텀
+                                    </button>
+
+                                    {/* Custom Time Popup */}
+                                    {showCustom && (
+                                        <div className="absolute top-14 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 z-50 w-72 animate-in zoom-in duration-200">
+                                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 text-center">Custom Timer</div>
+                                            <div className="flex items-center gap-2 justify-center">
+                                                <div className="flex flex-col items-center">
+                                                    <input
+                                                        type="number"
+                                                        min="0" max="99"
+                                                        placeholder="00"
+                                                        value={customMin}
+                                                        onChange={e => setCustomMin(e.target.value)}
+                                                        onKeyDown={e => e.key === 'Enter' && applyCustomTime()}
+                                                        className="w-20 h-14 text-center text-3xl font-bold text-slate-800 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                                        autoFocus
+                                                    />
+                                                    <span className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">min</span>
+                                                </div>
+                                                <span className="text-2xl font-bold text-primary pb-4">:</span>
+                                                <div className="flex flex-col items-center">
+                                                    <input
+                                                        type="number"
+                                                        min="0" max="59"
+                                                        placeholder="00"
+                                                        value={customSec}
+                                                        onChange={e => setCustomSec(e.target.value)}
+                                                        onKeyDown={e => e.key === 'Enter' && applyCustomTime()}
+                                                        className="w-20 h-14 text-center text-3xl font-bold text-slate-800 bg-slate-50 border-2 border-slate-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                                    />
+                                                    <span className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">sec</span>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={applyCustomTime}
+                                                className="w-full mt-4 h-11 rounded-xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 hover:bg-yellow-600 active:scale-95 transition-all"
+                                            >
+                                                설정
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Main Visual Area */}
+                                <div className="flex-1 flex flex-col xl:flex-row items-center justify-center relative w-full max-w-6xl mx-auto gap-8 xl:gap-24 px-4 my-4 xl:my-0">
+
+                                    {/* SVG Moon and Exact Image Whale */}
+                                    <div className="relative w-[280px] h-[280px] md:w-[450px] md:h-[450px] flex flex-shrink-0 items-center justify-center">
+                                        {/* Golden Glow Behind */}
+                                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-[60px] md:blur-[80px] opacity-40"></div>
+
+                                        {/* Dynamic SVG Moon Base */}
+                                        <svg viewBox="0 0 200 200" className="absolute w-[85%] h-[85%] drop-shadow-[0_10px_20px_rgba(230,179,37,0.3)] z-10 transition-transform duration-1000">
+                                            <defs>
+                                                <mask id="moon-mask">
+                                                    <rect width="200" height="200" fill="white" />
+                                                    <circle cx={maskCx} cy={maskCy} r="85" fill="black" className="transition-all duration-1000 ease-linear" />
+                                                </mask>
+                                            </defs>
+                                            {/* Golden moon base */}
+                                            <circle cx="100" cy="100" r="85" fill="#E6B325" mask="url(#moon-mask)" className="transition-all duration-1000 ease-linear" />
+                                        </svg>
+
+                                        {/* Exact PNG Logo of Whale Provided by User */}
+                                        <img src="../../assets/images/whale-logo-no-bg.png" alt="Luna Whale Base Logo" className="absolute w-[80%] h-[80%] top-[10%] left-[10%] object-contain z-20 animate-float drop-shadow-none pointer-events-none" />
+                                    </div>
+
+                                    {/* Timer and Controls Container */}
+                                    <div className="flex flex-col items-center justify-center w-full max-w-md">
+                                        <h1 className={`text-slate-400 text-lg md:text-2xl font-bold mb-4 tracking-tight text-center transition-opacity duration-500 line-clamp-1 ${isFinished ? 'opacity-100 text-primary' : 'opacity-0 h-0 overflow-hidden'}`}>
+                                            타이머 종료!
+                                        </h1>
+
+                                        {/* Digital Countdown */}
+                                        <div className={`flex gap-3 md:gap-6 items-baseline transition-opacity duration-300 ${isFinished ? 'opacity-30' : 'opacity-100'}`}>
+                                            <div className="flex flex-col items-center">
+                                                <div className="text-7xl md:text-9xl font-bold text-slate-800 tracking-tighter leading-none">{displayMin}</div>
+                                                <span className="text-[10px] md:text-sm uppercase tracking-[0.3em] text-primary font-bold mt-2">Minutes</span>
+                                            </div>
+                                            <div className="text-6xl md:text-9xl font-bold text-primary opacity-60 leading-none pb-4 md:pb-6">:</div>
+                                            <div className="flex flex-col items-center">
+                                                <div className="text-7xl md:text-9xl font-bold text-slate-800 tracking-tighter leading-none">{displaySec}</div>
+                                                <span className="text-[10px] md:text-sm uppercase tracking-[0.3em] text-primary font-bold mt-2">Seconds</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Controls */}
+                                        <div className="flex justify-center items-center gap-6 md:gap-10 py-6 md:py-8 z-20 w-full mt-2">
+                                            <button onClick={resetTimer} className="size-14 md:size-16 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all active:scale-95" title="Reset">
+                                                <span className="material-symbols-outlined text-2xl md:text-3xl">replay</span>
+                                            </button>
+                                            <button onClick={toggleTimer} className="size-20 md:size-24 rounded-full bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/30 hover:scale-105 transition-all active:scale-95" title={isActive ? "Pause" : "Start"}>
+                                                <span className="material-symbols-outlined text-4xl md:text-5xl">{isActive ? 'pause' : 'play_arrow'}</span>
+                                            </button>
+                                            <button onClick={() => { setIsActive(false); setTimeLeft(0); }} className="size-14 md:size-16 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-[rgba(239,68,68,0.1)] hover:text-red-500 hover:border-red-400/50 transition-all active:scale-95" title="Stop">
+                                                <span className="material-symbols-outlined text-2xl md:text-3xl">stop</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="w-full px-6 md:px-10 pb-8 md:pb-12 max-w-4xl mx-auto">
+                                    <div className="h-2 md:h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200 p-[1px]">
+                                        <div
+                                            className="h-full bg-primary rounded-full shadow-[0_0_10px_rgba(230,179,37,0.5)] transition-all duration-1000 ease-linear"
+                                            style={{ width: `${progress * 100}%` }}
+                                        ></div>
+                                    </div>
+                                    <div className="flex justify-between mt-3 text-[9px] md:text-[10px] text-primary/80 font-bold uppercase tracking-[0.2em] md:tracking-[0.3em]">
+                                        <div className="flex items-center gap-2">
+                                            <span className={`size-1.5 bg-primary rounded-full ${isActive ? 'animate-pulse' : 'opacity-50'}`}></span>
+                                            <span className="text-slate-500">{isFinished ? 'Finished' : (isActive ? 'Session Active' : 'Paused')}</span>
+                                        </div>
+                                        <span className="text-slate-500">{Math.round(progress * 100)}% Remaining</span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<VisualTimer />);
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

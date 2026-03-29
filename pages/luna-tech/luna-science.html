@@ -1,0 +1,2244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Luna Science - 태양계 탐험</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg: #0a0a1a;
+    --cyan: #06b6d4;
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --panel-bg: rgba(10, 10, 40, 0.92);
+    --border: rgba(6, 182, 212, 0.2);
+}
+
+body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* ── TOP BAR ── */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: rgba(10, 10, 30, 0.95);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    flex-shrink: 0;
+    height: 52px;
+}
+.top-bar .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    color: var(--cyan); text-decoration: none; font-size: 14px;
+    font-family: 'Jua', sans-serif;
+    transition: opacity 0.2s;
+}
+.top-bar .back-btn:hover { opacity: 0.7; }
+.top-bar .title {
+    font-family: 'Jua', sans-serif;
+    font-size: 20px;
+    background: linear-gradient(135deg, #06b6d4, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.top-bar .view-toggle {
+    display: flex; gap: 4px;
+}
+.view-toggle button {
+    padding: 5px 14px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    cursor: pointer; border-radius: 4px; transition: all 0.2s;
+}
+.view-toggle button.active {
+    background: var(--cyan); color: #000; border-color: var(--cyan);
+}
+
+/* ── CANVAS ── */
+.canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+canvas#solar {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+}
+canvas#solar:active { cursor: grabbing; }
+
+/* ── SPEED CONTROL (overlay bottom-left) ── */
+.speed-control {
+    position: absolute;
+    bottom: 70px; left: 20px;
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 16px;
+    backdrop-filter: blur(12px);
+    z-index: 50;
+    font-size: 12px;
+}
+.speed-control label { color: var(--text-dim); }
+.speed-control input[type=range] {
+    width: 120px; accent-color: var(--cyan);
+}
+.speed-val { color: var(--cyan); font-weight: 600; min-width: 36px; text-align: right; }
+
+/* ── COMPARE MODE BUTTON ── */
+.compare-btn {
+    position: absolute;
+    bottom: 70px; right: 20px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 16px;
+    color: var(--text);
+    font-family: 'Jua', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    z-index: 50;
+    transition: all 0.25s;
+}
+.compare-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.compare-btn.active { background: rgba(6,182,212,0.15); border-color: var(--cyan); color: var(--cyan); }
+
+/* ── ZOOM BUTTONS (overlay) ── */
+.zoom-controls {
+    position: absolute;
+    bottom: 120px; left: 20px;
+    display: flex; flex-direction: column; gap: 4px;
+    z-index: 50;
+}
+.zoom-controls button {
+    width: 36px; height: 36px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+}
+.zoom-controls button:hover { border-color: var(--cyan); color: var(--cyan); }
+
+/* ── TOOLTIP ── */
+.tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 60;
+    white-space: nowrap;
+}
+.tooltip.show { opacity: 1; }
+.tooltip .tt-name {
+    font-family: 'Jua', sans-serif;
+    font-size: 14px;
+    color: var(--cyan);
+    margin-bottom: 2px;
+}
+.tooltip .tt-info { color: var(--text-dim); }
+
+/* ── INFO PANEL (right side) ── */
+.info-panel {
+    position: absolute;
+    top: 0; right: 0;
+    width: 340px; height: 100%;
+    background: var(--panel-bg);
+    border-left: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    z-index: 80;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    overflow-y: auto;
+    padding: 24px;
+    display: flex; flex-direction: column;
+}
+.info-panel.open { transform: translateX(0); }
+
+.info-panel .close-btn {
+    position: absolute; top: 12px; right: 12px;
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.info-panel .close-btn:hover { color: #f87171; border-color: #f87171; }
+
+.info-planet-icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    margin-bottom: 12px;
+    box-shadow: 0 0 30px rgba(6,182,212,0.3);
+}
+.info-panel h2 {
+    font-family: 'Jua', sans-serif;
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+.info-panel .en-name {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+.info-panel .data-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 12px;
+    margin-bottom: 20px;
+    font-size: 13px;
+}
+.data-grid .label { color: var(--text-dim); }
+.data-grid .value { color: var(--text); }
+.info-panel h3 {
+    font-family: 'Jua', sans-serif;
+    font-size: 16px;
+    color: var(--cyan);
+    margin-bottom: 8px;
+}
+.info-panel .features {
+    list-style: none;
+    margin-bottom: 20px;
+}
+.info-panel .features li {
+    padding: 4px 0;
+    font-size: 13px;
+    color: var(--text);
+}
+.info-panel .features li::before {
+    content: '•';
+    color: var(--cyan);
+    margin-right: 8px;
+}
+.info-panel .fun-fact {
+    background: rgba(6,182,212,0.08);
+    border: 1px solid rgba(6,182,212,0.15);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    font-family: 'Jua', sans-serif;
+}
+.info-panel .fun-fact .fact-title {
+    color: #fbbf24;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+/* ── BOTTOM BAR ── */
+.bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 12px;
+    background: rgba(10, 10, 30, 0.95);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    flex-shrink: 0;
+    overflow-x: auto;
+    height: 52px;
+}
+.planet-btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-family: 'Jua', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+.planet-btn:hover { border-color: var(--border); color: var(--text); }
+.planet-btn.active { border-color: var(--cyan); color: var(--cyan); background: rgba(6,182,212,0.08); }
+.planet-btn .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* ── COMPARISON OVERLAY ── */
+.compare-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(5,5,20,0.97);
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    overflow-y: auto;
+    padding: 24px 20px;
+}
+.compare-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+.compare-overlay h2 {
+    font-family: 'Jua', sans-serif;
+    font-size: 22px;
+    color: var(--cyan);
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+.compare-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 900px;
+    flex-shrink: 0;
+    padding: 20px 10px 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.compare-planet {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+    border-radius: 10px;
+    padding: 10px 8px 8px;
+    border: 2px solid transparent;
+    min-width: 60px;
+}
+.compare-planet:hover {
+    transform: translateY(-5px);
+    filter: brightness(1.1);
+}
+.compare-planet.cp-selected {
+    border-color: rgba(251,191,36,0.6);
+    background: rgba(251,191,36,0.08);
+    box-shadow: 0 0 16px rgba(251,191,36,0.15);
+}
+.compare-planet .cp-circle {
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.compare-planet .cp-name {
+    font-family: 'Jua', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    white-space: nowrap;
+    margin-top: 6px;
+    text-align: center;
+}
+.compare-planet .cp-size {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+}
+.compare-planet .cp-shrink {
+    font-size: 9px;
+    color: #64748b;
+}
+/* Info card for selected planet */
+.compare-info-card {
+    width: 100%;
+    max-width: 700px;
+    background: rgba(6,182,212,0.06);
+    border: 1px solid rgba(6,182,212,0.2);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 16px;
+    flex-shrink: 0;
+    display: none;
+}
+.compare-info-card.visible { display: block; }
+.compare-info-card .ci-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.compare-info-card .ci-name {
+    font-family: 'Jua', sans-serif;
+    font-size: 18px;
+    color: var(--cyan);
+}
+.compare-info-card .ci-size {
+    font-size: 13px;
+    color: var(--text-dim);
+}
+.compare-info-card .ci-facts {
+    list-style: none;
+    padding: 0;
+}
+.compare-info-card .ci-facts li {
+    padding: 5px 0;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.compare-info-card .ci-facts li:last-child { border-bottom: none; }
+.compare-info-card .ci-facts li::before {
+    content: '▸';
+    color: #a78bfa;
+    margin-right: 8px;
+}
+.compare-close {
+    margin-top: 20px;
+    padding: 10px 28px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Jua', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.compare-close:hover { border-color: var(--cyan); color: var(--cyan); }
+
+/* ── LEVEL TABS ── */
+.level-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.level-btn {
+    padding: 5px 14px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'Jua', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: all 0.25s;
+    white-space: nowrap;
+}
+.level-btn:hover { border-color: var(--cyan); color: var(--text); }
+.level-btn.active {
+    background: rgba(6,182,212,0.15);
+    border-color: var(--cyan);
+    color: var(--cyan);
+    box-shadow: 0 0 10px rgba(6,182,212,0.25);
+}
+
+/* Level section in info panel */
+.info-panel .level-section {
+    margin-top: 8px;
+    margin-bottom: 16px;
+}
+.info-panel .level-section .level-title {
+    font-family: 'Jua', sans-serif;
+    font-size: 15px;
+    color: #a78bfa;
+    margin-bottom: 10px;
+}
+.info-panel .level-section .level-facts {
+    list-style: none;
+    padding: 0;
+}
+.info-panel .level-section .level-facts li {
+    padding: 5px 0;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.info-panel .level-section .level-facts li:last-child { border-bottom: none; }
+.info-panel .level-section .level-facts li::before {
+    content: '▸';
+    color: #a78bfa;
+    margin-right: 8px;
+}
+
+/* Compare overlay level section */
+.compare-level-area {
+    margin-bottom: 12px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.compare-level-area .level-tabs {
+    justify-content: center;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(6,182,212,0.2); border-radius: 3px; }
+
+@media (max-width: 768px) {
+    .info-panel { width: 100%; }
+    .bottom-bar { gap: 2px; }
+    .planet-btn { font-size: 11px; padding: 5px 7px; }
+    .planet-btn .dot { width: 6px; height: 6px; }
+    .speed-control { bottom: 62px; left: 10px; padding: 6px 10px; }
+    .speed-control input[type=range] { width: 80px; }
+    .compare-btn { bottom: 62px; right: 10px; font-size: 12px; padding: 6px 12px; }
+    .zoom-controls { bottom: 108px; left: 10px; }
+    .compare-overlay { padding: 16px 10px; }
+    .compare-row { gap: 6px; justify-content: flex-start; }
+    .compare-planet { padding: 6px 4px; min-width: 50px; }
+    .compare-planet .cp-name { font-size: 11px; }
+    .compare-planet .cp-size { font-size: 9px; }
+    .compare-info-card { padding: 14px 16px; }
+    .compare-info-card .ci-facts li { font-size: 12px; }
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+    <a class="back-btn" href="index.html" id="backBtn">&#9664; 돌아가기</a>
+    <div class="title">&#127756; 태양계 탐험</div>
+    <div class="view-toggle">
+        <button class="active">2D</button>
+        <button disabled style="opacity:0.35" title="준비 중">3D</button>
+    </div>
+</div>
+
+<!-- CANVAS -->
+<div class="canvas-wrap" id="canvasWrap">
+    <canvas id="solar"></canvas>
+
+    <!-- Speed -->
+    <div class="speed-control">
+        <label>속도</label>
+        <input type="range" id="speedSlider" min="0.1" max="20" step="0.1" value="1"/>
+        <span class="speed-val" id="speedVal">1x</span>
+    </div>
+
+    <!-- Zoom -->
+    <div class="zoom-controls">
+        <button id="zoomIn" title="확대">+</button>
+        <button id="zoomOut" title="축소">&#x2212;</button>
+        <button id="zoomReset" title="초기화">&#x25CE;</button>
+    </div>
+
+    <!-- Compare -->
+    <button class="compare-btn" id="compareBtn">&#128207; 크기 비교</button>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip">
+        <div class="tt-name"></div>
+        <div class="tt-info"></div>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="info-panel" id="infoPanel">
+        <button class="close-btn" id="infoPanelClose">&times;</button>
+        <canvas class="info-planet-icon" id="infoPlanetIcon" width="128" height="128"></canvas>
+        <h2 id="infoName"></h2>
+        <div class="en-name" id="infoEn"></div>
+        <div class="data-grid" id="infoGrid"></div>
+        <h3>&#x2728; 특징</h3>
+        <ul class="features" id="infoFeatures"></ul>
+        <div class="fun-fact">
+            <div class="fact-title">&#128161; 재미있는 사실</div>
+            <div id="infoFact"></div>
+        </div>
+        <h3 style="margin-top:20px">&#127891; 학습 레벨</h3>
+        <div class="level-tabs" id="infoLevelTabs">
+            <button class="level-btn active" data-level="elementary">초등</button>
+            <button class="level-btn" data-level="middle">중등</button>
+            <button class="level-btn" data-level="high">고등</button>
+            <button class="level-btn" data-level="university">대학</button>
+        </div>
+        <div class="level-section" id="infoLevelSection">
+            <div class="level-title" id="infoLevelTitle"></div>
+            <ul class="level-facts" id="infoLevelFacts"></ul>
+        </div>
+    </div>
+
+    <!-- Compare Overlay -->
+    <div class="compare-overlay" id="compareOverlay">
+        <h2>&#128207; 행성 크기 비교</h2>
+        <div class="compare-level-area">
+            <div class="level-tabs" id="compareLevelTabs">
+                <button class="level-btn active" data-level="elementary">초등</button>
+                <button class="level-btn" data-level="middle">중등</button>
+                <button class="level-btn" data-level="high">고등</button>
+                <button class="level-btn" data-level="university">대학</button>
+            </div>
+        </div>
+        <div class="compare-row" id="compareRow"></div>
+        <div class="compare-info-card" id="compareInfoCard">
+            <div class="ci-header">
+                <canvas id="ciIcon" width="64" height="64" style="width:32px;height:32px;border-radius:50%;"></canvas>
+                <span class="ci-name" id="ciName"></span>
+                <span class="ci-size" id="ciSize"></span>
+            </div>
+            <ul class="ci-facts" id="ciFacts"></ul>
+        </div>
+        <button class="compare-close" id="compareClose">돌아가기</button>
+    </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar" id="bottomBar"></div>
+
+<script>
+/* ============================================================
+   Luna Science - 2D Solar System
+   ============================================================ */
+
+// ── PLANET KNOWLEDGE BY LEVEL ──
+const PLANET_KNOWLEDGE = {
+    sun: {
+        elementary: {
+            title: '태양 알아보기',
+            facts: [
+                '태양은 엄청나게 큰 불덩어리예요!',
+                '지구에서 빛이 오는 데 8분 걸려요',
+                '태양이 없으면 지구는 꽁꽁 얼어요',
+                '태양은 스스로 빛나는 별이에요',
+            ]
+        },
+        middle: {
+            title: '태양의 과학',
+            facts: [
+                '분류: G2V 주계열성 (황색 왜성)',
+                '나이: 약 46억 년 (수명의 절반)',
+                '구성: 수소 73%, 헬륨 25%, 기타 2%',
+                '핵 온도: 약 1,500만°C',
+                '표면 온도: 약 5,505°C',
+                '매초 수소 6억 톤을 헬륨으로 핵융합',
+            ]
+        },
+        high: {
+            title: '태양의 물리학',
+            facts: [
+                '핵융합: 양성자-양성자 연쇄반응 (pp chain)',
+                '광도: 3.828 × 10²⁶ W',
+                '태양풍: 초속 400~800km의 하전 입자 흐름',
+                '흑점 주기: 약 11년 (자기장 극성 반전은 22년)',
+                '코로나: 표면보다 온도가 높음 (100만~300만°C) → 코로나 가열 문제',
+            ]
+        },
+        university: {
+            title: '태양의 고급 천문학',
+            facts: [
+                'pp chain: 4¹H → ⁴He + 2e⁺ + 2νₑ + 26.73 MeV',
+                '태양 중성미자 문제: MSW 효과 (중성미자 진동)로 해결',
+                '태양 지진학(Helioseismology): 내부 자전 차등 회전 프로파일 측정',
+                '타코클라인(Tachocline): 복사층-대류층 경계, 자기장 다이나모 기원',
+                '파커 태양 탐사선: 코로나 직접 진입, 알벤 임계면 통과 확인',
+            ]
+        }
+    },
+    mercury: {
+        elementary: {
+            title: '수성 알아보기',
+            facts: [
+                '태양에서 가장 가까운 행성이에요',
+                '크기가 아주 작아요 (달보다 조금 커요)',
+                '낮에는 엄청 뜨겁고 밤에는 엄청 추워요',
+                '고리가 없고 달도 없어요',
+            ]
+        },
+        middle: {
+            title: '수성의 과학',
+            facts: [
+                '지름: 4,879km (지구의 약 38%)',
+                '공전 주기: 88일 (태양계에서 가장 빠름)',
+                '자전 주기: 59일 (매우 느린 자전)',
+                '대기가 거의 없어 운석 충돌 흔적이 그대로 남아있어요',
+                '표면 온도: 낮 430°C, 밤 -180°C (온도차 610°C!)',
+                '중력: 지구의 38% (몸무게 50kg → 수성에서 19kg)',
+            ]
+        },
+        high: {
+            title: '수성의 물리학',
+            facts: [
+                '궤도 이심률: 0.206 (태양계 행성 중 가장 큰 타원)',
+                '근일점: 4,600만 km, 원일점: 6,980만 km',
+                '궤도 경사각: 7.0° (황도면 기준)',
+                '탈출 속도: 4.25 km/s',
+                '아인슈타인의 일반상대성이론으로 수성의 근일점 이동(세차운동)을 설명했어요',
+                '자기장이 존재하지만 지구의 1% 수준',
+                '내부 구조: 큰 철-니켈 핵 (반지름의 75%)',
+            ]
+        },
+        university: {
+            title: '수성의 고급 천문학',
+            facts: [
+                '스핀-궤도 공명: 3:2 (공전 2회당 자전 3회)',
+                '근일점 세차: 뉴턴 역학으로 설명 불가한 43"/세기 → 일반상대성이론의 증거',
+                '메신저(MESSENGER) 탐사선 데이터: 극지방 영구 그림자 영역에 물 얼음 확인',
+                '자기장 생성: 부분적으로 용융된 외핵의 다이나모 효과',
+                '지각 수축: 냉각에 의한 반지름 ~7km 감소, 로베이트 스카프(lobate scarp) 형성',
+                '베피콜롬보(BepiColombo) 탐사선: 2025년 궤도 진입 예정, 자기장/내부구조 정밀 조사',
+                '표면 조성: Na, K 등 휘발성 원소의 존재 → 행성 형성 이론에 도전',
+            ]
+        }
+    },
+    venus: {
+        elementary: {
+            title: '금성 알아보기',
+            facts: [
+                '지구와 크기가 비슷해서 "지구의 쌍둥이"라고 불러요',
+                '태양계에서 가장 뜨거운 행성이에요 (462°C!)',
+                '두꺼운 구름으로 덮여있어 표면이 안 보여요',
+                '새벽과 저녁에 밝게 보여서 "샛별"이라고도 해요',
+            ]
+        },
+        middle: {
+            title: '금성의 과학',
+            facts: [
+                '지름: 12,104km (지구의 95%)',
+                '대기: 96.5% 이산화탄소 → 극심한 온실효과',
+                '표면 기압: 지구의 92배 (수심 900m와 같은 압력!)',
+                '자전 방향이 반대 (역행 자전)',
+                '하루(자전) = 243일, 1년(공전) = 225일 → 하루가 1년보다 길어요!',
+                '표면 온도 462°C: 납도 녹는 온도',
+            ]
+        },
+        high: {
+            title: '금성의 물리학',
+            facts: [
+                '온실효과: CO₂ 대기가 태양 복사열을 가둬 표면 온도 462°C 유지',
+                '대기 슈퍼로테이션: 상층 대기가 4일 만에 행성 일주 (자전보다 60배 빠름)',
+                '화산 활동: 마젤란 탐사선이 1,600개 이상의 화산 확인',
+                '판구조 없음: 전체 표면이 약 5억 년 전 한꺼번에 리서페이싱된 증거',
+                '자기장 없음: 내부 다이나모 부재 → 태양풍에 의한 대기 침식',
+            ]
+        },
+        university: {
+            title: '금성의 고급 천문학',
+            facts: [
+                '대기 중 포스핀(PH₃) 검출 논쟁 (2020): 생물학적 기원 가능성 → 재검증 진행 중',
+                '역행 자전 원인: 대기 조석력 vs 거대 충돌 가설',
+                'VERITAS/DAVINCI+ 미션 (NASA): 지질 활동 및 대기 조성 정밀 조사 예정',
+                'EnVision (ESA): 화산 활동과 지각 변동 연구',
+                '금성 테라포밍 이론: 고도 50km 대기층의 온도/기압이 지구와 유사 → 부유 도시 컨셉',
+            ]
+        }
+    },
+    earth: {
+        elementary: {
+            title: '지구 알아보기',
+            facts: [
+                '우리가 사는 행성이에요!',
+                '물이 있어서 생명이 살 수 있어요',
+                '달이 하나 있어요',
+                '1년은 365일, 하루는 24시간이에요',
+                '공기가 있어서 숨 쉴 수 있어요',
+            ]
+        },
+        middle: {
+            title: '지구의 과학',
+            facts: [
+                '지름: 12,742km',
+                '표면의 71%가 물로 덮여있어요',
+                '대기: 78% 질소, 21% 산소',
+                '자기장이 있어 태양풍으로부터 보호받아요',
+                '판구조론: 대륙이 움직이고 있어요',
+                '나이: 약 46억 년',
+            ]
+        },
+        high: {
+            title: '지구의 물리학',
+            facts: [
+                '편평도: 적도 반지름 6,378km > 극 반지름 6,357km (자전에 의한 원심력)',
+                '지구 자기장: 외핵의 철-니켈 대류 → 지자기 다이나모',
+                '밀란코비치 주기: 세차(26,000년), 경사(41,000년), 이심률(100,000년) → 빙하기 주기',
+                '판구조: 맨틀 대류에 의한 판 이동 → 해양저확장, 섭입, 조산운동',
+                '대기 진화: 초기 CO₂/NH₃ → 광합성 → O₂ 축적 (대산화 사건 24억 년 전)',
+            ]
+        },
+        university: {
+            title: '지구의 고급 과학',
+            facts: [
+                '지구 에너지 수지: 태양 복사 ~340 W/m² → 알베도 0.30 → 유효 온도 255K → 온실효과 +33K',
+                '핵-맨틀 경계(CMB): D" 층의 초저속도 영역(ULVZ) → 맨틀 플룸 기원',
+                '내핵 차등 회전: 내핵이 맨틀보다 약간 빠르게 회전 (논쟁 중)',
+                '지자기 역전: 평균 45만 년 주기, 마지막 역전 78만 년 전 (브룬-마츠야마)',
+                'Snowball Earth 가설: 원생대 최소 2회의 전구 동결 → 캡 카보네이트로 증거',
+            ]
+        }
+    },
+    mars: {
+        elementary: {
+            title: '화성 알아보기',
+            facts: [
+                '"빨간 행성"이라고 불러요 (산화철 = 녹)',
+                '태양계에서 가장 높은 산이 있어요 (올림푸스 산)',
+                '로봇 탐사차(로버)가 돌아다니며 조사하고 있어요',
+                '언젠가 사람이 갈 수 있을지도 몰라요!',
+            ]
+        },
+        middle: {
+            title: '화성의 과학',
+            facts: [
+                '지름: 6,779km (지구의 53%)',
+                '올림푸스 몬스: 높이 21.9km (에베레스트의 약 3배!)',
+                '발레스 마리네리스: 길이 4,000km의 거대 협곡',
+                '대기: 95% 이산화탄소, 매우 얇음 (지구의 0.6%)',
+                '극관: 물 얼음 + 드라이아이스 (계절에 따라 변화)',
+                '퍼시비어런스 로버: 생명 흔적 탐사 중',
+            ]
+        },
+        high: {
+            title: '화성의 물리학',
+            facts: [
+                '과거 물의 존재: 삼각주, 하천 지형, 수화 광물 (점토) 발견',
+                '자기장 소실: 약 40억 년 전 핵 냉각 → 다이나모 정지 → 대기 유실',
+                '화성 이분법: 북반구(낮은 평원) vs 남반구(높은 고원) - 거대 충돌 가설',
+                '메탄 검출: 계절적 변동 → 지질학적 또는 생물학적 기원 논쟁',
+                '포보스: 조석력에 의해 서서히 접근 → 약 5,000만 년 후 충돌/분해',
+            ]
+        },
+        university: {
+            title: '화성의 고급 천문학',
+            facts: [
+                '화성 테라포밍: CO₂ 방출, 자기장 인공 생성 (L1 자기 쉴드 제안), 수백~수천 년 소요 추정',
+                '인사이트(InSight) 지진계 데이터: 핵 반지름 ~1,830km, 액체 상태, S파 미검출',
+                '산소 동위원소비(δ¹⁸O): 화성 운석(SNC)과 지구 암석의 차이 → 독립적 부착 성장',
+                '인제뉴이티 헬리콥터: 화성 대기(0.6% 지구) 비행 성공 → 항공역학적 도전',
+            ]
+        }
+    },
+    jupiter: {
+        elementary: {
+            title: '목성 알아보기',
+            facts: [
+                '태양계에서 가장 큰 행성이에요!',
+                '줄무늬 모양이 보여요 (구름 띠)',
+                '대적점이라는 거대한 폭풍이 있어요',
+                '달(위성)이 95개나 있어요!',
+            ]
+        },
+        middle: {
+            title: '목성의 과학',
+            facts: [
+                '지름: 139,820km (지구의 약 11배!)',
+                '질량: 태양계 행성 전체의 70% 이상',
+                '대적점: 지구보다 큰 폭풍, 400년 이상 지속',
+                '가스 행성: 표면이 없어요 (수소/헬륨 가스)',
+                '갈릴레이 위성: 이오, 유로파, 가니메데, 칼리스토',
+                '유로파: 얼음 아래 바다 → 생명 존재 가능성!',
+            ]
+        },
+        high: {
+            title: '목성의 물리학',
+            facts: [
+                '내부 구조: 수소 대기 → 액체 금속 수소 → 암석/얼음 핵',
+                '자기장: 지구의 20,000배 → 태양계 최강',
+                '방사선 벨트: 이오 궤도 근처 치명적 수준',
+                '조석 가열: 이오의 화산 활동 원인 (궤도 공명)',
+                '목성의 역할: 소행성 중력 방패 → 지구 보호 가설',
+            ]
+        },
+        university: {
+            title: '목성의 고급 천문학',
+            facts: [
+                '금속 수소: ~10,000 atm에서 수소가 금속화, 자기장 생성원',
+                '주노(Juno) 미션: 중력장 정밀 측정 → 희석된(diluted) 핵 모델 제안',
+                '대적점 축소: 19세기 대비 약 1/3 크기로 감소, 역학적 원인 연구 중',
+                '유로파 클리퍼: 얼음 껍질 두께, 바다 조성, 열수구 탐사 계획',
+                '트로이군 소행성: L4/L5 라그랑주점에 수천 개 → 루시(Lucy) 탐사 진행',
+            ]
+        }
+    },
+    saturn: {
+        elementary: {
+            title: '토성 알아보기',
+            facts: [
+                '아름다운 고리가 있는 행성이에요!',
+                '고리는 얼음과 돌로 이루어져 있어요',
+                '물에 뜰 수 있을 만큼 가벼워요!',
+                '달(위성)이 146개로 가장 많아요!',
+            ]
+        },
+        middle: {
+            title: '토성의 과학',
+            facts: [
+                '지름: 116,460km (지구의 약 9배)',
+                '밀도: 0.687 g/cm³ (물보다 가벼운 유일한 행성!)',
+                '고리: 주로 얼음 입자 (크기: 먼지~집 크기)',
+                '타이탄: 두꺼운 대기 + 메탄 호수/바다',
+                '엔셀라두스: 남극 간헐천 → 지하 바다 → 생명 가능성',
+                '카시니-하위헌스 미션: 13년간 탐사 (1997-2017)',
+            ]
+        },
+        high: {
+            title: '토성의 물리학',
+            facts: [
+                '고리 나이 논쟁: 1억 년 vs 45억 년 (카시니 데이터 → 젊은 고리 지지)',
+                '육각형 소용돌이: 북극의 정육각형 제트류 (변 길이 ~13,800km)',
+                '내부 구조: 수소 외피 → 금속 수소 → 헬륨 비 → 암석 핵',
+                '편평률: 0.098 (빠른 자전 10.7시간 → 현저한 적도 팽대)',
+            ]
+        },
+        university: {
+            title: '토성의 고급 천문학',
+            facts: [
+                '고리 기원: 로슈 한계 내 위성 분해 or 혜성 포획 → 최근 기원설 유력',
+                '헬륨 비(Helium rain): He가 금속 수소에서 분리 침강 → 내부 열원',
+                '드래곤스톰: 거대 뇌우 → 수 GW급 번개 → 암모니아 대류',
+                '타이탄 프리바이오틱 화학: HCN 폴리머, 비닐 시아나이드 세포막 가설',
+            ]
+        }
+    },
+    uranus: {
+        elementary: {
+            title: '천왕성 알아보기',
+            facts: [
+                '옆으로 누워서 도는 특이한 행성이에요!',
+                '파란색으로 보여요 (메탄 가스 때문)',
+                '매우 추운 행성이에요 (-197°C)',
+                '고리가 있지만 아주 어두워서 잘 안 보여요',
+            ]
+        },
+        middle: {
+            title: '천왕성의 과학',
+            facts: [
+                '지름: 50,724km (지구의 약 4배)',
+                '자전축 기울기: 97.8° → 거의 옆으로 누워서 자전!',
+                '원인: 과거 거대한 충돌 추정',
+                '얼음 거인: 수소/헬륨 + 물/메탄/암모니아 얼음',
+                '위성 27개: 셰익스피어 작품 인물 이름',
+                '보이저 2호만 유일하게 방문 (1986년)',
+            ]
+        },
+        high: {
+            title: '천왕성의 물리학',
+            facts: [
+                '내부 열류: 거의 없음 → 다른 거대 행성과 차이 (원인 불명)',
+                '자기장: 자전축과 59° 기울어짐 + 중심에서 벗어남',
+                '극단적 계절: 42년 낮 / 42년 밤 (각 극에서)',
+                '고리 시스템: 13개 고리, 매우 어둡고 얇음',
+            ]
+        },
+        university: {
+            title: '천왕성의 고급 천문학',
+            facts: [
+                '비대칭 자기장: 사중극 + 팔중극 성분 우세 → 이온화된 물 "얼음" 맨틀 기원',
+                '내부 열 부족: 거대 충돌로 맨틀 혼합 → 열 방출 경로 차단 가설',
+                'UOP(Uranus Orbiter and Probe) 제안: 2032 발사 목표, 기준 미션으로 추천됨',
+                '초이온 물(superionic water): 극고압에서 산소 격자 + 양성자 유체 → 자기장 기원',
+            ]
+        }
+    },
+    neptune: {
+        elementary: {
+            title: '해왕성 알아보기',
+            facts: [
+                '태양에서 가장 먼 행성이에요!',
+                '진한 파란색이에요 (메탄 가스)',
+                '태양계에서 바람이 가장 빠른 행성이에요!',
+                '트리톤이라는 큰 달이 있어요',
+            ]
+        },
+        middle: {
+            title: '해왕성의 과학',
+            facts: [
+                '지름: 49,244km (지구의 약 3.9배)',
+                '풍속: 최대 2,100 km/h (태양계 최고!)',
+                '대흑점(GDS): 거대 폭풍 (나타났다 사라짐)',
+                '트리톤: 역행 궤도 → 포획된 카이퍼벨트 천체',
+                '트리톤 간헐천: 질소 가스 분출',
+                '보이저 2호 유일 방문 (1989년)',
+            ]
+        },
+        high: {
+            title: '해왕성의 물리학',
+            facts: [
+                '내부 열: 태양에서 받는 에너지의 2.6배를 방출 → 활발한 대기 역학의 원인',
+                '자기장: 자전축과 47° 기울어짐, 중심에서 크게 벗어남',
+                '궤도 공명: 명왕성과 3:2 공명 → 충돌 회피',
+                '카이퍼 벨트 가디언: 외태양계 소천체 궤도에 영향',
+            ]
+        },
+        university: {
+            title: '해왕성의 고급 천문학',
+            facts: [
+                '다이아몬드 비: 메탄 고압 분해 → 탄소 결정화 → 내부에서 다이아몬드 강수 (실험적 확인)',
+                '트리톤 포획 역학: 3체 교환 반응 or 이성 충돌 → 역행 궤도 + 조석 가열',
+                '니스 모델: 해왕성의 외향 이동 → 후기 대폭격기 유발 → 카이퍼 벨트 구조 형성',
+                '내부 구조: 초이온 물 맨틀 + 비대칭 자기장 생성',
+            ]
+        }
+    }
+};
+
+let currentLevel = 'elementary';
+
+// ── SOUND ──
+const SFX_PATHS = {
+    click: '../../assets/sounds/SonSounds/DA - Digital Click - 1.mp3',
+    whoosh: '../../assets/sounds/SonSounds/KF - Whoosh Soft - 2.mp3',
+    info: '../../assets/sounds/SonSounds/DA - Data - 3.mp3',
+};
+const sfxCache = {};
+function playSFX(key) {
+    try {
+        if (!sfxCache[key]) sfxCache[key] = new Audio(SFX_PATHS[key]);
+        const a = sfxCache[key];
+        a.currentTime = 0;
+        a.volume = 0.1;
+        a.play().catch(() => {});
+    } catch(e) {}
+}
+
+// ── PLANET DATA ──
+const SUN = {
+    id:'sun', kr:'태양', en:'Sun',
+    color:'#fbbf24', size:36,
+    realSize:1392700, dist:'-', orbit:'-', rotation:'25일',
+    temp:'5,505°C (표면)', moons:'-', ring:false,
+    fact:'태양은 지구 130만 개가 들어갈 만큼 커요! 매초 수소 6억 톤을 헬륨으로 바꾸며 빛을 만들어요.',
+    features:['태양계 중심','지구 130만 개 크기','나이: 46억 살']
+};
+
+const PLANETS = [
+    { id:'mercury', kr:'수성', en:'Mercury',
+      color:'#94a3b8', size:4, orbitR:55, speed:4.15,
+      realSize:4879, dist:'5,790만 km', orbit:'88일', rotation:'59일',
+      temp:'-180~430°C', moons:0, ring:false,
+      fact:'태양에서 가장 가까운 행성! 낮에는 430°C, 밤에는 -180°C로 온도 차이가 가장 커요.',
+      features:['대기 거의 없음','태양에 가장 가까움','온도 차이 최대'] },
+    { id:'venus', kr:'금성', en:'Venus',
+      color:'#f59e0b', size:7, orbitR:90, speed:1.62,
+      realSize:12104, dist:'1억 820만 km', orbit:'225일', rotation:'243일',
+      temp:'462°C', moons:0, ring:false,
+      fact:'하루가 1년보다 긴 행성! 자전이 너무 느려서 해가 한 번 뜨고 지는데 243일이 걸려요.',
+      features:['가장 뜨거운 행성','역방향 자전','지구의 쌍둥이'] },
+    { id:'earth', kr:'지구', en:'Earth',
+      color:'#3b82f6', size:8, orbitR:125, speed:1.0,
+      realSize:12742, dist:'1억 4,960만 km', orbit:'365일', rotation:'24시간',
+      temp:'-18~58°C', moons:1, ring:false,
+      fact:'태양계에서 유일하게 액체 물이 표면에 있는 행성! 생명이 사는 유일한 곳이에요.',
+      features:['액체 물 존재','생명 존재','달 1개'],
+      moon:{ name:'달', size:3, orbitR:20, speed:13.0, color:'#d1d5db' } },
+    { id:'mars', kr:'화성', en:'Mars',
+      color:'#ef4444', size:5, orbitR:170, speed:0.53,
+      realSize:6779, dist:'2억 2,790만 km', orbit:'687일', rotation:'24.6시간',
+      temp:'-87~-5°C', moons:2, ring:false,
+      fact:'태양계에서 가장 높은 산 올림푸스 몬스가 있어요! 에베레스트의 3배 높이!',
+      features:['붉은 행성','올림푸스 산','화성 탐사 로버'] },
+    { id:'jupiter', kr:'목성', en:'Jupiter',
+      color:'#d97706', size:24, orbitR:240, speed:0.084,
+      realSize:139820, dist:'7억 7,860만 km', orbit:'12년', rotation:'10시간',
+      temp:'-108°C', moons:95, ring:true,
+      fact:'태양계에서 가장 큰 행성! 대적점은 지구보다 큰 폭풍이 400년 넘게 계속되고 있어요.',
+      features:['가장 큰 행성','대적점 폭풍','위성 95개'],
+      bands:true },
+    { id:'saturn', kr:'토성', en:'Saturn',
+      color:'#eab308', size:20, orbitR:330, speed:0.034,
+      realSize:116460, dist:'14억 3,400만 km', orbit:'29년', rotation:'10.7시간',
+      temp:'-139°C', moons:146, ring:true,
+      fact:'물에 뜰 수 있을 만큼 가벼워요! 밀도가 물보다 낮은 유일한 행성이에요.',
+      features:['아름다운 고리','가장 가벼운 행성','위성 146개'],
+      ringColor:'#d4a460', ringWidth:10 },
+    { id:'uranus', kr:'천왕성', en:'Uranus',
+      color:'#06b6d4', size:14, orbitR:400, speed:0.012,
+      realSize:50724, dist:'28억 7,100만 km', orbit:'84년', rotation:'17시간',
+      temp:'-197°C', moons:28, ring:true,
+      fact:'거의 옆으로 누워서 자전해요! 자전축이 98도나 기울어져 있답니다.',
+      features:['옆으로 누운 자전','얼음 거인','위성 28개'] },
+    { id:'neptune', kr:'해왕성', en:'Neptune',
+      color:'#2563eb', size:13, orbitR:460, speed:0.006,
+      realSize:49244, dist:'45억 km', orbit:'165년', rotation:'16시간',
+      temp:'-201°C', moons:16, ring:false,
+      fact:'시속 2,000km의 바람이 불어요! 태양계에서 가장 빠른 바람이에요.',
+      features:['가장 빠른 바람','얼음 거인','위성 16개'] },
+];
+
+// ── CANVAS SETUP ──
+const canvas = document.getElementById('solar');
+const ctx = canvas.getContext('2d');
+const wrap = document.getElementById('canvasWrap');
+
+let W, H, dpr;
+function resize() {
+    dpr = window.devicePixelRatio || 1;
+    W = wrap.clientWidth;
+    H = wrap.clientHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ── VIEW STATE ──
+let viewX = 0, viewY = 0;
+let zoom = 1;
+const MIN_ZOOM = 0.3, MAX_ZOOM = 4;
+let time = 0;
+let speedMul = 1;
+let selectedPlanet = null;
+let compareMode = false;
+
+// Stars
+const stars = [];
+for (let i = 0; i < 300; i++) {
+    stars.push({
+        x: Math.random() * 4000 - 2000,
+        y: Math.random() * 4000 - 2000,
+        r: Math.random() * 1.2 + 0.3,
+        a: Math.random() * 0.6 + 0.2,
+        twinkle: Math.random() * Math.PI * 2,
+        twinkleSpeed: Math.random() * 2 + 0.5,
+    });
+}
+
+// Planet positions cache
+const planetPositions = [];
+
+function getCenterX() { return W / 2 + viewX; }
+function getCenterY() { return H / 2 + viewY; }
+
+// ── DRAW ──
+function drawStars() {
+    for (const s of stars) {
+        const sx = (s.x - (W/2 - getCenterX()) * 0.1) * zoom + W/2;
+        const sy = (s.y - (H/2 - getCenterY()) * 0.1) * zoom + H/2;
+        if (sx < -10 || sx > W+10 || sy < -10 || sy > H+10) continue;
+        const flicker = 0.5 + 0.5 * Math.sin(time * s.twinkleSpeed + s.twinkle);
+        ctx.beginPath();
+        ctx.arc(sx, sy, s.r * zoom, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${s.a * flicker})`;
+        ctx.fill();
+    }
+}
+
+function drawSun(cx, cy) {
+    const pulse = 1 + 0.03 * Math.sin(time * 2);
+    const r = SUN.size * zoom * pulse;
+
+    // Outer glow
+    const glow3 = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 3);
+    glow3.addColorStop(0, 'rgba(251,191,36,0.12)');
+    glow3.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 3, 0, Math.PI * 2);
+    ctx.fillStyle = glow3;
+    ctx.fill();
+
+    // Mid glow
+    const glow2 = ctx.createRadialGradient(cx, cy, r * 0.3, cx, cy, r * 1.8);
+    glow2.addColorStop(0, 'rgba(251,191,36,0.25)');
+    glow2.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 1.8, 0, Math.PI * 2);
+    ctx.fillStyle = glow2;
+    ctx.fill();
+
+    // Corona rays
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(time * 0.1);
+    for (let i = 0; i < 12; i++) {
+        const angle = (i / 12) * Math.PI * 2;
+        const len = r * (1.4 + 0.3 * Math.sin(time * 3 + i));
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(angle) * r * 0.9, Math.sin(angle) * r * 0.9);
+        ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
+        ctx.strokeStyle = `rgba(251,191,36,${0.15 + 0.1 * Math.sin(time*2+i)})`;
+        ctx.lineWidth = 2 * zoom;
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    // Sun body gradient
+    const grad = ctx.createRadialGradient(cx - r*0.2, cy - r*0.2, r*0.1, cx, cy, r);
+    grad.addColorStop(0, '#fff7ed');
+    grad.addColorStop(0.3, '#fbbf24');
+    grad.addColorStop(0.7, '#f59e0b');
+    grad.addColorStop(1, '#d97706');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Sun label
+    if (zoom > 0.5) {
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = `${Math.max(11, 13 * zoom)}px Jua`;
+        ctx.textAlign = 'center';
+        ctx.fillText('태양', cx, cy + r + 16 * zoom);
+    }
+}
+
+function drawOrbit(cx, cy, r) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4 * zoom, 6 * zoom]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+// ── REALISTIC PLANET RENDERING HELPERS ──
+function drawCraters(ctx, x, y, r) {
+    const craters = [
+        {dx:-0.3,dy:0.2,s:0.15},{dx:0.2,dy:-0.1,s:0.1},{dx:0.1,dy:0.3,s:0.08},
+        {dx:-0.15,dy:-0.3,s:0.07},{dx:0.35,dy:0.15,s:0.06},{dx:-0.05,dy:0.1,s:0.12}
+    ];
+    craters.forEach(c => {
+        const cx2 = x + c.dx*r, cy2 = y + c.dy*r, cr = c.s*r;
+        // Crater shadow
+        ctx.beginPath();
+        ctx.arc(cx2, cy2, cr, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.fill();
+        // Crater rim highlight
+        ctx.beginPath();
+        ctx.arc(cx2 - cr*0.2, cy2 - cr*0.2, cr*0.7, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(160,150,140,0.15)';
+        ctx.fill();
+    });
+}
+
+function drawVenusClouds(ctx, x, y, r) {
+    // Swirly cloud bands
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.clip();
+    for (let i = -3; i <= 3; i++) {
+        const yOff = i * r * 0.28;
+        ctx.beginPath();
+        ctx.ellipse(x + Math.sin(time*0.5 + i)*r*0.1, y + yOff, r*1.1, r*0.08, 0.1*i, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(230,200,120,${0.12 + Math.abs(i)*0.02})`;
+        ctx.fill();
+    }
+    ctx.restore();
+}
+
+function drawContinents(ctx, x, y, r) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.clip();
+    // Ocean is already the base color
+    // Green continent blobs
+    ctx.fillStyle = 'rgba(34,139,34,0.5)';
+    ctx.beginPath(); ctx.arc(x-r*0.2, y-r*0.15, r*0.22, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x+r*0.15, y+r*0.2, r*0.18, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x+r*0.3, y-r*0.25, r*0.13, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x-r*0.35, y+r*0.1, r*0.1, 0, Math.PI*2); ctx.fill();
+    // White cloud wisps
+    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    ctx.beginPath(); ctx.ellipse(x-r*0.1, y-r*0.35, r*0.25, r*0.06, 0.3, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x+r*0.2, y+r*0.1, r*0.2, r*0.05, -0.2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x-r*0.25, y+r*0.3, r*0.18, r*0.04, 0.1, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+}
+
+function drawPolarCap(ctx, x, y, r) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.clip();
+    // North polar cap
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath();
+    ctx.ellipse(x, y - r*0.78, r*0.4, r*0.18, 0, 0, Math.PI*2);
+    ctx.fill();
+    // Surface texture - darker patches
+    ctx.fillStyle = 'rgba(120,50,20,0.15)';
+    ctx.beginPath(); ctx.arc(x+r*0.2, y+r*0.15, r*0.2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x-r*0.25, y-r*0.1, r*0.15, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+}
+
+function drawJupiterDetailed(ctx, x, y, r) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.clip();
+    // Cloud bands with realistic colors
+    const bands = [
+        { offset: -0.7, color: '#c4a45a', h: 0.14 },
+        { offset: -0.5, color: '#8B6914', h: 0.1 },
+        { offset: -0.3, color: '#dbb870', h: 0.15 },
+        { offset: -0.1, color: '#a07830', h: 0.1 },
+        { offset: 0.1, color: '#e0c080', h: 0.15 },
+        { offset: 0.3, color: '#907020', h: 0.1 },
+        { offset: 0.5, color: '#c8a050', h: 0.14 },
+        { offset: 0.7, color: '#8B6914', h: 0.1 },
+    ];
+    bands.forEach(b => {
+        ctx.fillStyle = b.color + 'bb';
+        ctx.fillRect(x - r, y + b.offset * r - b.h * r * 0.5, r * 2, b.h * r);
+    });
+    // Great Red Spot
+    ctx.beginPath();
+    const spotX = x + r*0.25, spotY = y + r*0.2;
+    const spotGrad = ctx.createRadialGradient(spotX, spotY, 0, spotX, spotY, r*0.2);
+    spotGrad.addColorStop(0, '#c0392bcc');
+    spotGrad.addColorStop(0.6, '#a0302888');
+    spotGrad.addColorStop(1, 'transparent');
+    ctx.ellipse(spotX, spotY, r*0.22, r*0.13, 0, 0, Math.PI*2);
+    ctx.fillStyle = spotGrad;
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawSaturnRings(ctx, x, y, r) {
+    // Detailed rings with gaps
+    const ringInner = r * 1.3;
+    const ringOuter = r * 2.2;
+    const ringTilt = 0.3;
+    ctx.save();
+    // Ring behind planet
+    ctx.beginPath();
+    ctx.ellipse(x, y, ringOuter, ringOuter * ringTilt, -0.15, Math.PI, Math.PI * 2);
+    ctx.ellipse(x, y, ringInner, ringInner * ringTilt, -0.15, Math.PI * 2, Math.PI, true);
+    ctx.closePath();
+    const ringGrad = ctx.createLinearGradient(x - ringOuter, y, x + ringOuter, y);
+    ringGrad.addColorStop(0, 'rgba(212,164,96,0.3)');
+    ringGrad.addColorStop(0.3, 'rgba(212,180,120,0.5)');
+    ringGrad.addColorStop(0.45, 'rgba(180,140,80,0.15)'); // Cassini Division
+    ringGrad.addColorStop(0.55, 'rgba(180,140,80,0.15)');
+    ringGrad.addColorStop(0.7, 'rgba(200,170,110,0.45)');
+    ringGrad.addColorStop(1, 'rgba(212,164,96,0.3)');
+    ctx.fillStyle = ringGrad;
+    ctx.fill();
+    ctx.restore();
+    return { ringInner, ringOuter, ringTilt };
+}
+
+function drawSaturnRingsFront(ctx, x, y, r, ringData) {
+    const { ringInner, ringOuter, ringTilt } = ringData;
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(x, y, ringOuter, ringOuter * ringTilt, -0.15, 0, Math.PI);
+    ctx.ellipse(x, y, ringInner, ringInner * ringTilt, -0.15, Math.PI, 0, true);
+    ctx.closePath();
+    const ringGrad = ctx.createLinearGradient(x - ringOuter, y, x + ringOuter, y);
+    ringGrad.addColorStop(0, 'rgba(212,164,96,0.35)');
+    ringGrad.addColorStop(0.3, 'rgba(212,180,120,0.55)');
+    ringGrad.addColorStop(0.45, 'rgba(180,140,80,0.15)');
+    ringGrad.addColorStop(0.55, 'rgba(180,140,80,0.15)');
+    ringGrad.addColorStop(0.7, 'rgba(200,170,110,0.5)');
+    ringGrad.addColorStop(1, 'rgba(212,164,96,0.35)');
+    ctx.fillStyle = ringGrad;
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawUranusFeatures(ctx, x, y, r) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.clip();
+    // Subtle banding
+    ctx.fillStyle = 'rgba(100,200,200,0.08)';
+    ctx.fillRect(x - r, y - r*0.15, r*2, r*0.3);
+    ctx.fillStyle = 'rgba(50,180,180,0.06)';
+    ctx.fillRect(x - r, y + r*0.3, r*2, r*0.2);
+    // Faint polar bright spot
+    ctx.beginPath();
+    ctx.arc(x, y - r*0.6, r*0.35, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(180,240,240,0.1)';
+    ctx.fill();
+    ctx.restore();
+    // Thin ring
+    ctx.beginPath();
+    ctx.ellipse(x, y, r*1.4, r*1.4*0.15, 1.2, 0, Math.PI*2); // tilted ring
+    ctx.strokeStyle = 'rgba(150,220,220,0.2)';
+    ctx.lineWidth = Math.max(1, zoom);
+    ctx.stroke();
+}
+
+function drawNeptuneFeatures(ctx, x, y, r) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.clip();
+    // Cloud bands
+    ctx.fillStyle = 'rgba(80,100,200,0.15)';
+    ctx.fillRect(x - r, y - r*0.1, r*2, r*0.2);
+    ctx.fillStyle = 'rgba(100,130,255,0.1)';
+    ctx.fillRect(x - r, y + r*0.35, r*2, r*0.15);
+    // Dark spot
+    ctx.beginPath();
+    ctx.ellipse(x - r*0.15, y - r*0.15, r*0.2, r*0.12, 0.2, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(20,30,100,0.3)';
+    ctx.fill();
+    // Bright companion cloud
+    ctx.beginPath();
+    ctx.ellipse(x - r*0.1, y - r*0.3, r*0.12, r*0.04, 0.1, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(200,220,255,0.25)';
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawRealisticPlanetBody(ctx, px, py, sz, planet) {
+    // 3D sphere gradient
+    const grad = ctx.createRadialGradient(
+        px - sz*0.3, py - sz*0.3, sz*0.1,
+        px, py, sz
+    );
+
+    switch(planet.id) {
+        case 'mercury':
+            grad.addColorStop(0, '#c0b0a0');
+            grad.addColorStop(0.6, '#8a8078');
+            grad.addColorStop(1, '#4a4a4a');
+            ctx.beginPath();
+            ctx.arc(px, py, sz, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            if (sz > 4) drawCraters(ctx, px, py, sz);
+            break;
+        case 'venus':
+            grad.addColorStop(0, '#f5e0a0');
+            grad.addColorStop(0.5, '#d4a860');
+            grad.addColorStop(1, '#9a7020');
+            ctx.beginPath();
+            ctx.arc(px, py, sz, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            if (sz > 5) drawVenusClouds(ctx, px, py, sz);
+            break;
+        case 'earth':
+            grad.addColorStop(0, '#6bb5ff');
+            grad.addColorStop(0.5, '#3080d0');
+            grad.addColorStop(1, '#1a4a76');
+            ctx.beginPath();
+            ctx.arc(px, py, sz, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            if (sz > 5) drawContinents(ctx, px, py, sz);
+            break;
+        case 'mars':
+            grad.addColorStop(0, '#e8935a');
+            grad.addColorStop(0.5, '#c06030');
+            grad.addColorStop(1, '#6b2500');
+            ctx.beginPath();
+            ctx.arc(px, py, sz, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            if (sz > 4) drawPolarCap(ctx, px, py, sz);
+            break;
+        case 'jupiter':
+            grad.addColorStop(0, '#f0d090');
+            grad.addColorStop(0.5, '#c09848');
+            grad.addColorStop(1, '#7a5818');
+            ctx.beginPath();
+            ctx.arc(px, py, sz, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            if (sz > 6) drawJupiterDetailed(ctx, px, py, sz);
+            break;
+        case 'saturn':
+            grad.addColorStop(0, '#f5e8c0');
+            grad.addColorStop(0.5, '#d0b470');
+            grad.addColorStop(1, '#907828');
+            ctx.beginPath();
+            ctx.arc(px, py, sz, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            break;
+        case 'uranus':
+            grad.addColorStop(0, '#b8ecec');
+            grad.addColorStop(0.5, '#60b8b8');
+            grad.addColorStop(1, '#2a7070');
+            ctx.beginPath();
+            ctx.arc(px, py, sz, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            if (sz > 6) drawUranusFeatures(ctx, px, py, sz);
+            break;
+        case 'neptune':
+            grad.addColorStop(0, '#7898ff');
+            grad.addColorStop(0.5, '#4060d0');
+            grad.addColorStop(1, '#1a2b6b');
+            ctx.beginPath();
+            ctx.arc(px, py, sz, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            if (sz > 6) drawNeptuneFeatures(ctx, px, py, sz);
+            break;
+        default:
+            grad.addColorStop(0, lightenColor(planet.color, 40));
+            grad.addColorStop(1, planet.color);
+            ctx.beginPath();
+            ctx.arc(px, py, sz, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+    }
+
+    // Specular highlight for 3D look
+    const spec = ctx.createRadialGradient(
+        px - sz*0.3, py - sz*0.3, 0,
+        px - sz*0.3, py - sz*0.3, sz*0.6
+    );
+    spec.addColorStop(0, 'rgba(255,255,255,0.25)');
+    spec.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(px, py, sz, 0, Math.PI*2);
+    ctx.fillStyle = spec;
+    ctx.fill();
+
+    // Terminator (dark edge on right side for lighting)
+    const term = ctx.createLinearGradient(px - sz, py, px + sz, py);
+    term.addColorStop(0, 'transparent');
+    term.addColorStop(0.7, 'transparent');
+    term.addColorStop(1, 'rgba(0,0,0,0.25)');
+    ctx.beginPath();
+    ctx.arc(px, py, sz, 0, Math.PI*2);
+    ctx.fillStyle = term;
+    ctx.fill();
+}
+
+function drawPlanet(planet, index) {
+    const cx = getCenterX();
+    const cy = getCenterY();
+    const orbitR = planet.orbitR * zoom;
+    const angle = time * planet.speed * 0.3;
+    const px = cx + orbitR * Math.cos(angle);
+    const py = cy + orbitR * Math.sin(angle);
+    const sz = Math.max(planet.size * zoom, 3);
+
+    // Draw orbit
+    drawOrbit(cx, cy, orbitR);
+
+    // AU label on orbit (right side)
+    if (zoom > 0.6) {
+        const au = (planet.orbitR / 125).toFixed(1); // Earth=1AU at orbitR=125
+        const lx = cx + orbitR + 4;
+        const ly = cy - 3;
+        ctx.fillStyle = 'rgba(255,255,255,0.12)';
+        ctx.font = `${9 * Math.min(zoom, 1.2)}px JetBrains Mono`;
+        ctx.textAlign = 'left';
+        ctx.fillText(au + ' AU', lx, ly);
+    }
+
+    // Saturn detailed rings (behind planet)
+    let saturnRingData = null;
+    if (planet.id === 'saturn' && sz > 4) {
+        saturnRingData = drawSaturnRings(ctx, px, py, sz);
+    } else if (planet.ringColor && planet.id !== 'saturn') {
+        // Legacy ring for other ringed planets
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(px, py, sz + planet.ringWidth * zoom, (sz + planet.ringWidth * zoom) * 0.3, -0.3, Math.PI, Math.PI * 2);
+        ctx.strokeStyle = planet.ringColor + '99';
+        ctx.lineWidth = Math.max(2 * zoom, 1.5);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // Planet glow
+    const glow = ctx.createRadialGradient(px, py, sz * 0.3, px, py, sz * 2.5);
+    glow.addColorStop(0, planet.color + '30');
+    glow.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(px, py, sz * 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = glow;
+    ctx.fill();
+
+    // Realistic planet body
+    drawRealisticPlanetBody(ctx, px, py, sz, planet);
+
+    // Saturn detailed rings (front)
+    if (saturnRingData) {
+        drawSaturnRingsFront(ctx, px, py, sz, saturnRingData);
+    } else if (planet.ringColor && planet.id !== 'saturn') {
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(px, py, sz + planet.ringWidth * zoom, (sz + planet.ringWidth * zoom) * 0.3, -0.3, 0, Math.PI);
+        ctx.strokeStyle = planet.ringColor + '99';
+        ctx.lineWidth = Math.max(2 * zoom, 1.5);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // Earth's moon
+    if (planet.moon) {
+        const moonAngle = time * planet.moon.speed * 0.3;
+        const mOrbitR = planet.moon.orbitR * zoom;
+        const mx = px + mOrbitR * Math.cos(moonAngle);
+        const my = py + mOrbitR * Math.sin(moonAngle);
+        const ms = Math.max(planet.moon.size * zoom, 1.5);
+
+        // Moon orbit
+        ctx.beginPath();
+        ctx.arc(px, py, mOrbitR, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        // Realistic moon
+        const moonGrad = ctx.createRadialGradient(mx - ms*0.3, my - ms*0.3, ms*0.1, mx, my, ms);
+        moonGrad.addColorStop(0, '#e8e4e0');
+        moonGrad.addColorStop(0.5, '#c0b8b0');
+        moonGrad.addColorStop(1, '#808080');
+        ctx.beginPath();
+        ctx.arc(mx, my, ms, 0, Math.PI * 2);
+        ctx.fillStyle = moonGrad;
+        ctx.fill();
+    }
+
+    // Label
+    if (zoom > 0.4) {
+        const fontSize = Math.max(12, 13 * zoom);
+        ctx.font = `bold ${fontSize}px Jua`;
+        ctx.textAlign = 'center';
+        const labelY = py + sz + 16 * Math.min(zoom, 1.5);
+        const labelText = planet.kr;
+        const textW = ctx.measureText(labelText).width;
+        // Background box for readability
+        ctx.fillStyle = 'rgba(10,10,30,0.7)';
+        const pad = 3;
+        const bx = px - textW/2 - pad, by = labelY - fontSize + 1, bw = textW + pad*2, bh = fontSize + pad;
+        ctx.beginPath();
+        if (ctx.roundRect) { ctx.roundRect(bx, by, bw, bh, 3); }
+        else { ctx.rect(bx, by, bw, bh); }
+        ctx.fill();
+        // Text with shadow
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 4;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(labelText, px, labelY);
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+    }
+
+    // Store position for hit detection
+    planetPositions[index] = { x: px, y: py, r: Math.max(sz, 12) };
+}
+
+function lightenColor(hex, amt) {
+    let r = parseInt(hex.slice(1,3), 16);
+    let g = parseInt(hex.slice(3,5), 16);
+    let b = parseInt(hex.slice(5,7), 16);
+    r = Math.min(255, r + amt);
+    g = Math.min(255, g + amt);
+    b = Math.min(255, b + amt);
+    return `rgb(${r},${g},${b})`;
+}
+
+function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = '#0a0a1a';
+    ctx.fillRect(0, 0, W, H);
+
+    // Faint grid
+    if (zoom > 0.6) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.015)';
+        ctx.lineWidth = 1;
+        const step = 50 * zoom;
+        const offX = (getCenterX() * zoom) % step + (W / 2) % step;
+        const offY = (getCenterY() * zoom) % step + (H / 2) % step;
+        // Only draw if step > 10 to avoid clutter
+        if (step > 15) {
+            for (let x = (offX % step) - step; x < W + step; x += step) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+            }
+            for (let y = (offY % step) - step; y < H + step; y += step) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+            }
+        }
+    }
+
+    drawStars();
+    drawSun(getCenterX(), getCenterY());
+
+    for (let i = 0; i < PLANETS.length; i++) {
+        drawPlanet(PLANETS[i], i);
+    }
+
+    // Highlight selected
+    if (selectedPlanet !== null && selectedPlanet >= 0) {
+        const pos = planetPositions[selectedPlanet];
+        if (pos) {
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, pos.r + 6, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(6,182,212,0.5)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+    }
+    // Highlight sun if selected
+    if (selectedPlanet === -1) {
+        const cx = getCenterX(), cy = getCenterY();
+        const r = SUN.size * zoom * (1 + 0.03 * Math.sin(time * 2));
+        ctx.beginPath();
+        ctx.arc(cx, cy, r + 8, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(6,182,212,0.5)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    time += 0.016 * speedMul;
+    requestAnimationFrame(draw);
+}
+
+// ── HIT TEST ──
+function hitTest(mx, my) {
+    // Check sun
+    const cx = getCenterX(), cy = getCenterY();
+    const sunR = SUN.size * zoom;
+    if (Math.hypot(mx - cx, my - cy) < sunR + 10) return -1;
+
+    // Check planets (reverse for top-most)
+    for (let i = PLANETS.length - 1; i >= 0; i--) {
+        const p = planetPositions[i];
+        if (p && Math.hypot(mx - p.x, my - p.y) < p.r + 4) return i;
+    }
+    return null;
+}
+
+// ── INFO PANEL ──
+const infoPanel = document.getElementById('infoPanel');
+const infoPlanetIcon = document.getElementById('infoPlanetIcon');
+
+function showInfo(idx) {
+    const data = idx === -1 ? SUN : PLANETS[idx];
+    selectedPlanet = idx;
+    updateBottomBar();
+
+    document.getElementById('infoName').textContent = data.kr;
+    document.getElementById('infoEn').textContent = data.en;
+
+    // Draw icon using realistic renderer
+    const ictx = infoPlanetIcon.getContext('2d');
+    ictx.clearRect(0, 0, 128, 128);
+    // Use realistic planet body for icon (save/restore zoom context)
+    const savedZoom = zoom;
+    const savedTime = time;
+    zoom = 1;
+    if (idx === -1) {
+        // Sun icon
+        const gr = ictx.createRadialGradient(56, 56, 5, 64, 64, 50);
+        gr.addColorStop(0, '#fff7ed');
+        gr.addColorStop(0.3, '#fbbf24');
+        gr.addColorStop(0.7, '#f59e0b');
+        gr.addColorStop(1, '#d97706');
+        ictx.beginPath();
+        ictx.arc(64, 64, 50, 0, Math.PI * 2);
+        ictx.fillStyle = gr;
+        ictx.fill();
+    } else {
+        drawRealisticPlanetBody(ictx, 64, 64, 50, data);
+        // Draw Saturn rings on icon
+        if (data.id === 'saturn') {
+            ictx.beginPath();
+            ictx.ellipse(64, 64, 62, 18, -0.15, 0, Math.PI * 2);
+            const rg = ictx.createLinearGradient(2, 64, 126, 64);
+            rg.addColorStop(0, 'rgba(212,164,96,0.4)');
+            rg.addColorStop(0.45, 'rgba(180,140,80,0.15)');
+            rg.addColorStop(0.55, 'rgba(180,140,80,0.15)');
+            rg.addColorStop(1, 'rgba(212,164,96,0.4)');
+            ictx.strokeStyle = rg;
+            ictx.lineWidth = 5;
+            ictx.stroke();
+        }
+    }
+    zoom = savedZoom;
+
+    infoPlanetIcon.style.boxShadow = `0 0 30px ${data.color}50`;
+
+    // Data grid
+    const gridHTML = [
+        ['크기', idx === -1 ? data.realSize.toLocaleString() + ' km (지름)' : data.realSize.toLocaleString() + ' km'],
+        ['태양 거리', data.dist],
+        ['공전 주기', data.orbit],
+        ['자전 주기', data.rotation],
+        ['온도', data.temp],
+        ['위성', typeof data.moons === 'number' ? data.moons + '개' : data.moons],
+        ['고리', data.ring ? '있음' : '없음'],
+    ].map(([l,v]) => `<span class="label">${l}</span><span class="value">${v}</span>`).join('');
+    document.getElementById('infoGrid').innerHTML = gridHTML;
+
+    // Features
+    document.getElementById('infoFeatures').innerHTML = data.features.map(f => `<li>${f}</li>`).join('');
+
+    // Fact
+    document.getElementById('infoFact').textContent = data.fact;
+
+    // Level content
+    updateInfoLevel(data.id);
+
+    infoPanel.classList.add('open');
+    playSFX('info');
+}
+
+function updateInfoLevel(planetId) {
+    const knowledge = PLANET_KNOWLEDGE[planetId];
+    if (!knowledge) {
+        document.getElementById('infoLevelSection').style.display = 'none';
+        return;
+    }
+    document.getElementById('infoLevelSection').style.display = '';
+    const levelData = knowledge[currentLevel];
+    if (!levelData) return;
+    document.getElementById('infoLevelTitle').textContent = levelData.title;
+    document.getElementById('infoLevelFacts').innerHTML = levelData.facts.map(f => `<li>${f}</li>`).join('');
+}
+
+// ── INFO PANEL LEVEL TABS ──
+document.getElementById('infoLevelTabs').addEventListener('click', e => {
+    const btn = e.target.closest('.level-btn');
+    if (!btn) return;
+    currentLevel = btn.dataset.level;
+    // Update all level tab sets
+    document.querySelectorAll('.level-tabs .level-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.level === currentLevel);
+    });
+    // Update info panel content
+    const data = selectedPlanet === -1 ? SUN : (selectedPlanet !== null ? PLANETS[selectedPlanet] : null);
+    if (data) updateInfoLevel(data.id);
+    // Update compare overlay if open
+    if (compareMode) updateCompareLevel();
+    playSFX('click');
+});
+
+function closeInfo() {
+    infoPanel.classList.remove('open');
+    selectedPlanet = null;
+    updateBottomBar();
+}
+
+document.getElementById('infoPanelClose').addEventListener('click', closeInfo);
+
+// ── BOTTOM BAR ──
+function buildBottomBar() {
+    const bar = document.getElementById('bottomBar');
+    const allItems = [{ id:'sun', kr:'태양', color:'#fbbf24', idx:-1 }];
+    PLANETS.forEach((p, i) => allItems.push({ id:p.id, kr:p.kr, color:p.color, idx:i }));
+
+    bar.innerHTML = allItems.map(item =>
+        `<button class="planet-btn" data-idx="${item.idx}">
+            <span class="dot" style="background:${item.color}"></span>
+            ${item.kr}
+        </button>`
+    ).join('');
+
+    bar.addEventListener('click', e => {
+        const btn = e.target.closest('.planet-btn');
+        if (!btn) return;
+        const idx = parseInt(btn.dataset.idx);
+        playSFX('click');
+
+        // Focus camera on planet
+        if (idx === -1) {
+            // Center on sun
+            viewX = 0; viewY = 0;
+        } else {
+            const p = PLANETS[idx];
+            const angle = time * p.speed * 0.3;
+            viewX = -p.orbitR * Math.cos(angle) * zoom;
+            viewY = -p.orbitR * Math.sin(angle) * zoom;
+            // Actually, just re-center — orbits move so let's center on the orbit
+            viewX = 0; viewY = 0;
+            zoom = Math.max(0.6, Math.min(2, 300 / p.orbitR));
+        }
+        showInfo(idx);
+    });
+}
+buildBottomBar();
+
+function updateBottomBar() {
+    document.querySelectorAll('.planet-btn').forEach(btn => {
+        const idx = parseInt(btn.dataset.idx);
+        btn.classList.toggle('active', idx === selectedPlanet);
+    });
+}
+
+// ── MOUSE / TOUCH ──
+let isDragging = false;
+let dragStartX, dragStartY, dragViewX, dragViewY;
+let didDrag = false;
+
+canvas.addEventListener('mousedown', e => {
+    isDragging = true;
+    didDrag = false;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    dragViewX = viewX;
+    dragViewY = viewY;
+});
+
+window.addEventListener('mousemove', e => {
+    if (isDragging) {
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+        if (Math.abs(dx) + Math.abs(dy) > 5) didDrag = true;
+        viewX = dragViewX + dx / zoom;
+        viewY = dragViewY + dy / zoom;
+    }
+
+    // Tooltip
+    if (!isDragging && !compareMode) {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const hit = hitTest(mx, my);
+        const tooltip = document.getElementById('tooltip');
+        if (hit !== null) {
+            const data = hit === -1 ? SUN : PLANETS[hit];
+            tooltip.querySelector('.tt-name').textContent = data.kr + ' ' + data.en;
+            if (hit === -1) {
+                tooltip.querySelector('.tt-info').textContent = '크기: ' + data.realSize.toLocaleString() + ' km | ' + data.temp;
+            } else {
+                tooltip.querySelector('.tt-info').textContent = '거리: ' + data.dist + ' | 공전: ' + data.orbit;
+            }
+            tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
+            tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+            tooltip.classList.add('show');
+            canvas.style.cursor = 'pointer';
+        } else {
+            tooltip.classList.remove('show');
+            canvas.style.cursor = isDragging ? 'grabbing' : 'grab';
+        }
+    }
+});
+
+window.addEventListener('mouseup', e => {
+    if (isDragging && !didDrag) {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const hit = hitTest(mx, my);
+        if (hit !== null) {
+            playSFX('click');
+            showInfo(hit);
+        } else {
+            closeInfo();
+        }
+    }
+    isDragging = false;
+});
+
+// Touch
+let touchStartDist = 0;
+let touchStartZoom = 1;
+
+canvas.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+        isDragging = true;
+        didDrag = false;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        dragViewX = viewX;
+        dragViewY = viewY;
+    }
+    if (e.touches.length === 2) {
+        isDragging = false;
+        touchStartDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+        );
+        touchStartZoom = zoom;
+    }
+}, { passive: true });
+
+canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (e.touches.length === 1 && isDragging) {
+        const dx = e.touches[0].clientX - dragStartX;
+        const dy = e.touches[0].clientY - dragStartY;
+        if (Math.abs(dx) + Math.abs(dy) > 5) didDrag = true;
+        viewX = dragViewX + dx / zoom;
+        viewY = dragViewY + dy / zoom;
+    }
+    if (e.touches.length === 2) {
+        const dist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+        );
+        zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, touchStartZoom * (dist / touchStartDist)));
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+    if (e.touches.length === 0 && !didDrag && isDragging) {
+        // tap
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.changedTouches[0].clientX - rect.left;
+        const my = e.changedTouches[0].clientY - rect.top;
+        const hit = hitTest(mx, my);
+        if (hit !== null) {
+            playSFX('click');
+            showInfo(hit);
+        } else {
+            closeInfo();
+        }
+    }
+    isDragging = false;
+});
+
+// Wheel zoom
+canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const delta = -e.deltaY * 0.001;
+    zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * (1 + delta)));
+}, { passive: false });
+
+// ── ZOOM BUTTONS ──
+document.getElementById('zoomIn').addEventListener('click', () => {
+    zoom = Math.min(MAX_ZOOM, zoom * 1.3);
+    playSFX('click');
+});
+document.getElementById('zoomOut').addEventListener('click', () => {
+    zoom = Math.max(MIN_ZOOM, zoom / 1.3);
+    playSFX('click');
+});
+document.getElementById('zoomReset').addEventListener('click', () => {
+    zoom = 1; viewX = 0; viewY = 0;
+    playSFX('click');
+});
+
+// ── SPEED ──
+const speedSlider = document.getElementById('speedSlider');
+const speedVal = document.getElementById('speedVal');
+speedSlider.addEventListener('input', () => {
+    speedMul = parseFloat(speedSlider.value);
+    speedVal.textContent = speedMul.toFixed(1) + 'x';
+});
+
+// ── COMPARISON MODE ──
+const compareOverlay = document.getElementById('compareOverlay');
+const compareBtn = document.getElementById('compareBtn');
+
+let compareSelectedId = null;
+
+// Distance order: Sun → Mercury → Neptune
+const DISTANCE_ORDER = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
+
+function buildComparison() {
+    const row = document.getElementById('compareRow');
+    const jupiterReal = 139820;
+    const maxPlanetPx = 60; // Jupiter = 60px
+    const sunCapPx = 72; // Sun capped display size
+    const minPx = 6; // Minimum visible size
+
+    // Build items in distance order
+    const allItems = DISTANCE_ORDER.map(id => {
+        if (id === 'sun') return { id:'sun', kr:'태양', en:'Sun', realSize:1392700, color:'#fbbf24', isSun:true };
+        const p = PLANETS.find(pl => pl.id === id);
+        return { id:p.id, kr:p.kr, en:p.en, realSize:p.realSize, color:p.color, isSun:false };
+    });
+
+    let html = '';
+    for (const item of allItems) {
+        let circleSize;
+        if (item.isSun) {
+            circleSize = sunCapPx;
+        } else {
+            circleSize = Math.max(minPx, Math.round((item.realSize / jupiterReal) * maxPlanetPx));
+        }
+
+        const canvasRes = Math.max(circleSize * 2, 20);
+        const shrinkNote = item.isSun ? '<div class="cp-shrink">(축소)</div>' : '';
+        const sizeText = item.realSize >= 1000000
+            ? (item.realSize / 1000000).toFixed(2) + 'M km'
+            : item.realSize.toLocaleString() + ' km';
+
+        html += `<div class="compare-planet" data-cid="${item.id}">
+            <canvas class="cp-circle" width="${canvasRes}" height="${canvasRes}" style="width:${circleSize}px;height:${circleSize}px;" data-planet-id="${item.id}" data-is-sun="${item.isSun}"></canvas>
+            ${shrinkNote}
+            <div class="cp-name">${item.kr}</div>
+            <div class="cp-size">${sizeText}</div>
+        </div>`;
+    }
+    row.innerHTML = html;
+
+    // Draw realistic planets on compare canvases
+    const savedZoom = zoom;
+    zoom = 1;
+    row.querySelectorAll('canvas[data-planet-id]').forEach(cvs => {
+        const pid = cvs.dataset.planetId;
+        const isSun = cvs.dataset.isSun === 'true';
+        const cCtx = cvs.getContext('2d');
+        const cx = cvs.width / 2, cy = cvs.height / 2;
+        const r = Math.min(cx, cy) * 0.9;
+        if (isSun) {
+            const gr = cCtx.createRadialGradient(cx * 0.85, cy * 0.85, r * 0.1, cx, cy, r);
+            gr.addColorStop(0, '#fff7ed');
+            gr.addColorStop(0.3, '#fbbf24');
+            gr.addColorStop(0.7, '#f59e0b');
+            gr.addColorStop(1, '#d97706');
+            cCtx.beginPath();
+            cCtx.arc(cx, cy, r, 0, Math.PI * 2);
+            cCtx.fillStyle = gr;
+            cCtx.fill();
+        } else {
+            const planet = PLANETS.find(p => p.id === pid);
+            if (planet) drawRealisticPlanetBody(cCtx, cx, cy, r, planet);
+        }
+    });
+    zoom = savedZoom;
+
+    // Click handler
+    row.querySelectorAll('.compare-planet').forEach(el => {
+        el.addEventListener('click', () => {
+            const cid = el.dataset.cid;
+            if (compareSelectedId === cid) {
+                compareSelectedId = null;
+            } else {
+                compareSelectedId = cid;
+            }
+            updateCompareSelection();
+            playSFX('click');
+        });
+    });
+
+    compareSelectedId = null;
+    updateCompareSelection();
+}
+
+function updateCompareSelection() {
+    // Highlight selected planet
+    document.querySelectorAll('.compare-planet').forEach(el => {
+        el.classList.toggle('cp-selected', el.dataset.cid === compareSelectedId);
+    });
+
+    const card = document.getElementById('compareInfoCard');
+    if (!compareSelectedId) {
+        card.classList.remove('visible');
+        return;
+    }
+
+    // Show info card
+    const knowledge = PLANET_KNOWLEDGE[compareSelectedId];
+    if (!knowledge || !knowledge[currentLevel]) {
+        card.classList.remove('visible');
+        return;
+    }
+
+    const levelData = knowledge[currentLevel];
+    const itemData = compareSelectedId === 'sun' ? SUN : PLANETS.find(p => p.id === compareSelectedId);
+    if (!itemData) { card.classList.remove('visible'); return; }
+
+    document.getElementById('ciName').textContent = itemData.kr + ' (' + itemData.en + ')';
+    document.getElementById('ciSize').textContent = '크기: ' + itemData.realSize.toLocaleString() + ' km';
+
+    // Draw icon
+    const ciCanvas = document.getElementById('ciIcon');
+    const ciCtx = ciCanvas.getContext('2d');
+    ciCtx.clearRect(0, 0, 64, 64);
+    const savedZoom2 = zoom;
+    zoom = 1;
+    if (compareSelectedId === 'sun') {
+        const gr = ciCtx.createRadialGradient(28, 28, 3, 32, 32, 28);
+        gr.addColorStop(0, '#fff7ed');
+        gr.addColorStop(0.3, '#fbbf24');
+        gr.addColorStop(0.7, '#f59e0b');
+        gr.addColorStop(1, '#d97706');
+        ciCtx.beginPath();
+        ciCtx.arc(32, 32, 28, 0, Math.PI * 2);
+        ciCtx.fillStyle = gr;
+        ciCtx.fill();
+    } else {
+        drawRealisticPlanetBody(ciCtx, 32, 32, 28, itemData);
+    }
+    zoom = savedZoom2;
+
+    // Facts list
+    document.getElementById('ciFacts').innerHTML = levelData.facts.map(f => `<li>${f}</li>`).join('');
+
+    card.classList.add('visible');
+}
+
+function updateCompareLevel() {
+    // Just refresh the info card for current selection
+    updateCompareSelection();
+}
+
+// ── COMPARE LEVEL TABS ──
+document.getElementById('compareLevelTabs').addEventListener('click', e => {
+    const btn = e.target.closest('.level-btn');
+    if (!btn) return;
+    currentLevel = btn.dataset.level;
+    // Sync all level tab sets
+    document.querySelectorAll('.level-tabs .level-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.level === currentLevel);
+    });
+    updateCompareLevel();
+    // Also update info panel if open
+    const data = selectedPlanet === -1 ? SUN : (selectedPlanet !== null ? PLANETS[selectedPlanet] : null);
+    if (data) updateInfoLevel(data.id);
+    playSFX('click');
+});
+
+compareBtn.addEventListener('click', () => {
+    compareMode = !compareMode;
+    compareBtn.classList.toggle('active', compareMode);
+    if (compareMode) {
+        buildComparison();
+        compareOverlay.classList.add('show');
+        playSFX('whoosh');
+    } else {
+        compareOverlay.classList.remove('show');
+    }
+});
+document.getElementById('compareClose').addEventListener('click', () => {
+    compareMode = false;
+    compareBtn.classList.remove('active');
+    compareOverlay.classList.remove('show');
+    playSFX('click');
+});
+
+// ── BACK BUTTON SOUND ──
+document.getElementById('backBtn').addEventListener('click', () => playSFX('whoosh'));
+
+// ── INITIAL ZOOM (fit all orbits) ──
+function autoZoom() {
+    const maxOrbit = PLANETS[PLANETS.length - 1].orbitR;
+    const minDim = Math.min(W, H);
+    zoom = Math.min(1, (minDim * 0.45) / maxOrbit);
+}
+autoZoom();
+window.addEventListener('resize', () => { resize(); autoZoom(); });
+
+// ── START ──
+draw();
+</script>
+</body>
+</html>

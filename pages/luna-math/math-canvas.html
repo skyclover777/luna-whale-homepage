@@ -1,0 +1,3702 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수학 그림판 - Luna Math</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;--card:#161b22;--gold:#e3a008;--gold2:#ca8a04;
+  --text:#c9d1d9;--dim:#6e7681;--green:#22c55e;--red:#f85149;
+  --blue:#58a6ff;--radius:12px;--canvas-bg:#1c2333;
+  --tool-size:52px;--panel-w:240px;--shape-color:#f85149;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Pretendard Variable',sans-serif;background:var(--bg);color:var(--text)}
+a{color:var(--gold);text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+
+/* ── Layout ── */
+.app{display:flex;flex-direction:column;height:100vh;width:100vw}
+
+/* Header — Stitch-matched */
+.header{
+  display:flex;align-items:center;gap:16px;padding:0 20px;
+  border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;
+  background:var(--bg);z-index:100;height:52px;
+}
+.back-btn{
+  background:transparent;border:none;
+  color:var(--text);padding:8px 0;font-size:14px;font-weight:600;transition:all .2s;
+  opacity:0.7;
+}
+.back-btn:hover{opacity:1}
+.header-title{font-size:14px;font-weight:600;color:var(--gold);letter-spacing:0.5px;white-space:nowrap}
+.header-sep{flex:1}
+
+/* Top toolbar — Stitch-matched */
+.toolbar{
+  display:flex;align-items:center;gap:8px;padding:0;
+}
+.tb-btn{
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+  color:var(--text);padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;
+  transition:all .15s;white-space:nowrap;letter-spacing:0.3px;
+}
+.tb-btn:hover{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2)}
+.tb-btn.active{background:rgba(227,160,8,0.15);border-color:var(--gold);color:var(--gold)}
+.tb-btn:disabled{opacity:0.3;cursor:default}
+.tb-sep{width:1px;height:22px;background:rgba(255,255,255,0.08);margin:0 4px}
+.tb-zoom{font-size:12px;color:var(--dim);min-width:48px;text-align:center;font-weight:700;letter-spacing:0.5px}
+
+/* Main area */
+.main{display:flex;flex:1;overflow:hidden;position:relative}
+
+/* Tool palette */
+/* Tool palette — Stitch-matched */
+.tool-palette{
+  width:var(--tool-size);flex-shrink:0;background:var(--card);
+  border-right:1px solid rgba(255,255,255,0.06);
+  display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:6px;
+  z-index:50;overflow-y:auto;
+}
+.tool-btn{
+  width:40px;height:40px;border:none;border-radius:10px;
+  background:transparent;color:var(--dim);font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;position:relative;cursor:pointer;
+  flex-shrink:0;font-family:'Pretendard Variable',sans-serif;
+}
+.tool-btn:hover{background:rgba(255,255,255,0.08);color:var(--text)}
+.tool-btn.active{background:rgba(227,160,8,0.2);color:var(--gold);border-radius:12px}
+.tool-btn.shape-tool{color:var(--shape-color)}
+.tool-btn.shape-tool:hover{color:#ff6b6b}
+.tool-btn.shape-tool.active{background:rgba(248,81,73,0.15);color:var(--shape-color)}
+.tool-btn .tool-key{
+  position:absolute;bottom:2px;right:4px;font-size:9px;color:var(--dim);font-weight:700;letter-spacing:0.5px;
+}
+.tool-sep{width:30px;height:1px;background:rgba(255,255,255,0.06);margin:4px 0;flex-shrink:0}
+
+/* Canvas area */
+.canvas-area{flex:1;position:relative;overflow:hidden;background:var(--canvas-bg)}
+#mainCanvas{display:block;position:absolute;top:0;left:0;touch-action:none}
+
+/* Properties panel */
+.props-panel{
+  width:var(--panel-w);flex-shrink:0;background:var(--card);
+  border-left:1px solid rgba(255,255,255,0.06);
+  overflow-y:auto;overflow-x:hidden;padding:12px;font-size:13px;
+  z-index:50;
+}
+.props-panel::-webkit-scrollbar{width:4px}
+.props-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+.prop-title{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px}
+.prop-section{margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.prop-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1px;min-height:20px}
+.prop-label{color:var(--dim);font-size:11px}
+.prop-value{font-weight:600;font-size:12px}
+.prop-none{color:var(--dim);font-size:12px;text-align:center;padding:40px 0}
+.color-swatches{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}
+.color-sw{
+  width:20px;height:20px;border-radius:5px;border:2px solid transparent;cursor:pointer;
+  transition:all .15s;
+}
+.color-sw:hover{transform:scale(1.15)}
+.color-sw.active{border-color:white}
+.prop-slider{width:100%;-webkit-appearance:none;appearance:none;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;outline:none;margin-top:2px}
+.prop-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--gold);cursor:pointer}
+.lock-btn{
+  background:none;border:none;cursor:pointer;font-size:12px;padding:0 2px;
+  opacity:0.4;transition:all .15s;line-height:1;
+}
+.lock-btn:hover{opacity:0.8}
+.lock-btn.locked{opacity:1;color:var(--gold)}
+.formula-box{
+  background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;font-size:12px;
+  border:1px solid rgba(255,255,255,0.06);margin-top:6px;
+}
+.formula-box .fm-line{margin-bottom:3px}
+.formula-box .fm-ok{color:var(--green)}
+.formula-box .fm-no{color:var(--red)}
+
+/* Bottom hint bar */
+.hint-bar{
+  height:28px;display:flex;align-items:center;padding:0 16px;
+  background:var(--bg);border-top:1px solid rgba(255,255,255,0.06);
+  font-size:11px;color:var(--dim);flex-shrink:0;gap:16px;
+}
+.hint-bar kbd{
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);
+  border-radius:3px;padding:1px 5px;font-size:10px;font-family:inherit;color:var(--text);
+}
+
+/* Spinner popup */
+.spinner-popup{
+  position:absolute;z-index:200;background:var(--card);
+  border:1.5px solid rgba(245,158,11,0.3);border-radius:12px;
+  padding:8px 10px;display:flex;align-items:center;gap:6px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5),0 0 16px rgba(245,158,11,0.08);
+  backdrop-filter:blur(12px);user-select:none;
+}
+.spinner-label{font-size:12px;font-weight:700;color:var(--gold);min-width:24px;text-align:center}
+.spinner-expand{
+  width:22px;height:22px;border-radius:5px;border:1px solid rgba(245,158,11,0.3);
+  background:rgba(245,158,11,0.1);color:var(--gold);font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.spinner-expand:hover{background:rgba(245,158,11,0.25)}
+.spinner-digits{display:flex;gap:2px;align-items:center}
+.sp-digit-col{display:flex;flex-direction:column;align-items:center}
+.sp-digit-col .sp-up,.sp-digit-col .sp-down{
+  width:28px;height:20px;border:none;border-radius:5px;cursor:pointer;
+  background:rgba(255,255,255,0.08);color:var(--gold);font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.sp-digit-col .sp-up:hover,.sp-digit-col .sp-down:hover{background:rgba(245,158,11,0.2)}
+.sp-digit-col .sp-up:active,.sp-digit-col .sp-down:active{transform:scale(.9)}
+.sp-digit-val{
+  font-size:22px;font-weight:800;color:var(--text);line-height:1;
+  width:28px;height:30px;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.3);border-radius:6px;border:1px solid rgba(255,255,255,0.1);
+  font-family:'Pretendard Variable',monospace;margin:2px 0;
+}
+.spinner-unit{font-size:14px;color:var(--dim);font-weight:600;margin-left:2px}
+
+/* Toast */
+.toast{
+  position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-20px);
+  background:rgba(245,158,11,0.9);color:#000;padding:8px 20px;border-radius:20px;
+  font-size:13px;font-weight:700;opacity:0;pointer-events:none;
+  transition:all .3s;z-index:999;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Cursor styles */
+.cursor-crosshair{cursor:crosshair}
+.cursor-grab{cursor:grab}
+.cursor-grabbing{cursor:grabbing!important}
+.cursor-move{cursor:move}
+.cursor-zoomin{cursor:zoom-in}
+.cursor-zoomout{cursor:zoom-out}
+.cursor-vertex{cursor:default}
+
+/* ── Right panel split ── */
+.right-panel{
+  width:var(--panel-w);flex-shrink:0;background:var(--card);
+  border-left:1px solid rgba(255,255,255,0.06);
+  display:flex;flex-direction:column;z-index:50;overflow:hidden;
+}
+.right-panel .props-panel{
+  width:100%;border-left:none;flex:1 1 auto;min-height:40px;overflow-y:auto;
+}
+.panel-resizer{
+  height:6px;flex-shrink:0;cursor:row-resize;
+  background:rgba(255,255,255,0.04);border-top:1px solid rgba(255,255,255,0.08);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  display:flex;align-items:center;justify-content:center;transition:background .15s;
+}
+.panel-resizer:hover,.panel-resizer.active{background:rgba(245,158,11,0.15)}
+.panel-resizer::after{
+  content:'';width:24px;height:2px;border-radius:1px;
+  background:rgba(255,255,255,0.25);
+}
+.panel-resizer:hover::after,.panel-resizer.active::after{background:var(--gold)}
+.right-panel .layers-panel{
+  flex:0 0 auto;min-height:36px;
+  overflow-y:auto;overflow-x:hidden;padding:0;font-size:13px;
+}
+.right-panel .layers-panel::-webkit-scrollbar{width:4px}
+.right-panel .layers-panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+
+/* Layers panel */
+.layers-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;position:sticky;top:0;background:var(--card);z-index:1;
+}
+.layers-title{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px}
+.layers-actions{display:flex;gap:4px}
+.layers-actions button{
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+  color:var(--text);padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;
+  cursor:pointer;transition:all .15s;
+}
+.layers-actions button:hover{background:rgba(255,255,255,0.12)}
+.layer-list{list-style:none;padding:0 4px 8px}
+.layer-row{
+  display:flex;align-items:center;gap:6px;padding:4px 8px;
+  border-radius:6px;cursor:pointer;height:28px;
+  border-left:3px solid transparent;transition:all .12s;
+  margin-bottom:2px;
+}
+.layer-row:hover{background:rgba(255,255,255,0.05)}
+.layer-row.active{background:rgba(227,160,8,0.1);border-left-color:var(--gold)}
+.layer-icon-btn{
+  background:none;border:none;cursor:pointer;font-size:14px;
+  padding:0;line-height:1;opacity:0.7;transition:opacity .15s;min-width:18px;text-align:center;
+}
+.layer-icon-btn:hover{opacity:1}
+.layer-icon-btn.off{opacity:0.3}
+.layer-name{
+  flex:1;font-size:12px;color:var(--text);font-weight:500;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  background:none;border:none;outline:none;font-family:inherit;
+}
+.layer-name:focus{
+  background:rgba(0,0,0,0.3);border-radius:4px;padding:0 4px;color:#fff;
+}
+.layer-opacity{
+  width:40px;-webkit-appearance:none;appearance:none;height:3px;
+  background:rgba(255,255,255,0.15);border-radius:2px;outline:none;
+}
+.layer-opacity::-webkit-slider-thumb{
+  -webkit-appearance:none;width:10px;height:10px;border-radius:50%;
+  background:var(--gold);cursor:pointer;
+}
+.layer-opacity-val{font-size:10px;color:var(--dim);min-width:24px;text-align:right}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <button class="back-btn" onclick="location.href='index.html'">← Luna Math</button>
+    <div class="tb-sep"></div>
+    <div class="header-title">수학 그림판</div>
+    <div class="header-sep"></div>
+    <div class="toolbar">
+      <button class="tb-btn" id="btnUndo" title="Ctrl+Z" onclick="undo()" disabled>↩ Undo</button>
+      <button class="tb-btn" id="btnRedo" title="Ctrl+Shift+Z" onclick="redo()" disabled>↪ Redo</button>
+      <div class="tb-sep"></div>
+      <span class="tb-zoom" id="zoomLabel">100%</span>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" id="btnGrid" onclick="toggleGrid()">Grid</button>
+      <button class="tb-btn" id="btnSnap" onclick="toggleSnap()">Snap</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="duplicateSelected()" title="Ctrl+D">📋</button>
+      <button class="tb-btn" onclick="flipSelected('h')" title="좌우 대칭">↔</button>
+      <button class="tb-btn" onclick="flipSelected('v')" title="상하 대칭">↕</button>
+      <button class="tb-btn" onclick="rotateSelected(90)" title="90° 회전">🔄</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" onclick="clearAll()">🗑</button>
+      <button class="tb-btn" onclick="exportPNG()">📷</button>
+      <div class="tb-sep"></div>
+      <a class="tb-btn" href="math-animation.html" style="text-decoration:none">📈 애니메이션</a>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Tool Palette -->
+    <div class="tool-palette" id="toolPalette"></div>
+
+    <!-- Canvas Area -->
+    <div class="canvas-area" id="canvasArea">
+      <canvas id="mainCanvas"></canvas>
+    </div>
+
+    <!-- Right Panel (Properties + Layers) -->
+    <div class="right-panel">
+      <div class="props-panel" id="propsPanel">
+        <div class="prop-none" id="propNone">SHAPE PROPERTIES<br><span style="font-size:12px;opacity:0.5">Please select a shape</span></div>
+        <div id="propContent" style="display:none"></div>
+      </div>
+      <div class="panel-resizer" id="panelResizer"></div>
+      <div class="layers-panel" id="layersPanel">
+        <div class="layers-header">
+          <span class="layers-title">LAYERS</span>
+          <div class="layers-actions">
+            <button id="btnAddLayer" title="New Layer">+ New</button>
+            <button id="btnDelLayer" title="Delete Layer">🗑</button>
+          </div>
+        </div>
+        <ul class="layer-list" id="layerList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hint Bar -->
+  <div class="hint-bar" id="hintBar">
+    <span id="hintText">도구를 선택하고 캔버스를 클릭하세요</span>
+    <span style="margin-left:auto" id="cursorInfo"></span>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// ██  MATH CANVAS — Photoshop-like Geometry Drawing Board
+// ═══════════════════════════════════════════════════════
+
+(() => {
+'use strict';
+
+// ─── Constants ─────────────────────────────────────────
+const COLORS = {
+  fill: ['rgba(245,158,11,0.08)','rgba(59,130,246,0.08)','rgba(34,197,94,0.08)','rgba(239,68,68,0.08)',
+         'rgba(168,85,247,0.08)','rgba(236,72,153,0.08)','rgba(20,184,166,0.08)','rgba(255,255,255,0.05)'],
+  stroke: ['#f59e0b','#3b82f6','#22c55e','#ef4444','#a855f7','#ec4899','#14b8a6','#94a3b8'],
+  swatches: ['#f59e0b','#3b82f6','#22c55e','#ef4444','#a855f7','#ec4899','#14b8a6','#94a3b8'],
+};
+const GRID_SIZE = 20; // world-space pixels per grid cell (= 1 meter)
+const SNAP_SIZE = 20;
+const ANGLE_SNAP = 15; // degrees
+const VERTEX_RADIUS = 6;
+const MIDPOINT_SIZE = 8;
+const ANGLE_ARC_R = 30;
+const MAX_UNDO = 50;
+const RDP_TOLERANCE = 15;
+const CLEAN_ANGLE_TOL = 1.5; // degrees tolerance for snapping to clean angles
+const LABEL_FONT = "bold 13px 'Pretendard Variable', sans-serif";
+const SMALL_FONT = "12px 'Pretendard Variable', sans-serif";
+
+// ─── State ─────────────────────────────────────────────
+let canvas, ctx, canvasArea;
+let W = 800, H = 600;
+
+// Transform
+let zoom = 1, panX = 0, panY = 0;
+// Grid / Snap
+let showGrid = true, snapEnabled = true;
+// Tool
+let currentTool = 'move'; // move, hand, zoom, triangle, rect, circle, line, polygon, freehand
+// Shapes
+let shapes = [];
+let selectedIds = new Set();
+let nextLabelBase = 0; // 0=A, 1=D, 2=G...
+// Undo
+let undoStack = [], redoStack = [];
+// Interaction
+let isDragging = false, dragStart = null, dragShape = null;
+let isSpaceDown = false, isPanning = false, panStart = null, panStartPan = null;
+let buildingShape = null; // partial shape being built (triangle, polygon)
+let buildPoints = [];
+let rubberPoint = null;
+let freehandPoints = [];
+let isFreehandDrawing = false;
+let rectDragStart = null;
+let circleDragCenter = null;
+let lineDragStart = null;
+let marqueeStart = null, marqueeEnd = null;
+// Vertex drag
+let vertexDragShape = null, vertexDragIndex = -1, isVertexDragging = false;
+// Measure tool
+let measurePoints = []; // world coords for measurement
+let measurements = []; // persistent measurements [{p1, p2, dist}] or [{p1, p2, p3, angle}]
+// Text tool
+let textAnnotations = []; // [{id, x, y, text, color, fontSize}]
+let textIdCounter = 0;
+let editingTextId = null;
+// Spinner
+let activeSpinner = null; // DOM element
+let spinnerTarget = null; // {shapeId, type:'angle'|'length', index}
+// Rotation
+let isRotating = false;
+let rotateAnchor = null; // world coords {x,y} — pivot point
+let rotateStartAngle = 0; // angle from anchor to mouse at drag start
+let rotateOriginalPoints = null; // snapshot of points before rotation
+let rotateOriginalCenter = null; // snapshot for circles
+let rotateShapeId = null;
+let hoverRotateCorner = -1; // which bounding corner is hovered (-1=none)
+let isAnchorDragging = false; // dragging the anchor point
+// Shape ID counter
+let shapeIdCounter = 0;
+// Layers
+let layers = [
+  { id: 1, name: 'Layer 1 (기본)', visible: true, locked: false, opacity: 1.0 }
+];
+let activeLayerId = 1;
+let layerIdCounter = 2;
+
+// ─── Tools Definition ──────────────────────────────────
+const TOOLS = [
+  {id:'move', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 14L6 2L10 10L7 10L6 14Z"/></svg>', key:'V', label:'이동', color:'gold'},
+  {id:'vertex', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="4" cy="12" r="2"/><circle cx="12" cy="4" r="2"/><path d="M5.5 10.5L10.5 5.5"/></svg>', key:'A', label:'꼭지점 편집', color:'gold'},
+  {id:'hand', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8V4M4 4a1 1 0 012 0V3a1 1 0 012 0v1a1 1 0 012 0v1a1 1 0 012 0v4c0 3-2 4-4 4H7c-2 0-3-1-3-3V8"/></svg>', key:'H', label:'손', color:'gold'},
+  {id:'zoom', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4"/><path d="M10 10L14 14"/><path d="M5 7H9M7 5V9"/></svg>', key:'Z', label:'줌', color:'gold'},
+  '_sep_',
+  {id:'triangle', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L14 14H2Z"/></svg>', key:'T', label:'삼각형', color:'shape'},
+  {id:'rect', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1"/></svg>', key:'R', label:'사각형', color:'shape'},
+  {id:'polygon', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1L14 5.5L12 13H4L2 5.5Z"/></svg>', key:'P', label:'다각형', color:'shape'},
+  {id:'circle', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>', key:'C', label:'원', color:'shape'},
+  {id:'line', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 13L13 3"/></svg>', key:'L', label:'직선', color:'shape'},
+  '_sep_',
+  {id:'freehand', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12Q5 6 8 8Q11 10 13 4"/></svg>', key:'F', label:'그리기', color:'gold'},
+  {id:'eraser', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 14H14M3 11L9 3L14 7L9 14H5Z"/></svg>', key:'E', label:'지우개', color:'gold'},
+  '_sep_',
+  {id:'measure', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 14L14 2M2 14L2 10M2 14L6 14"/><path d="M5 11L3 13M8 8L6 10M11 5L9 7"/></svg>', key:'M', label:'측정', color:'gold'},
+  {id:'ruler', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="5" width="14" height="6" rx="1"/><path d="M4 5V8M7 5V9M10 5V8M13 5V8"/></svg>', key:'U', label:'눈금자', color:'gold'},
+  {id:'graph', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 14V2M2 14H14"/><path d="M3 12L7 6L11 8L14 3" stroke="#06b6d4"/></svg>', key:'G', label:'함수 그래프', color:'gold'},
+  {id:'text', icon:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4H13M8 4V14"/></svg>', key:'X', label:'텍스트', color:'gold'},
+];
+
+// ─── Shape Class ───────────────────────────────────────
+function makeShape(type, data) {
+  const id = shapeIdCounter++;
+  const labels = generateLabels(type, data);
+  return {
+    id,
+    type, // 'triangle','rect','circle','line','polygon'
+    points: data.points || [],
+    center: data.center || null, // circle
+    radius: data.radius || 0,   // circle
+    fill: COLORS.fill[shapes.length % COLORS.fill.length],
+    stroke: COLORS.stroke[shapes.length % COLORS.stroke.length],
+    strokeWidth: 2,
+    labels, // vertex labels [A,B,C...]
+    lockedEdges: [], // indices of locked edges
+    hiddenEdges: [], // indices of hidden edge labels
+    hiddenAngles: [], // indices of hidden angle labels
+    edgeColors: {}, // index → color override for individual edges
+    layerId: activeLayerId,
+    ...computeShapeMetrics({type, points:data.points||[], center:data.center, radius:data.radius||0}),
+  };
+}
+
+function generateLabels(type, data) {
+  const count = type === 'circle' ? 1 : type === 'line' ? 2 : (data.points || []).length;
+  const base = nextLabelBase;
+  nextLabelBase += count;
+  const labels = [];
+  for (let i = 0; i < count; i++) {
+    labels.push(String.fromCharCode(65 + ((base + i) % 26)));
+  }
+  return labels;
+}
+
+// ─── Metrics Computation ───────────────────────────────
+function dist(a, b) { return Math.hypot(b.x - a.x, b.y - a.y); }
+function dot(a, b) { return a.x * b.x + a.y * b.y; }
+function cross(a, b) { return a.x * b.y - a.y * b.x; }
+
+function angleBetween(p, a, b) {
+  const va = {x: a.x - p.x, y: a.y - p.y};
+  const vb = {x: b.x - p.x, y: b.y - p.y};
+  const d = dot(va, vb);
+  const c = cross(va, vb);
+  let angle = Math.atan2(Math.abs(c), d);
+  return angle * 180 / Math.PI;
+}
+
+function polygonArea(pts) {
+  let area = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const j = (i + 1) % pts.length;
+    area += pts[i].x * pts[j].y;
+    area -= pts[j].x * pts[i].y;
+  }
+  return Math.abs(area) / 2;
+}
+
+function computeShapeMetrics(shape) {
+  const {type, points, center, radius} = shape;
+  const m = {};
+  if (type === 'triangle' || type === 'polygon' || type === 'rect') {
+    const n = points.length;
+    m.angles = [];
+    m.lengths = [];
+    for (let i = 0; i < n; i++) {
+      const prev = points[(i - 1 + n) % n];
+      const cur = points[i];
+      const next = points[(i + 1) % n];
+      m.angles.push(angleBetween(cur, prev, next));
+      m.lengths.push(dist(cur, next));
+    }
+    m.area = polygonArea(points);
+    m.perimeter = m.lengths.reduce((s, l) => s + l, 0);
+    // Clean angles
+    m.angles = m.angles.map(a => {
+      const cleanAngles = [30, 45, 60, 90, 120, 135, 150];
+      for (const ca of cleanAngles) {
+        if (Math.abs(a - ca) < CLEAN_ANGLE_TOL) return ca;
+      }
+      return Math.round(a * 10) / 10;
+    });
+    // Right triangle detection
+    if (type === 'triangle') {
+      m.isRight = m.angles.some(a => Math.abs(a - 90) < 0.5);
+      if (m.isRight) {
+        const sorted = [...m.lengths].sort((a, b) => a - b);
+        const [a, b, c] = sorted;
+        m.pythagorean = {a, b, c, lhs: a*a + b*b, rhs: c*c, valid: Math.abs(a*a + b*b - c*c) < 0.1};
+      }
+    }
+    if (type === 'rect') {
+      m.width = m.lengths[0];
+      m.height = m.lengths[1];
+      m.diagonal = Math.hypot(m.width, m.height);
+    }
+  } else if (type === 'circle') {
+    m.radius = radius;
+    m.diameter = radius * 2;
+    m.area = Math.PI * radius * radius;
+    m.circumference = 2 * Math.PI * radius;
+  } else if (type === 'line') {
+    m.length = dist(points[0], points[1]);
+    m.angle = Math.atan2(points[1].y - points[0].y, points[1].x - points[0].x) * 180 / Math.PI;
+  }
+  return m;
+}
+
+function recalcShape(shape) {
+  Object.assign(shape, computeShapeMetrics(shape));
+}
+
+// ─── World/Screen Transform ────────────────────────────
+function worldToScreen(wx, wy) {
+  return {x: wx * zoom + panX, y: wy * zoom + panY};
+}
+function screenToWorld(sx, sy) {
+  return {x: (sx - panX) / zoom, y: (sy - panY) / zoom};
+}
+
+// ─── Init ──────────────────────────────────────────────
+function init() {
+  canvas = document.getElementById('mainCanvas');
+  ctx = canvas.getContext('2d');
+  canvasArea = document.getElementById('canvasArea');
+  resizeCanvas();
+  buildToolPalette();
+  setTool('move');
+  updateGridSnapButtons();
+  saveState();
+
+  // Events
+  const ro = new ResizeObserver(() => resizeCanvas());
+  ro.observe(canvasArea);
+
+  canvas.addEventListener('mousedown', onMouseDown);
+  canvas.addEventListener('mousemove', onMouseMove);
+  canvas.addEventListener('mouseup', onMouseUp);
+  canvas.addEventListener('wheel', onWheel, {passive: false});
+  canvas.addEventListener('dblclick', onDblClick);
+  canvas.addEventListener('contextmenu', onContextMenu);
+  document.addEventListener('keydown', onKeyDown);
+  document.addEventListener('keyup', onKeyUp);
+  document.addEventListener('mousedown', onDocMouseDown);
+
+  // Touch events
+  canvas.addEventListener('touchstart', onTouchStart, {passive: false});
+  canvas.addEventListener('touchmove', onTouchMove, {passive: false});
+  canvas.addEventListener('touchend', onTouchEnd, {passive: false});
+
+  initPanelResizer();
+  requestAnimationFrame(renderLoop);
+}
+
+// ─── Panel Resizer ──────────────────────────────────
+function initPanelResizer() {
+  const resizer = document.getElementById('panelResizer');
+  const rightPanel = document.querySelector('.right-panel');
+  const layersPanel = document.getElementById('layersPanel');
+  let isResizing = false, startY = 0, startH = 0;
+
+  resizer.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isResizing = true;
+    startY = e.clientY;
+    startH = layersPanel.getBoundingClientRect().height;
+    resizer.classList.add('active');
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    const dy = startY - e.clientY;
+    const panelH = rightPanel.getBoundingClientRect().height;
+    const newH = Math.max(36, Math.min(panelH - 80, startH + dy));
+    layersPanel.style.height = newH + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!isResizing) return;
+    isResizing = false;
+    resizer.classList.remove('active');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+}
+
+function resizeCanvas() {
+  const rect = canvasArea.getBoundingClientRect();
+  W = rect.width;
+  H = rect.height;
+  canvas.width = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+}
+
+// ─── Tool Palette ──────────────────────────────────────
+function buildToolPalette() {
+  const pal = document.getElementById('toolPalette');
+  pal.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  TOOLS.forEach(t => {
+    if (t === '_sep_') {
+      const sep = document.createElement('div');
+      sep.className = 'tool-sep';
+      frag.appendChild(sep);
+      return;
+    }
+    const btn = document.createElement('button');
+    const isShape = t.color === 'shape';
+    btn.className = 'tool-btn' + (isShape ? ' shape-tool' : '');
+    btn.id = 'tool_' + t.id;
+    btn.title = t.label + ' (' + t.key + ')';
+    const isSvg = t.icon.startsWith('<svg');
+    btn.innerHTML = `<span style="${isSvg ? 'display:flex;align-items:center;justify-content:center;width:20px;height:20px' : 'font-size:20px;line-height:1'}">${t.icon}</span><span class="tool-key">${t.key}</span>`;
+    btn.addEventListener('click', (e) => { e.stopPropagation(); setTool(t.id); });
+    frag.appendChild(btn);
+  });
+  pal.appendChild(frag);
+}
+
+function setTool(id) {
+  cancelBuilding();
+  currentTool = id;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('tool_' + id);
+  if (el) el.classList.add('active');
+  updateCursor();
+  updateHint();
+  // Auto-open dialogs for certain tools
+  if (id === 'graph') openGraphDialog();
+  if (id === 'ruler') toggleRuler();
+}
+
+function updateCursor() {
+  const area = canvasArea;
+  area.className = 'canvas-area';
+  if (currentTool === 'hand' || isSpaceDown) area.classList.add(isPanning ? 'cursor-grabbing' : 'cursor-grab');
+  else if (currentTool === 'zoom') area.classList.add('cursor-zoomin');
+  else if (currentTool === 'eraser' || currentTool === 'measure' || currentTool === 'text') area.classList.add('cursor-crosshair');
+  else if (['triangle','rect','circle','line','polygon','freehand'].includes(currentTool)) area.classList.add('cursor-crosshair');
+  else if (currentTool === 'vertex') area.classList.add('cursor-vertex');
+  else if (currentTool === 'move') {} // default
+}
+
+function updateHint() {
+  const hints = {
+    move: '클릭: 선택/이동 | <kbd>Shift</kbd> 다중선택',
+    vertex: '드래그: 꼭지점 이동 | 더블클릭: 각도/변 길이 편집 | 원: 테두리로 크기 변경',
+    eraser: '도형을 클릭하면 삭제',
+    measure: '2점 클릭: 거리 측정 | 3점 클릭: 각도 측정 | <kbd>Esc</kbd> 초기화',
+    text: '캔버스를 클릭하여 텍스트 추가',
+    hand: '드래그로 캔버스 이동',
+    zoom: '클릭: 확대 | <kbd>Alt</kbd>+클릭: 축소',
+    triangle: '3개의 점을 클릭하여 삼각형 그리기. <kbd>Shift</kbd> 각도 스냅',
+    rect: '드래그로 사각형 그리기. <kbd>Shift</kbd> 정사각형',
+    circle: '중심 클릭 후 드래그로 원 그리기',
+    line: '시작점과 끝점을 클릭하여 직선 그리기',
+    polygon: '점을 클릭하여 다각형 그리기. 더블클릭 또는 <kbd>Enter</kbd>로 완성',
+    freehand: '마우스를 드래그하여 자유롭게 그리기 → 도형 자동 인식',
+  };
+  document.getElementById('hintText').innerHTML = hints[currentTool] || '';
+}
+
+// ─── Grid / Snap ───────────────────────────────────────
+function toggleGrid() { showGrid = !showGrid; updateGridSnapButtons(); }
+function toggleSnap() { snapEnabled = !snapEnabled; updateGridSnapButtons(); }
+function updateGridSnapButtons() {
+  document.getElementById('btnGrid').classList.toggle('active', showGrid);
+  document.getElementById('btnSnap').classList.toggle('active', snapEnabled);
+}
+function snapPoint(wx, wy) {
+  if (!snapEnabled) return {x: wx, y: wy};
+  return {
+    x: Math.round(wx / SNAP_SIZE) * SNAP_SIZE,
+    y: Math.round(wy / SNAP_SIZE) * SNAP_SIZE,
+  };
+}
+
+// ─── Undo / Redo ───────────────────────────────────────
+function saveState() {
+  const layerState = layers ?{layers, activeLayerId, layerIdCounter} : {};
+  undoStack.push(JSON.parse(JSON.stringify({shapes, nextLabelBase, shapeIdCounter, measurements, textAnnotations, textIdCounter, ...layerState})));
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+  redoStack = [];
+  updateUndoButtons();
+}
+function undo() {
+  if (undoStack.length <= 1) return;
+  redoStack.push(undoStack.pop());
+  const state = undoStack[undoStack.length - 1];
+  restoreState(state);
+}
+function redo() {
+  if (redoStack.length === 0) return;
+  const state = redoStack.pop();
+  undoStack.push(state);
+  restoreState(state);
+}
+function restoreState(state) {
+  const s = JSON.parse(JSON.stringify(state));
+  shapes = s.shapes;
+  nextLabelBase = s.nextLabelBase;
+  shapeIdCounter = s.shapeIdCounter;
+  if (s.layers) { layers = s.layers; activeLayerId = s.activeLayerId; layerIdCounter = s.layerIdCounter; }
+  if (s.measurements) measurements = s.measurements;
+  if (s.textAnnotations) { textAnnotations = s.textAnnotations; textIdCounter = s.textIdCounter || 0; }
+  selectedIds.clear();
+  closeSpinner();
+  updatePropsPanel();
+  updateUndoButtons();
+  renderLayersPanel();
+}
+function updateUndoButtons() {
+  document.getElementById('btnUndo').disabled = undoStack.length <= 1;
+  document.getElementById('btnRedo').disabled = redoStack.length === 0;
+}
+
+// ─── Clear / Export ────────────────────────────────────
+function clearAll() {
+  if (shapes.length === 0 && measurements.length === 0 && textAnnotations.length === 0) return;
+  shapes = [];
+  measurements = [];
+  textAnnotations = [];
+  textIdCounter = 0;
+  selectedIds.clear();
+  nextLabelBase = 0;
+  shapeIdCounter = 0;
+  if (layers) {
+    layers = [{ id: 1, name: 'Layer 1 (기본)', visible: true, locked: false, opacity: 1.0 }];
+    activeLayerId = 1;
+    layerIdCounter = 2;
+  }
+  closeSpinner();
+  cancelBuilding();
+  saveState();
+  updatePropsPanel();
+  renderLayersPanel();
+}
+
+function exportPNG() {
+  // Render to offscreen canvas with white bg
+  const offCanvas = document.createElement('canvas');
+  const sc = 2;
+  offCanvas.width = W * sc;
+  offCanvas.height = H * sc;
+  const oc = offCanvas.getContext('2d');
+  oc.setTransform(sc, 0, 0, sc, 0, 0);
+  oc.fillStyle = '#ffffff';
+  oc.fillRect(0, 0, W, H);
+  // Draw grid
+  if (showGrid) drawGrid(oc, '#e0e0e0', 0.3);
+  // Draw shapes (respect layer order & visibility)
+  if (layers) {
+    layers.forEach(layer => {
+      if (!layer.visible) return;
+      oc.save();
+      oc.globalAlpha = layer.opacity;
+      shapes.forEach(s => {
+        if (s.layerId === layer.id) drawShape(oc, s, false, true);
+      });
+      oc.restore();
+    });
+  } else {
+    shapes.forEach(s => drawShape(oc, s, false, true));
+  }
+  // Download
+  const link = document.createElement('a');
+  link.download = 'math-canvas.png';
+  link.href = offCanvas.toDataURL('image/png');
+  link.click();
+  showToast('📷 PNG 내보내기 완료!');
+}
+
+// ─── Toast ─────────────────────────────────────────────
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ─── Cancel Building ───────────────────────────────────
+function cancelBuilding() {
+  buildPoints = [];
+  buildingShape = null;
+  rubberPoint = null;
+  freehandPoints = [];
+  isFreehandDrawing = false;
+  rectDragStart = null;
+  circleDragCenter = null;
+  lineDragStart = null;
+  marqueeStart = null;
+  marqueeEnd = null;
+  vertexDragShape = null;
+  vertexDragIndex = -1;
+  isVertexDragging = false;
+  measurePoints = [];
+}
+
+// ═══════════════════════════════════════════════════════
+// ██  HIT TESTING
+// ═══════════════════════════════════════════════════════
+
+function getLayer(id) {
+  return layers ?layers.find(l => l.id === id) : null;
+}
+
+function hitTestShapes(wx, wy) {
+  // Returns {shape, hitType:'vertex'|'edge'|'fill'|'center', index}
+  for (let i = shapes.length - 1; i >= 0; i--) {
+    const s = shapes[i];
+    // Skip shapes on hidden or locked layers
+    const layer = getLayer(s.layerId);
+    if (layer && (!layer.visible || layer.locked)) continue;
+    const hit = hitTestShape(s, wx, wy);
+    if (hit) return {...hit, shape: s};
+  }
+  return null;
+}
+
+function hitTestShape(s, wx, wy) {
+  const threshold = 8 / zoom;
+  const vtxHitR = (currentTool === 'vertex' ? 12 : VERTEX_RADIUS) / zoom + 2;
+  if (s.type === 'circle') {
+    // Center
+    if (dist({x:wx,y:wy}, s.center) < vtxHitR) return {hitType:'center', index:0};
+    // Edge
+    const d = Math.abs(dist({x:wx,y:wy}, s.center) - s.radius);
+    if (d < threshold) return {hitType:'edge', index:0};
+    // Fill
+    if (dist({x:wx,y:wy}, s.center) <= s.radius) return {hitType:'fill', index:0};
+    return null;
+  }
+  if (s.type === 'line') {
+    for (let j = 0; j < 2; j++) {
+      if (dist({x:wx,y:wy}, s.points[j]) < vtxHitR) return {hitType:'vertex', index:j};
+    }
+    if (distToSegment({x:wx,y:wy}, s.points[0], s.points[1]) < threshold) return {hitType:'edge', index:0};
+    return null;
+  }
+  // Polygon-type shapes
+  const pts = s.points;
+  const n = pts.length;
+  // Check vertices (includes angle arc area for easier clicking)
+  for (let j = 0; j < n; j++) {
+    const vertexDist = dist({x:wx,y:wy}, pts[j]);
+    if (vertexDist < vtxHitR) return {hitType:'vertex', index:j};
+  }
+  // Check angle arc area (within ANGLE_ARC_R + some tolerance from vertex)
+  if (s.angles) {
+    for (let j = 0; j < n; j++) {
+      const vertexDist = dist({x:wx,y:wy}, pts[j]);
+      const arcR = ANGLE_ARC_R / zoom;
+      if (vertexDist > VERTEX_RADIUS / zoom && vertexDist < arcR + 16 / zoom) {
+        // Check if the click is within the angle arc sector
+        const prev = pts[(j - 1 + n) % n];
+        const next = pts[(j + 1) % n];
+        const a1 = Math.atan2(prev.y - pts[j].y, prev.x - pts[j].x);
+        const a2 = Math.atan2(next.y - pts[j].y, next.x - pts[j].x);
+        const clickAngle = Math.atan2(wy - pts[j].y, wx - pts[j].x);
+        // Check if clickAngle is between a1 and a2 (interior)
+        let diff1 = clickAngle - a1;
+        while (diff1 < -Math.PI) diff1 += 2*Math.PI;
+        while (diff1 > Math.PI) diff1 -= 2*Math.PI;
+        let diff2 = a2 - a1;
+        while (diff2 < -Math.PI) diff2 += 2*Math.PI;
+        while (diff2 > Math.PI) diff2 -= 2*Math.PI;
+        // Check if click is in the same angular range as the arc
+        const inArc = (diff2 > 0) ? (diff1 >= 0 && diff1 <= diff2) : (diff1 <= 0 && diff1 >= diff2);
+        if (inArc) return {hitType:'vertex', index:j};
+      }
+    }
+  }
+  // Check edge midpoints
+  for (let j = 0; j < n; j++) {
+    const k = (j + 1) % n;
+    const mx = (pts[j].x + pts[k].x) / 2;
+    const my = (pts[j].y + pts[k].y) / 2;
+    if (dist({x:wx,y:wy}, {x:mx,y:my}) < MIDPOINT_SIZE / zoom + 2) return {hitType:'midpoint', index:j};
+  }
+  // Check edges
+  for (let j = 0; j < pts.length; j++) {
+    const k = (j + 1) % pts.length;
+    if (distToSegment({x:wx,y:wy}, pts[j], pts[k]) < threshold) return {hitType:'edge', index:j};
+  }
+  // Check fill (point in polygon)
+  if (pointInPolygon({x:wx,y:wy}, pts)) return {hitType:'fill', index:0};
+  return null;
+}
+
+function distToSegment(p, a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len2 = dx*dx + dy*dy;
+  if (len2 === 0) return dist(p, a);
+  let t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2;
+  t = Math.max(0, Math.min(1, t));
+  return dist(p, {x: a.x + t*dx, y: a.y + t*dy});
+}
+
+function pointInPolygon(p, pts) {
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const xi = pts[i].x, yi = pts[i].y;
+    const xj = pts[j].x, yj = pts[j].y;
+    if (((yi > p.y) !== (yj > p.y)) && (p.x < (xj - xi) * (p.y - yi) / (yj - yi) + xi)) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+// ═══════════════════════════════════════════════════════
+// ██  MOUSE EVENTS
+// ═══════════════════════════════════════════════════════
+
+function getMousePos(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {x: e.clientX - rect.left, y: e.clientY - rect.top};
+}
+
+function onMouseDown(e) {
+  if (e.button === 1) { e.preventDefault(); isPanning = true; panStart = getMousePos(e); panStartPan = {x:panX, y:panY}; updateCursor(); return; }
+  if (e.button !== 0) return;
+  const sp = getMousePos(e);
+  const wp = screenToWorld(sp.x, sp.y);
+
+  // Space+drag = pan
+  if (isSpaceDown || currentTool === 'hand') {
+    closeSpinner(); // dismiss spinner on pan
+    isPanning = true;
+    panStart = sp;
+    panStartPan = {x: panX, y: panY};
+    updateCursor();
+    return;
+  }
+
+  if (currentTool === 'zoom') {
+    const factor = e.altKey ? 1/1.3 : 1.3;
+    zoomAt(sp.x, sp.y, factor);
+    return;
+  }
+
+  if (currentTool === 'eraser') {
+    const hit = hitTestShapes(wp.x, wp.y);
+    if (hit) {
+      shapes = shapes.filter(s => s.id !== hit.shape.id);
+      selectedIds.delete(hit.shape.id);
+      saveState();
+      updatePropsPanel();
+      showToast('🧹 삭제!');
+    }
+    return;
+  }
+
+  if (currentTool === 'measure') {
+    const snapped = snapPoint(wp.x, wp.y);
+    measurePoints.push(snapped);
+    if (measurePoints.length === 2) {
+      // Distance measurement
+      const d = dist(measurePoints[0], measurePoints[1]);
+      measurements.push({type:'dist', p1:{...measurePoints[0]}, p2:{...measurePoints[1]}, value: d});
+      showToast(`📏 거리: ${(d/GRID_SIZE).toFixed(2)}m`);
+      measurePoints = [];
+    } else if (measurePoints.length === 3) {
+      // Angle measurement
+      const a = angleBetween(measurePoints[1], measurePoints[0], measurePoints[2]);
+      measurements.push({type:'angle', p1:{...measurePoints[0]}, p2:{...measurePoints[1]}, p3:{...measurePoints[2]}, value: a});
+      showToast(`📐 각도: ${a.toFixed(1)}°`);
+      measurePoints = [];
+    }
+    return;
+  }
+
+  if (currentTool === 'ruler') {
+    toggleRuler();
+    return;
+  }
+
+  if (currentTool === 'graph') {
+    openGraphDialog();
+    return;
+  }
+
+  if (currentTool === 'text') {
+    const snapped = snapPoint(wp.x, wp.y);
+    openTextInput(snapped);
+    return;
+  }
+
+  if (currentTool === 'vertex') {
+    const hit = hitTestShapes(wp.x, wp.y);
+    if (hit && (hit.hitType === 'vertex' || hit.hitType === 'center')) {
+      // Start vertex drag
+      vertexDragShape = hit.shape;
+      vertexDragIndex = hit.index;
+      isVertexDragging = true;
+      selectedIds.clear();
+      selectedIds.add(hit.shape.id);
+      updatePropsPanel();
+    } else if (hit && hit.hitType === 'edge' && hit.shape.type === 'circle') {
+      // Circle edge drag = resize
+      vertexDragShape = hit.shape;
+      vertexDragIndex = -1; // special: circle resize
+      isVertexDragging = true;
+      selectedIds.clear();
+      selectedIds.add(hit.shape.id);
+      updatePropsPanel();
+    } else if (hit) {
+      // Clicked on shape body — select but allow whole-shape drag
+      if (!selectedIds.has(hit.shape.id)) {
+        selectedIds.clear();
+        selectedIds.add(hit.shape.id);
+      }
+      isDragging = true;
+      dragStart = wp;
+      updatePropsPanel();
+    } else {
+      selectedIds.clear();
+      updatePropsPanel();
+    }
+    return;
+  }
+
+  if (currentTool === 'move' || currentTool === 'vertex') {
+    // Check if clicking on rotation anchor
+    if (rotateAnchor && rotateShapeId != null) {
+      const anchorScr = worldToScreen(rotateAnchor.x, rotateAnchor.y);
+      if (dist(sp, anchorScr) < 12) {
+        isAnchorDragging = true;
+        return;
+      }
+    }
+
+    // Check if clicking on a bounding box corner for rotation
+    if (hoverRotateCorner >= 0 && selectedIds.size === 1) {
+      const selId = [...selectedIds][0];
+      const s = shapes.find(s => s.id === selId);
+      if (s) {
+        rotateShapeId = selId;
+        // Set anchor to center if not already set
+        if (!rotateAnchor) {
+          if (s.type === 'circle') {
+            rotateAnchor = {x: s.center.x, y: s.center.y};
+          } else {
+            const cx = s.points.reduce((a,p) => a+p.x, 0) / s.points.length;
+            const cy = s.points.reduce((a,p) => a+p.y, 0) / s.points.length;
+            rotateAnchor = {x: cx, y: cy};
+          }
+        }
+        isRotating = true;
+        rotateStartAngle = Math.atan2(wp.y - rotateAnchor.y, wp.x - rotateAnchor.x);
+        if (s.points) {
+          rotateOriginalPoints = s.points.map(p => ({x: p.x, y: p.y}));
+        }
+        if (s.type === 'circle') {
+          rotateOriginalCenter = {x: s.center.x, y: s.center.y};
+        }
+        canvasArea.style.cursor = 'grabbing';
+        return;
+      }
+    }
+  }
+
+  if (currentTool === 'vertex') {
+    // Clear rotation state when clicking elsewhere (not on anchor or corner)
+    if (!isRotating && hoverRotateCorner < 0) {
+      rotateAnchor = null;
+      rotateShapeId = null;
+    }
+    const hit = hitTestShapes(wp.x, wp.y);
+    if (hit && (hit.hitType === 'vertex' || hit.hitType === 'center')) {
+      vertexDragShape = hit.shape;
+      vertexDragIndex = hit.index;
+      isVertexDragging = true;
+      selectedIds.clear();
+      selectedIds.add(hit.shape.id);
+      updatePropsPanel();
+    } else if (hit && hit.hitType === 'edge' && hit.shape.type === 'circle') {
+      vertexDragShape = hit.shape;
+      vertexDragIndex = -1;
+      isVertexDragging = true;
+      selectedIds.clear();
+      selectedIds.add(hit.shape.id);
+      updatePropsPanel();
+    } else if (hit) {
+      if (!selectedIds.has(hit.shape.id)) {
+        selectedIds.clear();
+        selectedIds.add(hit.shape.id);
+      }
+      isDragging = true;
+      dragStart = wp;
+      updatePropsPanel();
+    } else {
+      selectedIds.clear();
+      updatePropsPanel();
+    }
+    return;
+  }
+
+  if (currentTool === 'move') {
+    // Clear rotation state when clicking elsewhere
+    if (!isRotating && hoverRotateCorner < 0) {
+      rotateAnchor = null;
+      rotateShapeId = null;
+    }
+    const hit = hitTestShapes(wp.x, wp.y);
+    if (hit) {
+      if (e.shiftKey) {
+        if (selectedIds.has(hit.shape.id)) selectedIds.delete(hit.shape.id);
+        else selectedIds.add(hit.shape.id);
+      } else {
+        if (!selectedIds.has(hit.shape.id)) {
+          selectedIds.clear();
+          selectedIds.add(hit.shape.id);
+        }
+        isDragging = true;
+        dragStart = wp;
+      }
+      updatePropsPanel();
+    } else {
+      if (!e.shiftKey) selectedIds.clear();
+      marqueeStart = sp;
+      marqueeEnd = sp;
+      updatePropsPanel();
+    }
+    return;
+  }
+
+  if (currentTool === 'triangle') {
+    const snapped = snapPoint(wp.x, wp.y);
+    buildPoints.push(snapped);
+    if (buildPoints.length === 3) {
+      finishTriangle();
+    }
+    return;
+  }
+
+  if (currentTool === 'rect') {
+    rectDragStart = snapPoint(wp.x, wp.y);
+    return;
+  }
+
+  if (currentTool === 'circle') {
+    circleDragCenter = snapPoint(wp.x, wp.y);
+    return;
+  }
+
+  if (currentTool === 'line') {
+    const snapped = snapPoint(wp.x, wp.y);
+    if (!lineDragStart) {
+      lineDragStart = snapped;
+    } else {
+      finishLine(lineDragStart, snapped);
+      lineDragStart = null;
+    }
+    return;
+  }
+
+  if (currentTool === 'polygon') {
+    const snapped = snapPoint(wp.x, wp.y);
+    buildPoints.push(snapped);
+    return;
+  }
+
+  if (currentTool === 'freehand') {
+    isFreehandDrawing = true;
+    freehandPoints = [sp];
+    return;
+  }
+}
+
+function onMouseMove(e) {
+  const sp = getMousePos(e);
+  const wp = screenToWorld(sp.x, sp.y);
+
+  // Cursor info
+  const wSnap = snapPoint(wp.x, wp.y);
+  document.getElementById('cursorInfo').textContent =
+    `X: ${(wp.x/GRID_SIZE).toFixed(1)}m  Y: ${(wp.y/GRID_SIZE).toFixed(1)}m`;
+
+  if (isPanning) {
+    panX = panStartPan.x + (sp.x - panStart.x);
+    panY = panStartPan.y + (sp.y - panStart.y);
+    updateZoomLabel();
+    return;
+  }
+
+  // Anchor drag
+  if (isAnchorDragging && rotateAnchor) {
+    const snapped = snapPoint(wp.x, wp.y);
+    // Snap to vertices of the shape
+    const s = shapes.find(s => s.id === rotateShapeId);
+    if (s && s.points) {
+      let closest = null, closestDist = 15 / zoom;
+      s.points.forEach(p => {
+        const d = dist(p, snapped);
+        if (d < closestDist) { closest = p; closestDist = d; }
+      });
+      if (closest) {
+        rotateAnchor = {x: closest.x, y: closest.y};
+      } else {
+        rotateAnchor = snapped;
+      }
+    } else {
+      rotateAnchor = snapped;
+    }
+    return;
+  }
+
+  // Rotation drag
+  if (isRotating && rotateAnchor && rotateShapeId != null) {
+    const currentAngle = Math.atan2(wp.y - rotateAnchor.y, wp.x - rotateAnchor.x);
+    let delta = currentAngle - rotateStartAngle;
+    // Snap to 15° increments when Shift held
+    if (e.shiftKey) {
+      const step = Math.PI / 12; // 15°
+      delta = Math.round(delta / step) * step;
+    }
+    const s = shapes.find(s => s.id === rotateShapeId);
+    if (s && s.points && rotateOriginalPoints) {
+      for (let i = 0; i < s.points.length; i++) {
+        const ox = rotateOriginalPoints[i].x - rotateAnchor.x;
+        const oy = rotateOriginalPoints[i].y - rotateAnchor.y;
+        s.points[i].x = rotateAnchor.x + ox * Math.cos(delta) - oy * Math.sin(delta);
+        s.points[i].y = rotateAnchor.y + ox * Math.sin(delta) + oy * Math.cos(delta);
+      }
+      recalcShape(s);
+      updatePropsPanel();
+    } else if (s && s.type === 'circle' && rotateOriginalCenter) {
+      const ox = rotateOriginalCenter.x - rotateAnchor.x;
+      const oy = rotateOriginalCenter.y - rotateAnchor.y;
+      s.center.x = rotateAnchor.x + ox * Math.cos(delta) - oy * Math.sin(delta);
+      s.center.y = rotateAnchor.y + ox * Math.sin(delta) + oy * Math.cos(delta);
+      recalcShape(s);
+    }
+    // Show angle in toast-like overlay
+    const degDelta = (delta * 180 / Math.PI) % 360;
+    document.getElementById('cursorInfo').textContent =
+      `🔄 ${degDelta >= 0 ? '+' : ''}${degDelta.toFixed(1)}°`;
+    return;
+  }
+
+  // Vertex drag
+  if (isVertexDragging && vertexDragShape) {
+    const snapped = snapPoint(wp.x, wp.y);
+    if (vertexDragShape.type === 'circle' && vertexDragIndex === -1) {
+      // Circle resize: set radius to distance from center to mouse
+      vertexDragShape.radius = Math.max(GRID_SIZE / 2, dist(vertexDragShape.center, snapped));
+      recalcShape(vertexDragShape);
+    } else if (vertexDragShape.type === 'circle' && vertexDragIndex === 0) {
+      // Circle center drag
+      vertexDragShape.center = {x: snapped.x, y: snapped.y};
+      recalcShape(vertexDragShape);
+    } else if (vertexDragShape.points && vertexDragIndex >= 0 && vertexDragIndex < vertexDragShape.points.length) {
+      // Check locked edges connected to this vertex
+      const s = vertexDragShape;
+      const n = s.points.length;
+      const vi = vertexDragIndex;
+      const locked = s.lockedEdges || [];
+      // Edges connected to this vertex: edge (vi-1) connects (vi-1,vi), edge (vi) connects (vi, vi+1)
+      const prevEdge = (vi - 1 + n) % n; // edge from prev→vi
+      const nextEdge = vi; // edge from vi→next
+      const prevLocked = locked.includes(prevEdge);
+      const nextLocked = locked.includes(nextEdge);
+
+      if (prevLocked && nextLocked) {
+        // Both edges locked — can't move this vertex at all
+      } else if (prevLocked) {
+        // Constrain: maintain distance to prev vertex
+        const prev = s.points[(vi - 1 + n) % n];
+        const lockLen = dist(prev, s.points[vi]);
+        const angle = Math.atan2(snapped.y - prev.y, snapped.x - prev.x);
+        s.points[vi] = {x: prev.x + Math.cos(angle) * lockLen, y: prev.y + Math.sin(angle) * lockLen};
+        recalcShape(s);
+      } else if (nextLocked) {
+        // Constrain: maintain distance to next vertex
+        const next = s.points[(vi + 1) % n];
+        const lockLen = dist(s.points[vi], next);
+        const angle = Math.atan2(snapped.y - next.y, snapped.x - next.x);
+        s.points[vi] = {x: next.x + Math.cos(angle) * lockLen, y: next.y + Math.sin(angle) * lockLen};
+        recalcShape(s);
+      } else {
+        s.points[vi] = {x: snapped.x, y: snapped.y};
+        recalcShape(s);
+      }
+    }
+    updatePropsPanel();
+    return;
+  }
+
+  if (isDragging && selectedIds.size > 0) {
+    const dx = wp.x - dragStart.x;
+    const dy = wp.y - dragStart.y;
+    shapes.forEach(s => {
+      if (!selectedIds.has(s.id)) return;
+      if (s.type === 'circle') {
+        s.center.x += dx;
+        s.center.y += dy;
+      } else {
+        s.points.forEach(p => { p.x += dx; p.y += dy; });
+      }
+    });
+    dragStart = wp;
+    return;
+  }
+
+  if (marqueeStart && currentTool === 'move') {
+    marqueeEnd = sp;
+    // Select shapes in marquee
+    const w1 = screenToWorld(Math.min(marqueeStart.x, marqueeEnd.x), Math.min(marqueeStart.y, marqueeEnd.y));
+    const w2 = screenToWorld(Math.max(marqueeStart.x, marqueeEnd.x), Math.max(marqueeStart.y, marqueeEnd.y));
+    selectedIds.clear();
+    shapes.forEach(s => {
+      if (shapeBoundsInRect(s, w1, w2)) selectedIds.add(s.id);
+    });
+    updatePropsPanel();
+    return;
+  }
+
+  // Detect hover over bounding box corners for rotation
+  const oldHover = hoverRotateCorner;
+  hoverRotateCorner = -1;
+  if ((currentTool === 'move' || currentTool === 'vertex') && selectedIds.size === 1) {
+    const selId = [...selectedIds][0];
+    const s = shapes.find(s => s.id === selId);
+    if (s && s.points) {
+      const scrPts = s.points.map(p => worldToScreen(p.x, p.y));
+      const corners = getBoundingCorners(scrPts, 6);
+      const hitR = 14;
+      for (let i = 0; i < 4; i++) {
+        if (Math.abs(sp.x - corners[i].x) < hitR && Math.abs(sp.y - corners[i].y) < hitR) {
+          hoverRotateCorner = i;
+          break;
+        }
+      }
+    }
+  }
+  if (hoverRotateCorner >= 0) {
+    canvasArea.style.cursor = 'grab';
+  } else if (oldHover >= 0) {
+    canvasArea.style.cursor = '';
+    updateCursor();
+  }
+
+  // Rubber band for building tools
+  rubberPoint = snapPoint(wp.x, wp.y);
+
+  // Rect drag
+  if (rectDragStart) {
+    rubberPoint = snapPoint(wp.x, wp.y);
+    if (e.shiftKey) {
+      const dx = rubberPoint.x - rectDragStart.x;
+      const dy = rubberPoint.y - rectDragStart.y;
+      const side = Math.max(Math.abs(dx), Math.abs(dy));
+      rubberPoint = {x: rectDragStart.x + Math.sign(dx)*side, y: rectDragStart.y + Math.sign(dy)*side};
+    }
+    return;
+  }
+
+  // Circle drag
+  if (circleDragCenter) {
+    rubberPoint = wp;
+    return;
+  }
+
+  // Freehand
+  if (isFreehandDrawing) {
+    freehandPoints.push(sp);
+    return;
+  }
+}
+
+function onMouseUp(e) {
+  if (isPanning) {
+    isPanning = false;
+    updateCursor();
+    return;
+  }
+
+  if (isAnchorDragging) {
+    isAnchorDragging = false;
+    return;
+  }
+
+  if (isRotating) {
+    isRotating = false;
+    rotateOriginalPoints = null;
+    rotateOriginalCenter = null;
+    canvasArea.style.cursor = '';
+    updateCursor();
+    saveState();
+    updatePropsPanel();
+    return;
+  }
+
+  if (isVertexDragging) {
+    isVertexDragging = false;
+    vertexDragShape = null;
+    vertexDragIndex = -1;
+    saveState();
+    updatePropsPanel();
+    return;
+  }
+
+  if (isDragging) {
+    isDragging = false;
+    saveState();
+    updatePropsPanel();
+    return;
+  }
+
+  if (marqueeStart) {
+    marqueeStart = null;
+    marqueeEnd = null;
+    return;
+  }
+
+  const sp = getMousePos(e);
+  const wp = screenToWorld(sp.x, sp.y);
+
+  // Rect finish
+  if (rectDragStart) {
+    let end = snapPoint(wp.x, wp.y);
+    if (e.shiftKey) {
+      const dx = end.x - rectDragStart.x;
+      const dy = end.y - rectDragStart.y;
+      const side = Math.max(Math.abs(dx), Math.abs(dy));
+      end = {x: rectDragStart.x + Math.sign(dx)*side, y: rectDragStart.y + Math.sign(dy)*side};
+    }
+    if (Math.abs(end.x - rectDragStart.x) > 5 && Math.abs(end.y - rectDragStart.y) > 5) {
+      finishRect(rectDragStart, end);
+    }
+    rectDragStart = null;
+    rubberPoint = null;
+    return;
+  }
+
+  // Circle finish
+  if (circleDragCenter) {
+    const r = dist(circleDragCenter, wp);
+    if (r > 3) {
+      finishCircle(circleDragCenter, r);
+    }
+    circleDragCenter = null;
+    rubberPoint = null;
+    return;
+  }
+
+  // Freehand finish
+  if (isFreehandDrawing) {
+    isFreehandDrawing = false;
+    if (freehandPoints.length > 5) {
+      recognizeFreehand(freehandPoints);
+    }
+    freehandPoints = [];
+    return;
+  }
+}
+
+// ─── Context Menu (우클릭) ─────────────────────────────
+function onContextMenu(e) {
+  e.preventDefault();
+  removeContextMenu();
+  const pos = getMousePos(e);
+  const w = screenToWorld(pos.x, pos.y);
+  const hit = hitTestShapes(w.x, w.y);
+  if (!hit) return;
+  // Select the shape if not already selected
+  if (!selectedIds.has(hit.shape.id)) {
+    selectedIds.clear();
+    selectedIds.add(hit.shape.id);
+    updatePropsPanel();
+  }
+  const menu = document.createElement('div');
+  menu.id = 'ctxMenu';
+  menu.style.cssText = `position:fixed;left:${e.clientX}px;top:${e.clientY}px;background:rgba(15,15,40,0.95);border:1px solid rgba(6,182,212,0.3);border-radius:10px;padding:6px 0;z-index:600;min-width:160px;font-family:"Jua",sans-serif;backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(0,0,0,0.5);`;
+  const items = [
+    {icon:'📋', label:'복제', key:'Ctrl+D', fn: () => duplicateSelected()},
+    {icon:'↔️', label:'좌우 뒤집기', key:'', fn: () => flipSelected('h')},
+    {icon:'↕️', label:'상하 뒤집기', key:'', fn: () => flipSelected('v')},
+    {icon:'🔄', label:'90° 회전', key:'', fn: () => rotateSelected(90)},
+    {divider: true},
+    {icon:'🎨', label:'색상 변경', key:'', fn: () => { removeContextMenu(); cycleColor(); }},
+    {divider: true},
+    {icon:'🗑️', label:'삭제', key:'Del', fn: () => { shapes = shapes.filter(s => !selectedIds.has(s.id)); selectedIds.clear(); saveState(); updatePropsPanel(); }},
+  ];
+  items.forEach(item => {
+    if (item.divider) {
+      const hr = document.createElement('div');
+      hr.style.cssText = 'height:1px;background:rgba(255,255,255,0.08);margin:4px 8px;';
+      menu.appendChild(hr);
+      return;
+    }
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:7px 14px;color:#e2e8f0;font-size:13px;cursor:pointer;transition:background 0.15s;';
+    row.innerHTML = `<span>${item.icon} ${item.label}</span>${item.key ? `<span style="font-size:11px;color:#64748b;margin-left:16px;">${item.key}</span>` : ''}`;
+    row.addEventListener('mouseenter', () => row.style.background = 'rgba(6,182,212,0.15)');
+    row.addEventListener('mouseleave', () => row.style.background = 'transparent');
+    row.addEventListener('click', () => { removeContextMenu(); item.fn(); });
+    menu.appendChild(row);
+  });
+  document.body.appendChild(menu);
+  // Adjust if overflows screen
+  const rect = menu.getBoundingClientRect();
+  if (rect.right > window.innerWidth) menu.style.left = (window.innerWidth - rect.width - 8) + 'px';
+  if (rect.bottom > window.innerHeight) menu.style.top = (window.innerHeight - rect.height - 8) + 'px';
+  // Close on click elsewhere
+  setTimeout(() => document.addEventListener('mousedown', closeCtxMenuHandler, {once:true}), 0);
+}
+function removeContextMenu() { const m = document.getElementById('ctxMenu'); if (m) m.remove(); }
+function closeCtxMenuHandler(e) { if (!e.target.closest('#ctxMenu')) removeContextMenu(); else setTimeout(() => document.addEventListener('mousedown', closeCtxMenuHandler, {once:true}), 0); }
+function cycleColor() {
+  const colors = COLORS.stroke;
+  shapes.forEach(s => {
+    if (!selectedIds.has(s.id)) return;
+    const idx = colors.indexOf(s.strokeColor || s.color);
+    const next = colors[(idx + 1) % colors.length];
+    s.strokeColor = next; s.color = next;
+  });
+  saveState(); updatePropsPanel(); showToast('🎨 색상 변경!');
+}
+
+function onDblClick(e) {
+  if (currentTool === 'polygon' && buildPoints.length >= 3) {
+    finishPolygon(buildPoints);
+    buildPoints = [];
+    rubberPoint = null;
+    return;
+  }
+
+  // Double-click on midpoint or vertex to open spinner
+  if (currentTool === 'vertex') {
+    const sp = getMousePos(e);
+    const wp = screenToWorld(sp.x, sp.y);
+    const hit = hitTestShapes(wp.x, wp.y);
+    if (hit) {
+      if (hit.hitType === 'midpoint') {
+        // Open length spinner for this edge
+        openSpinner(hit.shape, 'length', hit.index, sp);
+        return;
+      }
+      if (hit.hitType === 'vertex' || hit.hitType === 'center') {
+        // Open angle spinner for this vertex (only for shapes with angles)
+        if (hit.shape.angles && hit.shape.angles.length > hit.index) {
+          openSpinner(hit.shape, 'angle', hit.index, sp);
+        }
+        return;
+      }
+      if (hit.hitType === 'edge') {
+        // Open length spinner for this edge
+        openSpinner(hit.shape, 'length', hit.index, sp);
+        return;
+      }
+    }
+  }
+}
+
+function onWheel(e) {
+  e.preventDefault();
+  const sp = getMousePos(e);
+  const factor = e.deltaY < 0 ? 1.1 : 1/1.1;
+  zoomAt(sp.x, sp.y, factor);
+}
+
+function zoomAt(sx, sy, factor) {
+  closeSpinner(); // dismiss spinner on zoom
+  const newZoom = Math.max(0.1, Math.min(10, zoom * factor));
+  const ratio = newZoom / zoom;
+  panX = sx - (sx - panX) * ratio;
+  panY = sy - (sy - panY) * ratio;
+  zoom = newZoom;
+  updateZoomLabel();
+}
+
+function updateZoomLabel() {
+  document.getElementById('zoomLabel').textContent = Math.round(zoom * 100) + '%';
+}
+
+function shapeBoundsInRect(s, w1, w2) {
+  if (s.type === 'circle') {
+    return s.center.x >= w1.x && s.center.x <= w2.x && s.center.y >= w1.y && s.center.y <= w2.y;
+  }
+  return s.points.every(p => p.x >= w1.x && p.x <= w2.x && p.y >= w1.y && p.y <= w2.y);
+}
+
+// ─── Document-level mousedown (for closing spinner) ───
+function onDocMouseDown(e) {
+  if (activeSpinner && !activeSpinner.contains(e.target)) {
+    closeSpinner();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// ██  TOUCH EVENTS (mobile / tablet)
+// ═══════════════════════════════════════════════════════
+let lastTouchDist = 0, lastTouchMid = null, touchDblTap = 0;
+
+function touchToMouse(touch) {
+  return {clientX: touch.clientX, clientY: touch.clientY, button: 0, preventDefault(){}, stopPropagation(){}};
+}
+
+function onTouchStart(e) {
+  e.preventDefault();
+  if (e.touches.length === 2) {
+    // Pinch zoom / two-finger pan
+    const [a, b] = [e.touches[0], e.touches[1]];
+    lastTouchDist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+    lastTouchMid = {x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2};
+    // Cancel any single-touch drag
+    if (isDragging) { isDragging = false; }
+    if (isVertexDragging) { isVertexDragging = false; vertexDragShape = null; }
+    return;
+  }
+  if (e.touches.length === 1) {
+    // Double-tap detection
+    const now = Date.now();
+    if (now - touchDblTap < 350) {
+      onDblClick(touchToMouse(e.touches[0]));
+      touchDblTap = 0;
+      return;
+    }
+    touchDblTap = now;
+    onMouseDown(touchToMouse(e.touches[0]));
+  }
+}
+
+function onTouchMove(e) {
+  e.preventDefault();
+  if (e.touches.length === 2) {
+    const [a, b] = [e.touches[0], e.touches[1]];
+    const newDist = Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+    const newMid = {x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2};
+    // Pinch zoom
+    if (lastTouchDist > 0) {
+      const rect = canvas.getBoundingClientRect();
+      const sx = newMid.x - rect.left;
+      const sy = newMid.y - rect.top;
+      const factor = newDist / lastTouchDist;
+      zoomAt(sx, sy, factor);
+    }
+    // Two-finger pan
+    if (lastTouchMid) {
+      panX += newMid.x - lastTouchMid.x;
+      panY += newMid.y - lastTouchMid.y;
+      updateZoomLabel();
+    }
+    lastTouchDist = newDist;
+    lastTouchMid = newMid;
+    return;
+  }
+  if (e.touches.length === 1) {
+    onMouseMove(touchToMouse(e.touches[0]));
+  }
+}
+
+function onTouchEnd(e) {
+  e.preventDefault();
+  lastTouchDist = 0;
+  lastTouchMid = null;
+  if (e.touches.length === 0) {
+    onMouseUp(touchToMouse(e.changedTouches[0]));
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// ██  KEYBOARD EVENTS
+// ═══════════════════════════════════════════════════════
+
+function onKeyDown(e) {
+  // Don't handle when spinner is open (except Escape)
+  if (e.key === 'Escape') {
+    if (isRotating) {
+      // Cancel rotation — restore original points
+      const s = shapes.find(s => s.id === rotateShapeId);
+      if (s && s.points && rotateOriginalPoints) {
+        for (let i = 0; i < s.points.length; i++) {
+          s.points[i].x = rotateOriginalPoints[i].x;
+          s.points[i].y = rotateOriginalPoints[i].y;
+        }
+        recalcShape(s);
+      }
+      if (s && s.type === 'circle' && rotateOriginalCenter) {
+        s.center.x = rotateOriginalCenter.x;
+        s.center.y = rotateOriginalCenter.y;
+      }
+      isRotating = false;
+      rotateOriginalPoints = null;
+      rotateOriginalCenter = null;
+      canvasArea.style.cursor = '';
+      updateCursor();
+      return;
+    }
+    if (rotateAnchor) { rotateAnchor = null; rotateShapeId = null; return; }
+    if (activeSpinner) { closeSpinner(); return; }
+    if (buildPoints.length > 0 || rectDragStart || circleDragCenter || lineDragStart) {
+      cancelBuilding(); return;
+    }
+    selectedIds.clear();
+    updatePropsPanel();
+    return;
+  }
+
+  if (activeSpinner) return; // block shortcuts while spinner open
+
+  const ctrl = e.ctrlKey || e.metaKey;
+
+  if (e.key === ' ') {
+    e.preventDefault();
+    if (!isSpaceDown) { isSpaceDown = true; updateCursor(); }
+    return;
+  }
+
+  if (ctrl && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
+  if (ctrl && e.key === 'z' && e.shiftKey) { e.preventDefault(); redo(); return; }
+  if (ctrl && e.key === 'Z') { e.preventDefault(); redo(); return; }
+  if (ctrl && e.key === 'a') { e.preventDefault(); shapes.forEach(s => selectedIds.add(s.id)); updatePropsPanel(); return; }
+  if (ctrl && e.key === 'd') { e.preventDefault(); duplicateSelected(); return; }
+
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (selectedIds.size > 0) {
+      shapes = shapes.filter(s => !selectedIds.has(s.id));
+      selectedIds.clear();
+      saveState();
+      updatePropsPanel();
+    }
+    return;
+  }
+
+  if (e.key === 'Enter' && currentTool === 'polygon' && buildPoints.length >= 3) {
+    finishPolygon(buildPoints);
+    buildPoints = [];
+    rubberPoint = null;
+    return;
+  }
+
+  // Tool shortcuts
+  if (ctrl) return; // don't intercept ctrl combos
+  const keyMap = {v:'move',a:'vertex',h:'hand',z:'zoom',t:'triangle',r:'rect',p:'polygon',c:'circle',l:'line',f:'freehand',e:'eraser',m:'measure',x:'text'};
+  const lower = e.key.toLowerCase();
+  if (keyMap[lower]) { setTool(keyMap[lower]); return; }
+  if (lower === 'g') { toggleGrid(); return; }
+  if (lower === 's') { toggleSnap(); return; }
+  if (e.key === '[') { changeStrokeWidth(-1); return; }
+  if (e.key === ']') { changeStrokeWidth(1); return; }
+  if (e.key === '=' || e.key === '+') { zoomAt(W/2, H/2, 1.2); return; }
+  if (e.key === '-') { zoomAt(W/2, H/2, 1/1.2); return; }
+  if (e.key === '0') { zoom = 1; panX = 0; panY = 0; updateZoomLabel(); return; }
+}
+
+function onKeyUp(e) {
+  if (e.key === ' ') { isSpaceDown = false; isPanning = false; updateCursor(); }
+}
+
+function changeStrokeWidth(delta) {
+  shapes.forEach(s => {
+    if (selectedIds.has(s.id)) {
+      s.strokeWidth = Math.max(1, Math.min(10, s.strokeWidth + delta));
+    }
+  });
+  updatePropsPanel();
+}
+
+// ═══════════════════════════════════════════════════════
+// ██  SHAPE CREATION
+// ═══════════════════════════════════════════════════════
+
+function finishTriangle() {
+  const pts = buildPoints.map(p => ({...p}));
+  cleanAngles(pts);
+  const s = makeShape('triangle', {points: pts});
+  shapes.push(s);
+  selectedIds.clear();
+  selectedIds.add(s.id);
+  buildPoints = [];
+  rubberPoint = null;
+  saveState();
+  updatePropsPanel();
+  showToast('🔺 삼각형 생성!');
+}
+
+function finishRect(p1, p2) {
+  const pts = [
+    {x: p1.x, y: p1.y},
+    {x: p2.x, y: p1.y},
+    {x: p2.x, y: p2.y},
+    {x: p1.x, y: p2.y},
+  ];
+  const s = makeShape('rect', {points: pts});
+  shapes.push(s);
+  selectedIds.clear();
+  selectedIds.add(s.id);
+  saveState();
+  updatePropsPanel();
+  showToast('⬜ 사각형 생성!');
+}
+
+function finishCircle(center, radius) {
+  const s = makeShape('circle', {center: {...center}, radius});
+  shapes.push(s);
+  selectedIds.clear();
+  selectedIds.add(s.id);
+  saveState();
+  updatePropsPanel();
+  showToast('⭕ 원 생성!');
+}
+
+function finishLine(p1, p2) {
+  const s = makeShape('line', {points: [{...p1}, {...p2}]});
+  shapes.push(s);
+  selectedIds.clear();
+  selectedIds.add(s.id);
+  saveState();
+  updatePropsPanel();
+  showToast('📏 직선 생성!');
+}
+
+function finishPolygon(pts) {
+  if (pts.length < 3) return;
+  const s = makeShape('polygon', {points: pts.map(p => ({...p}))});
+  shapes.push(s);
+  selectedIds.clear();
+  selectedIds.add(s.id);
+  saveState();
+  updatePropsPanel();
+  showToast('⬠ 다각형 생성!');
+}
+
+function cleanAngles(pts) {
+  // Try to snap to "clean" angles if close
+  // This is a best-effort heuristic
+}
+
+// ═══════════════════════════════════════════════════════
+// ██  FREEHAND SHAPE RECOGNITION
+// ═══════════════════════════════════════════════════════
+
+function recognizeFreehand(screenPoints) {
+  // Convert screen points to world points
+  const worldPts = screenPoints.map(sp => screenToWorld(sp.x, sp.y));
+  // Simplify with Ramer-Douglas-Peucker
+  const simplified = rdpSimplify(worldPts, RDP_TOLERANCE / zoom);
+
+  if (simplified.length < 2) return;
+
+  // Check if it's roughly circular
+  if (isRoughlyCircular(worldPts)) {
+    const c = fitCircle(worldPts);
+    if (c.radius > 5) {
+      finishCircle(c.center, c.radius);
+      showToast('⭕ 원 인식!');
+      return;
+    }
+  }
+
+  // Check endpoints proximity (closed shape)
+  const first = simplified[0], last = simplified[simplified.length - 1];
+  const isClosed = dist(first, last) < 40 / zoom;
+
+  if (!isClosed && simplified.length === 2) {
+    // Line
+    const p1 = snapPoint(simplified[0].x, simplified[0].y);
+    const p2 = snapPoint(simplified[1].x, simplified[1].y);
+    finishLine(p1, p2);
+    showToast('📏 직선 인식!');
+    return;
+  }
+
+  if (isClosed) {
+    // Remove duplicate last point
+    const verts = simplified.slice(0, -1);
+    if (verts.length === 3) {
+      const pts = verts.map(v => snapPoint(v.x, v.y));
+      const s = makeShape('triangle', {points: pts});
+      shapes.push(s);
+      selectedIds.clear(); selectedIds.add(s.id);
+      saveState(); updatePropsPanel();
+      showToast('🔺 삼각형 인식!');
+      return;
+    }
+    if (verts.length === 4) {
+      // Check if roughly rectangular
+      const pts = verts.map(v => snapPoint(v.x, v.y));
+      const angles = [];
+      for (let i = 0; i < 4; i++) {
+        const prev = pts[(i+3)%4], cur = pts[i], next = pts[(i+1)%4];
+        angles.push(angleBetween(cur, prev, next));
+      }
+      const isRect = angles.every(a => Math.abs(a - 90) < 20);
+      if (isRect) {
+        const s = makeShape('rect', {points: pts});
+        shapes.push(s);
+        selectedIds.clear(); selectedIds.add(s.id);
+        saveState(); updatePropsPanel();
+        showToast('⬜ 사각형 인식!');
+        return;
+      }
+      const s = makeShape('polygon', {points: pts});
+      shapes.push(s);
+      selectedIds.clear(); selectedIds.add(s.id);
+      saveState(); updatePropsPanel();
+      showToast('⬠ 사각형 인식!');
+      return;
+    }
+    if (verts.length >= 3) {
+      const pts = verts.map(v => snapPoint(v.x, v.y));
+      const s = makeShape('polygon', {points: pts});
+      shapes.push(s);
+      selectedIds.clear(); selectedIds.add(s.id);
+      saveState(); updatePropsPanel();
+      showToast('⬠ 다각형 인식!');
+      return;
+    }
+  }
+
+  // Fallback: draw as line
+  if (simplified.length >= 2) {
+    const p1 = snapPoint(simplified[0].x, simplified[0].y);
+    const p2 = snapPoint(simplified[simplified.length-1].x, simplified[simplified.length-1].y);
+    finishLine(p1, p2);
+    showToast('📏 직선 인식!');
+  }
+}
+
+function rdpSimplify(points, epsilon) {
+  if (points.length <= 2) return points;
+  let maxDist = 0, maxIdx = 0;
+  const first = points[0], last = points[points.length - 1];
+  for (let i = 1; i < points.length - 1; i++) {
+    const d = distToSegment(points[i], first, last);
+    if (d > maxDist) { maxDist = d; maxIdx = i; }
+  }
+  if (maxDist > epsilon) {
+    const left = rdpSimplify(points.slice(0, maxIdx + 1), epsilon);
+    const right = rdpSimplify(points.slice(maxIdx), epsilon);
+    return left.slice(0, -1).concat(right);
+  }
+  return [first, last];
+}
+
+function isRoughlyCircular(pts) {
+  if (pts.length < 10) return false;
+  const first = pts[0], last = pts[pts.length - 1];
+  if (dist(first, last) > 60 / zoom) return false; // not closed
+  const c = fitCircle(pts);
+  if (c.radius < 5) return false;
+  let sumErr = 0;
+  for (const p of pts) {
+    const d = Math.abs(dist(p, c.center) - c.radius);
+    sumErr += d;
+  }
+  const avgErr = sumErr / pts.length;
+  return avgErr < c.radius * 0.3;
+}
+
+function fitCircle(pts) {
+  let cx = 0, cy = 0;
+  pts.forEach(p => { cx += p.x; cy += p.y; });
+  cx /= pts.length; cy /= pts.length;
+  let r = 0;
+  pts.forEach(p => { r += dist(p, {x:cx,y:cy}); });
+  r /= pts.length;
+  return {center:{x:cx,y:cy}, radius: r};
+}
+
+// ═══════════════════════════════════════════════════════
+// ██  RENDERING
+// ═══════════════════════════════════════════════════════
+
+function renderLoop() {
+  render();
+  requestAnimationFrame(renderLoop);
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  // Background
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, 0, W, H);
+  // Grid
+  if (showGrid) drawGrid(ctx, 'rgba(255,255,255,0.07)', 0.5);
+  // Shapes (drawn in layer order, respecting visibility & opacity)
+  if (layers) {
+    layers.forEach(layer => {
+      if (!layer.visible) return;
+      ctx.save();
+      ctx.globalAlpha = layer.opacity;
+      shapes.forEach(s => {
+        if (s.layerId === layer.id) drawShape(ctx, s, selectedIds.has(s.id));
+      });
+      ctx.restore();
+    });
+    // Also draw shapes with no layerId (legacy)
+    shapes.forEach(s => {
+      if (!s.layerId || !layers.find(l => l.id === s.layerId)) {
+        drawShape(ctx, s, selectedIds.has(s.id));
+      }
+    });
+  } else {
+    shapes.forEach(s => drawShape(ctx, s, selectedIds.has(s.id)));
+  }
+  // Building shapes
+  drawBuilding(ctx);
+  // Freehand stroke
+  if (isFreehandDrawing && freehandPoints.length > 1) {
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath();
+    ctx.moveTo(freehandPoints[0].x, freehandPoints[0].y);
+    for (let i = 1; i < freehandPoints.length; i++) {
+      ctx.lineTo(freehandPoints[i].x, freehandPoints[i].y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  // Marquee
+  if (marqueeStart && marqueeEnd) {
+    ctx.strokeStyle = 'rgba(59,130,246,0.6)';
+    ctx.fillStyle = 'rgba(59,130,246,0.1)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,4]);
+    const x = Math.min(marqueeStart.x, marqueeEnd.x);
+    const y = Math.min(marqueeStart.y, marqueeEnd.y);
+    const w = Math.abs(marqueeEnd.x - marqueeStart.x);
+    const h = Math.abs(marqueeEnd.y - marqueeStart.y);
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeRect(x, y, w, h);
+    ctx.setLineDash([]);
+  }
+  // Vertex tool: draw larger vertex handles
+  if (currentTool === 'vertex') {
+    shapes.forEach(s => {
+      const layer = getLayer(s.layerId);
+      if (layer && (!layer.visible || layer.locked)) return;
+      const isSel = selectedIds.has(s.id);
+      if (s.type === 'circle') {
+        // Draw center handle
+        const cp = worldToScreen(s.center.x, s.center.y);
+        ctx.fillStyle = isSel ? '#f59e0b' : 'rgba(245,158,11,0.6)';
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cp.x, cp.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        // Draw edge resize ring
+        const r = s.radius * zoom;
+        ctx.strokeStyle = isSel ? 'rgba(245,158,11,0.5)' : 'rgba(245,158,11,0.25)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.arc(cp.x, cp.y, r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else if (s.points) {
+        s.points.forEach((p, i) => {
+          const sp = worldToScreen(p.x, p.y);
+          const isActive = isVertexDragging && vertexDragShape === s && vertexDragIndex === i;
+          ctx.fillStyle = isActive ? '#fff' : (isSel ? '#f59e0b' : 'rgba(245,158,11,0.6)');
+          ctx.strokeStyle = isActive ? '#f59e0b' : '#fff';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(sp.x, sp.y, isActive ? 10 : 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
+      }
+    });
+  }
+  // Measurements
+  drawMeasurements(ctx);
+  // Measure tool: in-progress points
+  if (currentTool === 'measure' && measurePoints.length > 0) {
+    ctx.fillStyle = '#58a6ff';
+    measurePoints.forEach(p => {
+      const sp = worldToScreen(p.x, p.y);
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    if (measurePoints.length >= 1 && rubberPoint) {
+      const sp1 = worldToScreen(measurePoints[0].x, measurePoints[0].y);
+      const sp2 = worldToScreen(rubberPoint.x, rubberPoint.y);
+      ctx.strokeStyle = 'rgba(88,166,255,0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4,4]);
+      ctx.beginPath();
+      ctx.moveTo(sp1.x, sp1.y);
+      ctx.lineTo(sp2.x, sp2.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+  // Text annotations
+  drawTextAnnotations(ctx);
+  // Ruler overlay & graph functions (added by extended tools)
+  if (typeof drawRulerOverlay === 'function') drawRulerOverlay();
+  if (typeof drawGraphFunctions === 'function') drawGraphFunctions();
+}
+
+function drawMeasurements(c) {
+  measurements.forEach(m => {
+    if (m.type === 'dist') {
+      const s1 = worldToScreen(m.p1.x, m.p1.y);
+      const s2 = worldToScreen(m.p2.x, m.p2.y);
+      // Dashed blue line
+      c.strokeStyle = '#58a6ff';
+      c.lineWidth = 1.5;
+      c.setLineDash([6,4]);
+      c.beginPath();
+      c.moveTo(s1.x, s1.y); c.lineTo(s2.x, s2.y);
+      c.stroke();
+      c.setLineDash([]);
+      // Dots
+      [s1, s2].forEach(p => {
+        c.fillStyle = '#58a6ff';
+        c.beginPath();
+        c.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        c.fill();
+      });
+      // Label
+      const mx = (s1.x + s2.x) / 2, my = (s1.y + s2.y) / 2;
+      const label = (m.value / GRID_SIZE).toFixed(2) + 'm';
+      c.font = "bold 12px 'Pretendard Variable', sans-serif";
+      const tw = c.measureText(label).width;
+      c.fillStyle = 'rgba(15,23,41,0.85)';
+      c.fillRect(mx - tw/2 - 4, my - 9, tw + 8, 18);
+      c.fillStyle = '#58a6ff';
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.fillText(label, mx, my);
+    } else if (m.type === 'angle') {
+      const s1 = worldToScreen(m.p1.x, m.p1.y);
+      const s2 = worldToScreen(m.p2.x, m.p2.y); // vertex
+      const s3 = worldToScreen(m.p3.x, m.p3.y);
+      // Lines
+      c.strokeStyle = 'rgba(88,166,255,0.5)';
+      c.lineWidth = 1.5;
+      c.setLineDash([6,4]);
+      c.beginPath();
+      c.moveTo(s1.x, s1.y); c.lineTo(s2.x, s2.y); c.lineTo(s3.x, s3.y);
+      c.stroke();
+      c.setLineDash([]);
+      // Arc
+      const a1 = Math.atan2(s1.y - s2.y, s1.x - s2.x);
+      const a2 = Math.atan2(s3.y - s2.y, s3.x - s2.x);
+      c.strokeStyle = '#58a6ff';
+      c.lineWidth = 2;
+      c.beginPath();
+      c.arc(s2.x, s2.y, 25, a1, a2, a2 < a1);
+      c.stroke();
+      // Label
+      const midA = (a1 + a2) / 2;
+      const lx = s2.x + Math.cos(midA) * 38;
+      const ly = s2.y + Math.sin(midA) * 38;
+      const label = m.value.toFixed(1) + '°';
+      c.font = "bold 12px 'Pretendard Variable', sans-serif";
+      const tw = c.measureText(label).width;
+      c.fillStyle = 'rgba(15,23,41,0.85)';
+      c.fillRect(lx - tw/2 - 4, ly - 9, tw + 8, 18);
+      c.fillStyle = '#58a6ff';
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.fillText(label, lx, ly);
+      // Dots
+      [s1, s2, s3].forEach(p => {
+        c.fillStyle = '#58a6ff';
+        c.beginPath();
+        c.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        c.fill();
+      });
+    }
+  });
+}
+
+function drawTextAnnotations(c) {
+  textAnnotations.forEach(t => {
+    const sp = worldToScreen(t.x, t.y);
+    c.font = `bold ${t.fontSize}px 'Pretendard Variable', sans-serif`;
+    const tw = c.measureText(t.text).width;
+    // Background
+    c.fillStyle = 'rgba(15,23,41,0.75)';
+    c.fillRect(sp.x - 4, sp.y - t.fontSize + 2, tw + 8, t.fontSize + 6);
+    // Text
+    c.fillStyle = t.color;
+    c.textAlign = 'left';
+    c.textBaseline = 'top';
+    c.fillText(t.text, sp.x, sp.y - t.fontSize + 5);
+  });
+}
+
+function drawGrid(c, color, alpha) {
+  c.save();
+  c.globalAlpha = alpha;
+  c.strokeStyle = color;
+  c.lineWidth = 0.5;
+
+  const step = GRID_SIZE * zoom;
+  // Adaptive: if step too small, multiply
+  let gridStep = step;
+  while (gridStep < 10) gridStep *= 5;
+
+  const offsetX = panX % gridStep;
+  const offsetY = panY % gridStep;
+
+  c.beginPath();
+  for (let x = offsetX; x < W; x += gridStep) {
+    c.moveTo(x, 0);
+    c.lineTo(x, H);
+  }
+  for (let y = offsetY; y < H; y += gridStep) {
+    c.moveTo(0, y);
+    c.lineTo(W, y);
+  }
+  c.stroke();
+
+  // Heavier lines every 5 grid cells
+  const majorStep = gridStep * 5;
+  if (majorStep > 20) {
+    c.globalAlpha = alpha * 1.5;
+    c.lineWidth = 1;
+    const mOffX = panX % majorStep;
+    const mOffY = panY % majorStep;
+    c.beginPath();
+    for (let x = mOffX; x < W; x += majorStep) { c.moveTo(x,0); c.lineTo(x,H); }
+    for (let y = mOffY; y < H; y += majorStep) { c.moveTo(0,y); c.lineTo(W,y); }
+    c.stroke();
+  }
+
+  // Origin axes
+  const ox = worldToScreen(0,0);
+  c.globalAlpha = alpha * 2;
+  c.strokeStyle = 'rgba(245,158,11,0.3)';
+  c.lineWidth = 1.5;
+  c.beginPath();
+  c.moveTo(ox.x, 0); c.lineTo(ox.x, H);
+  c.moveTo(0, ox.y); c.lineTo(W, ox.y);
+  c.stroke();
+
+  c.restore();
+}
+
+function drawShape(c, s, selected, forExport=false) {
+  const textColor = forExport ? '#333' : '#e2e8f0';
+  const dimColor = forExport ? '#666' : '#94a3b8';
+  const goldColor = forExport ? '#d97706' : '#f59e0b';
+  const bgForLabel = forExport ? 'rgba(255,255,255,0.85)' : 'rgba(15,23,41,0.8)';
+
+  if (s.type === 'circle') {
+    drawCircleShape(c, s, selected, forExport, textColor, dimColor, goldColor, bgForLabel);
+    return;
+  }
+  if (s.type === 'line') {
+    drawLineShape(c, s, selected, forExport, textColor, dimColor, goldColor, bgForLabel);
+    return;
+  }
+
+  const pts = s.points.map(p => worldToScreen(p.x, p.y));
+  const n = pts.length;
+
+  // 1. Fill
+  c.fillStyle = s.fill;
+  c.beginPath();
+  c.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < n; i++) c.lineTo(pts[i].x, pts[i].y);
+  c.closePath();
+  c.fill();
+
+  // 2. Stroke (per-edge colors)
+  c.lineWidth = s.strokeWidth;
+  const eColors = s.edgeColors || {};
+  if (Object.keys(eColors).length === 0) {
+    c.strokeStyle = s.stroke;
+    c.beginPath();
+    c.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < n; i++) c.lineTo(pts[i].x, pts[i].y);
+    c.closePath();
+    c.stroke();
+  } else {
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      c.strokeStyle = eColors[i] || s.stroke;
+      c.beginPath();
+      c.moveTo(pts[i].x, pts[i].y);
+      c.lineTo(pts[j].x, pts[j].y);
+      c.stroke();
+    }
+  }
+
+  // 3. Selected bounding box
+  if (selected) {
+    drawBoundingBox(c, pts);
+  }
+
+  // 4. Angle arcs & right-angle markers (skip hidden)
+  if (s.angles) {
+    const hiddenA = s.hiddenAngles || [];
+    for (let i = 0; i < n; i++) {
+      if (hiddenA.includes(i)) continue;
+      const prev = pts[(i - 1 + n) % n];
+      const cur = pts[i];
+      const next = pts[(i + 1) % n];
+      const angle = s.angles[i];
+      if (Math.abs(angle - 90) < 1) {
+        drawRightAngleMarker(c, cur, prev, next, s.stroke);
+      } else {
+        drawAngleArc(c, cur, prev, next, angle, goldColor, textColor, bgForLabel);
+      }
+    }
+  }
+
+  // 5. Edge lengths (skip hidden)
+  if (s.lengths) {
+    const hidden = s.hiddenEdges || [];
+    for (let i = 0; i < n; i++) {
+      if (hidden.includes(i)) continue;
+      const j = (i + 1) % n;
+      drawEdgeLength(c, pts[i], pts[j], s.lengths[i], dimColor, textColor, bgForLabel);
+    }
+  }
+
+  // 6. Edge midpoint markers (small squares, skip hidden)
+  for (let i = 0; i < n; i++) {
+    if ((s.hiddenEdges || []).includes(i)) continue;
+    const j = (i + 1) % n;
+    const mx = (pts[i].x + pts[j].x) / 2;
+    const my = (pts[i].y + pts[j].y) / 2;
+    c.fillStyle = eColors[i] || s.stroke;
+    c.globalAlpha = 0.6;
+    const hs = MIDPOINT_SIZE / 2;
+    c.fillRect(mx - hs, my - hs, MIDPOINT_SIZE, MIDPOINT_SIZE);
+    c.globalAlpha = 1;
+  }
+
+  // 7. Vertex dots & labels
+  for (let i = 0; i < n; i++) {
+    c.fillStyle = goldColor;
+    c.beginPath();
+    c.arc(pts[i].x, pts[i].y, VERTEX_RADIUS, 0, Math.PI * 2);
+    c.fill();
+    // Label
+    if (s.labels && s.labels[i]) {
+      c.font = LABEL_FONT;
+      const label = s.labels[i];
+      const tw = c.measureText(label).width;
+      // Offset away from center
+      const cx = pts.reduce((a,p)=>a+p.x,0)/n;
+      const cy = pts.reduce((a,p)=>a+p.y,0)/n;
+      const dx = pts[i].x - cx;
+      const dy = pts[i].y - cy;
+      const len = Math.hypot(dx, dy) || 1;
+      const offX = pts[i].x + (dx/len)*16;
+      const offY = pts[i].y + (dy/len)*16;
+      // Background
+      c.fillStyle = bgForLabel;
+      c.fillRect(offX - tw/2 - 3, offY - 8, tw + 6, 16);
+      c.fillStyle = textColor;
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.fillText(label, offX, offY);
+    }
+  }
+}
+
+function drawCircleShape(c, s, selected, forExport, textColor, dimColor, goldColor, bgForLabel) {
+  const center = worldToScreen(s.center.x, s.center.y);
+  const r = s.radius * zoom;
+
+  // Fill
+  c.fillStyle = s.fill;
+  c.beginPath();
+  c.arc(center.x, center.y, r, 0, Math.PI*2);
+  c.fill();
+  // Stroke
+  c.strokeStyle = s.stroke;
+  c.lineWidth = s.strokeWidth;
+  c.beginPath();
+  c.arc(center.x, center.y, r, 0, Math.PI*2);
+  c.stroke();
+
+  // Radius line
+  c.strokeStyle = dimColor;
+  c.lineWidth = 1;
+  c.setLineDash([4,4]);
+  c.beginPath();
+  c.moveTo(center.x, center.y);
+  c.lineTo(center.x + r, center.y);
+  c.stroke();
+  c.setLineDash([]);
+
+  // Radius label
+  const rlabel = (s.radius / GRID_SIZE).toFixed(2) + 'm';
+  c.font = SMALL_FONT;
+  const tw = c.measureText(rlabel).width;
+  const rx = center.x + r/2;
+  const ry = center.y - 10;
+  c.fillStyle = bgForLabel;
+  c.fillRect(rx - tw/2 - 3, ry - 7, tw + 6, 14);
+  c.fillStyle = dimColor;
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText(rlabel, rx, ry);
+
+  // Center dot
+  c.fillStyle = goldColor;
+  c.beginPath();
+  c.arc(center.x, center.y, VERTEX_RADIUS, 0, Math.PI*2);
+  c.fill();
+
+  // Center label
+  if (s.labels && s.labels[0]) {
+    c.font = LABEL_FONT;
+    const label = s.labels[0];
+    const lw = c.measureText(label).width;
+    c.fillStyle = bgForLabel;
+    c.fillRect(center.x - lw/2 - 3, center.y - r - 20, lw + 6, 16);
+    c.fillStyle = textColor;
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText(label, center.x, center.y - r - 12);
+  }
+
+  if (selected) {
+    c.strokeStyle = 'rgba(59,130,246,0.5)';
+    c.lineWidth = 1;
+    c.setLineDash([6,4]);
+    const pad = 8;
+    c.strokeRect(center.x - r - pad, center.y - r - pad, (r+pad)*2, (r+pad)*2);
+    c.setLineDash([]);
+  }
+}
+
+function drawLineShape(c, s, selected, forExport, textColor, dimColor, goldColor, bgForLabel) {
+  const pts = s.points.map(p => worldToScreen(p.x, p.y));
+
+  // Stroke
+  c.strokeStyle = s.stroke;
+  c.lineWidth = s.strokeWidth;
+  c.beginPath();
+  c.moveTo(pts[0].x, pts[0].y);
+  c.lineTo(pts[1].x, pts[1].y);
+  c.stroke();
+
+  // Length label
+  const len = s.length || dist(s.points[0], s.points[1]);
+  drawEdgeLength(c, pts[0], pts[1], len, dimColor, textColor, bgForLabel);
+
+  // Midpoint marker
+  const mx = (pts[0].x + pts[1].x)/2, my = (pts[0].y + pts[1].y)/2;
+  c.fillStyle = s.stroke;
+  c.globalAlpha = 0.6;
+  const hs = MIDPOINT_SIZE/2;
+  c.fillRect(mx-hs, my-hs, MIDPOINT_SIZE, MIDPOINT_SIZE);
+  c.globalAlpha = 1;
+
+  // Vertex dots & labels
+  for (let i = 0; i < 2; i++) {
+    c.fillStyle = goldColor;
+    c.beginPath();
+    c.arc(pts[i].x, pts[i].y, VERTEX_RADIUS, 0, Math.PI*2);
+    c.fill();
+    if (s.labels && s.labels[i]) {
+      c.font = LABEL_FONT;
+      const label = s.labels[i];
+      const tw = c.measureText(label).width;
+      const dx = i === 0 ? -16 : 16;
+      c.fillStyle = bgForLabel;
+      c.fillRect(pts[i].x + dx - tw/2 - 3, pts[i].y - 18, tw + 6, 16);
+      c.fillStyle = textColor;
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.fillText(label, pts[i].x + dx, pts[i].y - 10);
+    }
+  }
+
+  if (selected) {
+    c.strokeStyle = 'rgba(59,130,246,0.5)';
+    c.lineWidth = 1;
+    c.setLineDash([6,4]);
+    const pad = 10;
+    const minX = Math.min(pts[0].x, pts[1].x) - pad;
+    const minY = Math.min(pts[0].y, pts[1].y) - pad;
+    const maxX = Math.max(pts[0].x, pts[1].x) + pad;
+    const maxY = Math.max(pts[0].y, pts[1].y) + pad;
+    c.strokeRect(minX, minY, maxX-minX, maxY-minY);
+    c.setLineDash([]);
+  }
+}
+
+function drawAngleArc(c, vertex, p1, p2, angleDeg, goldColor, textColor, bgForLabel) {
+  const a1 = Math.atan2(p1.y - vertex.y, p1.x - vertex.x);
+  const a2 = Math.atan2(p2.y - vertex.y, p2.x - vertex.x);
+
+  // Determine sweep direction (always draw the interior angle)
+  let start = a1, end = a2;
+  let diff = end - start;
+  while (diff < -Math.PI) diff += 2*Math.PI;
+  while (diff > Math.PI) diff -= 2*Math.PI;
+
+  c.strokeStyle = goldColor;
+  c.lineWidth = 1.5;
+  c.globalAlpha = 0.7;
+  c.beginPath();
+  if (diff > 0) {
+    c.arc(vertex.x, vertex.y, ANGLE_ARC_R, start, start + diff);
+  } else {
+    c.arc(vertex.x, vertex.y, ANGLE_ARC_R, start + diff, start);
+  }
+  c.stroke();
+  c.globalAlpha = 1;
+
+  // Angle text
+  const midAngle = start + diff / 2;
+  const tx = vertex.x + Math.cos(midAngle) * (ANGLE_ARC_R + 14);
+  const ty = vertex.y + Math.sin(midAngle) * (ANGLE_ARC_R + 14);
+  const label = Math.round(angleDeg) + '°';
+  c.font = SMALL_FONT;
+  const tw = c.measureText(label).width;
+  c.fillStyle = bgForLabel;
+  c.fillRect(tx - tw/2 - 2, ty - 7, tw + 4, 14);
+  c.fillStyle = goldColor;
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText(label, tx, ty);
+}
+
+function drawRightAngleMarker(c, vertex, p1, p2, color) {
+  const size = 12;
+  const v1 = {x: p1.x - vertex.x, y: p1.y - vertex.y};
+  const v2 = {x: p2.x - vertex.x, y: p2.y - vertex.y};
+  const l1 = Math.hypot(v1.x, v1.y) || 1;
+  const l2 = Math.hypot(v2.x, v2.y) || 1;
+  const u1 = {x: v1.x/l1*size, y: v1.y/l1*size};
+  const u2 = {x: v2.x/l2*size, y: v2.y/l2*size};
+
+  c.strokeStyle = color;
+  c.lineWidth = 1.5;
+  c.beginPath();
+  c.moveTo(vertex.x + u1.x, vertex.y + u1.y);
+  c.lineTo(vertex.x + u1.x + u2.x, vertex.y + u1.y + u2.y);
+  c.lineTo(vertex.x + u2.x, vertex.y + u2.y);
+  c.stroke();
+}
+
+function drawEdgeLength(c, p1, p2, worldLen, dimColor, textColor, bgForLabel) {
+  const mx = (p1.x + p2.x) / 2;
+  const my = (p1.y + p2.y) / 2;
+  const label = (worldLen / GRID_SIZE).toFixed(2) + 'm';
+  c.font = SMALL_FONT;
+  const tw = c.measureText(label).width;
+  // Offset perpendicular to edge
+  const dx = p2.x - p1.x, dy = p2.y - p1.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy/len * 14, ny = dx/len * 14;
+  const tx = mx + nx, ty = my + ny;
+  c.fillStyle = bgForLabel;
+  c.fillRect(tx - tw/2 - 3, ty - 7, tw + 6, 14);
+  c.fillStyle = dimColor;
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText(label, tx, ty);
+}
+
+function getBoundingCorners(pts, pad) {
+  const xs = pts.map(p=>p.x), ys = pts.map(p=>p.y);
+  const p = pad || 6;
+  const minX = Math.min(...xs) - p, minY = Math.min(...ys) - p;
+  const maxX = Math.max(...xs) + p, maxY = Math.max(...ys) + p;
+  return [{x:minX,y:minY},{x:maxX,y:minY},{x:maxX,y:maxY},{x:minX,y:maxY}];
+}
+
+function drawBoundingBox(c, pts) {
+  const corners = getBoundingCorners(pts, 6);
+  const minX = corners[0].x, minY = corners[0].y;
+  const maxX = corners[2].x, maxY = corners[2].y;
+  c.strokeStyle = 'rgba(59,130,246,0.5)';
+  c.lineWidth = 1;
+  c.setLineDash([6,4]);
+  c.strokeRect(minX, minY, maxX - minX, maxY - minY);
+  c.setLineDash([]);
+  // Corner handles
+  corners.forEach((h, i) => {
+    if (i === hoverRotateCorner && !isRotating) {
+      // Rotation icon — curved arrow
+      c.save();
+      c.strokeStyle = '#f59e0b';
+      c.lineWidth = 2;
+      c.beginPath();
+      c.arc(h.x, h.y, 10, -Math.PI * 0.8, Math.PI * 0.3);
+      c.stroke();
+      // Arrow head
+      const ax = h.x + 10 * Math.cos(Math.PI * 0.3);
+      const ay = h.y + 10 * Math.sin(Math.PI * 0.3);
+      c.fillStyle = '#f59e0b';
+      c.beginPath();
+      c.moveTo(ax, ay);
+      c.lineTo(ax - 6, ay - 4);
+      c.lineTo(ax - 2, ay + 5);
+      c.closePath();
+      c.fill();
+      c.restore();
+    } else {
+      c.fillStyle = '#f59e0b';
+      c.fillRect(h.x - 3, h.y - 3, 6, 6);
+    }
+  });
+
+  // Rotation anchor point
+  if (isRotating || rotateAnchor) {
+    const selShape = shapes.find(s => s.id === rotateShapeId);
+    if (selShape && rotateAnchor) {
+      const aScr = worldToScreen(rotateAnchor.x, rotateAnchor.y);
+      // Crosshair anchor
+      c.save();
+      c.strokeStyle = '#ef4444';
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(aScr.x - 8, aScr.y); c.lineTo(aScr.x + 8, aScr.y);
+      c.moveTo(aScr.x, aScr.y - 8); c.lineTo(aScr.x, aScr.y + 8);
+      c.stroke();
+      c.beginPath();
+      c.arc(aScr.x, aScr.y, 5, 0, Math.PI * 2);
+      c.strokeStyle = '#ef4444';
+      c.lineWidth = 1.5;
+      c.stroke();
+      c.fillStyle = 'rgba(239,68,68,0.3)';
+      c.fill();
+      c.restore();
+    }
+  }
+}
+
+function drawBuilding(c) {
+  // Triangle / Polygon build points
+  if ((currentTool === 'triangle' || currentTool === 'polygon') && buildPoints.length > 0) {
+    const pts = buildPoints.map(p => worldToScreen(p.x, p.y));
+    c.strokeStyle = '#f59e0b';
+    c.lineWidth = 2;
+    c.setLineDash([6,4]);
+    c.beginPath();
+    c.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) c.lineTo(pts[i].x, pts[i].y);
+    // Rubber band
+    if (rubberPoint) {
+      const rp = worldToScreen(rubberPoint.x, rubberPoint.y);
+      c.lineTo(rp.x, rp.y);
+    }
+    c.stroke();
+    c.setLineDash([]);
+    // Dots
+    pts.forEach(p => {
+      c.fillStyle = '#f59e0b';
+      c.beginPath();
+      c.arc(p.x, p.y, 5, 0, Math.PI*2);
+      c.fill();
+    });
+  }
+
+  // Line build
+  if (currentTool === 'line' && lineDragStart && rubberPoint) {
+    const p1 = worldToScreen(lineDragStart.x, lineDragStart.y);
+    const p2 = worldToScreen(rubberPoint.x, rubberPoint.y);
+    c.strokeStyle = '#f59e0b';
+    c.lineWidth = 2;
+    c.setLineDash([6,4]);
+    c.beginPath();
+    c.moveTo(p1.x, p1.y);
+    c.lineTo(p2.x, p2.y);
+    c.stroke();
+    c.setLineDash([]);
+    c.fillStyle = '#f59e0b';
+    c.beginPath(); c.arc(p1.x,p1.y,5,0,Math.PI*2); c.fill();
+  }
+
+  // Rect preview
+  if (rectDragStart && rubberPoint) {
+    const p1 = worldToScreen(rectDragStart.x, rectDragStart.y);
+    const p2 = worldToScreen(rubberPoint.x, rubberPoint.y);
+    c.strokeStyle = '#f59e0b';
+    c.lineWidth = 2;
+    c.setLineDash([6,4]);
+    c.strokeRect(Math.min(p1.x,p2.x), Math.min(p1.y,p2.y), Math.abs(p2.x-p1.x), Math.abs(p2.y-p1.y));
+    c.setLineDash([]);
+  }
+
+  // Circle preview
+  if (circleDragCenter && rubberPoint) {
+    const center = worldToScreen(circleDragCenter.x, circleDragCenter.y);
+    const r = dist(circleDragCenter, rubberPoint) * zoom;
+    c.strokeStyle = '#f59e0b';
+    c.lineWidth = 2;
+    c.setLineDash([6,4]);
+    c.beginPath();
+    c.arc(center.x, center.y, r, 0, Math.PI*2);
+    c.stroke();
+    c.setLineDash([]);
+    // Center dot
+    c.fillStyle = '#f59e0b';
+    c.beginPath(); c.arc(center.x,center.y,4,0,Math.PI*2); c.fill();
+    // Radius line
+    c.beginPath();
+    c.moveTo(center.x, center.y);
+    const edge = worldToScreen(rubberPoint.x, rubberPoint.y);
+    c.lineTo(edge.x, edge.y);
+    c.stroke();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// ██  SPINNER (Angle & Length)
+// ═══════════════════════════════════════════════════════
+
+function openSpinner(shape, type, index, screenPos) {
+  closeSpinner();
+  spinnerTarget = {shapeId: shape.id, type, index};
+
+  let value = 0;
+  let label = '';
+  let unit = '';
+
+  if (type === 'angle') {
+    if (shape.type === 'circle' || shape.type === 'line') return;
+    if (!shape.angles || index >= shape.angles.length) return;
+    value = Math.round(shape.angles[index]);
+    label = '∠' + (shape.labels ? shape.labels[index] : '');
+    unit = '°';
+  } else if (type === 'length') {
+    if (shape.type === 'circle') {
+      value = Math.round(shape.radius / GRID_SIZE * 100) / 100;
+      label = 'r';
+      unit = 'm';
+    } else if (shape.type === 'line') {
+      value = Math.round(shape.length / GRID_SIZE * 100) / 100;
+      label = (shape.labels||[])[0] + (shape.labels||[])[1];
+      unit = 'm';
+    } else {
+      if (!shape.lengths || index >= shape.lengths.length) return;
+      value = Math.round(shape.lengths[index] / GRID_SIZE * 100) / 100;
+      const j = (index + 1) % shape.points.length;
+      label = (shape.labels ? shape.labels[index] : '') + (shape.labels ? shape.labels[j] : '');
+      unit = 'm';
+    }
+  }
+
+  // For angle spinner, value is integer degrees
+  // For length spinner, value is in meters (float)
+  const isAngle = type === 'angle';
+  const intVal = isAngle ? Math.round(value) : Math.round(value * 10); // for length, work in 0.1m units
+  const maxDigits = isAngle ? 3 : 3;
+  const startDigits = intVal >= 100 ? 3 : 2;
+
+  const popup = document.createElement('div');
+  popup.className = 'spinner-popup';
+  popup.dataset.digits = startDigits;
+  popup.dataset.maxDigits = maxDigits;
+  popup.dataset.isAngle = isAngle ? '1' : '0';
+
+  // Position near click
+  let posX = screenPos.x + canvasArea.getBoundingClientRect().left + 10;
+  let posY = screenPos.y + canvasArea.getBoundingClientRect().top - 30;
+  // Keep on screen
+  posX = Math.min(posX, window.innerWidth - 250);
+  posY = Math.max(posY, 50);
+  popup.style.left = posX + 'px';
+  popup.style.top = posY + 'px';
+
+  // Build content
+  let html = `<div class="spinner-label">${label}</div>`;
+  html += `<button class="spinner-expand" onclick="expandSpinner()">+</button>`;
+  html += `<div class="spinner-digits" id="spDigits">`;
+  html += buildDigitCols(intVal, startDigits);
+  html += `</div>`;
+  html += `<span class="spinner-unit">${unit}</span>`;
+  // Lock button for length type (not angle, not circle)
+  if (type === 'length' && shape.type !== 'circle' && shape.type !== 'line') {
+    if (!shape.lockedEdges) shape.lockedEdges = [];
+    const isLocked = shape.lockedEdges.includes(index);
+    html += `<button class="lock-btn${isLocked ? ' locked' : ''}" id="spLockBtn" onclick="toggleEdgeLock(${shape.id},${index})" title="${isLocked ? '잠금 해제' : '길이 잠금'}" style="font-size:14px;margin-left:4px">${isLocked ? '🔒' : '🔓'}</button>`;
+  }
+
+  popup.innerHTML = html;
+  document.body.appendChild(popup);
+  activeSpinner = popup;
+}
+
+function buildDigitCols(value, numDigits) {
+  let html = '';
+  const digits = [];
+  let v = Math.max(0, Math.abs(value));
+  for (let i = 0; i < numDigits; i++) {
+    digits.unshift(v % 10);
+    v = Math.floor(v / 10);
+  }
+  for (let i = 0; i < numDigits; i++) {
+    html += `<div class="sp-digit-col">`;
+    html += `<button class="sp-up" onmousedown="spinnerDigit(${i},1,event)">▲</button>`;
+    html += `<div class="sp-digit-val" id="spD${i}">${digits[i]}</div>`;
+    html += `<button class="sp-down" onmousedown="spinnerDigit(${i},-1,event)">▼</button>`;
+    html += `</div>`;
+  }
+  return html;
+}
+
+function getSpinnerValue() {
+  if (!activeSpinner) return 0;
+  const numDigits = parseInt(activeSpinner.dataset.digits);
+  let val = 0;
+  for (let i = 0; i < numDigits; i++) {
+    const el = document.getElementById('spD' + i);
+    if (el) val = val * 10 + parseInt(el.textContent);
+  }
+  return val;
+}
+
+// Expose to onclick handlers
+window.spinnerDigit = function(colIdx, delta, e) {
+  e.stopPropagation();
+  if (!activeSpinner) return;
+  const el = document.getElementById('spD' + colIdx);
+  if (!el) return;
+  let d = parseInt(el.textContent) + delta;
+  if (d > 9) d = 0;
+  if (d < 0) d = 9;
+  el.textContent = d;
+  applySpinnerValue();
+
+  // Auto-repeat
+  let repeatTimer = null;
+  let repeatInterval = null;
+  const doRepeat = () => {
+    let dd = parseInt(el.textContent) + delta;
+    if (dd > 9) dd = 0;
+    if (dd < 0) dd = 9;
+    el.textContent = dd;
+    applySpinnerValue();
+  };
+  repeatTimer = setTimeout(() => {
+    repeatInterval = setInterval(doRepeat, 100);
+  }, 400);
+  const stopRepeat = () => {
+    clearTimeout(repeatTimer);
+    clearInterval(repeatInterval);
+    document.removeEventListener('mouseup', stopRepeat);
+  };
+  document.addEventListener('mouseup', stopRepeat);
+};
+
+window.expandSpinner = function() {
+  if (!activeSpinner) return;
+  const cur = parseInt(activeSpinner.dataset.digits);
+  const max = parseInt(activeSpinner.dataset.maxDigits);
+  if (cur >= max) return;
+  const newDigits = cur + 1;
+  activeSpinner.dataset.digits = newDigits;
+  const currentVal = getSpinnerValue();
+  const digitsDiv = document.getElementById('spDigits');
+  if (digitsDiv) {
+    digitsDiv.innerHTML = buildDigitCols(currentVal, newDigits);
+  }
+};
+
+function applySpinnerValue() {
+  if (!spinnerTarget) return;
+  const {shapeId, type, index} = spinnerTarget;
+  const shape = shapes.find(s => s.id === shapeId);
+  if (!shape) return;
+
+  const val = getSpinnerValue();
+  const isAngle = activeSpinner.dataset.isAngle === '1';
+
+  if (type === 'angle' && isAngle) {
+    applyAngleChange(shape, index, val);
+  } else if (type === 'length') {
+    const meters = val / 10; // convert from 0.1m units
+    applyLengthChange(shape, index, meters);
+  }
+  updatePropsPanel();
+}
+
+function closeSpinner() {
+  if (activeSpinner) {
+    if (spinnerTarget) saveState();
+    activeSpinner.remove();
+    activeSpinner = null;
+    spinnerTarget = null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// ██  CONSTRAINT SOLVER
+// ═══════════════════════════════════════════════════════
+
+function applyAngleChange(shape, vertexIdx, newAngle) {
+  if (shape.type === 'rect') return; // Rect angles fixed at 90
+
+  if (shape.type === 'triangle') {
+    const oldAngle = shape.angles[vertexIdx];
+    let delta = newAngle - oldAngle;
+    // Clamp: angle must be 1-178, and other angles must also remain valid
+    if (newAngle < 1) newAngle = 1;
+    if (newAngle > 178) newAngle = 178;
+    delta = newAngle - oldAngle;
+
+    const other1 = (vertexIdx + 1) % 3;
+    const other2 = (vertexIdx + 2) % 3;
+    const totalOther = shape.angles[other1] + shape.angles[other2];
+
+    if (totalOther <= 0) return;
+
+    // Distribute -delta proportionally
+    const ratio1 = shape.angles[other1] / totalOther;
+    const ratio2 = shape.angles[other2] / totalOther;
+    let new1 = shape.angles[other1] - delta * ratio1;
+    let new2 = shape.angles[other2] - delta * ratio2;
+
+    if (new1 < 1 || new2 < 1) return; // Can't make valid triangle
+
+    // Reconstruct triangle from angles, keeping one edge length fixed
+    const edgeLen = dist(shape.points[other1], shape.points[other2]); // side opposite to vertexIdx
+    const A = newAngle * Math.PI / 180;
+    const B = new1 * Math.PI / 180;
+    const C = new2 * Math.PI / 180;
+
+    // Use law of sines: a/sinA = b/sinB = c/sinC
+    // a = side opposite A (between other1 and other2)
+    const a = edgeLen;
+    const scale = a / Math.sin(A);
+    const b = scale * Math.sin(B); // side opposite B (between vertexIdx and other2)
+    const c = scale * Math.sin(C); // side opposite C (between vertexIdx and other1)
+
+    // Keep other1 and other2 fixed, compute vertexIdx position
+    const baseAngle = Math.atan2(
+      shape.points[other2].y - shape.points[other1].y,
+      shape.points[other2].x - shape.points[other1].x
+    );
+
+    // Determine winding direction from original vertex position
+    const oldVx = shape.points[vertexIdx].x - shape.points[other1].x;
+    const oldVy = shape.points[vertexIdx].y - shape.points[other1].y;
+    const baseDx = shape.points[other2].x - shape.points[other1].x;
+    const baseDy = shape.points[other2].y - shape.points[other1].y;
+    const crossSign = (baseDx * oldVy - baseDy * oldVx) >= 0 ? 1 : -1;
+
+    // vertexIdx is at angle C from other1, on the correct side
+    const px = shape.points[other1].x + Math.cos(baseAngle + crossSign * C) * b;
+    const py = shape.points[other1].y + Math.sin(baseAngle + crossSign * C) * b;
+
+    // Check for NaN
+    if (isNaN(px) || isNaN(py)) return;
+
+    shape.points[vertexIdx] = {x: px, y: py};
+    recalcShape(shape);
+    return;
+  }
+
+  // For polygons, just adjust this angle (no constraint solver for general polygons)
+  // This is a simplified version
+  if (shape.type === 'polygon') {
+    // TODO: implement polygon angle constraint
+    return;
+  }
+}
+
+function applyLengthChange(shape, edgeIdx, newLengthMeters) {
+  const newLength = newLengthMeters * GRID_SIZE;
+  if (newLength <= 0) return;
+
+  if (shape.type === 'circle') {
+    shape.radius = newLength;
+    recalcShape(shape);
+    return;
+  }
+
+  if (shape.type === 'line') {
+    const oldLen = dist(shape.points[0], shape.points[1]);
+    if (oldLen < 0.001) return;
+    const scale = newLength / oldLen;
+    const mid = {x:(shape.points[0].x+shape.points[1].x)/2, y:(shape.points[0].y+shape.points[1].y)/2};
+    shape.points[0] = {x: mid.x + (shape.points[0].x-mid.x)*scale, y: mid.y + (shape.points[0].y-mid.y)*scale};
+    shape.points[1] = {x: mid.x + (shape.points[1].x-mid.x)*scale, y: mid.y + (shape.points[1].y-mid.y)*scale};
+    recalcShape(shape);
+    return;
+  }
+
+  // For triangles and polygons: scale proportionally (keep angles constant)
+  if (shape.type === 'triangle' || shape.type === 'polygon' || shape.type === 'rect') {
+    const n = shape.points.length;
+    const j = (edgeIdx + 1) % n;
+    const oldLen = dist(shape.points[edgeIdx], shape.points[j]);
+    if (oldLen < 0.001) return;
+    const scale = newLength / oldLen;
+
+    // Scale entire shape from centroid
+    const cx = shape.points.reduce((a,p)=>a+p.x,0) / n;
+    const cy = shape.points.reduce((a,p)=>a+p.y,0) / n;
+    shape.points = shape.points.map(p => ({
+      x: cx + (p.x - cx) * scale,
+      y: cy + (p.y - cy) * scale,
+    }));
+    recalcShape(shape);
+    return;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// ██  PROPERTIES PANEL
+// ═══════════════════════════════════════════════════════
+
+function updatePropsPanel() {
+  const none = document.getElementById('propNone');
+  const content = document.getElementById('propContent');
+
+  if (selectedIds.size === 0) {
+    none.style.display = '';
+    content.style.display = 'none';
+    return;
+  }
+
+  none.style.display = 'none';
+  content.style.display = '';
+
+  if (selectedIds.size > 1) {
+    content.innerHTML = `<div class="prop-title">다중 선택</div><div class="prop-section"><div class="prop-row"><span class="prop-label">선택 수</span><span class="prop-value">${selectedIds.size}개</span></div></div>`;
+    return;
+  }
+
+  const shape = shapes.find(s => selectedIds.has(s.id));
+  if (!shape) { none.style.display = ''; content.style.display = 'none'; return; }
+
+  recalcShape(shape);
+  let html = '';
+
+  // Shape type
+  const typeNames = {triangle:'삼각형',rect:'사각형',circle:'원',line:'직선',polygon:'다각형'};
+  html += `<div class="prop-title">SHAPE PROPERTIES</div>`;
+  html += `<div class="prop-section">`;
+  html += `<div class="prop-row"><span class="prop-label">도형</span><span class="prop-value">${typeNames[shape.type]||shape.type}</span></div>`;
+  html += `</div>`;
+
+  // Colors (compact: fill + stroke on same lines)
+  html += `<div class="prop-section">`;
+  html += `<div class="prop-row"><span class="prop-label">채우기</span></div>`;
+  html += `<div class="color-swatches" data-mode="fill">`;
+  COLORS.swatches.forEach((c, i) => {
+    const active = shape.fill.includes(c.replace('#','')) || (i === 0 && shape.fill === COLORS.fill[0]) ? ' active' : '';
+    html += `<div class="color-sw${active}" style="background:${c}" onclick="setShapeColor('fill',${i})"></div>`;
+  });
+  html += `</div>`;
+  html += `<div class="prop-row"><span class="prop-label">테두리</span><span class="prop-value" style="font-size:11px">${shape.strokeWidth}px</span></div>`;
+  html += `<div style="display:flex;align-items:center;gap:6px">`;
+  html += `<div class="color-swatches" style="flex:1;margin:0" data-mode="stroke">`;
+  COLORS.swatches.forEach((c, i) => {
+    const active = shape.stroke === c ? ' active' : '';
+    html += `<div class="color-sw${active}" style="background:${c}" onclick="setShapeColor('stroke',${i})"></div>`;
+  });
+  html += `</div>`;
+  html += `<input type="range" class="prop-slider" style="width:60px" min="1" max="8" value="${shape.strokeWidth}" oninput="setStrokeWidth(this.value)">`;
+  html += `</div>`;
+  html += `</div>`;
+
+  // Angles with hide
+  if (shape.angles) {
+    if (!shape.hiddenAngles) shape.hiddenAngles = [];
+    html += `<div class="prop-section">`;
+    html += `<div class="prop-row"><span class="prop-label" style="font-weight:700;color:var(--gold)">각도</span></div>`;
+    shape.angles.forEach((a, i) => {
+      const lbl = shape.labels ? shape.labels[i] : i;
+      const isRight = Math.abs(a - 90) < 1;
+      const isHidden = shape.hiddenAngles.includes(i);
+      html += `<div class="prop-row"><span class="prop-label">∠${lbl}</span><span class="prop-value" style="display:flex;align-items:center;gap:2px">`;
+      html += `${isHidden ? '<s style="opacity:0.4">' : ''}${a.toFixed(1)}°${isRight ? ' ⬜직각' : ''}${isHidden ? '</s>' : ''}`;
+      html += `<button class="lock-btn${isHidden ? ' locked' : ''}" onclick="toggleAngleHide(${shape.id},${i})" title="${isHidden ? '각도 표시' : '각도 숨기기'}" style="font-size:11px">${isHidden ? '👁‍🗨' : '👁'}</button>`;
+      html += `</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Lengths with lock, hide, color
+  if (shape.lengths) {
+    if (!shape.lockedEdges) shape.lockedEdges = [];
+    if (!shape.hiddenEdges) shape.hiddenEdges = [];
+    if (!shape.edgeColors) shape.edgeColors = {};
+    html += `<div class="prop-section">`;
+    html += `<div class="prop-row"><span class="prop-label" style="font-weight:700;color:var(--gold)">변 길이</span></div>`;
+    shape.lengths.forEach((l, i) => {
+      const j = (i + 1) % shape.points.length;
+      const lbl = (shape.labels ? shape.labels[i] : i) + '' + (shape.labels ? shape.labels[j] : j);
+      const isLocked = shape.lockedEdges.includes(i);
+      const isHidden = shape.hiddenEdges.includes(i);
+      const edgeCol = shape.edgeColors[i];
+      html += `<div class="prop-row"><span class="prop-label" style="display:flex;align-items:center;gap:3px">`;
+      html += `<span class="color-sw" style="width:12px;height:12px;background:${edgeCol||shape.stroke};border-radius:3px;flex-shrink:0;border:1px solid rgba(255,255,255,0.2)" onclick="cycleEdgeColor(${shape.id},${i})" title="변 색상"></span>`;
+      html += `${lbl}</span>`;
+      html += `<span class="prop-value" style="display:flex;align-items:center;gap:2px">`;
+      html += `${isHidden ? '<s style="opacity:0.4">' : ''}${(l/GRID_SIZE).toFixed(2)}m${isHidden ? '</s>' : ''}`;
+      html += `<button class="lock-btn${isHidden ? ' locked' : ''}" onclick="toggleEdgeHide(${shape.id},${i})" title="${isHidden ? '정보 표시' : '정보 숨기기'}" style="font-size:11px">${isHidden ? '👁‍🗨' : '👁'}</button>`;
+      html += `<button class="lock-btn${isLocked ? ' locked' : ''}" onclick="toggleEdgeLock(${shape.id},${i})" title="${isLocked ? '잠금 해제' : '길이 잠금'}">${isLocked ? '🔒' : '🔓'}</button>`;
+      html += `</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Circle props
+  if (shape.type === 'circle') {
+    html += `<div class="prop-section">`;
+    html += `<div class="prop-row"><span class="prop-label" style="font-weight:700;color:var(--gold)">치수</span></div>`;
+    html += `<div class="prop-row"><span class="prop-label">반지름</span><span class="prop-value">${(shape.radius/GRID_SIZE).toFixed(2)}m</span></div>`;
+    html += `<div class="prop-row"><span class="prop-label">지름</span><span class="prop-value">${(shape.diameter/GRID_SIZE).toFixed(2)}m</span></div>`;
+    html += `</div>`;
+  }
+
+  // Line props
+  if (shape.type === 'line') {
+    html += `<div class="prop-section">`;
+    html += `<div class="prop-row"><span class="prop-label">길이</span><span class="prop-value">${(shape.length/GRID_SIZE).toFixed(2)}m</span></div>`;
+    html += `<div class="prop-row"><span class="prop-label">각도</span><span class="prop-value">${shape.angle.toFixed(1)}°</span></div>`;
+    html += `</div>`;
+  }
+
+  // Calculations
+  html += `<div class="prop-section">`;
+  html += `<div class="prop-row"><span class="prop-label" style="font-weight:700;color:var(--gold)">계산</span></div>`;
+  if (shape.area !== undefined) {
+    html += `<div class="prop-row"><span class="prop-label">넓이</span><span class="prop-value">${(shape.area/GRID_SIZE/GRID_SIZE).toFixed(2)}m²</span></div>`;
+  }
+  if (shape.perimeter !== undefined) {
+    html += `<div class="prop-row"><span class="prop-label">둘레</span><span class="prop-value">${(shape.perimeter/GRID_SIZE).toFixed(2)}m</span></div>`;
+  }
+  if (shape.type === 'circle') {
+    html += `<div class="prop-row"><span class="prop-label">넓이</span><span class="prop-value">${(shape.area/GRID_SIZE/GRID_SIZE).toFixed(2)}m²</span></div>`;
+    html += `<div class="prop-row"><span class="prop-label">둘레</span><span class="prop-value">${(shape.circumference/GRID_SIZE).toFixed(2)}m</span></div>`;
+  }
+  if (shape.type === 'rect') {
+    html += `<div class="prop-row"><span class="prop-label">대각선</span><span class="prop-value">${(shape.diagonal/GRID_SIZE).toFixed(2)}m</span></div>`;
+  }
+  html += `</div>`;
+
+  // Formula
+  if (shape.type === 'triangle' && shape.isRight && shape.pythagorean) {
+    const p = shape.pythagorean;
+    const a = (p.a/GRID_SIZE).toFixed(2), b = (p.b/GRID_SIZE).toFixed(2), cc = (p.c/GRID_SIZE).toFixed(2);
+    html += `<div class="prop-section">`;
+    html += `<div class="prop-row"><span class="prop-label" style="font-weight:700;color:var(--gold)">공식</span></div>`;
+    html += `<div class="formula-box">`;
+    html += `<div class="fm-line">a² + b² = c²</div>`;
+    html += `<div class="fm-line">${a}² + ${b}² = ${cc}²</div>`;
+    html += `<div class="fm-line">${(p.lhs/GRID_SIZE/GRID_SIZE).toFixed(2)} = ${(p.rhs/GRID_SIZE/GRID_SIZE).toFixed(2)} ${p.valid ? '<span class="fm-ok">✓</span>' : '<span class="fm-no">✗</span>'}</div>`;
+    html += `</div></div>`;
+  }
+  if (shape.type === 'circle') {
+    html += `<div class="prop-section">`;
+    html += `<div class="prop-row"><span class="prop-label" style="font-weight:700;color:var(--gold)">공식</span></div>`;
+    html += `<div class="formula-box">`;
+    const r = (shape.radius/GRID_SIZE).toFixed(2);
+    html += `<div class="fm-line">넓이 = πr² = π×${r}² = ${(shape.area/GRID_SIZE/GRID_SIZE).toFixed(2)}</div>`;
+    html += `<div class="fm-line">둘레 = 2πr = 2π×${r} = ${(shape.circumference/GRID_SIZE).toFixed(2)}</div>`;
+    html += `</div></div>`;
+  }
+
+  content.innerHTML = html;
+}
+
+// Expose color/stroke handlers
+window.setShapeColor = function(mode, idx) {
+  shapes.forEach(s => {
+    if (!selectedIds.has(s.id)) return;
+    if (mode === 'fill') s.fill = COLORS.fill[idx];
+    else s.stroke = COLORS.stroke[idx];
+  });
+  saveState();
+  updatePropsPanel();
+};
+
+window.setStrokeWidth = function(val) {
+  shapes.forEach(s => {
+    if (!selectedIds.has(s.id)) return;
+    s.strokeWidth = parseInt(val);
+  });
+  updatePropsPanel();
+};
+
+window.toggleAngleHide = function(shapeId, angleIdx) {
+  const s = shapes.find(s => s.id === shapeId);
+  if (!s) return;
+  if (!s.hiddenAngles) s.hiddenAngles = [];
+  const idx = s.hiddenAngles.indexOf(angleIdx);
+  if (idx >= 0) s.hiddenAngles.splice(idx, 1);
+  else s.hiddenAngles.push(angleIdx);
+  saveState();
+  updatePropsPanel();
+};
+
+window.toggleEdgeHide = function(shapeId, edgeIdx) {
+  const s = shapes.find(s => s.id === shapeId);
+  if (!s) return;
+  if (!s.hiddenEdges) s.hiddenEdges = [];
+  const idx = s.hiddenEdges.indexOf(edgeIdx);
+  if (idx >= 0) s.hiddenEdges.splice(idx, 1);
+  else s.hiddenEdges.push(edgeIdx);
+  saveState();
+  updatePropsPanel();
+};
+
+window.cycleEdgeColor = function(shapeId, edgeIdx) {
+  const s = shapes.find(s => s.id === shapeId);
+  if (!s) return;
+  if (!s.edgeColors) s.edgeColors = {};
+  const current = s.edgeColors[edgeIdx] || s.stroke;
+  const cidx = COLORS.swatches.indexOf(current);
+  const next = COLORS.swatches[(cidx + 1) % COLORS.swatches.length];
+  if (next === s.stroke) delete s.edgeColors[edgeIdx];
+  else s.edgeColors[edgeIdx] = next;
+  saveState();
+  updatePropsPanel();
+};
+
+window.toggleEdgeLock = function(shapeId, edgeIdx) {
+  const s = shapes.find(s => s.id === shapeId);
+  if (!s) return;
+  if (!s.lockedEdges) s.lockedEdges = [];
+  const idx = s.lockedEdges.indexOf(edgeIdx);
+  if (idx >= 0) s.lockedEdges.splice(idx, 1);
+  else s.lockedEdges.push(edgeIdx);
+  saveState();
+  updatePropsPanel();
+  // Also update spinner lock button if open
+  const lockBtn = document.getElementById('spLockBtn');
+  if (lockBtn) {
+    const isLocked = s.lockedEdges.includes(edgeIdx);
+    lockBtn.className = 'lock-btn' + (isLocked ? ' locked' : '');
+    lockBtn.textContent = isLocked ? '🔒' : '🔓';
+    lockBtn.title = isLocked ? '잠금 해제' : '길이 잠금';
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+// ██  DUPLICATE / SYMMETRY / ROTATION
+// ═══════════════════════════════════════════════════════
+
+function duplicateSelected() {
+  if (selectedIds.size === 0) return;
+  const newIds = new Set();
+  shapes.forEach(s => {
+    if (!selectedIds.has(s.id)) return;
+    const clone = JSON.parse(JSON.stringify(s));
+    clone.id = shapeIdCounter++;
+    // Offset by 1 grid unit
+    if (clone.points) clone.points.forEach(p => { p.x += GRID_SIZE; p.y += GRID_SIZE; });
+    if (clone.center) { clone.center.x += GRID_SIZE; clone.center.y += GRID_SIZE; }
+    // New labels
+    clone.labels = generateLabels(clone.type, clone);
+    shapes.push(clone);
+    newIds.add(clone.id);
+  });
+  selectedIds.clear();
+  newIds.forEach(id => selectedIds.add(id));
+  saveState();
+  updatePropsPanel();
+  showToast('📋 복제!');
+}
+
+function flipSelected(axis) {
+  // axis: 'h' (horizontal/좌우) or 'v' (vertical/상하)
+  if (selectedIds.size === 0) return;
+  shapes.forEach(s => {
+    if (!selectedIds.has(s.id)) return;
+    const pts = s.points || (s.center ? [{x:s.center.x, y:s.center.y}] : []);
+    if (pts.length === 0) return;
+    // Find center of selected shape
+    const cx = pts.reduce((a,p) => a + p.x, 0) / pts.length;
+    const cy = pts.reduce((a,p) => a + p.y, 0) / pts.length;
+    if (s.points) {
+      s.points.forEach(p => {
+        if (axis === 'h') p.x = 2 * cx - p.x;
+        else p.y = 2 * cy - p.y;
+      });
+    }
+    recalcShape(s);
+  });
+  saveState();
+  updatePropsPanel();
+  showToast(axis === 'h' ? '↔ 좌우 대칭!' : '↕ 상하 대칭!');
+}
+
+function rotateSelected(deg) {
+  if (selectedIds.size === 0) return;
+  const rad = deg * Math.PI / 180;
+  shapes.forEach(s => {
+    if (!selectedIds.has(s.id)) return;
+    const pts = s.points || [];
+    if (pts.length === 0 && !s.center) return;
+    // Find center
+    const allPts = s.points || [{x:s.center.x, y:s.center.y}];
+    const cx = allPts.reduce((a,p) => a + p.x, 0) / allPts.length;
+    const cy = allPts.reduce((a,p) => a + p.y, 0) / allPts.length;
+    if (s.points) {
+      s.points.forEach(p => {
+        const dx = p.x - cx, dy = p.y - cy;
+        p.x = cx + dx * Math.cos(rad) - dy * Math.sin(rad);
+        p.y = cy + dx * Math.sin(rad) + dy * Math.cos(rad);
+      });
+    }
+    recalcShape(s);
+  });
+  saveState();
+  updatePropsPanel();
+  showToast(`🔄 ${deg}° 회전!`);
+}
+
+// ═══════════════════════════════════════════════════════
+// ██  TEXT ANNOTATIONS
+// ═══════════════════════════════════════════════════════
+
+function openTextInput(worldPos) {
+  // Create an input overlay on the canvas
+  const screenPos = worldToScreen(worldPos.x, worldPos.y);
+  const areaRect = canvasArea.getBoundingClientRect();
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = '텍스트 입력...';
+  input.style.cssText = `
+    position:fixed;left:${areaRect.left + screenPos.x}px;top:${areaRect.top + screenPos.y - 16}px;
+    background:rgba(15,23,41,0.95);border:1.5px solid var(--gold);border-radius:6px;
+    color:#fff;font-size:14px;font-family:'Pretendard Variable',sans-serif;font-weight:600;
+    padding:4px 10px;outline:none;z-index:300;min-width:120px;
+  `;
+  document.body.appendChild(input);
+  input.focus();
+
+  function finish() {
+    const val = input.value.trim();
+    if (val) {
+      textAnnotations.push({
+        id: textIdCounter++,
+        x: worldPos.x, y: worldPos.y,
+        text: val,
+        color: '#e2e8f0',
+        fontSize: 14,
+      });
+      saveState();
+    }
+    input.remove();
+  }
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') finish();
+    if (e.key === 'Escape') input.remove();
+  });
+  input.addEventListener('blur', finish);
+}
+
+// ═══════════════════════════════════════════════════════
+// ██  LAYERS SYSTEM
+// ═══════════════════════════════════════════════════════
+
+function addLayer() {
+  const layer = {
+    id: layerIdCounter++,
+    name: 'Layer ' + (layers.length + 1),
+    visible: true,
+    locked: false,
+    opacity: 1.0,
+  };
+  layers.push(layer);
+  activeLayerId = layer.id;
+  renderLayersPanel();
+  showToast('📄 레이어 추가!');
+}
+
+function deleteLayer() {
+  if (layers.length <= 1) { showToast('기본 레이어는 삭제할 수 없습니다'); return; }
+  const idx = layers.findIndex(l => l.id === activeLayerId);
+  if (idx < 0) return;
+  const delId = activeLayerId;
+  // Remove shapes on this layer
+  shapes = shapes.filter(s => s.layerId !== delId);
+  selectedIds.clear();
+  layers.splice(idx, 1);
+  activeLayerId = layers[Math.min(idx, layers.length - 1)].id;
+  saveState();
+  updatePropsPanel();
+  renderLayersPanel();
+  showToast('🗑 레이어 삭제!');
+}
+
+function setActiveLayer(id) {
+  activeLayerId = id;
+  renderLayersPanel();
+}
+
+function toggleLayerVisibility(id) {
+  const layer = layers.find(l => l.id === id);
+  if (layer) { layer.visible = !layer.visible; renderLayersPanel(); }
+}
+
+function toggleLayerLock(id) {
+  const layer = layers.find(l => l.id === id);
+  if (layer) { layer.locked = !layer.locked; renderLayersPanel(); }
+}
+
+function setLayerOpacity(id, val) {
+  const layer = layers.find(l => l.id === id);
+  if (layer) { layer.opacity = parseFloat(val); renderLayersPanel(); }
+}
+
+function renameLayer(id, newName) {
+  const layer = layers.find(l => l.id === id);
+  if (layer && newName.trim()) { layer.name = newName.trim(); }
+}
+
+function moveLayerUp(id) {
+  const idx = layers.findIndex(l => l.id === id);
+  if (idx < layers.length - 1) {
+    [layers[idx], layers[idx + 1]] = [layers[idx + 1], layers[idx]];
+    renderLayersPanel();
+  }
+}
+
+function moveLayerDown(id) {
+  const idx = layers.findIndex(l => l.id === id);
+  if (idx > 0) {
+    [layers[idx], layers[idx - 1]] = [layers[idx - 1], layers[idx]];
+    renderLayersPanel();
+  }
+}
+
+function renderLayersPanel() {
+  const list = document.getElementById('layerList');
+  if (!list) return;
+  let html = '';
+  // Render in reverse order (top layer first)
+  for (let i = layers.length - 1; i >= 0; i--) {
+    const l = layers[i];
+    const isActive = l.id === activeLayerId;
+    const visIcon = l.visible ? '👁' : '🚫';
+    const visClass = l.visible ? '' : ' off';
+    const lockIcon = l.locked ? '🔒' : '🔓';
+    const lockClass = l.locked ? '' : ' off';
+    html += `<li class="layer-row${isActive ? ' active' : ''}" onclick="window._setActiveLayer(${l.id})">`;
+    html += `<button class="layer-icon-btn${visClass}" onclick="event.stopPropagation();window._toggleLayerVis(${l.id})" title="Toggle visibility">${visIcon}</button>`;
+    html += `<button class="layer-icon-btn${lockClass}" onclick="event.stopPropagation();window._toggleLayerLock(${l.id})" title="Toggle lock">${lockIcon}</button>`;
+    html += `<input class="layer-name" value="${l.name.replace(/"/g,'&quot;')}" ondblclick="this.focus();this.select()" onblur="window._renameLayer(${l.id},this.value)" onkeydown="if(event.key==='Enter')this.blur()" onclick="event.stopPropagation()">`;
+    html += `<input type="range" class="layer-opacity" min="0" max="1" step="0.05" value="${l.opacity}" oninput="window._setLayerOpacity(${l.id},this.value)" onclick="event.stopPropagation()">`;
+    html += `<span class="layer-opacity-val">${Math.round(l.opacity * 100)}%</span>`;
+    html += `</li>`;
+  }
+  list.innerHTML = html;
+}
+
+// Expose layer functions to global
+window._setActiveLayer = setActiveLayer;
+window._toggleLayerVis = toggleLayerVisibility;
+window._toggleLayerLock = toggleLayerLock;
+window._setLayerOpacity = setLayerOpacity;
+window._renameLayer = renameLayer;
+
+// ═══════════════════════════════════════════════════════
+// ██  EXPOSE FUNCTIONS TO GLOBAL SCOPE (for inline onclick)
+// ═══════════════════════════════════════════════════════
+window.undo = undo;
+window.redo = redo;
+window.clearAll = clearAll;
+window.exportPNG = exportPNG;
+window.toggleGrid = toggleGrid;
+window.toggleSnap = toggleSnap;
+
+// ═══════════════════════════════════════════════════════
+// ██  INIT
+// ═══════════════════════════════════════════════════════
+
+// Patch init to wire up layers
+const _origInit = init;
+function patchedInit() {
+  _origInit();
+  // Wire up layer buttons
+  document.getElementById('btnAddLayer').addEventListener('click', addLayer);
+  document.getElementById('btnDelLayer').addEventListener('click', deleteLayer);
+  renderLayersPanel();
+}
+
+// ─── RULER (눈금자) ─────────────────────────────────
+let showRulerOverlay = false;
+function toggleRuler() {
+    showRulerOverlay = !showRulerOverlay;
+    showToast(showRulerOverlay ? '📏 눈금자 ON' : '📏 눈금자 OFF');
+    render();
+}
+
+function drawRulerOverlay() {
+    if (!showRulerOverlay) return;
+    ctx.save();
+    // Horizontal ruler
+    ctx.fillStyle = 'rgba(10,10,30,0.7)';
+    ctx.fillRect(0, 0, canvas.width, 24);
+    ctx.fillRect(0, 0, 24, canvas.height);
+    ctx.font = '9px "JetBrains Mono"';
+    ctx.fillStyle = 'rgba(6,182,212,0.7)';
+    ctx.strokeStyle = 'rgba(6,182,212,0.3)';
+    ctx.lineWidth = 0.5;
+    // Horizontal ticks
+    const step = GRID_SIZE * zoom;
+    const startX = (panX % step + step) % step;
+    for (let px = startX; px < canvas.width; px += step) {
+        const worldX = ((px - panX) / zoom / GRID_SIZE).toFixed(0);
+        ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, worldX % 5 === 0 ? 20 : 12); ctx.stroke();
+        if (worldX % 5 === 0) ctx.fillText(worldX, px + 2, 10);
+    }
+    // Vertical ticks
+    const startY = (panY % step + step) % step;
+    for (let py = startY; py < canvas.height; py += step) {
+        const worldY = ((py - panY) / zoom / GRID_SIZE).toFixed(0);
+        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(worldY % 5 === 0 ? 20 : 12, py); ctx.stroke();
+        if (worldY % 5 === 0) ctx.fillText(worldY, 2, py - 2);
+    }
+    ctx.restore();
+}
+
+// (ruler/graph drawing is called directly from render())
+
+// ─── FUNCTION GRAPH (함수 그래프) ────────────────────
+let graphFunctions = []; // [{expr: 'x', color: '#06b6d4', label: 'y=x'}]
+
+function openGraphDialog() {
+    const existing = document.getElementById('graphDialog');
+    if (existing) existing.remove();
+
+    const div = document.createElement('div');
+    div.id = 'graphDialog';
+    div.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(15,15,40,0.95);border:1px solid rgba(6,182,212,0.3);border-radius:16px;padding:20px;z-index:500;min-width:320px;font-family:"Jua",sans-serif;color:#e2e8f0;backdrop-filter:blur(12px);';
+    div.innerHTML = `
+        <h3 style="color:#06b6d4;margin:0 0 12px;">📈 함수 그래프</h3>
+        <div style="margin-bottom:8px;">
+            <label style="font-size:12px;color:#94a3b8;">y = </label>
+            <input id="graphExpr" type="text" value="2*x+1" placeholder="수식 (예: 2*x+1, x*x, Math.sin(x))" style="width:200px;padding:6px 10px;background:#1a1a3a;border:1px solid rgba(6,182,212,0.3);border-radius:8px;color:#fff;font-size:14px;">
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:12px;">
+            <button id="btnGraphAdd" style="flex:1;padding:8px;background:rgba(6,182,212,0.15);border:1px solid rgba(6,182,212,0.3);color:#06b6d4;border-radius:8px;cursor:pointer;font-family:'Jua';">추가</button>
+            <button id="btnGraphClear" style="padding:8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:8px;cursor:pointer;font-family:'Jua';">지우기</button>
+            <button id="btnGraphClose" style="padding:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;border-radius:8px;cursor:pointer;font-family:'Jua';">닫기</button>
+        </div>
+        <div style="font-size:11px;color:#64748b;">
+            예시: <code>2*x+1</code>, <code>x*x</code>, <code>-0.5*x+3</code>, <code>Math.sin(x)*3</code>
+        </div>
+        <div id="graphList" style="margin-top:8px;font-size:12px;"></div>
+    `;
+    document.body.appendChild(div);
+    div.querySelector('#btnGraphAdd').addEventListener('click', () => addGraphFunction('graphExpr'));
+    div.querySelector('#btnGraphClear').addEventListener('click', () => clearGraphFunctions());
+    div.querySelector('#btnGraphClose').addEventListener('click', () => div.remove());
+    div.querySelector('#graphExpr').addEventListener('keydown', (e) => { if (e.key === 'Enter') addGraphFunction('graphExpr'); });
+    updateGraphList();
+}
+
+function addGraphFunction(inputId, color) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const expr = input.value.trim();
+    if (!expr) return;
+    const colors = ['#06b6d4','#10b981','#f59e0b','#ec4899','#8b5cf6','#ef4444'];
+    const c = colors[graphFunctions.length % colors.length];
+    graphFunctions.push({ expr, color: c, label: 'y=' + expr });
+    input.value = '';
+    // Auto-center origin on first graph
+    if (graphFunctions.length === 1) {
+        panX = canvas.width / 2;
+        panY = canvas.height / 2;
+    }
+    updateGraphList();
+    render();
+    showToast(`📈 y=${expr} 추가`);
+}
+
+function clearGraphFunctions() {
+    graphFunctions = [];
+    updateGraphList();
+    render();
+}
+
+function updateGraphList() {
+    const list = document.getElementById('graphList');
+    if (!list) return;
+    list.innerHTML = graphFunctions.map((f, i) =>
+        `<div style="padding:3px 6px;color:${f.color};"><span style="display:inline-block;width:12px;height:12px;background:${f.color};border-radius:3px;margin-right:6px;"></span>${f.label}</div>`
+    ).join('');
+}
+
+function drawGraphFunctions() {
+    if (graphFunctions.length === 0) return;
+    // Draw axes first
+    const originScr = worldToScreen(0, 0);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    // X axis
+    ctx.beginPath();
+    ctx.moveTo(0, originScr.y);
+    ctx.lineTo(canvas.width, originScr.y);
+    ctx.stroke();
+    // Y axis
+    ctx.beginPath();
+    ctx.moveTo(originScr.x, 0);
+    ctx.lineTo(originScr.x, canvas.height);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    graphFunctions.forEach(f => {
+        ctx.strokeStyle = f.color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        let first = true;
+        try {
+            const evalFn = new Function('x', 'return ' + f.expr);
+            for (let px = 0; px < canvas.width; px += 2) {
+                // Convert screen X to math X (in grid units, where 1 unit = GRID_SIZE world pixels)
+                const worldX = (px - panX) / zoom;
+                const mathX = worldX / GRID_SIZE;
+                const mathY = evalFn(mathX);
+                if (isNaN(mathY) || !isFinite(mathY)) { first = true; continue; }
+                // Convert math Y back to world Y (flip Y: up is positive in math)
+                const worldY = -mathY * GRID_SIZE;
+                const screenY = worldY * zoom + panY;
+                if (screenY < -500 || screenY > canvas.height + 500) { first = true; continue; }
+                if (first) { ctx.moveTo(px, screenY); first = false; }
+                else ctx.lineTo(px, screenY);
+            }
+            ctx.stroke();
+            // Label near right edge
+            const labelPx = canvas.width - 100;
+            const labelWorldX = (labelPx - panX) / zoom;
+            const labelMathX = labelWorldX / GRID_SIZE;
+            const labelMathY = evalFn(labelMathX);
+            const labelScreenY = (-labelMathY * GRID_SIZE) * zoom + panY;
+            ctx.font = 'bold 13px "JetBrains Mono"';
+            ctx.fillStyle = f.color;
+            const ly = Math.max(20, Math.min(canvas.height - 10, labelScreenY - 10));
+            // Background for label
+            const tw = ctx.measureText(f.label).width;
+            ctx.fillStyle = 'rgba(15,15,40,0.8)';
+            ctx.fillRect(labelPx - 4, ly - 11, tw + 8, 16);
+            ctx.fillStyle = f.color;
+            ctx.fillText(f.label, labelPx, ly);
+        } catch(e) {}
+    });
+    ctx.restore();
+}
+
+// (graph drawing is called directly from render())
+
+// Help text for new tools
+const _origHints = typeof TOOL_HINTS !== 'undefined' ? TOOL_HINTS : {};
+if (typeof TOOL_HINTS !== 'undefined') {
+    TOOL_HINTS.ruler = '클릭하여 눈금자 토글 ON/OFF';
+    TOOL_HINTS.graph = '클릭하여 함수 그래프 입력 다이얼로그 열기';
+}
+
+document.addEventListener('DOMContentLoaded', patchedInit);
+})();
+</script>
+</body>
+</html>

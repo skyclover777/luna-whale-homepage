@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Luna Whale SCIENCE Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Jua&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #060612;
+            --bg2: #0a0a1e;
+            --neon-green: #39ff14;
+            --neon-cyan: #00fff7;
+            --neon-purple: #bf00ff;
+            --neon-pink: #ff006e;
+            --neon-yellow: #ffdd00;
+            --neon-orange: #ff6a00;
+            --text: #e0e8f0;
+            --text-dim: #5a6a7a;
+            --card-bg: rgba(10, 10, 30, 0.85);
+            --border: rgba(57, 255, 20, 0.12);
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== Dark Lab Grid Background ===== */
+        .lab-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(57,255,20,.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(57,255,20,.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .lab-bg::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse 500px 400px at 25% 20%, rgba(57,255,20,0.04) 0%, transparent 70%),
+                radial-gradient(ellipse 400px 350px at 75% 60%, rgba(191,0,255,0.04) 0%, transparent 70%),
+                radial-gradient(ellipse 450px 300px at 50% 80%, rgba(0,255,247,0.03) 0%, transparent 70%);
+            animation: labPulse 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes labPulse {
+            0% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        /* ===== Floating Chemical Formulas ===== */
+        .formula-rain {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .formula-col {
+            position: absolute;
+            top: -100px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: rgba(57, 255, 20, 0.06);
+            line-height: 1.8;
+            animation: formulaFloat linear infinite;
+            white-space: pre;
+        }
+
+        @keyframes formulaFloat {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(120vh); }
+        }
+
+        /* ===== Neon Flicker ===== */
+        @keyframes neonFlicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                text-shadow:
+                    0 0 7px var(--neon-green),
+                    0 0 10px var(--neon-green),
+                    0 0 21px var(--neon-green),
+                    0 0 42px rgba(57,255,20,0.4);
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+            }
+        }
+
+        @keyframes neonGlow {
+            0%, 100% {
+                filter: drop-shadow(0 0 6px rgba(57,255,20,0.3));
+            }
+            50% {
+                filter: drop-shadow(0 0 12px rgba(57,255,20,0.5)) drop-shadow(0 0 24px rgba(57,255,20,0.2));
+            }
+        }
+
+        /* ===== Layout ===== */
+        .lab-layout {
+            position: relative;
+            z-index: 1;
+        }
+
+        .lab-main {
+            flex: 1;
+            padding: 12px 24px;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        /* ===== Header ===== */
+        .lab-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* ===== Pixel Flask Canvas ===== */
+        #pixel-flask {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        /* ===== Neon Sign Title ===== */
+        .neon-title-wrap {
+            text-align: center;
+            margin-bottom: 8px;
+            padding: 16px 20px 8px;
+            position: relative;
+        }
+
+        .neon-sign {
+            display: inline-block;
+            position: relative;
+            padding: 20px 40px 16px;
+            border: 2px solid rgba(57,255,20,0.3);
+            border-radius: 8px;
+            background: rgba(6,6,18,0.7);
+            box-shadow:
+                0 0 10px rgba(57,255,20,0.1),
+                inset 0 0 30px rgba(57,255,20,0.03);
+        }
+
+        .neon-sign::before {
+            content: '';
+            position: absolute;
+            top: -8px; left: 30px; right: 30px; height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(57,255,20,0.4), transparent);
+            border-radius: 2px;
+        }
+
+        .neon-title {
+            font-family: 'Jua', sans-serif;
+            font-size: clamp(22px, 4.5vw, 34px);
+            color: var(--neon-green);
+            animation: neonFlicker 4s infinite;
+            line-height: 1.3;
+            letter-spacing: 2px;
+        }
+
+        .neon-title .cyan { color: var(--neon-cyan); animation: none; text-shadow: 0 0 7px var(--neon-cyan), 0 0 14px var(--neon-cyan); }
+        .neon-title .purple { color: var(--neon-purple); animation: none; text-shadow: 0 0 7px var(--neon-purple), 0 0 14px var(--neon-purple); }
+
+        .neon-subtitle {
+            font-size: 11px;
+            color: var(--neon-green);
+            letter-spacing: 6px;
+            margin-top: 8px;
+            opacity: 0.6;
+            text-transform: uppercase;
+        }
+
+        /* ===== Pixel Flask Row ===== */
+        .flask-row {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin: 12px 0;
+            flex-wrap: wrap;
+        }
+
+        .pixel-flask-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .pixel-flask-item canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .flask-label {
+            font-size: 9px;
+            color: var(--neon-green);
+            opacity: 0.5;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* ===== Terminal ===== */
+        .terminal-text {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(12px, 2.5vw, 15px);
+            color: var(--neon-green);
+            padding: 10px 20px;
+            background: rgba(57, 255, 20, 0.04);
+            border: 1px solid rgba(57, 255, 20, 0.12);
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .terminal-text::before {
+            content: 'lab@luna:~$ ';
+            color: var(--neon-cyan);
+            opacity: 0.7;
+        }
+
+        .terminal-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background: var(--neon-green);
+            margin-left: 2px;
+            vertical-align: middle;
+            animation: cursorBlink 1s step-end infinite;
+        }
+
+        @keyframes cursorBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* ===== Section Title ===== */
+        .section-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 20px;
+            background: var(--neon-green);
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(57,255,20,0.4);
+        }
+
+        /* ===== Cards Grid ===== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 700px) {
+            .cards-grid { grid-template-columns: 1fr; }
+        }
+
+        .sci-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 10px 16px 10px 12px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .sci-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; bottom: 0;
+            width: 3px;
+            background: var(--neon-green);
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 0 8px rgba(57,255,20,0.5);
+        }
+
+        .sci-card:hover::before { opacity: 1; }
+
+        .sci-card:hover {
+            border-color: rgba(57, 255, 20, 0.25);
+            box-shadow: 0 0 30px rgba(57,255,20,0.08), 0 0 60px rgba(57,255,20,0.03);
+            transform: translateX(4px);
+        }
+
+        .sci-card.locked {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .sci-card.locked:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: var(--border);
+        }
+
+        .sci-card.locked:hover::before { opacity: 0; }
+
+        .card-icon-bg {
+            position: relative;
+            width: 56px;
+            height: 56px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            animation: neonGlow 3s ease-in-out infinite;
+        }
+
+        .card-icon-bg::after {
+            content: attr(data-icon);
+            position: absolute;
+            font-size: 56px;
+            opacity: 0.06;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .card-text { flex: 1; min-width: 0; }
+
+        .card-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+
+        .card-desc {
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.5;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-status {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .card-status.active {
+            background: rgba(57, 255, 20, 0.1);
+            color: var(--neon-green);
+            border: 1px solid rgba(57, 255, 20, 0.2);
+        }
+
+        .card-status.coming {
+            background: rgba(100, 116, 139, 0.1);
+            color: var(--text-dim);
+            border: 1px solid rgba(100, 116, 139, 0.12);
+            font-size: 9px;
+        }
+
+        @media (max-width: 600px) {
+            .card-desc { display: none; }
+            .card-title { font-size: 16px; }
+            .card-icon-bg { width: 40px; height: 40px; font-size: 26px; }
+        }
+
+        /* ===== Scanline overlay ===== */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.03) 2px,
+                rgba(0, 0, 0, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* ===== Neon Tube Decorations ===== */
+        .neon-tube-left, .neon-tube-right {
+            position: fixed;
+            top: 0; bottom: 0;
+            width: 2px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .neon-tube-left {
+            left: 10px;
+            background: linear-gradient(180deg,
+                transparent 0%,
+                rgba(57,255,20,0.15) 20%,
+                rgba(57,255,20,0.3) 50%,
+                rgba(57,255,20,0.15) 80%,
+                transparent 100%
+            );
+            box-shadow: 0 0 8px rgba(57,255,20,0.2), 0 0 16px rgba(57,255,20,0.1);
+        }
+
+        .neon-tube-right {
+            right: 10px;
+            background: linear-gradient(180deg,
+                transparent 0%,
+                rgba(191,0,255,0.15) 20%,
+                rgba(191,0,255,0.3) 50%,
+                rgba(191,0,255,0.15) 80%,
+                transparent 100%
+            );
+            box-shadow: 0 0 8px rgba(191,0,255,0.2), 0 0 16px rgba(191,0,255,0.1);
+        }
+
+        /* ===== Bubbles Animation ===== */
+        .bubbles-container {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -20px;
+            border-radius: 50%;
+            border: 1px solid rgba(57,255,20,0.15);
+            background: rgba(57,255,20,0.03);
+            animation: bubbleRise linear infinite;
+        }
+
+        @keyframes bubbleRise {
+            0% { transform: translateY(0) scale(1); opacity: 0.6; }
+            50% { opacity: 0.3; }
+            100% { transform: translateY(-110vh) scale(0.5); opacity: 0; }
+        }
+
+        /* ===== Page Entrance ===== */
+        .page-enter {
+            animation: labEnter 0.8s ease-out forwards;
+        }
+
+        @keyframes labEnter {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== Back animation canvas ===== */
+        .luna-return-canvas {
+            position: fixed; inset: 0; z-index: 100000;
+            pointer-events: all;
+        }
+
+        /* ===== Footer ===== */
+        .lab-footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 10px;
+            color: var(--text-dim);
+            border-top: 1px solid var(--border);
+            margin-top: 6px;
+        }
+
+        .lab-footer span { color: var(--neon-green); }
+    </style>
+<!-- luna-nav.js 제거: global-nav.js가 대체 -->
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="lab-bg"></div>
+    <div class="formula-rain" id="formulaRain"></div>
+    <div class="scanlines"></div>
+    <div class="neon-tube-left"></div>
+    <div class="neon-tube-right"></div>
+    <div class="bubbles-container" id="bubbles"></div>
+
+    <div class="lab-layout page-enter">
+        <main class="lab-main">
+            <!-- Header -->
+            <header class="lab-header">
+                <div class="header-left">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <canvas id="pixel-flask" width="16" height="16" style="width:40px;height:40px;"></canvas>
+                        <div>
+                            <div style="font-size:15px;font-weight:800;color:var(--neon-green);letter-spacing:-0.5px;">Luna Whale</div>
+                            <div style="font-size:10px;color:var(--text-dim);letter-spacing:3px;text-transform:uppercase;">SCIENCE LAB</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Neon Sign Title -->
+            <div class="neon-title-wrap">
+                <div class="neon-sign">
+                    <h1 class="neon-title">
+                        <span class="cyan">Luna</span> SCIENCE <span class="purple">Lab</span>
+                    </h1>
+                    <p class="neon-subtitle">Chemistry &middot; Physics &middot; Biology &middot; Earth</p>
+                </div>
+            </div>
+
+            <!-- Pixel Flask Row -->
+            <div class="flask-row">
+                <div class="pixel-flask-item">
+                    <canvas id="flask-beaker" width="12" height="16" style="width:36px;height:48px;"></canvas>
+                    <span class="flask-label">H&#8322;O</span>
+                </div>
+                <div class="pixel-flask-item">
+                    <canvas id="flask-erlenmeyer" width="12" height="16" style="width:36px;height:48px;"></canvas>
+                    <span class="flask-label">NaCl</span>
+                </div>
+                <div class="pixel-flask-item">
+                    <canvas id="flask-round" width="12" height="16" style="width:36px;height:48px;"></canvas>
+                    <span class="flask-label">CO&#8322;</span>
+                </div>
+                <div class="pixel-flask-item">
+                    <canvas id="flask-test" width="6" height="16" style="width:18px;height:48px;"></canvas>
+                    <span class="flask-label">Fe</span>
+                </div>
+                <div class="pixel-flask-item">
+                    <canvas id="flask-test2" width="6" height="16" style="width:18px;height:48px;"></canvas>
+                    <span class="flask-label">Cu</span>
+                </div>
+            </div>
+
+            <!-- Terminal -->
+            <div style="text-align:center;margin-bottom:12px;">
+                <div class="terminal-text">
+                    <span id="typingText"></span><span class="terminal-cursor"></span>
+                </div>
+            </div>
+
+            <!-- Sections rendered by JS from science-data.js -->
+            <div id="sciSections"></div>
+
+            <!-- Footer -->
+            <footer class="lab-footer">
+                <span>&#9883;</span> Luna Whale SCIENCE Lab &mdash; Where Curiosity Becomes Discovery
+            </footer>
+        </main>
+    </div>
+
+    <!-- Science Data (모듈화된 카드 데이터) -->
+    <script src="science-data.js?v=20260329"></script>
+
+    <!-- Art Cosmos Widget -->
+    <script src="../../assets/data/art-archive.js?v=0319"></script>
+    <script src="../../assets/js/voice-engine.js?v=0319"></script>
+    <script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+
+    <script>
+    /* ===== Pixel Flask Drawing ===== */
+    function drawPixelFlask(canvasId) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+
+        const g = '#39ff14', dg = '#1a8a0a', gl = '#0a0a1a', lq = '#00fff7', lqd = '#0088aa';
+
+        if (canvasId === 'pixel-flask') {
+            // 16x16 erlenmeyer flask (main logo)
+            const px = [
+                // neck
+                [6,0,g],[7,0,g],[8,0,g],[9,0,g],
+                [6,1,dg],[7,1,gl],[8,1,gl],[9,1,dg],
+                [6,2,dg],[7,2,gl],[8,2,gl],[9,2,dg],
+                [6,3,dg],[7,3,gl],[8,3,gl],[9,3,dg],
+                // body widens
+                [5,4,dg],[6,4,gl],[7,4,gl],[8,4,gl],[9,4,gl],[10,4,dg],
+                [4,5,dg],[5,5,gl],[6,5,gl],[7,5,gl],[8,5,gl],[9,5,gl],[10,5,gl],[11,5,dg],
+                [3,6,dg],[4,6,gl],[5,6,gl],[6,6,gl],[7,6,gl],[8,6,gl],[9,6,gl],[10,6,gl],[11,6,gl],[12,6,dg],
+                // liquid line
+                [3,7,dg],[4,7,lq],[5,7,lq],[6,7,lq],[7,7,lq],[8,7,lq],[9,7,lq],[10,7,lq],[11,7,lq],[12,7,dg],
+                [2,8,dg],[3,8,lq],[4,8,lq],[5,8,lq],[6,8,lqd],[7,8,lq],[8,8,lqd],[9,8,lq],[10,8,lq],[11,8,lq],[12,8,lq],[13,8,dg],
+                [2,9,dg],[3,9,lq],[4,9,lqd],[5,9,lq],[6,9,lq],[7,9,lqd],[8,9,lq],[9,9,lq],[10,9,lqd],[11,9,lq],[12,9,lq],[13,9,dg],
+                [1,10,dg],[2,10,lq],[3,10,lq],[4,10,lq],[5,10,lqd],[6,10,lq],[7,10,lq],[8,10,lq],[9,10,lqd],[10,10,lq],[11,10,lq],[12,10,lq],[13,10,lq],[14,10,dg],
+                [1,11,dg],[2,11,lqd],[3,11,lq],[4,11,lqd],[5,11,lq],[6,11,lq],[7,11,lqd],[8,11,lq],[9,11,lq],[10,11,lq],[11,11,lqd],[12,11,lq],[13,11,lqd],[14,11,dg],
+                [1,12,dg],[2,12,lq],[3,12,lq],[4,12,lq],[5,12,lqd],[6,12,lq],[7,12,lq],[8,12,lqd],[9,12,lq],[10,12,lqd],[11,12,lq],[12,12,lq],[13,12,lq],[14,12,dg],
+                // bottom
+                [1,13,dg],[2,13,dg],[3,13,dg],[4,13,dg],[5,13,dg],[6,13,dg],[7,13,dg],[8,13,dg],[9,13,dg],[10,13,dg],[11,13,dg],[12,13,dg],[13,13,dg],[14,13,dg],
+                // bubbles
+                [5,9,'#ffffff'],[9,11,'#ffffff'],[7,10,'#ffffff'],
+            ];
+            px.forEach(([x,y,c]) => { ctx.fillStyle = c; ctx.fillRect(x,y,1,1); });
+            return;
+        }
+
+        if (canvasId === 'flask-beaker') {
+            // 12x16 beaker
+            const px = [
+                [1,2,g],[10,2,g],
+                [1,3,dg],[2,3,gl],[3,3,gl],[4,3,gl],[5,3,gl],[6,3,gl],[7,3,gl],[8,3,gl],[9,3,gl],[10,3,dg],
+                [1,4,dg],[2,4,gl],[9,4,gl],[10,4,dg],
+                [1,5,dg],[2,5,gl],[9,5,gl],[10,5,dg],
+                // liquid
+                [1,6,dg],[2,6,'#ff006e'],[3,6,'#ff006e'],[4,6,'#ff006e'],[5,6,'#ff006e'],[6,6,'#ff006e'],[7,6,'#ff006e'],[8,6,'#ff006e'],[9,6,'#ff006e'],[10,6,dg],
+                [1,7,dg],[2,7,'#cc0058'],[3,7,'#ff006e'],[4,7,'#cc0058'],[5,7,'#ff006e'],[6,7,'#cc0058'],[7,7,'#ff006e'],[8,7,'#cc0058'],[9,7,'#ff006e'],[10,7,dg],
+                [1,8,dg],[2,8,'#ff006e'],[3,8,'#cc0058'],[4,8,'#ff006e'],[5,8,'#ff006e'],[6,8,'#ff006e'],[7,8,'#cc0058'],[8,8,'#ff006e'],[9,8,'#cc0058'],[10,8,dg],
+                [1,9,dg],[2,9,'#cc0058'],[3,9,'#ff006e'],[4,9,'#cc0058'],[5,9,'#ff006e'],[6,9,'#cc0058'],[7,9,'#ff006e'],[8,9,'#ff006e'],[9,9,'#cc0058'],[10,9,dg],
+                [1,10,dg],[2,10,'#ff006e'],[3,10,'#cc0058'],[4,10,'#ff006e'],[5,10,'#cc0058'],[6,10,'#ff006e'],[7,10,'#cc0058'],[8,10,'#ff006e'],[9,10,'#ff006e'],[10,10,dg],
+                [1,11,dg],[2,11,'#cc0058'],[3,11,'#ff006e'],[4,11,'#ff006e'],[5,11,'#cc0058'],[6,11,'#ff006e'],[7,11,'#ff006e'],[8,11,'#cc0058'],[9,11,'#ff006e'],[10,11,dg],
+                [1,12,dg],[2,12,'#ff006e'],[3,12,'#cc0058'],[4,12,'#ff006e'],[5,12,'#ff006e'],[6,12,'#cc0058'],[7,12,'#ff006e'],[8,12,'#ff006e'],[9,12,'#cc0058'],[10,12,dg],
+                // bottom
+                [0,13,dg],[1,13,dg],[2,13,dg],[3,13,dg],[4,13,dg],[5,13,dg],[6,13,dg],[7,13,dg],[8,13,dg],[9,13,dg],[10,13,dg],[11,13,dg],
+                // bubbles
+                [4,8,'#ffffff'],[7,10,'#ffffff'],
+            ];
+            px.forEach(([x,y,c]) => { ctx.fillStyle = c; ctx.fillRect(x,y,1,1); });
+            return;
+        }
+
+        if (canvasId === 'flask-erlenmeyer') {
+            // 12x16 erlenmeyer
+            const px = [
+                [4,0,g],[5,0,g],[6,0,g],[7,0,g],
+                [4,1,dg],[5,1,gl],[6,1,gl],[7,1,dg],
+                [4,2,dg],[5,2,gl],[6,2,gl],[7,2,dg],
+                [3,3,dg],[4,3,gl],[5,3,gl],[6,3,gl],[7,3,gl],[8,3,dg],
+                [2,4,dg],[3,4,gl],[4,4,gl],[5,4,gl],[6,4,gl],[7,4,gl],[8,4,gl],[9,4,dg],
+                // liquid
+                [2,5,dg],[3,5,'#ffdd00'],[4,5,'#ffdd00'],[5,5,'#ffdd00'],[6,5,'#ffdd00'],[7,5,'#ffdd00'],[8,5,'#ffdd00'],[9,5,dg],
+                [1,6,dg],[2,6,'#ccb100'],[3,6,'#ffdd00'],[4,6,'#ccb100'],[5,6,'#ffdd00'],[6,6,'#ccb100'],[7,6,'#ffdd00'],[8,6,'#ccb100'],[9,6,'#ffdd00'],[10,6,dg],
+                [1,7,dg],[2,7,'#ffdd00'],[3,7,'#ccb100'],[4,7,'#ffdd00'],[5,7,'#ffdd00'],[6,7,'#ffdd00'],[7,7,'#ccb100'],[8,7,'#ffdd00'],[9,7,'#ffdd00'],[10,7,dg],
+                [0,8,dg],[1,8,'#ccb100'],[2,8,'#ffdd00'],[3,8,'#ffdd00'],[4,8,'#ccb100'],[5,8,'#ffdd00'],[6,8,'#ffdd00'],[7,8,'#ffdd00'],[8,8,'#ccb100'],[9,8,'#ffdd00'],[10,8,'#ffdd00'],[11,8,dg],
+                [0,9,dg],[1,9,'#ffdd00'],[2,9,'#ccb100'],[3,9,'#ffdd00'],[4,9,'#ffdd00'],[5,9,'#ccb100'],[6,9,'#ffdd00'],[7,9,'#ccb100'],[8,9,'#ffdd00'],[9,9,'#ccb100'],[10,9,'#ffdd00'],[11,9,dg],
+                [0,10,dg],[1,10,'#ccb100'],[2,10,'#ffdd00'],[3,10,'#ccb100'],[4,10,'#ffdd00'],[5,10,'#ffdd00'],[6,10,'#ccb100'],[7,10,'#ffdd00'],[8,10,'#ffdd00'],[9,10,'#ffdd00'],[10,10,'#ccb100'],[11,10,dg],
+                [0,11,dg],[1,11,dg],[2,11,dg],[3,11,dg],[4,11,dg],[5,11,dg],[6,11,dg],[7,11,dg],[8,11,dg],[9,11,dg],[10,11,dg],[11,11,dg],
+                [5,7,'#ffffff'],[8,9,'#ffffff'],
+            ];
+            px.forEach(([x,y,c]) => { ctx.fillStyle = c; ctx.fillRect(x,y,1,1); });
+            return;
+        }
+
+        if (canvasId === 'flask-round') {
+            // 12x16 round bottom flask
+            const px = [
+                [5,0,g],[6,0,g],
+                [5,1,dg],[6,1,dg],
+                [5,2,dg],[6,2,dg],
+                [4,3,dg],[5,3,gl],[6,3,gl],[7,3,dg],
+                [3,4,dg],[4,4,gl],[5,4,gl],[6,4,gl],[7,4,gl],[8,4,dg],
+                [2,5,dg],[3,5,gl],[4,5,gl],[5,5,gl],[6,5,gl],[7,5,gl],[8,5,gl],[9,5,dg],
+                // liquid (purple)
+                [1,6,dg],[2,6,'#bf00ff'],[3,6,'#bf00ff'],[4,6,'#bf00ff'],[5,6,'#bf00ff'],[6,6,'#bf00ff'],[7,6,'#bf00ff'],[8,6,'#bf00ff'],[9,6,'#bf00ff'],[10,6,dg],
+                [1,7,dg],[2,7,'#9900cc'],[3,7,'#bf00ff'],[4,7,'#9900cc'],[5,7,'#bf00ff'],[6,7,'#bf00ff'],[7,7,'#9900cc'],[8,7,'#bf00ff'],[9,7,'#9900cc'],[10,7,dg],
+                [1,8,dg],[2,8,'#bf00ff'],[3,8,'#9900cc'],[4,8,'#bf00ff'],[5,8,'#9900cc'],[6,8,'#bf00ff'],[7,8,'#bf00ff'],[8,8,'#9900cc'],[9,8,'#bf00ff'],[10,8,dg],
+                [2,9,dg],[3,9,'#9900cc'],[4,9,'#bf00ff'],[5,9,'#bf00ff'],[6,9,'#9900cc'],[7,9,'#bf00ff'],[8,9,'#bf00ff'],[9,9,dg],
+                [3,10,dg],[4,10,'#bf00ff'],[5,10,'#9900cc'],[6,10,'#bf00ff'],[7,10,'#9900cc'],[8,10,dg],
+                [4,11,dg],[5,11,dg],[6,11,dg],[7,11,dg],
+                [4,7,'#ffffff'],[7,9,'#ffffff'],
+            ];
+            px.forEach(([x,y,c]) => { ctx.fillStyle = c; ctx.fillRect(x,y,1,1); });
+            return;
+        }
+
+        if (canvasId === 'flask-test' || canvasId === 'flask-test2') {
+            // 6x16 test tube
+            const color = canvasId === 'flask-test' ? '#ff6a00' : '#39ff14';
+            const dark = canvasId === 'flask-test' ? '#b34b00' : '#1a8a0a';
+            const px = [
+                [1,0,g],[2,0,g],[3,0,g],[4,0,g],
+                [1,1,dg],[2,1,gl],[3,1,gl],[4,1,dg],
+                [1,2,dg],[2,2,gl],[3,2,gl],[4,2,dg],
+                [1,3,dg],[2,3,gl],[3,3,gl],[4,3,dg],
+                // liquid
+                [1,4,dg],[2,4,color],[3,4,color],[4,4,dg],
+                [1,5,dg],[2,5,dark],[3,5,color],[4,5,dg],
+                [1,6,dg],[2,6,color],[3,6,dark],[4,6,dg],
+                [1,7,dg],[2,7,dark],[3,7,color],[4,7,dg],
+                [1,8,dg],[2,8,color],[3,8,dark],[4,8,dg],
+                [1,9,dg],[2,9,dark],[3,9,color],[4,9,dg],
+                [1,10,dg],[2,10,color],[3,10,dark],[4,10,dg],
+                [1,11,dg],[2,11,dark],[3,11,color],[4,11,dg],
+                [1,12,dg],[2,12,color],[3,12,dark],[4,12,dg],
+                // bottom round
+                [2,13,dg],[3,13,dg],
+                [3,6,'#ffffff'],
+            ];
+            px.forEach(([x,y,c]) => { ctx.fillStyle = c; ctx.fillRect(x,y,1,1); });
+            return;
+        }
+    }
+
+    // Draw all flasks
+    ['pixel-flask', 'flask-beaker', 'flask-erlenmeyer', 'flask-round', 'flask-test', 'flask-test2'].forEach(drawPixelFlask);
+
+    /* ===== Chemical Formula Rain ===== */
+    (function createFormulaRain() {
+        const container = document.getElementById('formulaRain');
+        const formulas = ['H₂O','NaCl','CO₂','O₂','CH₄','NH₃','C₆H₁₂O₆','HCl','NaOH','Fe₂O₃','CaCO₃','H₂SO₄','KMnO₄','C₂H₅OH','ATP','DNA','RNA','pH','mol','Δ','∫','∑','∂','π','λ','Ω'];
+        const cols = Math.floor(window.innerWidth / 80);
+        for (let i = 0; i < cols; i++) {
+            const col = document.createElement('div');
+            col.className = 'formula-col';
+            col.style.left = (i * 80 + Math.random() * 40) + 'px';
+            col.style.animationDuration = (18 + Math.random() * 30) + 's';
+            col.style.animationDelay = (-Math.random() * 25) + 's';
+            let text = '';
+            for (let j = 0; j < 30; j++) {
+                text += formulas[Math.floor(Math.random() * formulas.length)];
+                text += '\n';
+            }
+            col.textContent = text;
+            container.appendChild(col);
+        }
+    })();
+
+    /* ===== Bubbles ===== */
+    (function createBubbles() {
+        const container = document.getElementById('bubbles');
+        for (let i = 0; i < 20; i++) {
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            const size = 4 + Math.random() * 12;
+            b.style.width = size + 'px';
+            b.style.height = size + 'px';
+            b.style.left = (Math.random() * 100) + '%';
+            b.style.animationDuration = (8 + Math.random() * 15) + 's';
+            b.style.animationDelay = (-Math.random() * 10) + 's';
+            container.appendChild(b);
+        }
+    })();
+
+    /* ===== Typing Animation ===== */
+    (function typeWriter() {
+        const messages = [
+            '과학 실험실에 오신 것을 환영합니다!',
+            'hypothesis → experiment → discovery!',
+            '분자를 조립하고, 화학 반응을 관찰해요',
+            'E = mc² ... 에너지의 비밀을 풀어볼까요?',
+            'while(curious) { experiment(); learn(); }',
+            '지층을 쌓고, 우주를 탐험해요!',
+        ];
+        const el = document.getElementById('typingText');
+        let msgIdx = 0, charIdx = 0, deleting = false;
+
+        function tick() {
+            const msg = messages[msgIdx];
+            if (!deleting) {
+                el.textContent = msg.substring(0, charIdx + 1);
+                charIdx++;
+                if (charIdx === msg.length) {
+                    setTimeout(() => { deleting = true; tick(); }, 2500);
+                    return;
+                }
+                setTimeout(tick, 50 + Math.random() * 40);
+            } else {
+                el.textContent = msg.substring(0, charIdx);
+                charIdx--;
+                if (charIdx < 0) {
+                    deleting = false;
+                    charIdx = 0;
+                    msgIdx = (msgIdx + 1) % messages.length;
+                    setTimeout(tick, 400);
+                    return;
+                }
+                setTimeout(tick, 25);
+            }
+        }
+        tick();
+    })();
+
+    /* ===== Render Sections from science-data.js ===== */
+    (function renderSections() {
+        if (typeof SCIENCE_SECTIONS === 'undefined') return;
+        const container = document.getElementById('sciSections');
+        if (!container) return;
+
+        const dot = '<span style="width:6px;height:6px;border-radius:50%;background:var(--neon-green);display:inline-block;"></span>';
+
+        SCIENCE_SECTIONS.forEach((section, si) => {
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'section-title';
+            if (si > 0) titleDiv.style.marginTop = '8px';
+            titleDiv.textContent = section.title;
+            container.appendChild(titleDiv);
+
+            const grid = document.createElement('div');
+            grid.className = 'cards-grid';
+
+            section.cards.forEach(card => {
+                const isOnline = card.status === 'online' && card.href;
+                const el = document.createElement(isOnline ? 'a' : 'div');
+                el.className = 'sci-card' + (isOnline ? '' : ' locked');
+                if (isOnline) { el.href = card.href; }
+
+                el.innerHTML =
+                    '<div class="card-icon-bg" data-icon="' + card.icon + '">' + card.icon + '</div>' +
+                    '<div class="card-text">' +
+                        '<div class="card-title">' + card.title + '</div>' +
+                        '<div class="card-desc">' + card.desc + '</div>' +
+                    '</div>' +
+                    (isOnline
+                        ? '<div class="card-status active">' + dot + ' ONLINE</div>'
+                        : '<div class="card-status coming"><span>\uD83D\uDD12</span> SOON</div>');
+
+                grid.appendChild(el);
+            });
+
+            container.appendChild(grid);
+        });
+    })();
+    </script>
+<script src="../../assets/js/global-nav.js?v=20260329f"></script>
+</body>
+</html>

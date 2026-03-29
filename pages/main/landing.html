@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Luna Whale Art Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Jua&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07071a;--surface:rgba(14,14,35,0.7);--border:rgba(100,108,255,0.15);
+  --accent:#818cf8;--accent2:#c084fc;--gold:#d4a843;
+  --text:#e8eaf6;--muted:#94a3b8;
+}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Lexend','Noto Sans KR',sans-serif;overflow-x:hidden}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(129,140,248,.3);border-radius:3px}
+
+/* ── Starfield BG ── */
+.starfield{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse at 50% 40%,#0d0d2e,#050510)}
+.starfield::before,.starfield::after{
+  content:'';position:absolute;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%,rgba(255,255,255,.7),transparent),
+    radial-gradient(1px 1px at 30% 60%,rgba(255,255,255,.5),transparent),
+    radial-gradient(1.5px 1.5px at 50% 10%,rgba(255,255,255,.8),transparent),
+    radial-gradient(1px 1px at 70% 40%,rgba(200,220,255,.6),transparent),
+    radial-gradient(1px 1px at 90% 80%,rgba(255,255,255,.4),transparent),
+    radial-gradient(1.5px 1.5px at 20% 90%,rgba(255,200,255,.5),transparent),
+    radial-gradient(1px 1px at 60% 70%,rgba(255,255,255,.3),transparent),
+    radial-gradient(1px 1px at 80% 15%,rgba(200,255,255,.6),transparent);
+  background-size:200px 200px;animation:twinkle 4s ease-in-out infinite alternate;
+}
+.starfield::after{background-size:300px 300px;animation-delay:-2s;opacity:.6}
+@keyframes twinkle{from{opacity:.5}to{opacity:1}}
+
+/* ── Nebula blobs ── */
+.nebula{position:fixed;border-radius:50%;filter:blur(120px);opacity:.1;z-index:0;pointer-events:none;animation:drift 30s ease-in-out infinite alternate}
+.n1{width:600px;height:600px;background:#6366f1;top:0;left:10%}
+.n2{width:450px;height:450px;background:#ec4899;top:40%;right:0;animation-delay:-10s}
+.n3{width:380px;height:380px;background:#06b6d4;bottom:0;left:30%;animation-delay:-20s}
+.n4{width:300px;height:300px;background:#d4a843;top:20%;right:20%;animation-delay:-5s;opacity:.06}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(50px,-40px) scale(1.2)}}
+
+/* ── Canvas ── */
+#whale-canvas{position:fixed;inset:0;z-index:1;pointer-events:none}
+
+/* ── Sections common ── */
+section{position:relative;z-index:2}
+
+/* ── Hero ── */
+.hero{
+  height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:0 24px;
+}
+.hero-logo{width:90px;height:90px;margin-bottom:24px;filter:drop-shadow(0 0 40px rgba(129,140,248,.5));animation:float 4s ease-in-out infinite;border-radius:22px;object-fit:cover}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+.hero-title{
+  font-size:clamp(36px,7vw,72px);font-weight:900;letter-spacing:-1px;line-height:1.1;
+  background:linear-gradient(135deg,#e2e8f0 0%,#818cf8 40%,#c084fc 70%,#d4a843 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:16px;
+}
+.hero-sub{
+  font-family:'Jua','Noto Sans KR',sans-serif;font-size:clamp(16px,2.5vw,24px);
+  color:var(--muted);max-width:600px;line-height:1.6;margin-bottom:48px;
+}
+.hero-sub em{font-style:normal;color:var(--accent)}
+.hero-desc{
+  font-size:clamp(13px,1.8vw,16px);color:rgba(148,163,184,.7);max-width:560px;
+  line-height:1.7;margin-bottom:32px;
+}
+
+.scroll-hint{
+  position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:12px;
+  animation:bounce-down 2s ease-in-out infinite;cursor:pointer;
+}
+.scroll-hint .material-symbols-outlined{font-size:28px}
+@keyframes bounce-down{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(10px)}}
+
+/* ── Section titles ── */
+.section-title{
+  font-size:clamp(24px,4vw,42px);font-weight:800;text-align:center;margin-bottom:12px;
+  background:linear-gradient(135deg,#e2e8f0,#818cf8,#c084fc);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.section-desc{text-align:center;color:var(--muted);font-size:15px;margin-bottom:48px;max-width:500px;margin-left:auto;margin-right:auto}
+
+/* ── Offerings ── */
+.offerings{padding:120px 24px;max-width:960px;margin:0 auto}
+.cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+@media(max-width:640px){.cards-grid{grid-template-columns:1fr}}
+
+.offer-card{
+  background:var(--surface);backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:20px;padding:36px 28px;
+  transition:all .4s cubic-bezier(.16,1,.3,1);cursor:default;position:relative;overflow:hidden;
+}
+.offer-card::before{
+  content:'';position:absolute;inset:0;border-radius:20px;opacity:0;transition:opacity .4s;
+  background:radial-gradient(circle at 50% 0%,var(--card-glow),transparent 70%);
+}
+.offer-card:hover{transform:translateY(-8px);border-color:rgba(129,140,248,.3)}
+.offer-card:hover::before{opacity:1}
+
+.card-icon{
+  width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  margin-bottom:20px;font-size:28px;position:relative;z-index:1;
+}
+.card-icon .material-symbols-outlined{font-size:28px;color:white}
+.offer-card h3{font-size:20px;font-weight:700;margin-bottom:8px;position:relative;z-index:1}
+.offer-card p{font-size:14px;color:var(--muted);line-height:1.6;position:relative;z-index:1}
+.offer-card .card-stat{
+  display:inline-block;margin-top:12px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);position:relative;z-index:1;
+}
+
+/* Card colors */
+.card-art{--card-glow:rgba(139,92,246,.15)}.card-art .card-icon{background:linear-gradient(135deg,#7c3aed,#a78bfa)}
+.card-math{--card-glow:rgba(59,130,246,.15)}.card-math .card-icon{background:linear-gradient(135deg,#2563eb,#60a5fa)}
+.card-tech{--card-glow:rgba(6,182,212,.15)}.card-tech .card-icon{background:linear-gradient(135deg,#0891b2,#22d3ee)}
+.card-tools{--card-glow:rgba(236,72,153,.15)}.card-tools .card-icon{background:linear-gradient(135deg,#db2777,#f472b6)}
+
+/* ── Card screenshot marquee ── */
+.card-screenshots{
+  position:relative;overflow:hidden;margin-top:16px;border-radius:12px;height:120px;
+  mask-image:linear-gradient(to right,transparent,black 8%,black 92%,transparent);
+  -webkit-mask-image:linear-gradient(to right,transparent,black 8%,black 92%,transparent);
+  z-index:1;
+}
+.card-screenshots .ss-track{
+  display:flex;gap:12px;animation:ss-scroll 25s linear infinite;width:max-content;
+}
+.card-screenshots .ss-track:hover{animation-play-state:paused}
+.card-screenshots .ss-item{
+  width:180px;height:120px;border-radius:10px;overflow:hidden;flex-shrink:0;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:center;
+}
+.card-screenshots .ss-item img{width:100%;height:100%;object-fit:cover}
+.card-screenshots .ss-placeholder{
+  color:rgba(255,255,255,.15);font-size:11px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.card-screenshots .ss-placeholder .material-symbols-outlined{font-size:24px;opacity:.3}
+@keyframes ss-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── Showcase ── */
+.showcase{padding:100px 0;overflow:hidden}
+.showcase .section-title,.showcase .section-desc{padding:0 24px}
+
+.marquee-wrap{position:relative;margin:0 auto 60px;overflow:hidden;
+  mask-image:linear-gradient(to right,transparent,black 8%,black 92%,transparent);
+  display:flex;flex-direction:column;gap:12px;
+}
+.marquee-track{display:flex;gap:14px;width:max-content}
+.marquee-track.row1{animation:marquee-scroll 60s linear infinite}
+.marquee-track.row2{animation:marquee-scroll-rev 55s linear infinite}
+.marquee-track:hover{animation-play-state:paused}
+.marquee-item{
+  width:200px;height:140px;border-radius:14px;overflow:hidden;flex-shrink:0;
+  border:1px solid var(--border);transition:transform .3s;
+}
+.marquee-item:hover{transform:scale(1.05)}
+.marquee-item img{width:100%;height:100%;object-fit:cover}
+@keyframes marquee-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes marquee-scroll-rev{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+
+/* Stats */
+.stats-row{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;padding:0 24px}
+.stat{text-align:center}
+.stat-num{
+  font-size:clamp(36px,5vw,56px);font-weight:900;display:block;
+  background:linear-gradient(135deg,#818cf8,#d4a843);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.stat-label{font-size:14px;color:var(--muted);margin-top:4px}
+
+/* ── CTA ── */
+.cta-section{padding:100px 24px;text-align:center;position:relative}
+.cta-section::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:600px;height:1px;background:linear-gradient(to right,transparent,var(--accent),transparent);
+}
+.cta-buttons{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:36px}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;padding:16px 36px;border-radius:50px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-weight:700;font-size:16px;
+  text-decoration:none;transition:all .3s;border:none;cursor:pointer;font-family:inherit;
+  box-shadow:0 8px 30px rgba(99,102,241,.35);
+}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(99,102,241,.5)}
+.btn-secondary{
+  display:inline-flex;align-items:center;gap:8px;padding:16px 36px;border-radius:50px;
+  background:transparent;color:var(--text);font-weight:600;font-size:16px;
+  text-decoration:none;transition:all .3s;border:1px solid var(--border);cursor:pointer;font-family:inherit;
+}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-3px)}
+
+.value-box{
+  display:flex;flex-direction:column;gap:12px;align-items:center;
+  margin:0 auto 40px;max-width:400px;
+}
+.value-item{
+  display:flex;align-items:center;gap:10px;font-size:15px;font-weight:500;color:var(--text);
+}
+.value-item .material-symbols-outlined{font-size:22px;color:#34d399;font-variation-settings:'FILL' 1}
+
+.cta-note{margin-top:20px;font-size:13px;color:var(--muted);opacity:.7}
+
+.footer{padding:40px 24px;text-align:center;font-size:12px;color:rgba(148,163,184,.4)}
+
+/* ── Reveal animation ── */
+[data-reveal]{opacity:0;transform:translateY(50px);transition:opacity .8s ease,transform .8s ease}
+[data-reveal].revealed{opacity:1;transform:translateY(0)}
+.cards-grid [data-reveal]:nth-child(2){transition-delay:.1s}
+.cards-grid [data-reveal]:nth-child(3){transition-delay:.2s}
+.cards-grid [data-reveal]:nth-child(4){transition-delay:.3s}
+
+/* ── Mobile tweaks ── */
+@media(max-width:640px){
+  .hero-logo{width:60px;height:60px}
+  .stats-row{gap:32px}
+  .marquee-item{width:140px;height:100px}
+  .marquee-wrap{gap:8px}
+  .cta-buttons{flex-direction:column;align-items:center}
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<!-- Background layers -->
+<div class="starfield"></div>
+<div class="nebula n1"></div>
+<div class="nebula n2"></div>
+<div class="nebula n3"></div>
+<div class="nebula n4"></div>
+<canvas id="whale-canvas"></canvas>
+
+<!-- ═══════════════ SECTION 1: HERO ═══════════════ -->
+<section class="hero" id="hero">
+  <img src="../../logo.png" alt="Luna Whale" class="hero-logo"/>
+  <h1 class="hero-title">Luna Whale<br>Art Lab</h1>
+  <p class="hero-sub">
+    <em>미술 · 수학 · 과학 · 코딩</em> 수업을<br>
+    <em>하나의 플랫폼</em>에서 바로 사용하세요
+  </p>
+  <p class="hero-desc">180개 이상의 인터랙티브 수업 콘텐츠, 4,000장의 레퍼런스 이미지,<br>웹 포토샵, 시뮬레이터까지 — 월 구독 하나로 전부 해결</p>
+  <a href="#offerings" class="scroll-hint" aria-label="아래로 스크롤">
+    <span>탐험하기</span>
+    <span class="material-symbols-outlined">keyboard_arrow_down</span>
+  </a>
+</section>
+
+<!-- ═══════════════ SECTION 2: OFFERINGS ═══════════════ -->
+<section class="offerings" id="offerings">
+  <h2 class="section-title" data-reveal>선생님, 이 모든 걸<br>수업에 바로 쓸 수 있습니다</h2>
+  <p class="section-desc" data-reveal>전 세계 어디에서도 이런 콘텐츠가 한 곳에 없습니다</p>
+  <div class="cards-grid">
+
+    <div class="offer-card card-art" data-reveal>
+      <div class="card-icon"><span class="material-symbols-outlined">palette</span></div>
+      <h3>미술 수업 콘텐츠</h3>
+      <p>인상주의부터 현대미술까지, 작가별 · 기법별 체계적인 수업 자료가 즉시 사용 가능</p>
+      <span class="card-stat">180+ 수업 · 4,000+ 레퍼런스</span>
+      <div class="card-screenshots"><div class="ss-track" id="ss-art"></div></div>
+    </div>
+
+    <div class="offer-card card-math" data-reveal>
+      <div class="card-icon"><span class="material-symbols-outlined">calculate</span></div>
+      <h3>수학 게임 & 퍼즐</h3>
+      <p>피타고라스 시나리오, 물리 퍼즐 게임 — 학생들이 직접 플레이하며 배우는 수학</p>
+      <span class="card-stat">인터랙티브 수학 게임</span>
+      <div class="card-screenshots"><div class="ss-track" id="ss-math"></div></div>
+    </div>
+
+    <div class="offer-card card-tech" data-reveal>
+      <div class="card-icon"><span class="material-symbols-outlined">science</span></div>
+      <h3>과학 시뮬레이터</h3>
+      <p>분자 빌더, 지층 시뮬레이터, 태양계 탐험 — 교실에서 바로 실행하는 과학 실험</p>
+      <span class="card-stat">3D 인터랙티브 시뮬레이션</span>
+      <div class="card-screenshots"><div class="ss-track" id="ss-tech"></div></div>
+    </div>
+
+    <div class="offer-card card-tools" data-reveal>
+      <div class="card-icon"><span class="material-symbols-outlined">brush</span></div>
+      <h3>창작 도구 모음</h3>
+      <p>웹 포토샵, 색칠 교실, 타이핑 게임 — 설치 없이 브라우저에서 바로 사용</p>
+      <span class="card-stat">설치 불필요 · 즉시 사용</span>
+      <div class="card-screenshots"><div class="ss-track" id="ss-tools"></div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════ SECTION 3: SHOWCASE ═══════════════ -->
+<section class="showcase" id="showcase">
+  <h2 class="section-title" data-reveal>학생 갤러리</h2>
+  <p class="section-desc" data-reveal>우리 학생들의 놀라운 작품을 만나보세요</p>
+
+  <div class="marquee-wrap" data-reveal>
+    <div class="marquee-track row1" id="marqueeRow1"></div>
+    <div class="marquee-track row2" id="marqueeRow2"></div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat" data-reveal>
+      <span class="stat-num" data-count="180">0</span>
+      <span class="stat-label">수업</span>
+    </div>
+    <div class="stat" data-reveal>
+      <span class="stat-num" data-count="4000">0</span>
+      <span class="stat-label">이미지</span>
+    </div>
+    <div class="stat" data-reveal>
+      <span class="stat-num" data-count="100">0</span>
+      <span class="stat-label">작가</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ SECTION 4: CTA ═══════════════ -->
+<section class="cta-section" id="cta">
+  <h2 class="section-title" data-reveal>월 구독 하나로, 전부 해결</h2>
+  <p class="section-desc" data-reveal>수업 준비에 쏟던 시간을, 학생들과의 시간으로 바꿔보세요</p>
+
+  <div class="value-box" data-reveal>
+    <div class="value-item"><span class="material-symbols-outlined">check_circle</span>180+ 미술 수업 콘텐츠 무제한</div>
+    <div class="value-item"><span class="material-symbols-outlined">check_circle</span>수학 · 과학 인터랙티브 게임</div>
+    <div class="value-item"><span class="material-symbols-outlined">check_circle</span>웹 포토샵 · 색칠 교실 · 타자기</div>
+    <div class="value-item"><span class="material-symbols-outlined">check_circle</span>매월 새로운 콘텐츠 업데이트</div>
+    <div class="value-item"><span class="material-symbols-outlined">check_circle</span>설치 불필요 — 브라우저만 있으면 OK</div>
+  </div>
+
+  <div class="cta-buttons" data-reveal>
+    <a href="../../index.html" class="btn-primary">
+      <span class="material-symbols-outlined">rocket_launch</span>
+      무료 체험 시작하기
+    </a>
+    <a href="../../index.html" class="btn-secondary">
+      <span class="material-symbols-outlined">visibility</span>
+      먼저 둘러보기
+    </a>
+  </div>
+  <p class="cta-note" data-reveal>신용카드 없이 시작 · 언제든 해지 가능</p>
+  <div class="footer">&copy; 2026 Luna Whale Art Lab. All rights reserved.</div>
+</section>
+
+<!-- ═══════════════ SCRIPTS ═══════════════ -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://esm.sh/three@0.160.0"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+// ── Whale silhouette path (traced from logowhale.png) ──
+// Coordinates normalized to [-1, 1] range, whale swimming upper-right
+const WHALE_PATH = [
+  // body top
+  {x:0.05,y:0.5},{x:0.25,y:0.6},{x:0.45,y:0.55},{x:0.6,y:0.42},{x:0.7,y:0.3},
+  // head
+  {x:0.75,y:0.2},{x:0.72,y:0.1},{x:0.65,y:0.05},
+  // belly
+  {x:0.55,y:0.0},{x:0.4,y:-0.05},{x:0.25,y:0.0},{x:0.1,y:0.1},
+  // tail
+  {x:-0.05,y:0.05},{x:-0.2,y:-0.1},{x:-0.35,y:-0.25},
+  // tail fin bottom
+  {x:-0.5,y:-0.35},{x:-0.55,y:-0.3},
+  // tail fin top
+  {x:-0.45,y:-0.15},{x:-0.35,y:-0.05},{x:-0.2,y:0.1},
+  // back to body
+  {x:-0.05,y:0.25},{x:0.05,y:0.4}
+];
+
+// Pectoral fin (small appendage)
+const FIN_PATH = [
+  {x:0.25,y:0.1},{x:0.15,y:-0.1},{x:0.05,y:-0.15},{x:0.1,y:0.0},{x:0.2,y:0.08}
+];
+
+// ── Point-in-polygon test ──
+function pointInPoly(px, py, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i].x, yi = poly[i].y;
+    const xj = poly[j].x, yj = poly[j].y;
+    if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+// ── Generate particles inside whale ──
+function generateWhaleParticles(count, scale = 2.5) {
+  const positions = [];
+  const homePositions = [];
+  const sizes = [];
+  let generated = 0;
+  const maxAttempts = count * 20;
+  let attempts = 0;
+
+  while (generated < count && attempts < maxAttempts) {
+    attempts++;
+    const px = (Math.random() - 0.3) * 1.6;
+    const py = (Math.random() - 0.15) * 1.2;
+    if (pointInPoly(px, py, WHALE_PATH) || pointInPoly(px, py, FIN_PATH)) {
+      const x = px * scale;
+      const y = py * scale;
+      const z = (Math.random() - 0.5) * 0.6;
+      positions.push(x, y, z);
+      homePositions.push(x, y, z);
+      sizes.push(0.8 + Math.random() * 1.5);
+      generated++;
+    }
+  }
+  return { positions: new Float32Array(positions), homePositions: new Float32Array(homePositions), sizes: new Float32Array(sizes), count: generated };
+}
+
+// ── Crescent moon particles ──
+function generateMoonParticles(count, scale = 2.5) {
+  const positions = [];
+  const homePositions = [];
+  const sizes = [];
+  const cx = -0.1 * scale, cy = 0.15 * scale;
+  const outerR = 1.1 * scale, innerR = 0.8 * scale;
+  let generated = 0;
+
+  while (generated < count) {
+    const angle = Math.random() * Math.PI * 2;
+    const r = innerR + Math.random() * (outerR - innerR);
+    const x = cx + Math.cos(angle) * r;
+    const y = cy + Math.sin(angle) * r;
+    // Only keep particles in the crescent (right side excluded)
+    const innerDist = Math.sqrt((x - cx - 0.4 * scale) ** 2 + (y - cy) ** 2);
+    if (innerDist > innerR * 0.9) {
+      const z = (Math.random() - 0.5) * 0.3;
+      positions.push(x, y, z);
+      homePositions.push(x, y, z);
+      sizes.push(0.6 + Math.random() * 1.0);
+      generated++;
+    }
+  }
+  return { positions: new Float32Array(positions), homePositions: new Float32Array(homePositions), sizes: new Float32Array(sizes) };
+}
+
+// ── Ambient star dust ──
+function generateStarDust(count) {
+  const positions = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+    sizes[i] = 0.3 + Math.random() * 0.8;
+  }
+  return { positions, sizes };
+}
+
+// ── THREE.js Setup ──
+const isMobile = window.innerWidth < 768;
+const WHALE_COUNT = isMobile ? 1000 : 2500;
+const MOON_COUNT = isMobile ? 200 : 500;
+const DUST_COUNT = isMobile ? 100 : 300;
+
+const canvas = document.getElementById('whale-canvas');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.z = 10;
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+// ── Whale points ──
+const whale = generateWhaleParticles(WHALE_COUNT, 2.2);
+const whaleGeo = new THREE.BufferGeometry();
+whaleGeo.setAttribute('position', new THREE.BufferAttribute(whale.positions, 3));
+whaleGeo.setAttribute('size', new THREE.BufferAttribute(whale.sizes, 1));
+
+const whaleMat = new THREE.PointsMaterial({
+  color: 0x4a6faf,
+  size: 0.055,
+  transparent: true,
+  opacity: 0.9,
+  blending: THREE.AdditiveBlending,
+  sizeAttenuation: true
+});
+const whalePoints = new THREE.Points(whaleGeo, whaleMat);
+whalePoints.position.set(1.5, 1.8, 0); // offset to upper-right, behind logo
+scene.add(whalePoints);
+
+// ── Moon crescent ──
+const moon = generateMoonParticles(MOON_COUNT, 2.2);
+const moonGeo = new THREE.BufferGeometry();
+moonGeo.setAttribute('position', new THREE.BufferAttribute(moon.positions, 3));
+const moonMat = new THREE.PointsMaterial({
+  color: 0xebc35a,
+  size: 0.05,
+  transparent: true,
+  opacity: 0.75,
+  blending: THREE.AdditiveBlending,
+  sizeAttenuation: true
+});
+const moonPoints = new THREE.Points(moonGeo, moonMat);
+moonPoints.position.set(1.5, 1.8, 0); // same offset as whale
+scene.add(moonPoints);
+
+// ── Star dust ──
+const dust = generateStarDust(DUST_COUNT);
+const dustGeo = new THREE.BufferGeometry();
+dustGeo.setAttribute('position', new THREE.BufferAttribute(dust.positions, 3));
+const dustMat = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 0.02,
+  transparent: true,
+  opacity: 0.4,
+  blending: THREE.AdditiveBlending,
+  sizeAttenuation: true
+});
+const dustPoints = new THREE.Points(dustGeo, dustMat);
+scene.add(dustPoints);
+
+// ── Mouse tracking ──
+const mouse = { x: 0, y: 0, active: false };
+if (!isMobile) {
+  window.addEventListener('mousemove', e => {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    mouse.active = true;
+  });
+}
+
+// ── Scroll tracking ──
+let scrollProgress = 0;
+window.addEventListener('scroll', () => {
+  scrollProgress = window.scrollY / window.innerHeight;
+}, { passive: true });
+
+// ── Animation loop ──
+const clock = new THREE.Clock();
+let isHeroVisible = true;
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (!isHeroVisible && scrollProgress > 1.5) return; // pause when far from hero
+
+  const t = clock.getElapsedTime();
+  const pos = whaleGeo.attributes.position.array;
+
+  // Breathing + swimming
+  for (let i = 0; i < whale.count; i++) {
+    const i3 = i * 3;
+    const hx = whale.homePositions[i3];
+    const hy = whale.homePositions[i3 + 1];
+    const hz = whale.homePositions[i3 + 2];
+
+    // Sine wave swimming motion
+    const wave = Math.sin(t * 0.8 + hx * 0.5) * 0.08;
+    const breath = Math.sin(t * 0.6 + hy * 0.3) * 0.04;
+
+    let tx = hx + wave;
+    let ty = hy + breath;
+    let tz = hz + Math.sin(t * 0.4 + hx * 0.8) * 0.03;
+
+    // Mouse repulsion (desktop only)
+    if (mouse.active) {
+      const mx = mouse.x * 4;
+      const my = mouse.y * 3;
+      const dx = tx - mx;
+      const dy = ty - my;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 2) {
+        const force = (2 - dist) * 0.15;
+        tx += (dx / dist) * force;
+        ty += (dy / dist) * force;
+      }
+    }
+
+    // Smooth lerp to target
+    pos[i3] += (tx - pos[i3]) * 0.05;
+    pos[i3 + 1] += (ty - pos[i3 + 1]) * 0.05;
+    pos[i3 + 2] += (tz - pos[i3 + 2]) * 0.05;
+  }
+  whaleGeo.attributes.position.needsUpdate = true;
+
+  // Moon gentle rotation
+  moonPoints.rotation.z = Math.sin(t * 0.3) * 0.05;
+  const moonPos = moonGeo.attributes.position.array;
+  for (let i = 0; i < MOON_COUNT; i++) {
+    const i3 = i * 3;
+    const hx = moon.homePositions[i3];
+    const hy = moon.homePositions[i3 + 1];
+    const hz = moon.homePositions[i3 + 2];
+    moonPos[i3] = hx + Math.sin(t * 0.5 + i * 0.01) * 0.03;
+    moonPos[i3 + 1] = hy + Math.cos(t * 0.4 + i * 0.01) * 0.03;
+    moonPos[i3 + 2] = hz;
+  }
+  moonGeo.attributes.position.needsUpdate = true;
+
+  // Dust twinkle
+  dustMat.opacity = 0.3 + Math.sin(t * 0.8) * 0.15;
+  dustPoints.rotation.y = t * 0.02;
+
+  // Scroll parallax — whale moves up and fades
+  const scrollOffset = scrollProgress * 2;
+  whalePoints.position.y = scrollOffset * 0.5;
+  moonPoints.position.y = scrollOffset * 0.4;
+  whalePoints.rotation.z = scrollProgress * 0.1;
+  moonPoints.rotation.z += scrollProgress * 0.05;
+
+  const heroOpacity = Math.max(0, 1 - scrollProgress * 1.2);
+  whaleMat.opacity = 0.85 * heroOpacity;
+  moonMat.opacity = 0.6 * heroOpacity;
+  dustMat.opacity = (0.3 + Math.sin(t * 0.8) * 0.15) * heroOpacity;
+
+  isHeroVisible = heroOpacity > 0;
+
+  renderer.render(scene, camera);
+}
+
+// Check WebGL support & start
+try {
+  animate();
+} catch (e) {
+  console.warn('WebGL not available, using CSS fallback');
+  canvas.style.display = 'none';
+}
+
+// ── Resize ──
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+<script>
+// ── Intersection Observer for reveals ──
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('revealed');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('[data-reveal]').forEach(el => revealObserver.observe(el));
+
+// ── Counter animation ──
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const el = entry.target;
+    const target = parseInt(el.dataset.count);
+    const duration = 2000;
+    const start = performance.now();
+
+    function update(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      const current = Math.round(eased * target);
+      el.textContent = current.toLocaleString();
+      if (progress < 1) requestAnimationFrame(update);
+      else el.textContent = target.toLocaleString() + '+';
+    }
+    requestAnimationFrame(update);
+    counterObserver.unobserve(el);
+  });
+}, { threshold: 0.5 });
+
+document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+
+// ── Gallery marquee ──
+(function buildMarquee() {
+  const row1 = document.getElementById('marqueeRow1');
+  const row2 = document.getElementById('marqueeRow2');
+  const images = [];
+
+  // 1 random gallery image per lesson across all months
+  const months = ['2026-03','2026-02','2026-01','2025-12','2025-11','2025-10'];
+  const galNums = ['gal01','gal02','gal03','gal04','gal05','gal06','gal07','gal08',
+                   'gal09','gal10','gal11','gal12'];
+
+  for (const m of months) {
+    // 15 lessons per month
+    for (let l = 1; l <= 15; l++) {
+      const lNum = String(l).padStart(2,'0');
+      const randGal = galNums[Math.floor(Math.random() * galNums.length)];
+      images.push(`../../images/lessons/${m}/thumbs/l${lNum}-${randGal}.jpg`);
+    }
+  }
+
+  // Shuffle for variety
+  for (let i = images.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [images[i], images[j]] = [images[j], images[i]];
+  }
+
+  // Split into 2 rows
+  const half = Math.ceil(images.length / 2);
+  const row1Imgs = images.slice(0, half);
+  const row2Imgs = images.slice(half);
+
+  function fillTrack(track, srcs) {
+    const all = [...srcs, ...srcs]; // duplicate for infinite loop
+    all.forEach(src => {
+      const div = document.createElement('div');
+      div.className = 'marquee-item';
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = '학생 작품';
+      img.loading = 'lazy';
+      img.onerror = function() { this.parentElement.style.display = 'none'; };
+      div.appendChild(img);
+      track.appendChild(div);
+    });
+  }
+
+  fillTrack(row1, row1Imgs);
+  fillTrack(row2, row2Imgs);
+})();
+
+// ── Card screenshot marquees ──
+const ssData = {
+  'ss-art': [
+    '../../images/landing-screenshots/art-01-monet.jpg',
+    '../../images/landing-screenshots/art-02-cosmos.jpg',
+    '../../images/landing-screenshots/art-03-gallery.jpg',
+  ],
+  'ss-math': [
+    '../../images/landing-screenshots/math-01-hub.jpg',
+    '../../images/landing-screenshots/math-02-pythagoras.jpg',
+    '../../images/landing-screenshots/math-03-pigs.jpg',
+  ],
+  'ss-tech': [
+    '../../images/landing-screenshots/tech-01-atomic.jpg',
+    '../../images/landing-screenshots/tech-02-strata.jpg',
+  ],
+  'ss-tools': [
+    '../../images/landing-screenshots/tools-01-photo.jpg',
+    '../../images/landing-screenshots/tools-02-coloring.jpg',
+    '../../images/landing-screenshots/tools-03-typewriter.jpg',
+  ]
+};
+
+Object.entries(ssData).forEach(([trackId, srcs]) => {
+  const track = document.getElementById(trackId);
+  if (!track) return;
+  // Duplicate for infinite scroll
+  const allSrcs = [...srcs, ...srcs, ...srcs, ...srcs];
+  allSrcs.forEach(src => {
+    const item = document.createElement('div');
+    item.className = 'ss-item';
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = 'Screenshot';
+    img.loading = 'lazy';
+    item.appendChild(img);
+    track.appendChild(item);
+  });
+});
+</script>
+
+</body>
+</html>

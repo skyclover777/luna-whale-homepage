@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listen Up! - 루나웨일 영어듣기</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <style>
+        @font-face {
+            font-family: 'CookieRun-Bold';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Bold.woff') format('woff');
+            font-weight: bold; font-style: normal;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
+            overflow: hidden; background: #0a0014; color: white;
+        }
+
+        /* ═══ BG ═══ */
+        .bg-mesh { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+        .bg-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.1; animation: orbF 20s ease-in-out infinite alternate; }
+        .bg-orb:nth-child(1) { width: 500px; height: 500px; background: #9C27B0; top: -10%; left: -5%; }
+        .bg-orb:nth-child(2) { width: 400px; height: 400px; background: #7C4DFF; bottom: -10%; right: -5%; animation-delay: -8s; }
+        .bg-orb:nth-child(3) { width: 350px; height: 350px; background: #E040FB; top: 40%; left: 50%; animation-delay: -4s; }
+        @keyframes orbF { 0%{transform:translate(0,0)} 50%{transform:translate(30px,-40px)} 100%{transform:translate(-20px,30px)} }
+
+        /* ═══ Start ═══ */
+        #start-screen {
+            position: fixed; inset: 0; z-index: 200;
+            background: linear-gradient(160deg, rgba(10,0,20,0.98), rgba(30,10,60,0.95));
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .start-card {
+            background: rgba(255,255,255,0.04); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 28px;
+            padding: 48px 44px 40px; max-width: 440px; width: 90%; text-align: center;
+        }
+        .start-emoji { font-size: 56px; margin-bottom: 8px; }
+        .start-title {
+            font-family: 'CookieRun-Bold'; font-size: 42px;
+            background: linear-gradient(135deg, #E040FB, #7C4DFF, #40C4FF);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 6px;
+        }
+        .start-sub { font-size: 14px; color: rgba(255,255,255,0.45); margin-bottom: 28px; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-label { display: block; font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+        .start-input {
+            width: 100%; padding: 14px 18px; border: 2px solid rgba(255,255,255,0.12);
+            border-radius: 14px; font-size: 17px; font-family: 'Pretendard Variable'; font-weight: 600;
+            outline: none; background: rgba(255,255,255,0.04); color: white; transition: all 0.25s;
+        }
+        .start-input:focus { border-color: #E040FB; box-shadow: 0 0 0 3px rgba(224,64,251,0.15); }
+        .start-input::placeholder { color: rgba(255,255,255,0.2); }
+        .level-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+        .level-btn {
+            flex: 1; min-width: 55px; padding: 10px 6px; border: 2px solid rgba(255,255,255,0.12);
+            border-radius: 10px; background: transparent; font-family: 'CookieRun-Bold';
+            font-size: 13px; color: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.2s;
+        }
+        .level-btn.active { border-color: #E040FB; background: #E040FB; color: white; }
+        .level-btn:hover:not(.active) { border-color: rgba(255,255,255,0.25); }
+        .start-btn {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, #9C27B0, #E040FB);
+            color: white; font-family: 'CookieRun-Bold'; font-size: 21px;
+            border: none; border-radius: 14px; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 6px 24px rgba(156,39,176,0.35);
+        }
+        .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(156,39,176,0.5); }
+        .start-hint { margin-top: 16px; font-size: 12px; color: rgba(255,255,255,0.25); }
+        .start-stats { margin-top: 12px; padding: 10px 14px; background: rgba(156,39,176,0.08); border-radius: 10px; font-size: 12px; color: rgba(255,255,255,0.5); }
+        .start-stats strong { color: #E040FB; }
+        .mode-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+        .mode-btn {
+            flex: 1; padding: 12px 8px; border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px; background: transparent; color: rgba(255,255,255,0.5);
+            font-family: 'CookieRun-Bold'; font-size: 13px; cursor: pointer; transition: all 0.2s;
+            text-align: center;
+        }
+        .mode-btn.active { border-color: #7C4DFF; background: rgba(124,77,255,0.15); color: #B388FF; }
+        .mode-btn .mode-icon { font-size: 24px; display: block; margin-bottom: 4px; }
+
+        /* ═══ Game ═══ */
+        #game-screen { display: none; position: fixed; inset: 0; background: linear-gradient(180deg, #0a0014, #150028); flex-direction: column; z-index: 10; }
+        .game-hud { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; }
+        .hud-item {
+            background: rgba(255,255,255,0.04); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;
+            padding: 8px 14px; font-family: 'CookieRun-Bold';
+        }
+        .hud-item .label { font-size: 10px; opacity: 0.35; letter-spacing: 1px; }
+        .hud-item .val { font-size: 18px; }
+        .hud-score .val { color: #FFE66D; }
+        .hud-combo .val { color: #E040FB; }
+
+        /* Speaker area */
+        .listen-area {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 0 24px;
+        }
+
+        /* Sound wave visual */
+        .sound-ring {
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(124,77,255,0.15) 0%, transparent 70%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; margin-bottom: 24px;
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .sound-ring:hover { transform: scale(1.05); }
+        .sound-ring:active { transform: scale(0.95); }
+        .sound-ring .ring {
+            position: absolute; border-radius: 50%;
+            border: 2px solid rgba(124,77,255,0.2);
+            animation: ringPulse 2s ease-out infinite;
+        }
+        .sound-ring .ring:nth-child(1) { width: 100%; height: 100%; animation-delay: 0s; }
+        .sound-ring .ring:nth-child(2) { width: 130%; height: 130%; animation-delay: 0.4s; }
+        .sound-ring .ring:nth-child(3) { width: 160%; height: 160%; animation-delay: 0.8s; }
+        .sound-ring.playing .ring { border-color: rgba(224,64,251,0.4); animation-duration: 1s; }
+        @keyframes ringPulse { 0%{opacity:1;transform:scale(0.8)} 100%{opacity:0;transform:scale(1.2)} }
+        .sound-icon { font-size: 72px; z-index: 1; filter: drop-shadow(0 4px 16px rgba(124,77,255,0.4)); }
+        .replay-hint {
+            font-size: 12px; color: rgba(255,255,255,0.3);
+            margin-top: -12px; margin-bottom: 16px;
+        }
+
+        /* Word reveal (after answer) */
+        .word-reveal {
+            font-family: 'CookieRun-Bold'; font-size: 28px;
+            color: #B388FF; margin-bottom: 8px; min-height: 36px;
+            transition: all 0.3s;
+        }
+        .word-reveal.hidden { opacity: 0; transform: translateY(10px); }
+        .word-reveal.show { opacity: 1; transform: translateY(0); }
+
+        /* Timer */
+        .timer-container {
+            width: 90%; max-width: 520px; height: 8px;
+            background: rgba(255,255,255,0.08); border-radius: 4px;
+            margin-top: 12px; overflow: hidden;
+        }
+        .timer-bar {
+            height: 100%; border-radius: 4px;
+            background: linear-gradient(90deg, #E040FB, #7C4DFF, #40C4FF);
+            transition: width 0.1s linear; width: 100%;
+        }
+        .timer-bar.urgent { background: linear-gradient(90deg, #FF6B6B, #FF4444); }
+        .timer-container.shake { animation: timerShake 0.08s infinite alternate; }
+        .timer-container.critical-shake { animation: timerCritShake 0.05s infinite alternate; }
+        @keyframes timerShake { 0%{transform:translateX(-2px)} 100%{transform:translateX(2px)} }
+        @keyframes timerCritShake { 0%{transform:translate(-3px,-1px) scale(1.02)} 100%{transform:translate(3px,1px) scale(0.98)} }
+
+        /* Answers */
+        .answers-area { padding: 20px; padding-bottom: 40px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+        .answer-btn {
+            width: 90%; max-width: 520px; padding: 16px 24px;
+            background: rgba(255,255,255,0.04); backdrop-filter: blur(8px);
+            border: 2px solid rgba(255,255,255,0.08); border-radius: 16px;
+            color: white; font-size: 16px; font-weight: 600;
+            font-family: 'Pretendard Variable'; cursor: pointer; transition: all 0.15s;
+            text-align: left; line-height: 1.4;
+            opacity: 0; transform: translateY(30px); animation: slideUp 0.4s ease-out forwards;
+        }
+        .answer-btn:nth-child(1) { animation-delay: 0.1s; }
+        .answer-btn:nth-child(2) { animation-delay: 0.2s; }
+        .answer-btn:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+        .answer-btn:hover { border-color: #7C4DFF; background: rgba(124,77,255,0.08); transform: translateY(-2px) !important; }
+        .answer-btn .key-hint {
+            display: inline-block; width: 28px; height: 28px;
+            background: rgba(255,255,255,0.08); border-radius: 8px;
+            text-align: center; line-height: 28px; font-family: 'CookieRun-Bold';
+            font-size: 14px; margin-right: 12px; color: rgba(255,255,255,0.4);
+        }
+        .answer-btn.correct { border-color: #4ECDC4 !important; background: rgba(78,205,196,0.15) !important; animation: none; opacity: 1; transform: none; }
+        .answer-btn.wrong { border-color: #FF6B6B !important; background: rgba(255,107,107,0.15) !important; animation: none; opacity: 1; transform: none; }
+        .answer-btn.disabled { pointer-events: none; opacity: 0.3; }
+
+        /* Judgment */
+        .judgment {
+            position: fixed; top: 35%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-family: 'CookieRun-Bold'; font-size: 64px;
+            pointer-events: none; z-index: 150;
+            animation: judgePop 0.8s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+            text-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+        .judgment.perfect { color: #4ECDC4; }
+        .judgment.good { color: #FFE66D; }
+        .judgment.miss { color: #FF6B6B; }
+        @keyframes judgePop { 0%{transform:translate(-50%,-50%) scale(0);opacity:0} 40%{transform:translate(-50%,-60%) scale(1.2);opacity:1} 100%{transform:translate(-50%,-80%) scale(1);opacity:0} }
+        .combo-popup {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%,0);
+            font-family: 'CookieRun-Bold'; font-size: 24px; color: #FFE66D;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            animation: comboPop 0.6s ease-out forwards; pointer-events: none; z-index: 149;
+        }
+        @keyframes comboPop { 0%{transform:translate(-50%,0) scale(0);opacity:0} 50%{transform:translate(-50%,-10px) scale(1.15);opacity:1} 100%{transform:translate(-50%,-30px) scale(1);opacity:0} }
+
+        /* ═══ Game Over ═══ */
+        #gameover-screen {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px); display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 200;
+        }
+        .go-card {
+            background: rgba(255,255,255,0.04); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 28px;
+            padding: 40px 36px 32px; max-width: 400px; width: 88%; text-align: center;
+        }
+        .go-title { font-family: 'CookieRun-Bold'; font-size: 32px; color: #E040FB; margin-bottom: 4px; }
+        .go-label { font-size: 12px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+        .go-score { font-family: 'CookieRun-Bold'; font-size: 48px; color: #FFE66D; margin: 8px 0 12px; }
+        .go-stats { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .go-stat { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 10px 14px; font-size: 12px; color: rgba(255,255,255,0.5); }
+        .go-stat .val { font-family: 'CookieRun-Bold'; font-size: 20px; display: block; margin-top: 2px; }
+        .go-stat .val.p { color: #4ECDC4; } .go-stat .val.g { color: #FFE66D; } .go-stat .val.m { color: #FF6B6B; }
+        .lb-list { text-align: left; margin-bottom: 20px; }
+        .lb-row { display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.6); }
+        .lb-row:nth-child(odd) { background: rgba(255,255,255,0.03); }
+        .lb-row .rank { color: #E040FB; font-family: 'CookieRun-Bold'; width: 24px; }
+        .lb-row .name { flex: 1; margin-left: 8px; }
+        .lb-row .pts { color: #FFE66D; font-family: 'CookieRun-Bold'; }
+        .go-btn {
+            width: 100%; padding: 15px; background: linear-gradient(135deg, #9C27B0, #E040FB);
+            color: white; font-family: 'CookieRun-Bold'; font-size: 19px;
+            border: none; border-radius: 14px; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 6px 24px rgba(156,39,176,0.35);
+        }
+        .go-btn:hover { transform: translateY(-2px); }
+        .go-btn-secondary { width:100%; padding:13px; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.6); font-family:'CookieRun-Bold'; font-size:14px; border:none; border-radius:14px; cursor:pointer; margin-top:8px; }
+
+        /* HUD lives/speed */
+        .hud-row { display:flex; justify-content:space-between; align-items:center; padding:0 20px 4px; }
+
+        @media (max-width:600px) {
+            .start-card { padding: 32px 24px 28px; }
+            .start-title { font-size: 34px; }
+            .sound-ring { width: 150px; height: 150px; }
+            .sound-icon { font-size: 54px; }
+            .answer-btn { font-size: 14px; padding: 14px 18px; }
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+    <div class="bg-mesh"><div class="bg-orb"></div><div class="bg-orb"></div><div class="bg-orb"></div></div>
+
+    <!-- ═══ Start ═══ -->
+    <div id="start-screen">
+        <div class="start-card">
+            <div class="start-emoji">👂</div>
+            <div class="start-title">Listen Up!</div>
+            <div class="start-sub">영어를 듣고 뜻을 맞혀라!</div>
+            <div class="input-group">
+                <input type="text" id="nickname" class="start-input" placeholder="닉네임 (선택)" maxlength="12" style="text-align:center;">
+            </div>
+            <div class="input-group">
+                <label class="input-label">모드</label>
+                <div class="mode-toggle">
+                    <button class="mode-btn active" onclick="setMode('word',this)">
+                        <span class="mode-icon">🔤</span>단어 듣기
+                    </button>
+                    <button class="mode-btn" onclick="setMode('sentence',this)">
+                        <span class="mode-icon">💬</span>문장 듣기
+                    </button>
+                    <button class="mode-btn" onclick="setMode('scene',this)">
+                        <span class="mode-icon">🌍</span>대화 듣기
+                    </button>
+                </div>
+            </div>
+            <div class="input-group" id="level-group">
+                <label class="input-label">난이도</label>
+                <div class="level-selector">
+                    <button class="level-btn active" onclick="setLevel('all',this)">전체</button>
+                    <button class="level-btn" onclick="setLevel('초등',this)">초등</button>
+                    <button class="level-btn" onclick="setLevel('중등',this)">중등</button>
+                    <button class="level-btn" onclick="setLevel('고등',this)">고등</button>
+                    <button class="level-btn" onclick="setLevel('대학',this)">대학</button>
+                </div>
+            </div>
+            <button onclick="startGame()" class="start-btn">Start Listening!</button>
+            <div class="start-hint">음성을 듣고 1 2 3 키 또는 클릭</div>
+            <div class="start-stats" id="startStats"></div>
+        </div>
+    </div>
+
+    <!-- ═══ Game ═══ -->
+    <div id="game-screen">
+        <div class="game-hud">
+            <div class="hud-item hud-combo"><div class="label">COMBO</div><div class="val" id="hud-combo">0</div></div>
+            <div class="hud-item"><div class="label">ROUND</div><div class="val" id="hud-round" style="color:#fff">1</div></div>
+            <div class="hud-item hud-score"><div class="label">SCORE</div><div class="val" id="hud-score">0</div></div>
+            <div class="hud-item"><div class="label">MASTERED</div><div class="val" id="hud-mastered" style="color:#E040FB">0</div></div>
+        </div>
+        <div class="hud-row">
+            <div id="hud-lives" style="font-size:20px;letter-spacing:2px;">❤️❤️❤️❤️❤️</div>
+            <div id="hud-speed" style="font-family:'CookieRun-Bold';font-size:13px;color:rgba(255,255,255,0.3);">⚡ 6.0s</div>
+        </div>
+
+        <div class="listen-area">
+            <div class="sound-ring" id="soundRing" onclick="replayAudio()">
+                <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+                <div class="sound-icon">🔊</div>
+            </div>
+            <div class="replay-hint">클릭하면 다시 들을 수 있어요</div>
+            <div class="word-reveal hidden" id="wordReveal"></div>
+            <div class="timer-container"><div class="timer-bar" id="timer-bar"></div></div>
+        </div>
+
+        <div class="answers-area" id="answers-area"></div>
+    </div>
+
+    <!-- ═══ Game Over ═══ -->
+    <div id="gameover-screen">
+        <div class="go-card">
+            <div class="go-title">Well Done!</div>
+            <div class="go-label">SCORE</div>
+            <div class="go-score" id="final-score">0</div>
+            <div class="go-stats">
+                <div class="go-stat"><span class="label">ROUND</span><span class="val" style="color:#fff" id="stat-round">0</span></div>
+                <div class="go-stat"><span class="label">PERFECT</span><span class="val p" id="stat-perfect">0</span></div>
+                <div class="go-stat"><span class="label">GOOD</span><span class="val g" id="stat-good">0</span></div>
+                <div class="go-stat"><span class="label">MISS</span><span class="val m" id="stat-miss">0</span></div>
+            </div>
+            <div class="go-label" style="margin-bottom:8px">HALL OF FAME</div>
+            <div id="leaderboard-list" class="lb-list"></div>
+            <button onclick="restartGame()" class="go-btn">Try Again!</button>
+            <button onclick="window.location.href='../luna-en/index.html'" class="go-btn-secondary">🌍 Luna EN</button>
+        </div>
+    </div>
+
+    <script src="../../assets/js/english-run-data.js"></script>
+    <script src="../../assets/js/english-talk-data.js"></script>
+    <script src="../../assets/js/english-scene-data.js"></script>
+    <script>
+    /* ═══════════════════════════════════════
+       Listen Up! — 영어 듣기 훈련
+       음성만 듣고 한국어 뜻 고르기
+       ═══════════════════════════════════════ */
+
+    const TIME_START = 6000;
+    const TIME_MIN = 2500;
+    const TIME_DECREASE = 80;
+    const MASTERY_THRESHOLD = 3;
+    const MAX_LIVES = 5;
+    const MASTERY_KEY = 'lw_listen_mastery';
+
+    const LEVEL_COLORS = { '초등':'#4CAF50', '중등':'#2196F3', '고등':'#FF9800', '대학':'#9C27B0' };
+
+    let selectedLevel = 'all';
+    let selectedMode = 'word'; // 'word' or 'sentence' or 'scene'
+    let gameRunning = false;
+    let score = 0, combo = 0, maxCombo = 0;
+    let perfectCount = 0, goodCount = 0, missCount = 0;
+    let lives = MAX_LIVES, round = 0, currentTimeLimit = TIME_START;
+    let currentQ = null, timerStart = 0, timerRAF = null, answered = false;
+    let questionIndex = 0, shuffledQuestions = [];
+    let lastTickTime = 0, lastUrgentTick = 0;
+
+    // ── TTS ──
+    let ttsVoice = null;
+    function initTTS() {
+        const voices = speechSynthesis.getVoices();
+        ttsVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Female'))
+            || voices.find(v => v.lang.startsWith('en-US'))
+            || voices.find(v => v.lang.startsWith('en')) || null;
+    }
+    speechSynthesis.onvoiceschanged = initTTS;
+    initTTS();
+
+    function speakText(text, rate) {
+        speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'en-US'; utter.rate = rate || 0.85; utter.pitch = 1;
+        if (ttsVoice) utter.voice = ttsVoice;
+        const ring = document.getElementById('soundRing');
+        ring.classList.add('playing');
+        utter.onend = () => ring.classList.remove('playing');
+        speechSynthesis.speak(utter);
+    }
+
+    function replayAudio() {
+        if (currentQ && !answered) {
+            const text = selectedMode === 'word' ? currentQ.word : currentQ.speaker;
+            speakText(text);
+        }
+    }
+
+    // ── Mastery ──
+    function getMastery() { try { return JSON.parse(localStorage.getItem(MASTERY_KEY)||'{}'); } catch { return {}; } }
+    function saveMastery(d) { localStorage.setItem(MASTERY_KEY, JSON.stringify(d)); }
+    function isMastered(key) { const d=getMastery(); return d[key]&&d[key].mastered; }
+    function getMasteredCount() { return Object.values(getMastery()).filter(d=>d.mastered).length; }
+    function recordCorrect(key) {
+        const d=getMastery(); if(!d[key]) d[key]={streak:0,mastered:false};
+        d[key].streak++; if(d[key].streak>=MASTERY_THRESHOLD&&!d[key].mastered) d[key].mastered=true;
+        saveMastery(d); document.getElementById('hud-mastered').textContent=getMasteredCount();
+    }
+    function recordWrong(key) {
+        const d=getMastery(); if(!d[key]) d[key]={streak:0,mastered:false};
+        d[key].streak=0; saveMastery(d);
+    }
+
+    // ── 약한 단어 리포트 (단어장 연동) ──
+    function reportWeakWord(word, mean, type, level, reason) {
+        const data = JSON.parse(localStorage.getItem('lw_vocab_weak') || '{}');
+        const id = 'listen:' + word;
+        if (!data[id]) data[id] = { word, mean, type, level:level||'', missCount:0, luckyCount:0, lastSeen:'', reviewStreak:0, source:'listen-up' };
+        if (reason === 'miss') data[id].missCount++;
+        else data[id].luckyCount++;
+        data[id].lastSeen = new Date().toISOString().slice(0,10);
+        localStorage.setItem('lw_vocab_weak', JSON.stringify(data));
+    }
+
+    // ── Data ──
+    function getWordPool() {
+        let pool = englishDataset;
+        if (selectedLevel !== 'all') pool = pool.filter(w => w.level === selectedLevel);
+        return pool.filter(w => !isMastered('w:'+w.word));
+    }
+    function getSentencePool() {
+        let pool = talkDataset;
+        if (selectedLevel !== 'all') pool = pool.filter(q => q.level === selectedLevel);
+        return pool.filter(q => !isMastered('s:'+q.speaker));
+    }
+    function getScenePool() {
+        const all = [];
+        sceneList.forEach(scene => {
+            const questions = sceneData[scene.id] || [];
+            questions.forEach(q => {
+                all.push({ ...q, sceneId: scene.id, sceneName: scene.name, sceneIcon: scene.icon });
+            });
+        });
+        return all.filter(q => !isMastered('sc:'+q.speaker));
+    }
+    function getActivePool() {
+        if (selectedMode === 'word') return getWordPool();
+        if (selectedMode === 'sentence') return getSentencePool();
+        return getScenePool();
+    }
+
+    // ── Audio SFX ──
+    let audioCtx;
+    function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+    function playSFX(type) {
+        if(!audioCtx) return; if(audioCtx.state==='suspended') audioCtx.resume();
+        const t=audioCtx.currentTime;
+        if(type==='perfect') {
+            [880,1100,1320].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0.15,t+i*0.07);g.gain.exponentialRampToValueAtTime(0.001,t+i*0.07+0.2);o.connect(g);g.connect(audioCtx.destination);o.start(t+i*0.07);o.stop(t+i*0.07+0.2);});
+        } else if(type==='good') {
+            [660,880].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0.12,t+i*0.1);g.gain.exponentialRampToValueAtTime(0.001,t+i*0.1+0.2);o.connect(g);g.connect(audioCtx.destination);o.start(t+i*0.1);o.stop(t+i*0.1+0.2);});
+        } else if(type==='miss') {
+            const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sawtooth';o.frequency.setValueAtTime(200,t);o.frequency.linearRampToValueAtTime(80,t+0.3);g.gain.setValueAtTime(0.1,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+0.3);
+        } else if(type==='tick') {
+            const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=1200;g.gain.setValueAtTime(0.03,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.04);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+0.04);
+        } else if(type==='urgentTick') {
+            const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='square';o.frequency.value=1800;g.gain.setValueAtTime(0.05,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.03);o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+0.03);
+        }
+    }
+
+    // ── UI ──
+    function setLevel(l,btn) { selectedLevel=l; document.querySelectorAll('.level-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); updateStartStats(); }
+    function setMode(m,btn) {
+        selectedMode=m;
+        document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        // scene 모드에서는 난이도 선택 불필요
+        const levelGroup = document.getElementById('level-group');
+        if(m==='scene') { levelGroup.style.display='none'; selectedLevel='all'; }
+        else { levelGroup.style.display=''; }
+        updateStartStats();
+    }
+    function updateStartStats() {
+        const pool = getActivePool();
+        document.getElementById('startStats').innerHTML = `남은 문항 <strong>${pool.length}</strong>개 | 마스터 <strong>${getMasteredCount()}</strong>개`;
+    }
+    function shuffle(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+    function showJudgment(type) {
+        const el=document.createElement('div'); el.className='judgment '+type;
+        el.textContent=type==='perfect'?'PERFECT!':type==='good'?'GOOD!':'MISS...';
+        document.body.appendChild(el); setTimeout(()=>el.remove(),800);
+    }
+    function showCombo() {
+        if(combo>1&&combo%3===0){const el=document.createElement('div');el.className='combo-popup';el.textContent=combo+' COMBO!';document.body.appendChild(el);setTimeout(()=>el.remove(),600);}
+    }
+    function updateLives() { document.getElementById('hud-lives').textContent='❤️'.repeat(lives)+'🖤'.repeat(MAX_LIVES-lives); }
+    function updateSpeed() {
+        const s=(currentTimeLimit/1000).toFixed(1);
+        const el=document.getElementById('hud-speed');
+        el.textContent='⚡ '+s+'s';
+        el.style.color=currentTimeLimit<=3000?'#FF6B6B':currentTimeLimit<=4000?'#FFE66D':'rgba(255,255,255,0.3)';
+    }
+
+    // ── Game ──
+    function startGame() {
+        initAudio();
+        let id=document.getElementById('nickname').value.trim();
+        if(!id){id='Guest';document.getElementById('nickname').value=id;}
+        const pool=getActivePool();
+        if(pool.length<3){alert('남은 문항이 부족합니다!');return;}
+        localStorage.setItem('lw_listen_user_id',id);
+        score=0;combo=0;maxCombo=0;perfectCount=0;goodCount=0;missCount=0;
+        lives=MAX_LIVES;round=0;questionIndex=0;currentTimeLimit=TIME_START;
+        shuffledQuestions=shuffle(pool);
+        document.getElementById('start-screen').style.display='none';
+        document.getElementById('game-screen').style.display='flex';
+        document.getElementById('hud-score').textContent='0';
+        document.getElementById('hud-combo').textContent='0';
+        document.getElementById('hud-round').textContent='1';
+        document.getElementById('hud-mastered').textContent=getMasteredCount();
+        updateLives(); updateSpeed();
+        gameRunning=true; nextQuestion();
+    }
+    function restartGame() { document.getElementById('gameover-screen').style.display='none'; startGame(); }
+
+    function nextQuestion() {
+        if(!gameRunning) return;
+        round++; currentTimeLimit=Math.max(TIME_MIN,TIME_START-(round-1)*TIME_DECREASE);
+        document.getElementById('hud-round').textContent=round; updateSpeed();
+        if(questionIndex>=shuffledQuestions.length){
+            const pool=getActivePool();
+            if(pool.length<3){gameOver();return;}
+            shuffledQuestions=shuffle(pool); questionIndex=0;
+        }
+        const q=shuffledQuestions[questionIndex++];
+        currentQ=q; answered=false;
+        // Hide word reveal
+        const reveal=document.getElementById('wordReveal');
+        reveal.className='word-reveal hidden'; reveal.textContent='';
+
+        // Build answers
+        let correctText, wrongTexts, audioText, masteryKey;
+
+        if(selectedMode==='word') {
+            audioText=q.word;
+            correctText=q.mean;
+            masteryKey='w:'+q.word;
+            // Get 2 wrong meanings
+            const pool=englishDataset.filter(w=>w.word!==q.word);
+            wrongTexts=[];
+            while(wrongTexts.length<2){const w=pool[Math.floor(Math.random()*pool.length)].mean;if(!wrongTexts.includes(w)&&w!==correctText)wrongTexts.push(w);}
+        } else if(selectedMode==='sentence') {
+            audioText=q.speaker;
+            correctText=q.correct;
+            masteryKey='s:'+q.speaker;
+            wrongTexts=[q.wrong1,q.wrong2];
+        } else {
+            // scene mode
+            audioText=q.speaker;
+            correctText=q.correct;
+            masteryKey='sc:'+q.speaker;
+            wrongTexts=[q.wrong1,q.wrong2];
+        }
+
+        currentQ._correctText=correctText;
+        currentQ._masteryKey=masteryKey;
+
+        // Speak
+        speakText(audioText, selectedMode==='word'?0.85:0.8);
+
+        // Shuffle answers
+        const answers=shuffle([
+            {text:correctText,isCorrect:true},
+            {text:wrongTexts[0],isCorrect:false},
+            {text:wrongTexts[1],isCorrect:false}
+        ]);
+
+        const area=document.getElementById('answers-area');
+        area.innerHTML='';
+        answers.forEach((a,i)=>{
+            const btn=document.createElement('button');
+            btn.className='answer-btn';btn.style.animation='none';btn.offsetHeight;btn.style.animation='';
+            btn.innerHTML=`<span class="key-hint">${i+1}</span>${a.text}`;
+            btn.onclick=()=>selectAnswer(i,a.isCorrect,btn);
+            btn.dataset.correct=a.isCorrect;
+            area.appendChild(btn);
+        });
+
+        // Timer
+        timerStart=Date.now();
+        const bar=document.getElementById('timer-bar');
+        bar.style.width='100%'; bar.classList.remove('urgent');
+        bar.parentElement.classList.remove('shake','critical-shake');
+        lastTickTime=0; lastUrgentTick=0;
+        if(timerRAF) cancelAnimationFrame(timerRAF);
+        tickTimer();
+    }
+
+    function tickTimer() {
+        if(!gameRunning||answered) return;
+        const elapsed=Date.now()-timerStart;
+        const pct=Math.max(0,1-elapsed/currentTimeLimit)*100;
+        const bar=document.getElementById('timer-bar');
+        const container=bar.parentElement;
+        bar.style.width=pct+'%';
+        if(pct<30)bar.classList.add('urgent');
+        if(pct<15){container.classList.remove('shake');container.classList.add('critical-shake');}
+        else if(pct<35){container.classList.add('shake');container.classList.remove('critical-shake');}
+        else{container.classList.remove('shake','critical-shake');}
+
+        // Tick sounds
+        const remaining=currentTimeLimit-elapsed;const now=Date.now();
+        if(remaining<1500&&remaining>0&&now-lastUrgentTick>200){playSFX('urgentTick');lastUrgentTick=now;}
+        else if(remaining<3000&&remaining>1500&&now-lastTickTime>500){playSFX('tick');lastTickTime=now;}
+
+        if(elapsed>=currentTimeLimit){container.classList.remove('shake','critical-shake');handleMiss();return;}
+        timerRAF=requestAnimationFrame(tickTimer);
+    }
+
+    function selectAnswer(idx,isCorrect,btn) {
+        if(answered||!gameRunning) return;
+        answered=true; if(timerRAF) cancelAnimationFrame(timerRAF);
+        document.querySelector('.timer-container').classList.remove('shake','critical-shake');
+        const elapsed=Date.now()-timerStart;
+        const btns=document.querySelectorAll('.answer-btn');
+
+        // Reveal the word/sentence
+        const reveal=document.getElementById('wordReveal');
+        reveal.textContent=selectedMode==='word'?currentQ.word:(selectedMode==='scene'?(currentQ.sceneIcon+' '+currentQ.speaker):currentQ.speaker);
+        reveal.className='word-reveal show';
+
+        if(isCorrect){
+            btn.classList.add('correct');
+            btns.forEach(b=>{if(b!==btn)b.classList.add('disabled');});
+            const pt=currentTimeLimit*0.35, gt=currentTimeLimit*0.75;
+            let judgment,pts;
+            if(elapsed<pt){judgment='perfect';pts=300;perfectCount++;}
+            else if(elapsed<gt){judgment='good';pts=150;goodCount++;}
+            else{judgment='good';pts=100;goodCount++;}
+            combo++;if(combo>maxCombo)maxCombo=combo;
+            pts+=combo*10;score+=pts;
+            playSFX(judgment);showJudgment(judgment);showCombo();
+            recordCorrect(currentQ._masteryKey);
+            if (elapsed >= currentTimeLimit * 0.50) {
+                const w = currentQ.word || currentQ.speaker;
+                const m = currentQ.mean || currentQ.correct || currentQ._correctText;
+                reportWeakWord(w, m, selectedMode, currentQ.level, 'lucky');
+            }
+        } else {
+            btn.classList.add('wrong');
+            btns.forEach(b=>{if(b.dataset.correct==='true')b.classList.add('correct');else if(b!==btn)b.classList.add('disabled');});
+            combo=0;missCount++;playSFX('miss');showJudgment('miss');
+            const w = currentQ.word || currentQ.speaker;
+            const m = currentQ.mean || currentQ.correct || currentQ._correctText;
+            reportWeakWord(w, m, selectedMode, currentQ.level, 'miss');
+            recordWrong(currentQ._masteryKey);
+            lives--;updateLives();
+        }
+        document.getElementById('hud-score').textContent=score.toLocaleString();
+        document.getElementById('hud-combo').textContent=combo;
+        const delay=Math.max(600,1200-round*20);
+        if(lives<=0) setTimeout(()=>gameOver(),1000);
+        else setTimeout(()=>nextQuestion(),delay);
+    }
+
+    function handleMiss() {
+        answered=true;combo=0;missCount++;lives--;updateLives();
+        playSFX('miss');showJudgment('miss');
+        const w = currentQ.word || currentQ.speaker;
+        const m = currentQ.mean || currentQ.correct || currentQ._correctText;
+        reportWeakWord(w, m, selectedMode, currentQ.level, 'miss');
+        recordWrong(currentQ._masteryKey);
+        const btns=document.querySelectorAll('.answer-btn');
+        btns.forEach(b=>{if(b.dataset.correct==='true')b.classList.add('correct');else b.classList.add('disabled');});
+        document.getElementById('hud-combo').textContent='0';
+        const reveal=document.getElementById('wordReveal');
+        reveal.textContent=selectedMode==='word'?currentQ.word:(selectedMode==='scene'?(currentQ.sceneIcon+' '+currentQ.speaker):currentQ.speaker);
+        reveal.className='word-reveal show';
+        if(lives<=0) setTimeout(()=>gameOver(),1000);
+        else setTimeout(()=>nextQuestion(),Math.max(600,1200-round*20));
+    }
+
+    function gameOver() {
+        gameRunning=false;speechSynthesis.cancel();if(timerRAF) cancelAnimationFrame(timerRAF);
+        document.getElementById('game-screen').style.display='none';
+        document.getElementById('gameover-screen').style.display='flex';
+        document.getElementById('final-score').textContent=score.toLocaleString();
+        document.getElementById('stat-round').textContent=round;
+        document.getElementById('stat-perfect').textContent=perfectCount;
+        document.getElementById('stat-good').textContent=goodCount;
+        document.getElementById('stat-miss').textContent=missCount;
+        saveScore(score);
+    }
+
+    function saveScore(s) {
+        const name=document.getElementById('nickname').value||'Guest';
+        let ranks=JSON.parse(localStorage.getItem('lw_listen_ranks')||'[]');
+        ranks.push({name,score:s,date:new Date().toISOString()});
+        ranks.sort((a,b)=>b.score-a.score); ranks=ranks.slice(0,8);
+        localStorage.setItem('lw_listen_ranks',JSON.stringify(ranks));
+        renderLeaderboard();
+    }
+    function renderLeaderboard() {
+        const el=document.getElementById('leaderboard-list');
+        const ranks=JSON.parse(localStorage.getItem('lw_listen_ranks')||'[]');
+        if(!ranks.length){el.innerHTML='<div style="text-align:center;color:rgba(255,255,255,0.2);padding:12px;font-size:13px;">아직 기록이 없어요</div>';return;}
+        el.innerHTML=ranks.map((r,i)=>`<div class="lb-row"><span class="rank">${i+1}</span><span class="name">${r.name}</span><span class="pts">${r.score.toLocaleString()}</span></div>`).join('');
+    }
+
+    // ── Input ──
+    window.addEventListener('keydown',e=>{
+        if(!gameRunning||answered) return;
+        const key=parseInt(e.key);
+        if(key>=1&&key<=3){const btns=document.querySelectorAll('.answer-btn');if(btns[key-1])selectAnswer(key-1,btns[key-1].dataset.correct==='true',btns[key-1]);}
+        if(e.key===' '||e.key==='r') replayAudio(); // Space or R to replay
+    });
+    document.getElementById('nickname').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+
+    // ── Init ──
+    const savedId=localStorage.getItem('lw_listen_user_id');
+    if(savedId) document.getElementById('nickname').value=savedId;
+    updateStartStats(); renderLeaderboard();
+    </script>
+</body>
+</html>

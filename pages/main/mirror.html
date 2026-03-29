@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>좌우반전 거울 - Luna Whale</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lexend:wght@300;400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lexend',sans-serif;background:#f8f6f3;min-height:100vh;color:#2c2420}
+.top-bar{position:sticky;top:0;z-index:50;background:rgba(248,246,243,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,0,0,.04);padding:14px 24px;display:flex;align-items:center;gap:14px}
+.back-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.back-btn:hover{background:rgba(0,0,0,.04)}
+.top-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#2c2420;flex:1;letter-spacing:-.5px}
+.container{max-width:1100px;margin:0 auto;padding:24px}
+.subtitle{text-align:center;font-family:'Cormorant Garamond',serif;font-size:14px;color:#a09890;margin-bottom:28px;letter-spacing:-.2px}
+
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:768px){.panels{grid-template-columns:1fr;gap:16px}}
+.panel{background:#fff;border-radius:16px;border:1px solid rgba(0,0,0,.06);overflow:hidden}
+.panel-header{padding:14px 20px;border-bottom:1px solid rgba(0,0,0,.04);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:13px;font-weight:600;color:#2c2420}
+.panel-badge{font-size:10px;color:#a09890;background:rgba(0,0,0,.04);padding:3px 10px;border-radius:20px}
+.panel-body{display:flex;align-items:center;justify-content:center;padding:20px;min-height:350px}
+
+.drop-zone{width:100%;height:100%;min-height:300px;border:2px dashed rgba(0,0,0,.12);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:.3s;position:relative}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#8b7355;background:rgba(139,115,85,.04)}
+.drop-zone .material-symbols-outlined{font-size:48px;color:#c4b8a8}
+.drop-zone p{font-size:13px;color:#a09890}
+.drop-zone small{font-size:11px;color:#c4b8a8}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.drop-zone.has-image{border:none;cursor:default}
+.drop-zone.has-image .placeholder{display:none}
+.drop-zone.has-image input{display:none}
+
+.preview-img{max-width:100%;max-height:500px;border-radius:8px;object-fit:contain;display:none}
+.preview-img.visible{display:block}
+
+.result-area{width:100%;height:100%;display:flex;align-items:center;justify-content:center;min-height:300px}
+.result-empty{text-align:center;color:#c4b8a8}
+.result-empty .material-symbols-outlined{font-size:48px;display:block;margin-bottom:8px}
+.result-empty p{font-size:13px}
+#mirror-canvas{max-width:100%;max-height:500px;border-radius:8px;display:none}
+
+.btn-row{display:flex;justify-content:center;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:10px 24px;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:#fff;font-family:'Lexend',sans-serif;font-size:13px;font-weight:400;color:#2c2420;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
+.btn:hover{background:rgba(0,0,0,.03)}
+.btn:disabled{opacity:.35;cursor:default}
+.btn-primary{background:#2c2420;color:#fff;border-color:#2c2420}
+.btn-primary:hover{background:#3d3530}
+.btn .material-symbols-outlined{font-size:18px}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="history.back()">
+    <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+  </button>
+  <div class="top-title">Mirror Check</div>
+</div>
+
+<div class="container">
+  <div class="subtitle">좌우반전으로 비대칭을 체크하세요 — 프로 화가 필수 도구</div>
+
+  <div class="panels">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">원본</span>
+        <span class="panel-badge" id="img-size"></span>
+      </div>
+      <div class="panel-body">
+        <div class="drop-zone" id="drop-zone">
+          <div class="placeholder">
+            <span class="material-symbols-outlined">flip</span>
+            <p>이미지를 드래그하거나 클릭하세요</p>
+            <small>PNG, JPG, WEBP</small>
+          </div>
+          <img class="preview-img" id="preview"/>
+          <input type="file" accept="image/*" id="file-input"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">좌우반전</span>
+        <span class="panel-badge">← →</span>
+      </div>
+      <div class="panel-body">
+        <div class="result-area">
+          <div class="result-empty" id="result-empty">
+            <span class="material-symbols-outlined">compare</span>
+            <p>반전 결과가 여기에 표시됩니다</p>
+          </div>
+          <canvas id="mirror-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" id="btn-reset" disabled onclick="resetAll()">
+      <span class="material-symbols-outlined">restart_alt</span> 초기화
+    </button>
+    <button class="btn btn-primary" id="btn-dl" disabled onclick="downloadMirror()">
+      <span class="material-symbols-outlined">download</span> 반전 이미지 저장
+    </button>
+  </div>
+</div>
+
+<script>
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const preview = document.getElementById('preview');
+const mirrorCanvas = document.getElementById('mirror-canvas');
+const resultEmpty = document.getElementById('result-empty');
+let currentImage = null;
+
+['dragenter','dragover'].forEach(e => {
+  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag-over'); });
+});
+['dragleave','drop'].forEach(e => {
+  dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('drag-over'); });
+});
+dropZone.addEventListener('drop', ev => {
+  const file = ev.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) loadImage(file);
+});
+fileInput.addEventListener('change', ev => {
+  if(ev.target.files[0]) loadImage(ev.target.files[0]);
+});
+
+function loadImage(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      currentImage = img;
+      currentImage._name = file.name;
+      preview.src = e.target.result;
+      preview.classList.add('visible');
+      dropZone.classList.add('has-image');
+      document.getElementById('img-size').textContent = img.width + ' × ' + img.height;
+      document.getElementById('btn-reset').disabled = false;
+      document.getElementById('btn-dl').disabled = false;
+      mirror(img);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function mirror(img) {
+  const w = img.width, h = img.height;
+  mirrorCanvas.width = w;
+  mirrorCanvas.height = h;
+  const ctx = mirrorCanvas.getContext('2d');
+  ctx.translate(w, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(img, 0, 0);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  resultEmpty.style.display = 'none';
+  mirrorCanvas.style.display = 'block';
+}
+
+function downloadMirror() {
+  mirrorCanvas.toBlob(blob => {
+    const link = document.createElement('a');
+    const base = (currentImage._name || 'image').replace(/\.[^.]+$/, '');
+    link.download = `${base}_mirror.jpg`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+  }, 'image/jpeg', 0.95);
+}
+
+function resetAll() {
+  currentImage = null;
+  preview.classList.remove('visible');
+  preview.src = '';
+  dropZone.classList.remove('has-image');
+  mirrorCanvas.style.display = 'none';
+  resultEmpty.style.display = '';
+  document.getElementById('img-size').textContent = '';
+  document.getElementById('btn-reset').disabled = true;
+  document.getElementById('btn-dl').disabled = true;
+  fileInput.value = '';
+}
+</script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+</html>

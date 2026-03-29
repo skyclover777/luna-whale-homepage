@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Art Cosmos - Luna Whale Art Lab</title>
+<script src="../../assets/data/i18n.js?v=0323"></script>
+<script src="../../assets/data/classes-data.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06060f;--surface:rgba(14,14,30,0.85);--border:rgba(100,108,255,0.15);
+  --accent:#818cf8;--accent2:#a78bfa;--text:#e2e8f0;--muted:#64748b;
+  --glow:rgba(99,102,241,0.25);
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Outfit','Noto Sans KR',sans-serif}
+
+/* ── Starfield ── */
+.starfield{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse at 50% 50%,#0d0d2b,#050510)}
+.starfield::before,.starfield::after{
+  content:'';position:absolute;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%,rgba(255,255,255,.8),transparent),
+    radial-gradient(1px 1px at 30% 60%,rgba(255,255,255,.6),transparent),
+    radial-gradient(1.5px 1.5px at 50% 10%,rgba(255,255,255,.9),transparent),
+    radial-gradient(1px 1px at 70% 40%,rgba(200,220,255,.7),transparent),
+    radial-gradient(1px 1px at 90% 80%,rgba(255,255,255,.5),transparent),
+    radial-gradient(1.5px 1.5px at 20% 90%,rgba(255,200,255,.6),transparent),
+    radial-gradient(1px 1px at 60% 70%,rgba(255,255,255,.4),transparent),
+    radial-gradient(1px 1px at 80% 15%,rgba(200,255,255,.7),transparent);
+  background-size:200px 200px;animation:twinkle 4s ease-in-out infinite alternate;
+}
+.starfield::after{background-size:300px 300px;animation-delay:-2s;opacity:.6}
+@keyframes twinkle{from{opacity:.5}to{opacity:1}}
+
+.nebula{position:fixed;border-radius:50%;filter:blur(100px);opacity:.12;z-index:0;animation:drift 25s ease-in-out infinite alternate}
+.n1{width:500px;height:500px;background:#6366f1;top:5%;left:15%}
+.n2{width:400px;height:400px;background:#ec4899;top:45%;right:5%;animation-delay:-8s}
+.n3{width:350px;height:350px;background:#06b6d4;bottom:5%;left:35%;animation-delay:-16s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(40px,-30px) scale(1.15)}}
+
+/* ── Layout ── */
+.cosmos-app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Header ── */
+.cosmos-header{
+  display:flex;align-items:center;justify-content:space-between;padding:16px 24px;flex-shrink:0;
+  background:rgba(6,6,15,.6);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);
+  position:relative;z-index:65;
+}
+.cosmos-logo{display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none}
+.cosmos-logo-icon{font-size:28px}
+.cosmos-logo-text{font-size:18px;font-weight:700;background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.cosmos-back{
+  width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);
+  color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;
+}
+.cosmos-back:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ── Search Hero ── */
+.search-hero{
+  flex-shrink:0;display:flex;flex-direction:column;align-items:center;
+  padding:40px 24px 20px;transition:all .5s cubic-bezier(.16,1,.3,1);
+  position:relative;z-index:65;
+}
+.search-hero.compact{padding:16px 24px 12px}
+.search-hero.compact .search-title{font-size:0;height:0;margin:0;opacity:0}
+.search-hero.compact .search-subtitle{font-size:0;height:0;margin:0;opacity:0}
+
+.search-title{
+  font-size:clamp(24px,4vw,42px);font-weight:800;text-align:center;margin-bottom:8px;
+  background:linear-gradient(135deg,#e2e8f0 0%,#818cf8 50%,#c084fc 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  transition:all .5s;
+}
+.search-subtitle{font-size:14px;color:var(--muted);margin-bottom:24px;text-align:center;transition:all .5s}
+
+.search-box{
+  position:relative;width:100%;max-width:580px;
+  transition:max-width .5s cubic-bezier(.16,1,.3,1);
+}
+.search-hero.compact .search-box{max-width:480px}
+
+.search-input{
+  width:100%;height:52px;border-radius:26px;border:1.5px solid var(--border);
+  background:var(--surface);backdrop-filter:blur(12px);padding:0 52px 0 22px;
+  font-size:15px;color:var(--text);font-family:inherit;outline:none;
+  transition:border-color .3s,box-shadow .3s;
+}
+.search-input::placeholder{color:var(--muted)}
+.search-input:focus{border-color:var(--accent);box-shadow:0 0 20px var(--glow)}
+.search-icon{
+  position:absolute;right:6px;top:6px;width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:transform .2s;
+}
+.search-icon:hover{transform:scale(1.08)}
+.search-icon .material-symbols-outlined{font-size:20px}
+
+.search-hint{
+  margin-top:10px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;
+  transition:all .5s;
+}
+.search-hero.compact .search-hint{font-size:0;height:0;margin:0;opacity:0}
+
+/* ── Category Filter ── */
+.category-bar{
+  display:flex;align-items:center;gap:8px;padding:0 24px 12px;flex-shrink:0;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  position:relative;z-index:65;
+}
+.category-bar::-webkit-scrollbar{display:none}
+.cat-chip{
+  flex-shrink:0;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:500;
+  border:1px solid var(--border);background:transparent;color:var(--muted);
+  cursor:pointer;transition:all .25s;white-space:nowrap;
+}
+.cat-chip:hover{border-color:var(--accent);color:var(--accent)}
+.cat-chip.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-color:transparent}
+
+.month-select{
+  flex-shrink:0;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:500;
+  border:1px solid var(--border);background:var(--surface);color:var(--muted);
+  cursor:pointer;outline:none;font-family:inherit;margin-left:auto;
+}
+
+/* ── Main Content Area ── */
+.cosmos-main{flex:1;display:flex;overflow:hidden;position:relative}
+
+/* ── Token Results ── */
+.token-area{
+  flex:1;overflow-y:auto;padding:16px 24px 80px;
+  display:flex;flex-direction:column;align-items:center;
+  scrollbar-width:thin;scrollbar-color:rgba(99,102,241,.3) transparent;
+}
+.token-area.centered{justify-content:center}
+.token-area::-webkit-scrollbar{width:6px}
+.token-area::-webkit-scrollbar-thumb{background:rgba(99,102,241,.3);border-radius:3px}
+
+/* token-grid is defined in token section below */
+
+.token-empty{
+  width:100%;text-align:center;padding:80px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.token-empty-icon{font-size:48px;opacity:.3}
+.token-empty-text{font-size:15px;color:var(--muted)}
+.token-empty-sub{font-size:13px;color:rgba(100,116,139,.6)}
+
+/* ── Icon Grid (Initial State) ── */
+.icon-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px;
+  width:100%;max-width:800px;margin:0 auto;padding:20px 0;
+  align-self:flex-start;
+}
+.icon-card{
+  display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 12px;
+  border-radius:16px;border:1px solid var(--border);background:var(--surface);
+  backdrop-filter:blur(8px);cursor:pointer;transition:all .3s;
+}
+.icon-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 8px 30px var(--glow)}
+.icon-card-emoji{font-size:36px}
+.icon-card-label{font-size:13px;font-weight:600;color:var(--text)}
+.icon-card-count{font-size:11px;color:var(--muted)}
+
+/* ── Token Grid (Hearthstone-style cosmic tokens) ── */
+.token-grid{
+  display:flex !important;flex-wrap:wrap;gap:20px;
+  justify-content:center;align-items:center;align-content:center;
+  perspective:800px;
+  min-height:240px;
+}
+
+.lesson-token{
+  position:relative;overflow:visible;cursor:pointer;
+  width:180px;height:180px;flex-shrink:0;
+  transition:all .4s cubic-bezier(.16,1,.3,1);
+  opacity:0;transform:translateY(30px) scale(.7);
+  animation:tokenAppear .6s cubic-bezier(.16,1,.3,1) forwards;
+  transform-style:preserve-3d;
+}
+.lesson-token:hover{transform:translateY(-8px) scale(1.08);z-index:5}
+.lesson-token.selected{z-index:4}
+
+/* ─ Gold bezel frame (Hearthstone style, rounded square) ─ */
+.token-bezel{
+  position:absolute;inset:-4px;border-radius:18px;z-index:1;
+  background:conic-gradient(from 0deg,#b8860b,#ffd700,#fff8dc,#ffd700,#b8860b,#8b6914,#ffd700,#b8860b);
+  box-shadow:0 3px 10px rgba(0,0,0,.6),0 0 16px rgba(255,215,0,.15);
+  transition:all .4s;
+}
+.lesson-token:hover .token-bezel{
+  box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 30px rgba(255,215,0,.35);
+  filter:brightness(1.15);
+}
+.lesson-token.selected .token-bezel{
+  box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 30px rgba(255,215,0,.5);
+  filter:brightness(1.2);
+}
+
+/* ─ Inner image (rounded square) ─ */
+.token-inner{
+  position:relative;z-index:2;width:100%;height:100%;border-radius:14px;overflow:hidden;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.4),inset 0 -1px 3px rgba(255,255,255,.1);
+}
+.token-thumb{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ─ Glass sheen overlay ─ */
+.token-sheen{
+  position:absolute;inset:0;z-index:3;border-radius:14px;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.18) 0%,transparent 50%,rgba(0,0,0,.1) 100%);
+}
+
+/* ─ Background glow (hover) ─ */
+.token-glow{
+  position:absolute;inset:-16px;border-radius:22px;z-index:0;
+  background:radial-gradient(circle,rgba(255,215,0,.2),transparent 70%);
+  opacity:0;transition:opacity .4s;pointer-events:none;
+}
+.lesson-token:hover .token-glow{opacity:.7}
+.lesson-token.selected .token-glow{opacity:.5}
+
+/* ─ Category gem ─ */
+.token-gem{
+  position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);z-index:5;
+  width:22px;height:22px;border-radius:50%;
+  border:2.5px solid #ffd700;
+  box-shadow:0 1px 6px rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.4);
+  display:flex;align-items:center;justify-content:center;font-size:10px;
+}
+
+/* ── Sparkle / Shine (만화 빗금 반짝이) ── */
+.token-sparkle{
+  position:absolute;z-index:6;pointer-events:none;opacity:0;
+  width:16px;height:16px;
+}
+.token-sparkle::before,.token-sparkle::after{
+  content:'';position:absolute;background:white;border-radius:1px;
+  filter:drop-shadow(0 0 2px rgba(255,255,255,.8));
+}
+.token-sparkle::before{width:2px;height:100%;left:50%;top:0;transform:translateX(-50%)}
+.token-sparkle::after{width:100%;height:2px;top:50%;left:0;transform:translateY(-50%)}
+
+/* Diagonal manga shine line */
+.token-shine{
+  position:absolute;z-index:6;pointer-events:none;opacity:0;
+  width:24px;height:3px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);
+  transform:rotate(-45deg);border-radius:2px;
+  filter:drop-shadow(0 0 3px rgba(255,255,255,.5));
+}
+
+/* Sparkle staggered timing */
+.lesson-token .token-sparkle{animation:sparkle 4s ease-in-out infinite}
+.lesson-token:nth-child(3n) .token-sparkle{animation-delay:.7s;animation-duration:3.5s}
+.lesson-token:nth-child(5n) .token-sparkle{animation-delay:1.5s;animation-duration:5s}
+.lesson-token:nth-child(7n) .token-sparkle{animation-delay:2.5s;animation-duration:3s}
+.lesson-token:nth-child(4n+1) .token-sparkle{animation-delay:2s}
+.lesson-token:nth-child(6n+2) .token-sparkle{animation-delay:3s;animation-duration:4.5s}
+
+.lesson-token .token-shine{animation:shineSlash 5s ease-in-out infinite}
+.lesson-token:nth-child(2n) .token-shine{animation-delay:1.2s;animation-duration:4s}
+.lesson-token:nth-child(3n+1) .token-shine{animation-delay:2.8s;animation-duration:5.5s}
+.lesson-token:nth-child(5n+2) .token-shine{animation-delay:.6s;animation-duration:3.5s}
+.lesson-token:nth-child(7n+3) .token-shine{animation-delay:3.5s;animation-duration:4.5s}
+
+/* Floating micro-animation */
+.lesson-token:nth-child(2n){animation:tokenAppear .5s cubic-bezier(.16,1,.3,1) forwards, tokenFloat 7s ease-in-out .5s infinite}
+.lesson-token:nth-child(3n+1){animation:tokenAppear .5s cubic-bezier(.16,1,.3,1) forwards, tokenFloat 5.5s ease-in-out 1s infinite}
+.lesson-token:nth-child(5n){animation:tokenAppear .5s cubic-bezier(.16,1,.3,1) forwards, tokenFloat 6.5s ease-in-out .2s infinite}
+
+@keyframes sparkle{
+  0%,82%,100%{opacity:0;transform:scale(.4) rotate(0deg)}
+  87%{opacity:1;transform:scale(1) rotate(15deg)}
+  92%{opacity:0;transform:scale(.4) rotate(30deg)}
+}
+@keyframes shineSlash{
+  0%,78%,100%{opacity:0;transform:rotate(-45deg) translateX(-14px)}
+  83%{opacity:.95;transform:rotate(-45deg) translateX(0)}
+  90%{opacity:0;transform:rotate(-45deg) translateX(14px)}
+}
+@keyframes tokenAppear{
+  0%{opacity:0;transform:translateY(40px) scale(.6) rotateY(90deg)}
+  40%{opacity:1;transform:translateY(-8px) scale(1.05) rotateY(-10deg)}
+  60%{transform:translateY(4px) scale(.97) rotateY(5deg)}
+  80%{transform:translateY(-2px) scale(1.01) rotateY(-2deg)}
+  100%{opacity:1;transform:translateY(0) scale(1) rotateY(0deg)}
+}
+@keyframes tokenFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-5px)}
+}
+/* Exit: flip and fly left */
+@keyframes tokenExit{
+  0%{opacity:1;transform:translateX(0) rotateY(0) scale(1)}
+  30%{opacity:1;transform:translateX(10px) rotateY(-40deg) scale(.95)}
+  100%{opacity:0;transform:translateX(-200px) rotateY(180deg) scale(.5)}
+}
+.lesson-token.exiting{
+  animation:tokenExit .5s cubic-bezier(.6,.05,.5,1) forwards !important;
+  pointer-events:none;
+}
+
+/* Hover tooltip */
+.token-tooltip{
+  position:fixed;z-index:80;padding:10px 16px;max-width:280px;
+  background:rgba(12,12,35,.95);backdrop-filter:blur(16px);
+  border:1px solid rgba(255,215,0,.3);border-radius:12px;
+  color:var(--text);font-size:13px;font-weight:500;line-height:1.4;
+  pointer-events:none;opacity:0;transition:opacity .2s;
+  box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 12px rgba(255,215,0,.1);
+}
+.token-tooltip.show{opacity:1}
+.token-tooltip-cat{font-size:11px;color:#fbbf24;margin-top:3px}
+
+/* ── More button ── */
+.token-more-btn{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:16px 32px;margin:12px auto;border-radius:999px;
+  background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,215,0,.05));
+  border:1.5px solid rgba(255,215,0,.3);color:#fbbf24;
+  font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;
+  transition:all .3s;width:fit-content;
+  animation:tokenAppear .4s cubic-bezier(.16,1,.3,1) forwards;
+}
+.token-more-btn:hover{
+  background:linear-gradient(135deg,rgba(255,215,0,.2),rgba(255,215,0,.1));
+  border-color:rgba(255,215,0,.5);transform:translateY(-2px);
+  box-shadow:0 4px 20px rgba(255,215,0,.15);
+}
+.token-more-btn .material-symbols-outlined{font-size:20px;animation:moreRotate 2s ease-in-out infinite}
+@keyframes moreRotate{0%,100%{transform:rotate(0deg)}50%{transform:rotate(180deg)}}
+
+.token-more-count{font-size:12px;color:var(--muted);margin-left:4px}
+
+/* No-image placeholder */
+.token-no-img{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:32px;background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(168,85,247,.2));
+}
+
+/* ── Detail Popup Modal ── */
+.detail-backdrop{
+  position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.75);
+  backdrop-filter:blur(10px);opacity:0;pointer-events:none;
+  transition:opacity .3s;
+}
+.detail-backdrop.open{opacity:1;pointer-events:auto}
+
+.detail-modal{
+  position:fixed;z-index:71;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(.85) rotateX(8deg);
+  width:90vw;max-width:440px;max-height:75vh;
+  background:rgba(14,14,35,.96);backdrop-filter:blur(20px);
+  border:1.5px solid rgba(255,215,0,.25);border-radius:20px;
+  overflow-y:auto;padding:24px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(255,215,0,.1);
+  opacity:0;pointer-events:none;
+  transition:all .4s cubic-bezier(.16,1,.3,1);
+  scrollbar-width:thin;scrollbar-color:rgba(99,102,241,.3) transparent;
+}
+.detail-modal::-webkit-scrollbar{width:6px}
+.detail-modal::-webkit-scrollbar-thumb{background:rgba(99,102,241,.3);border-radius:3px}
+.detail-modal.open{
+  opacity:1;pointer-events:auto;
+  transform:translate(-50%,-50%) scale(1) rotateX(0);
+}
+
+.detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.detail-title{font-size:20px;font-weight:700;line-height:1.4;flex:1;
+  background:linear-gradient(135deg,#e2e8f0,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.detail-close{
+  width:34px;height:34px;border-radius:10px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);cursor:pointer;display:flex;
+  align-items:center;justify-content:center;flex-shrink:0;margin-left:8px;transition:all .2s;
+}
+.detail-close:hover{color:#fbbf24;border-color:#fbbf24}
+
+.detail-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.detail-tag{
+  font-size:11px;padding:4px 12px;border-radius:10px;
+  background:rgba(255,215,0,.1);color:#fbbf24;font-weight:500;
+  border:1px solid rgba(255,215,0,.15);
+}
+
+.detail-cover{
+  width:100%;border-radius:14px;overflow:hidden;margin-bottom:16px;
+  border:1.5px solid rgba(255,215,0,.2);
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+}
+.detail-cover img{width:100%;display:block;aspect-ratio:16/10;object-fit:cover}
+
+.detail-images-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px}
+
+.detail-images{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+.detail-img-card{
+  border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid transparent;
+  transition:all .25s;position:relative;
+  opacity:0;transform:translateY(12px);
+}
+.detail-img-card.show{opacity:1;transform:translateY(0)}
+.detail-img-card:hover{border-color:var(--accent);transform:scale(1.03)}
+.detail-img-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.detail-img-overlay{
+  position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent 50%);
+  opacity:0;transition:opacity .2s;display:flex;align-items:flex-end;justify-content:center;padding:8px;
+}
+.detail-img-card:hover .detail-img-overlay{opacity:1}
+.detail-img-overlay span{font-size:11px;color:white;font-weight:600}
+
+.detail-go-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px;margin-top:16px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,#b8860b,#ffd700);color:#1a1a2e;
+  font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:all .25s;
+  box-shadow:0 2px 12px rgba(255,215,0,.2);
+}
+.detail-go-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(255,215,0,.4)}
+
+/* ── Lightbox ── */
+.cosmos-lightbox{
+  position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.92);
+  display:none;align-items:center;justify-content:center;cursor:pointer;
+}
+.cosmos-lightbox.active{display:flex}
+.cosmos-lightbox img{max-width:90vw;max-height:90vh;border-radius:16px;object-fit:contain;box-shadow:0 0 60px var(--glow)}
+
+/* ── Status Badge ── */
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.status-new{background:#22c55e}
+.status-popular{background:#f59e0b}
+.status-trending{background:#ec4899}
+
+/* ── Mobile ── */
+@media(max-width:768px){
+  .search-hero{padding:24px 16px 12px}
+  .search-title{font-size:24px}
+  .category-bar{padding:0 16px 10px}
+  .token-area{padding:12px 16px 80px}
+  .lesson-token{width:110px;height:110px}
+.icon-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px}
+  .icon-card{padding:14px 8px}
+  .icon-card-emoji{font-size:28px}
+}
+
+/* ── Count Badge ── */
+.result-count{
+  font-size:13px;color:var(--muted);padding:0 24px 8px;flex-shrink:0;
+  display:flex;align-items:center;gap:6px;
+}
+.result-count strong{color:var(--accent);font-weight:700}
+
+/* ── Level Filter Chips ── */
+.level-bar{
+  display:flex;align-items:center;gap:8px;padding:0 24px 10px;flex-shrink:0;
+  position:relative;z-index:65;
+}
+.lv-chip{
+  display:flex;align-items:center;gap:5px;padding:5px 14px 5px 8px;border-radius:20px;
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .3s;
+  border:1.5px solid transparent;background:rgba(255,255,255,.06);color:var(--muted);
+  white-space:nowrap;
+}
+.lv-chip:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+.lv-chip .lv-dot{
+  width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:8px;font-weight:900;color:white;flex-shrink:0;
+}
+.lv-chip.active{color:white;box-shadow:0 0 16px rgba(0,0,0,.3)}
+/* Level colors */
+.lv-chip[data-lv="0.5"] .lv-dot{background:linear-gradient(135deg,#ff6b8a,#ff85a2)}
+.lv-chip[data-lv="0.5"].active{background:rgba(255,107,138,.2);border-color:#ff6b8a;color:#ffb3c6}
+.lv-chip[data-lv="1"] .lv-dot{background:linear-gradient(135deg,#10b981,#34d399)}
+.lv-chip[data-lv="1"].active{background:rgba(16,185,129,.2);border-color:#10b981;color:#6ee7b7}
+.lv-chip[data-lv="2"] .lv-dot{background:linear-gradient(135deg,#3b82f6,#60a5fa)}
+.lv-chip[data-lv="2"].active{background:rgba(59,130,246,.2);border-color:#3b82f6;color:#93c5fd}
+.lv-chip[data-lv="3"] .lv-dot{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}
+.lv-chip[data-lv="3"].active{background:rgba(139,92,246,.2);border-color:#8b5cf6;color:#c4b5fd}
+
+/* Token level badge */
+.token-lv{
+  position:absolute;top:-3px;right:-3px;z-index:7;
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:900;color:white;
+  border:2px solid rgba(0,0,0,.4);
+  box-shadow:0 1px 6px rgba(0,0,0,.5);
+}
+.token-lv.tlv-05{background:linear-gradient(135deg,#ff6b8a,#ff85a2)}
+.token-lv.tlv-1{background:linear-gradient(135deg,#10b981,#34d399)}
+.token-lv.tlv-2{background:linear-gradient(135deg,#3b82f6,#60a5fa)}
+.token-lv.tlv-3{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}
+</style>
+<!-- luna-nav.js 제거: global-nav.js가 대체 -->
+</head>
+<body>
+
+<div class="starfield"></div>
+<div class="nebula n1"></div>
+<div class="nebula n2"></div>
+<div class="nebula n3"></div>
+
+<div class="cosmos-app">
+  <!-- Header -->
+  <header class="cosmos-header">
+    <a class="cosmos-logo" href="../../index.html">
+      <span class="cosmos-logo-icon">🐋</span>
+      <span class="cosmos-logo-text">Art Cosmos</span>
+    </a>
+    <button class="cosmos-back" onclick="history.back()" title="Back">
+      <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+    </button>
+  </header>
+
+  <!-- Search Hero -->
+  <div class="search-hero" id="searchHero">
+    <div class="search-title">수업을 탐색하세요</div>
+    <div class="search-subtitle">173개의 수업이 당신을 기다리고 있습니다</div>
+    <div class="search-box">
+      <input class="search-input" id="searchInput" type="text" placeholder="수업 이름, 재료, 키워드로 검색..." autocomplete="off"/>
+      <button class="search-icon" onclick="doSearch()">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+    </div>
+    <div class="search-hint">
+      <span class="material-symbols-outlined" style="font-size:14px">lightbulb</span>
+      예: 수채화, 공룡, 콜라주, 데페이즈망...
+    </div>
+  </div>
+
+  <!-- Category Chips -->
+  <div class="category-bar" id="categoryBar">
+    <button class="cat-chip active" data-cat="all">전체</button>
+    <button class="cat-chip" data-cat="expression">🎨 발상</button>
+    <button class="cat-chip" data-cat="sculpture">🏗️ 조소</button>
+    <button class="cat-chip" data-cat="appreciation">🖼️ 감상</button>
+    <button class="cat-chip" data-cat="project">🚀 프로젝트</button>
+    <button class="cat-chip" data-cat="observation">👁️ 관찰</button>
+    <button class="cat-chip" data-cat="color">🌈 색채</button>
+    <button class="cat-chip" data-cat="culture">🏛️ 문화</button>
+    <button class="cat-chip" data-cat="3d">🧊 입체</button>
+    <select class="month-select" id="monthSelect">
+      <option value="all">전체 월</option>
+      <option value="2026-01">2026년 1월</option>
+      <option value="2026-02">2026년 2월</option>
+      <option value="2026-03">2026년 3월</option>
+      <option value="2026-04">2026년 4월</option>
+    </select>
+  </div>
+
+  <!-- Level Filter -->
+  <div class="level-bar" id="levelBar">
+    <button class="lv-chip" data-lv="0.5"><span class="lv-dot">0.5</span>4-5세</button>
+    <button class="lv-chip" data-lv="1"><span class="lv-dot">1</span>5-7세</button>
+    <button class="lv-chip" data-lv="2"><span class="lv-dot">2</span>8-10세</button>
+    <button class="lv-chip" data-lv="3"><span class="lv-dot">3</span>11-13세</button>
+  </div>
+
+  <!-- Result count -->
+  <div class="result-count" id="resultCount" style="display:none">
+    <span class="material-symbols-outlined" style="font-size:16px">token</span>
+    <span id="resultText"></span>
+  </div>
+
+  <!-- Main -->
+  <div class="cosmos-main">
+    <!-- Token area -->
+    <div class="token-area" id="tokenArea">
+      <!-- Initial icon grid shown when no search -->
+      <div class="icon-grid" id="iconGrid"></div>
+      <!-- Token results shown after search/filter -->
+      <div class="token-grid" id="tokenGrid" style="display:none"></div>
+      <!-- Empty state -->
+      <div class="token-empty" id="tokenEmpty" style="display:none">
+        <div class="token-empty-icon">🔭</div>
+        <div class="token-empty-text">검색 결과가 없습니다</div>
+        <div class="token-empty-sub">다른 키워드나 카테고리를 시도해보세요</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Detail Popup Modal (inside cosmos-app for stacking context) -->
+  <div class="detail-backdrop" id="detailBackdrop" onclick="window.cosmosCloseDetail()"></div>
+  <div class="detail-modal" id="detailModal"></div>
+</div>
+
+<!-- Tooltip -->
+<div class="token-tooltip" id="tokenTooltip">
+  <div id="tooltipTitle"></div>
+  <div class="token-tooltip-cat" id="tooltipCat"></div>
+</div>
+
+<!-- Lightbox -->
+<div class="cosmos-lightbox" id="lightbox">
+  <img id="lightboxImg" src="" alt=""/>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ── SFX Engine ──
+  const SFX_BASE = '../../assets/sounds/SonSounds/';
+  const sfxCache = {};
+  function playsfx(name, vol = 0.35) {
+    try {
+      if (!sfxCache[name]) sfxCache[name] = new Audio(SFX_BASE + name);
+      const a = sfxCache[name].cloneNode();
+      a.volume = vol;
+      a.play().catch(() => {});
+    } catch {}
+  }
+  const sfx = {
+    appear()  { playsfx('DA - Pop - 2.mp3', 0.12); },
+    click()   { playsfx('KF - UI Click - 5.mp3', 0.15); },
+    whoosh()  { playsfx('SCH - Whoosh Fast - 3.mp3', 0.12); },
+    modal()   { playsfx('0_띠링.mp3', 0.15); },
+    close()   { playsfx('DA - Whoosh - 1.mp3', 0.1); },
+  };
+
+  // ── i18n helper ──
+  function t(key) {
+    if (!key) return '';
+    try {
+      const lang = (navigator.language || 'ko').startsWith('ko') ? 'ko' : 'en';
+      const src = typeof LW_TRANSLATIONS !== 'undefined' ? LW_TRANSLATIONS : (typeof I18N !== 'undefined' ? I18N : null);
+      const dict = src ? src[lang] : null;
+      return (dict && dict[key]) || key;
+    } catch { return key; }
+  }
+
+  // ── Data ──
+  const rawData = typeof CLASSES_DATA !== 'undefined' ? CLASSES_DATA : [];
+  const data = rawData.map(d => ({
+    ...d,
+    title: d.title || t(d.titleKey) || d.id
+  }));
+  const CAT_META = {
+    expression: { emoji: '🎨', label: '발상', color: '#818cf8' },
+    sculpture:  { emoji: '🏗️', label: '조소', color: '#f472b6' },
+    appreciation:{ emoji: '🖼️', label: '감상', color: '#fbbf24' },
+    project:    { emoji: '🚀', label: '프로젝트', color: '#34d399' },
+    observation:{ emoji: '👁️', label: '관찰', color: '#fb923c' },
+    color:      { emoji: '🌈', label: '색채', color: '#f87171' },
+    culture:    { emoji: '🏛️', label: '문화', color: '#a78bfa' },
+    '3d':       { emoji: '🧊', label: '입체', color: '#38bdf8' },
+  };
+
+  // ── State ──
+  let currentCat = 'all';
+  let currentMonth = 'all';
+  let currentLevel = 'all';
+  let currentQuery = '';
+  let selectedLesson = null;
+  let showingTokens = false;
+  const BATCH_SIZE = 5;
+  let filteredPool = [];    // shuffled pool of all filtered lessons
+  let poolIndex = 0;        // current position in pool
+  let currentBatch = [];    // currently displayed 5 lessons
+  let isAnimating = false;
+
+  // ── DOM ──
+  const searchInput = document.getElementById('searchInput');
+  const searchHero = document.getElementById('searchHero');
+  const iconGrid = document.getElementById('iconGrid');
+  const tokenGrid = document.getElementById('tokenGrid');
+  const tokenEmpty = document.getElementById('tokenEmpty');
+  const tokenArea = document.getElementById('tokenArea');
+  const detailBackdrop = document.getElementById('detailBackdrop');
+  const detailModal = document.getElementById('detailModal');
+  const resultCount = document.getElementById('resultCount');
+  const resultText = document.getElementById('resultText');
+  const monthSelect = document.getElementById('monthSelect');
+
+  // ── Init Icon Grid ──
+  function buildIconGrid() {
+    const counts = {};
+    data.forEach(d => {
+      const c = d.category || 'other';
+      counts[c] = (counts[c] || 0) + 1;
+    });
+
+    let html = '';
+    for (const [key, meta] of Object.entries(CAT_META)) {
+      html += `
+        <div class="icon-card" data-cat="${key}">
+          <div class="icon-card-emoji">${meta.emoji}</div>
+          <div class="icon-card-label">${meta.label}</div>
+          <div class="icon-card-count">${counts[key] || 0}개 수업</div>
+        </div>`;
+    }
+    iconGrid.innerHTML = html;
+
+    iconGrid.querySelectorAll('.icon-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const cat = card.dataset.cat;
+        selectCategory(cat);
+      });
+    });
+  }
+
+  // ── Category Selection ──
+  function selectCategory(cat) {
+    sfx.click();
+    closeDetail(); // close modal if open
+    currentCat = cat;
+    document.querySelectorAll('.cat-chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.cat === cat);
+    });
+    renderTokens(true);
+  }
+
+  // ── Filter Data ──
+  function getFiltered() {
+    let filtered = [...data];
+
+    if (currentCat !== 'all') {
+      filtered = filtered.filter(d => d.category === currentCat);
+    }
+    if (currentMonth !== 'all') {
+      filtered = filtered.filter(d => d.month === currentMonth);
+    }
+    if (currentLevel !== 'all') {
+      filtered = filtered.filter(d => String(d.level) === String(currentLevel));
+    }
+    if (currentQuery) {
+      const q = currentQuery.toLowerCase();
+      filtered = filtered.filter(d => {
+        const title = (d.title || '').toLowerCase();
+        const tags = (d.subTags || []).join(' ').toLowerCase();
+        const code = (d.courseCode || '').toLowerCase();
+        return title.includes(q) || tags.includes(q) || code.includes(q);
+      });
+    }
+    return filtered;
+  }
+
+  // ── Shuffle helper ──
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // ── Render Tokens (5 at a time) ──
+  function renderTokens(skipExit) {
+    const filtered = getFiltered();
+    const hasFilter = currentCat !== 'all' || currentMonth !== 'all' || currentLevel !== 'all' || currentQuery;
+
+    if (!hasFilter) {
+      iconGrid.style.display = 'grid';
+      tokenGrid.style.display = 'none';
+      tokenEmpty.style.display = 'none';
+      resultCount.style.display = 'none';
+      searchHero.classList.remove('compact');
+      tokenArea.classList.remove('centered');
+      closeDetail();
+      showingTokens = false;
+      return;
+    }
+
+    iconGrid.style.display = 'none';
+    tokenArea.classList.add('centered');
+    showingTokens = true;
+    searchHero.classList.add('compact');
+
+    if (filtered.length === 0) {
+      tokenGrid.style.display = 'none';
+      tokenEmpty.style.display = 'flex';
+      resultCount.style.display = 'none';
+      return;
+    }
+
+    tokenEmpty.style.display = 'none';
+    tokenGrid.style.display = 'flex';
+    resultCount.style.display = 'flex';
+    resultText.innerHTML = `<strong>${filtered.length}</strong>개의 수업 중`;
+
+    // Reset pool and show first batch
+    filteredPool = shuffle(filtered);
+    poolIndex = 0;
+    showNextBatch(skipExit);
+  }
+
+  // ── Show next 5 tokens ──
+  function showNextBatch(skipExit) {
+    if (isAnimating) return;
+
+    const existing = tokenGrid.querySelectorAll('.lesson-token');
+
+    if (existing.length > 0 && !skipExit) {
+      // Animate exit: flip and fly left with staggered speeds
+      isAnimating = true;
+      sfx.whoosh();
+      existing.forEach((el, i) => {
+        const exitDelay = Math.random() * 200;
+        const exitDuration = 300 + Math.random() * 300;
+        el.style.animationDelay = exitDelay + 'ms';
+        el.style.animationDuration = exitDuration + 'ms';
+        el.classList.add('exiting');
+      });
+
+      // Wait for exits to finish, then render new batch
+      setTimeout(() => {
+        isAnimating = false;
+        renderBatch();
+      }, 650);
+    } else {
+      renderBatch();
+    }
+  }
+
+  function renderBatch() {
+    // Pick next BATCH_SIZE from pool
+    if (poolIndex >= filteredPool.length) {
+      // Reshuffle and start over
+      filteredPool = shuffle(filteredPool);
+      poolIndex = 0;
+    }
+
+    currentBatch = filteredPool.slice(poolIndex, poolIndex + BATCH_SIZE);
+    // Staggered pop sounds for each token appearing
+    currentBatch.forEach((_, i) => setTimeout(() => sfx.appear(), i * 100 + 80));
+    poolIndex += BATCH_SIZE;
+
+    const remaining = Math.max(0, filteredPool.length - poolIndex);
+
+    let html = '';
+    currentBatch.forEach((lesson, i) => {
+      const meta = CAT_META[lesson.category] || { emoji: '📚', label: '기타', color: '#818cf8' };
+      const thumb = lesson.thumbnail || lesson.image || '';
+      const sel = selectedLesson && selectedLesson.id === lesson.id ? 'selected' : '';
+      const delay = i * 100 + 50;
+
+      // Random sparkle positions
+      const spX = 5 + Math.random() * 65, spY = 5 + Math.random() * 35;
+      const shX = 15 + Math.random() * 55, shY = 10 + Math.random() * 45;
+
+      // Level badge for token
+      const lv = lesson.level;
+      const lvClass = lv == 0.5 ? 'tlv-05' : `tlv-${lv}`;
+      const lvText = lv == 0.5 ? '.5' : lv;
+      const lvBadge = lv !== undefined ? `<div class="token-lv ${lvClass}">${lvText}</div>` : '';
+
+      html += `
+        <div class="lesson-token ${sel}" data-id="${lesson.id}" style="animation-delay:${delay}ms">
+          <div class="token-glow"></div>
+          <div class="token-bezel"></div>
+          <div class="token-inner">
+            ${thumb
+              ? `<img class="token-thumb" src="../../${thumb}" alt="" loading="lazy" onerror="this.nextElementSibling.style.display='flex';this.style.display='none'"/><div class="token-no-img" style="display:none">${meta.emoji}</div>`
+              : `<div class="token-no-img">${meta.emoji}</div>`}
+            <div class="token-sheen"></div>
+          </div>
+          <div class="token-gem" style="background:${meta.color}">${meta.emoji}</div>
+          ${lvBadge}
+          <div class="token-sparkle" style="top:${spY}%;left:${spX}%"></div>
+          <div class="token-shine" style="top:${shY}%;left:${shX}%"></div>
+        </div>`;
+    });
+
+    // More button
+    html += `
+      <button class="token-more-btn" id="moreBtn" onclick="window.cosmosNextBatch()">
+        <span class="material-symbols-outlined">refresh</span>
+        다른 수업 보기
+        <span class="token-more-count">(${remaining > 0 ? remaining : filteredPool.length}개 남음)</span>
+      </button>`;
+
+    tokenGrid.innerHTML = html;
+
+    // Bind clicks + tooltip
+    tokenGrid.querySelectorAll('.lesson-token').forEach(token => {
+      token.addEventListener('click', () => {
+        const lesson = data.find(d => d.id === token.dataset.id);
+        if (lesson) openDetail(lesson, token);
+      });
+      token.addEventListener('mouseenter', (e) => showTooltip(e, token));
+      token.addEventListener('mousemove', (e) => moveTooltip(e));
+      token.addEventListener('mouseleave', hideTooltip);
+    });
+  }
+
+  window.cosmosNextBatch = function() { showNextBatch(false); };
+
+  // ── Tooltip ──
+  const tooltip = document.getElementById('tokenTooltip');
+  const tooltipTitle = document.getElementById('tooltipTitle');
+  const tooltipCat = document.getElementById('tooltipCat');
+
+  function showTooltip(e, tokenEl) {
+    const lesson = data.find(d => d.id === tokenEl.dataset.id);
+    if (!lesson) return;
+    const meta = CAT_META[lesson.category] || { emoji: '📚', label: '기타' };
+    tooltipTitle.textContent = lesson.title;
+    const lvInfo = lesson.level !== undefined ? ` · Lv.${lesson.level}` : '';
+    tooltipCat.textContent = `${meta.emoji} ${meta.label}${lvInfo}`;
+    moveTooltip(e);
+    tooltip.classList.add('show');
+  }
+  function moveTooltip(e) {
+    const x = e.clientX + 14;
+    const y = e.clientY - 10;
+    tooltip.style.left = Math.min(x, window.innerWidth - 280) + 'px';
+    tooltip.style.top = Math.max(y - 40, 8) + 'px';
+  }
+  function hideTooltip() {
+    tooltip.classList.remove('show');
+  }
+
+  // ── Detail Panel ──
+  function openDetail(lesson, tokenEl) {
+    sfx.click();
+    setTimeout(() => sfx.modal(), 150);
+    selectedLesson = lesson;
+
+    // Highlight selected token
+    tokenGrid.querySelectorAll('.lesson-token').forEach(t => t.classList.remove('selected'));
+    if (tokenEl) tokenEl.classList.add('selected');
+
+    const meta = CAT_META[lesson.category] || { emoji: '📚', label: '기타', color: '#818cf8' };
+    const title = lesson.title || lesson.titleKey || lesson.id;
+    const thumb = lesson.thumbnail || lesson.image || '';
+    const tags = lesson.subTags || [];
+    const month = lesson.month || '';
+    const rawLink = lesson.link || '';
+    // Resolve link path: lesson-YYYY-MM-NN.html → ../lessons/, lesson-viewer.html → same dir
+    const link = rawLink.startsWith('lesson-viewer') || rawLink.startsWith('lesson-traditional')
+      ? rawLink
+      : rawLink.match(/^lesson-\d{4}/) ? '../lessons/' + rawLink : rawLink;
+
+    // Build gallery images (look for gallery images)
+    const galleryImages = buildGalleryPaths(lesson);
+
+    // Level badge for detail
+    const detLv = lesson.level;
+    const detLvColors = { '0.5': '#ff6b8a', '1': '#10b981', '2': '#3b82f6', '3': '#8b5cf6' };
+    const detLvAge = { '0.5': '4-5세', '1': '5-7세', '2': '8-10세', '3': '11-13세' };
+    const detLvColor = detLvColors[detLv] || '#818cf8';
+    const lvTagHtml = detLv !== undefined
+      ? `<span class="detail-tag" style="background:${detLvColor}22;color:${detLvColor};border-color:${detLvColor}44">Lv.${detLv} ${detLvAge[detLv] || ''}</span>`
+      : '';
+
+    let html = `
+      <div class="detail-header">
+        <div class="detail-title">${title}</div>
+        <button class="detail-close" onclick="window.cosmosCloseDetail()">
+          <span class="material-symbols-outlined" style="font-size:18px">close</span>
+        </button>
+      </div>
+      <div class="detail-meta">
+        <span class="detail-tag" style="background:${meta.color}22;color:${meta.color}">${meta.emoji} ${meta.label}</span>
+        ${lvTagHtml}
+        ${month ? `<span class="detail-tag">${month}</span>` : ''}
+        ${tags.map(t => `<span class="detail-tag">${t}</span>`).join('')}
+      </div>`;
+
+    if (thumb) {
+      html += `
+        <div class="detail-cover" onclick="event.stopPropagation();window.cosmosShowLightbox('../../${thumb}')">
+          <img src="../../${thumb}" alt="${title}" loading="lazy" onerror="this.parentElement.style.display='none'"/>
+        </div>`;
+    }
+
+    if (galleryImages.length > 0) {
+      html += `<div class="detail-images-title">갤러리 이미지 (${galleryImages.length})</div>
+        <div class="detail-images">`;
+      galleryImages.forEach((img, i) => {
+        const delay = i * 60;
+        html += `
+          <div class="detail-img-card" style="transition-delay:${delay}ms" onclick="event.stopPropagation();window.cosmosShowLightbox('${img}')">
+            <img src="${img}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"/>
+            <div class="detail-img-overlay"><span>크게 보기</span></div>
+          </div>`;
+      });
+      html += `</div>`;
+    }
+
+    if (link) {
+      html += `
+        <button class="detail-go-btn" onclick="window.location.href='${link}'">
+          <span class="material-symbols-outlined" style="font-size:20px">rocket_launch</span>
+          수업으로 이동
+        </button>`;
+    }
+
+    detailModal.innerHTML = html;
+    detailBackdrop.classList.add('open');
+    detailModal.classList.add('open');
+
+    // Animate image cards
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        detailModal.querySelectorAll('.detail-img-card').forEach(card => {
+          card.classList.add('show');
+        });
+      }, 100);
+    });
+  }
+
+  function buildGalleryPaths(lesson) {
+    // For monthly lessons with month data, try gallery images
+    if (!lesson.month || !lesson.id) return [];
+
+    const parts = lesson.id.split('-');
+    if (parts.length < 3) return [];
+
+    const monthDir = `${parts[0]}-${parts[1]}`;
+    const num = parseInt(parts[2], 10);
+    if (isNaN(num)) return [];
+
+    const prefix = num < 10 ? `l0${num}` : `l${num}`;
+    const basePath = `../../images/lessons/${monthDir}/thumbs/`;
+    const images = [];
+
+    // Return up to 8 gallery image paths (they may or may not exist)
+    for (let i = 1; i <= 8; i++) {
+      const galNum = i < 10 ? `0${i}` : `${i}`;
+      images.push(`${basePath}${prefix}-gal${galNum}.jpg`);
+    }
+    return images;
+  }
+
+  function closeDetail() {
+    sfx.close();
+    selectedLesson = null;
+    detailBackdrop.classList.remove('open');
+    detailModal.classList.remove('open');
+    tokenGrid.querySelectorAll('.lesson-token').forEach(t => t.classList.remove('selected'));
+  }
+
+  // ── Search ──
+  function doSearch() {
+    closeDetail();
+    currentQuery = searchInput.value.trim();
+    // If searching, reset category to 'all' so results aren't filtered
+    if (currentQuery) {
+      currentCat = 'all';
+      document.querySelectorAll('.cat-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.cat === 'all');
+      });
+    }
+    renderTokens(true);
+  }
+
+  let searchTimeout;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(doSearch, 250);
+  });
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+  });
+
+  // ── Category Chips ──
+  document.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => selectCategory(chip.dataset.cat));
+  });
+
+  // ── Month Select ──
+  monthSelect.addEventListener('change', () => {
+    currentMonth = monthSelect.value;
+    renderTokens();
+  });
+
+  // ── Level Filter Chips ──
+  document.querySelectorAll('.lv-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      sfx.click();
+      const lv = chip.dataset.lv;
+      if (currentLevel === lv) {
+        // Toggle off
+        currentLevel = 'all';
+        chip.classList.remove('active');
+      } else {
+        currentLevel = lv;
+        document.querySelectorAll('.lv-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      }
+      closeDetail();
+      renderTokens(true);
+    });
+  });
+
+  // ── Lightbox ──
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+
+  window.cosmosShowLightbox = function(src) {
+    lightboxImg.src = src;
+    lightbox.classList.add('active');
+  };
+  function closeLightbox() {
+    lightbox.classList.remove('active');
+  }
+  // Click backdrop (not image) to close
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  // Prevent image click from closing
+  lightboxImg.addEventListener('click', (e) => e.stopPropagation());
+
+  window.cosmosCloseDetail = closeDetail;
+
+  // ── Keyboard ──
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (document.getElementById('lightbox').classList.contains('active')) {
+        closeLightbox();
+      } else if (detailModal.classList.contains('open')) {
+        closeDetail();
+      }
+    }
+    // Ctrl/Cmd+K to focus search
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      searchInput.focus();
+    }
+  });
+
+  // ── Init ──
+  buildIconGrid();
+
+  // Expose for global
+  window.doSearch = doSearch;
+
+})();
+</script>
+<script src="../../assets/js/global-nav.js?v=20260329f"></script>
+</body>
+</html>

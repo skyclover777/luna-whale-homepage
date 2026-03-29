@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>AI 수채화 채색 - Luna Whale</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Lexend:wght@300;400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lexend',sans-serif;background:linear-gradient(135deg,#f0f9ff 0%,#f0fdf4 30%,#fefce8 70%,#fff7ed 100%);min-height:100vh;color:#2c2420;overflow-x:hidden}
+
+/* Watercolor blobs */
+body::before,body::after{content:'';position:fixed;border-radius:50%;filter:blur(80px);opacity:.25;pointer-events:none;z-index:0}
+body::before{width:400px;height:400px;background:radial-gradient(circle,#93c5fd,transparent);top:-100px;left:-100px}
+body::after{width:350px;height:350px;background:radial-gradient(circle,#fca5a5,transparent);bottom:-80px;right:-80px}
+
+/* Top bar */
+.top-bar{position:sticky;top:0;z-index:50;background:rgba(240,249,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,0,0,.04);padding:14px 24px;display:flex;align-items:center;gap:14px}
+.back-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.back-btn:hover{background:rgba(0,0,0,.04)}
+.top-title{font-family:'Jua',sans-serif;font-size:22px;font-weight:400;color:#2c2420;flex:1;letter-spacing:-.5px}
+.top-badge{font-size:11px;background:linear-gradient(135deg,#3b82f6,#06b6d4);color:#fff;padding:4px 10px;border-radius:20px;font-weight:600}
+.top-key-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;position:relative}
+.top-key-btn:hover{background:rgba(0,0,0,.04)}
+.top-key-btn.has-key::after{content:'';position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:#10b981;border:2px solid rgba(240,249,255,.92)}
+
+.container{max-width:800px;margin:0 auto;padding:20px 16px 40px;position:relative;z-index:1}
+
+/* ── API Key Card ── */
+.api-card{background:#fff;border-radius:20px;border:1px solid rgba(59,130,246,.15);padding:24px;margin-bottom:24px;box-shadow:0 4px 24px rgba(59,130,246,.06)}
+.api-card.collapsed{padding:0;border:none;background:none;box-shadow:none;margin-bottom:0}
+.api-card-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.api-card-header .material-symbols-outlined{font-size:24px;color:#3b82f6}
+.api-card-header h3{font-family:'Jua',sans-serif;font-size:18px;color:#2c2420;flex:1}
+.api-card-header .status{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600}
+.api-card-header .status.connected{background:#ecfdf5;color:#059669}
+.api-card-header .status.none{background:#fef2f2;color:#dc2626}
+.api-input-row{display:flex;gap:10px;margin-bottom:12px}
+.api-input{flex:1;padding:12px 16px;border-radius:12px;border:1.5px solid #dbeafe;font-size:14px;font-family:'Lexend',sans-serif;outline:none;transition:.2s;background:#f8fafc}
+.api-input:focus{border-color:#3b82f6;background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.api-input::placeholder{color:#94a3b8}
+.api-save-btn{padding:12px 20px;border-radius:12px;border:none;background:linear-gradient(135deg,#3b82f6,#06b6d4);color:#fff;font-family:'Jua',sans-serif;font-size:15px;cursor:pointer;transition:.2s;white-space:nowrap}
+.api-save-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.3)}
+.api-help{font-size:12px;color:#94a3b8;line-height:1.6}
+.api-help a{color:#3b82f6;text-decoration:none}
+.api-help a:hover{text-decoration:underline}
+.api-saved-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f0fdf4;border-radius:12px;margin-bottom:12px}
+.api-saved-row .key-preview{flex:1;font-size:13px;color:#059669;font-family:monospace;letter-spacing:1px}
+.api-saved-row .change-btn{font-size:12px;color:#3b82f6;background:none;border:none;cursor:pointer;font-family:'Lexend',sans-serif;font-weight:600}
+.api-saved-row .delete-btn{font-size:12px;color:#ef4444;background:none;border:none;cursor:pointer;font-family:'Lexend',sans-serif;font-weight:600}
+
+/* Hero */
+.hero{text-align:center;margin-bottom:28px}
+.hero h2{font-family:'Jua',sans-serif;font-size:28px;background:linear-gradient(135deg,#3b82f6,#06b6d4,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.hero p{font-size:13px;color:#8b7b6b}
+
+/* Upload zone */
+.upload-zone{border:2.5px dashed #93c5fd;border-radius:20px;padding:40px 20px;text-align:center;cursor:pointer;transition:.3s;background:rgba(255,255,255,.6);backdrop-filter:blur(8px);margin-bottom:24px;position:relative;overflow:hidden}
+.upload-zone:hover,.upload-zone.drag-over{border-color:#3b82f6;background:rgba(59,130,246,.05);transform:translateY(-2px);box-shadow:0 8px 30px rgba(59,130,246,.12)}
+.upload-zone .icon{font-size:48px;color:#60a5fa;margin-bottom:12px;display:block}
+.upload-zone .label{font-family:'Jua',sans-serif;font-size:18px;color:#5b6c7b;margin-bottom:6px}
+.upload-zone .sub{font-size:12px;color:#a09890}
+.upload-zone .camera-row{display:flex;justify-content:center;gap:12px;margin-top:14px}
+.upload-zone .camera-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:12px;border:1px solid rgba(59,130,246,.2);background:rgba(59,130,246,.06);font-family:'Jua',sans-serif;font-size:14px;color:#3b82f6;cursor:pointer;transition:.2s}
+.upload-zone .camera-btn:hover{background:rgba(59,130,246,.12)}
+.upload-zone input{display:none}
+
+/* Style picker */
+.style-picker{display:none;margin-bottom:24px}
+.style-picker-title{font-family:'Jua',sans-serif;font-size:14px;color:#6b7c8b;text-align:center;margin-bottom:12px}
+.style-options{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.style-opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 16px;border-radius:16px;border:2.5px solid transparent;background:rgba(255,255,255,.7);cursor:pointer;transition:.2s;min-width:80px}
+.style-opt:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.style-opt.active{border-color:#3b82f6;background:rgba(59,130,246,.08);box-shadow:0 4px 16px rgba(59,130,246,.15)}
+.style-opt .swatch{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.style-opt .sname{font-size:12px;font-weight:600;color:#5b6c7b}
+
+/* Preview panel */
+.preview-panel{display:none;background:#fff;border-radius:20px;border:1px solid rgba(0,0,0,.06);overflow:hidden;margin-bottom:20px;box-shadow:0 4px 24px rgba(0,0,0,.04)}
+.preview-header{padding:12px 16px;background:linear-gradient(135deg,#f0f9ff,#ecfdf5);border-bottom:1px solid rgba(0,0,0,.04);display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#5b6c7b}
+.preview-header .material-symbols-outlined{font-size:18px;color:#3b82f6}
+.preview-body{padding:12px;display:flex;align-items:center;justify-content:center;min-height:250px;position:relative;background:#fafafa}
+.preview-body img{max-width:100%;max-height:450px;border-radius:8px;object-fit:contain}
+
+/* Colorize button */
+.colorize-wrap{display:none;text-align:center;margin-bottom:24px}
+.colorize-btn{display:inline-flex;align-items:center;gap:10px;padding:16px 40px;border-radius:18px;border:none;background:linear-gradient(135deg,#3b82f6,#06b6d4);color:#fff;font-family:'Jua',sans-serif;font-size:20px;cursor:pointer;transition:.3s;box-shadow:0 6px 24px rgba(59,130,246,.3);position:relative;overflow:hidden}
+.colorize-btn:hover{transform:translateY(-3px);box-shadow:0 10px 36px rgba(59,130,246,.4)}
+.colorize-btn:active{transform:translateY(0)}
+.colorize-btn .material-symbols-outlined{font-size:26px}
+.colorize-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);transform:translateX(-100%);transition:none}
+.colorize-btn:hover::after{transform:translateX(100%);transition:transform .6s}
+.colorize-btn:disabled{opacity:.5;pointer-events:none}
+
+/* Loading */
+.loading-wrap{display:none;text-align:center;padding:40px 20px;margin-bottom:24px;background:rgba(255,255,255,.7);border-radius:20px;backdrop-filter:blur(8px)}
+.paint-anim{width:80px;height:80px;margin:0 auto 16px;position:relative}
+.paint-anim .brush{font-size:48px;animation:paintSwing 1.2s ease-in-out infinite;transform-origin:bottom center;display:block}
+@keyframes paintSwing{0%,100%{transform:rotate(-15deg)}50%{transform:rotate(15deg)}}
+.paint-drops{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);display:flex;gap:4px}
+.paint-drops span{width:8px;height:8px;border-radius:50%;animation:dropFall 1.5s ease-in infinite}
+.paint-drops span:nth-child(1){background:#60a5fa;animation-delay:0s}
+.paint-drops span:nth-child(2){background:#f87171;animation-delay:.3s}
+.paint-drops span:nth-child(3){background:#fbbf24;animation-delay:.6s}
+.paint-drops span:nth-child(4){background:#34d399;animation-delay:.9s}
+@keyframes dropFall{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(20px) scale(.3)}}
+.loading-text{font-family:'Jua',sans-serif;font-size:18px;color:#5b6c7b;margin-bottom:8px}
+.loading-sub{font-size:12px;color:#a09890}
+.progress-bar{height:6px;border-radius:6px;background:#e0f2fe;overflow:hidden;max-width:300px;margin:16px auto 0}
+.progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#3b82f6,#06b6d4);transition:width .3s;width:0}
+
+/* Result area */
+.result-area{display:none;margin-bottom:24px}
+.compare-wrap{position:relative;border-radius:20px;overflow:hidden;background:#fff;border:1px solid rgba(0,0,0,.06);box-shadow:0 4px 24px rgba(0,0,0,.06);touch-action:none;-webkit-user-select:none;user-select:none;cursor:ew-resize}
+.compare-wrap canvas{display:block;width:100%;height:auto}
+.compare-slider{position:absolute;top:0;bottom:0;width:3px;background:#fff;z-index:10;box-shadow:0 0 8px rgba(0,0,0,.3)}
+.compare-slider::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.compare-slider .arrows{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:16px;color:#3b82f6;z-index:2;pointer-events:none;font-weight:700;letter-spacing:-2px}
+.compare-label{position:absolute;top:12px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;color:#fff;z-index:5;pointer-events:none}
+.compare-label.left{left:12px;background:rgba(107,124,139,.8)}
+.compare-label.right{right:12px;background:rgba(59,130,246,.8)}
+
+/* Actions */
+.actions-wrap{display:none;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.actions-wrap .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:14px;border:none;font-family:'Jua',sans-serif;font-size:15px;cursor:pointer;transition:.2s}
+.actions-wrap .btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.btn-download{background:linear-gradient(135deg,#3b82f6,#06b6d4);color:#fff}
+.btn-retry{background:#fff;color:#5b6c7b;border:1px solid rgba(0,0,0,.1)!important}
+.btn-new{background:#fff;color:#e55;border:1px solid rgba(0,0,0,.1)!important}
+
+/* Tips */
+.tips{background:rgba(255,255,255,.7);backdrop-filter:blur(8px);border-radius:16px;border:1px solid rgba(0,0,0,.04);padding:20px;text-align:center}
+.tips h3{font-family:'Jua',sans-serif;font-size:16px;color:#3b82f6;margin-bottom:10px}
+.tips ul{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.tips li{font-size:12px;color:#5b6c7b;background:#f0f9ff;padding:6px 14px;border-radius:20px;border:1px solid #bfdbfe}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#2c2420;color:#fff;padding:12px 24px;border-radius:14px;font-size:13px;z-index:100;transition:.4s;opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Modal overlay for API key */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.show{display:flex}
+.modal-box{background:#fff;border-radius:20px;padding:28px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.15);position:relative}
+.modal-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(0,0,0,.05);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:#6b7c8b}
+
+@media(max-width:600px){
+    .hero h2{font-size:22px}
+    .colorize-btn{padding:14px 32px;font-size:17px}
+    .style-opt{min-width:68px;padding:10px 12px}
+    .api-input-row{flex-direction:column}
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+    <button class="back-btn" onclick="history.back()">
+        <span class="material-symbols-outlined" style="font-size:18px;color:#6b5c4e">arrow_back</span>
+    </button>
+    <div class="top-title">AI 수채화 채색</div>
+    <span class="top-badge">AI</span>
+    <button class="top-key-btn" id="topKeyBtn" onclick="openKeyModal()" title="API 키 설정">
+        <span class="material-symbols-outlined" style="font-size:20px;color:#6b5c4e">key</span>
+    </button>
+</div>
+
+<div class="container">
+    <!-- Hero -->
+    <div class="hero">
+        <h2>그림에 마법의 물감을 입혀요</h2>
+        <p>아이의 스케치를 올리면 AI가 자동으로 수채화로 채색해줘요</p>
+    </div>
+
+    <!-- API Key Card (shown if no key saved) -->
+    <div class="api-card" id="apiCard">
+        <div class="api-card-header">
+            <span class="material-symbols-outlined">key</span>
+            <h3>Google Gemini API 키</h3>
+            <span class="status none" id="apiStatus">미연결</span>
+        </div>
+        <!-- When no key saved -->
+        <div id="apiInputArea">
+            <div class="api-input-row">
+                <input type="password" class="api-input" id="apiKeyInput" placeholder="AIzaSy... 형식의 API 키를 입력하세요" autocomplete="off"/>
+                <button class="api-save-btn" onclick="saveApiKey()">저장</button>
+            </div>
+            <div class="api-help">
+                Google AI Studio에서 무료 API 키를 발급받을 수 있어요.<br/>
+                <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> &rarr; API 키 만들기<br/>
+                API 키는 현재 접속 중인 PC(브라우저)에만 저장되며, 외부 서버로 전송되지 않아요.
+            </div>
+        </div>
+        <!-- When key is saved -->
+        <div id="apiSavedArea" style="display:none">
+            <div class="api-saved-row">
+                <span class="key-preview" id="keyPreview">AIza****...****Xx</span>
+                <button class="change-btn" onclick="showKeyInput()">변경</button>
+                <button class="delete-btn" onclick="deleteApiKey()">삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="uploadZone">
+        <span class="material-symbols-outlined icon">palette</span>
+        <div class="label">그림을 올려주세요</div>
+        <div class="sub">JPG, PNG, WEBP &mdash; 스케치, 선화, 밑그림 모두 OK</div>
+        <div class="camera-row">
+            <label class="camera-btn">
+                <span class="material-symbols-outlined" style="font-size:18px">photo_camera</span>
+                카메라 촬영
+                <input type="file" id="cameraInput" accept="image/*" capture="environment"/>
+            </label>
+            <label class="camera-btn">
+                <span class="material-symbols-outlined" style="font-size:18px">add_photo_alternate</span>
+                파일 선택
+                <input type="file" id="fileInput" accept="image/*"/>
+            </label>
+        </div>
+    </div>
+
+    <!-- Style Picker -->
+    <div class="style-picker" id="stylePicker">
+        <div class="style-picker-title">채색 스타일을 골라주세요</div>
+        <div class="style-options">
+            <div class="style-opt active" data-style="watercolor">
+                <div class="swatch" style="background:linear-gradient(135deg,#bfdbfe,#a7f3d0)">💧</div>
+                <div class="sname">수채화</div>
+            </div>
+            <div class="style-opt" data-style="oilpaint">
+                <div class="swatch" style="background:linear-gradient(135deg,#fde68a,#fdba74)">🎨</div>
+                <div class="sname">유화</div>
+            </div>
+            <div class="style-opt" data-style="crayon">
+                <div class="swatch" style="background:linear-gradient(135deg,#fca5a5,#fcd34d)">🖍️</div>
+                <div class="sname">크레파스</div>
+            </div>
+            <div class="style-opt" data-style="pastel">
+                <div class="swatch" style="background:linear-gradient(135deg,#e9d5ff,#fbcfe8)">🌸</div>
+                <div class="sname">파스텔</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-panel" id="previewPanel">
+        <div class="preview-header">
+            <span class="material-symbols-outlined">image</span>
+            원본 그림
+        </div>
+        <div class="preview-body">
+            <img id="previewImg" alt="원본 그림"/>
+        </div>
+    </div>
+
+    <!-- Colorize Button -->
+    <div class="colorize-wrap" id="colorizeWrap">
+        <button class="colorize-btn" id="colorizeBtn" onclick="startColorize()">
+            <span class="material-symbols-outlined">auto_fix_high</span>
+            마법 수채화 채색!
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-wrap" id="loadingWrap">
+        <div class="paint-anim">
+            <span class="brush">🖌️</span>
+            <div class="paint-drops">
+                <span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="loading-text" id="loadingText">AI가 그림에 색을 입히는 중...</div>
+        <div class="loading-sub" id="loadingSub">10~30초 정도 걸려요. 잠시만 기다려주세요!</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-area" id="resultArea">
+        <div class="compare-wrap" id="compareWrap">
+            <canvas id="compareCanvas"></canvas>
+            <div class="compare-slider" id="compareSlider">
+                <span class="arrows">◀▶</span>
+            </div>
+            <span class="compare-label left">원본</span>
+            <span class="compare-label right">채색 완료</span>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions-wrap" id="actionsWrap">
+        <button class="btn btn-download" onclick="downloadResult()">
+            <span class="material-symbols-outlined" style="font-size:18px">download</span>
+            저장하기
+        </button>
+        <button class="btn btn-retry" onclick="retryColorize()">
+            <span class="material-symbols-outlined" style="font-size:18px">refresh</span>
+            다시 채색
+        </button>
+        <button class="btn btn-new" onclick="resetAll()">
+            <span class="material-symbols-outlined" style="font-size:18px">add</span>
+            새 그림
+        </button>
+    </div>
+
+    <!-- Tips -->
+    <div class="tips" id="tipsArea">
+        <h3>이렇게 하면 더 잘 돼요!</h3>
+        <ul>
+            <li>연필이나 펜으로 그린 선화가 가장 좋아요</li>
+            <li>배경이 깨끗한 흰 종이가 좋아요</li>
+            <li>밝은 곳에서 촬영해주세요</li>
+            <li>그림이 화면 가득 차게 찍어주세요</li>
+        </ul>
+    </div>
+</div>
+
+<!-- API Key Modal (for top-right button) -->
+<div class="modal-overlay" id="keyModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeKeyModal()">&times;</button>
+        <div class="api-card-header">
+            <span class="material-symbols-outlined">key</span>
+            <h3>API 키 설정</h3>
+        </div>
+        <div id="modalInputArea">
+            <div class="api-input-row">
+                <input type="password" class="api-input" id="modalKeyInput" placeholder="AIzaSy... API 키 입력" autocomplete="off"/>
+                <button class="api-save-btn" onclick="saveApiKeyFromModal()">저장</button>
+            </div>
+            <div class="api-help" style="margin-top:12px">
+                <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>에서 무료 발급 &rarr; 현재 접속 PC에만 저장
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════
+   State
+   ═══════════════════════════════════════ */
+let originalImage = null;
+let originalBase64 = null;
+let originalMime = 'image/jpeg';
+let resultImage = null;
+let resultBase64 = null;
+let selectedStyle = 'watercolor';
+
+const STORAGE_KEY = 'luna_gemini_api_key';
+const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+// Style prompts (no user text needed)
+const STYLE_PROMPTS = {
+    watercolor: '이 선화/스케치를 부드럽고 따뜻한 수채화 스타일로 채색해줘. 원래 선과 구도를 그대로 유지하면서 자연스럽고 아름다운 수채화 색감을 입혀줘. 물감이 번지는 듯한 부드러운 느낌으로 채색해줘. 배경도 자연스럽게 수채화 느낌으로 채워줘.',
+    oilpaint: '이 선화/스케치를 유화(오일 페인팅) 스타일로 채색해줘. 원래 선과 구도를 유지하면서 두꺼운 붓터치와 풍부한 질감이 느껴지는 유화 느낌으로 채색해줘.',
+    crayon: '이 선화/스케치를 크레파스/색연필 스타일로 채색해줘. 원래 선과 구도를 유지하면서 아이가 직접 크레파스로 칠한 것처럼 따뜻하고 자연스러운 색감으로 채색해줘.',
+    pastel: '이 선화/스케치를 파스텔 스타일로 채색해줘. 원래 선과 구도를 유지하면서 부드럽고 몽환적인 파스텔 톤으로 채색해줘.'
+};
+
+/* ═══════════════════════════════════════
+   API Key Management (localStorage)
+   ═══════════════════════════════════════ */
+function getApiKey() {
+    return localStorage.getItem(STORAGE_KEY) || '';
+}
+
+function saveApiKey() {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (!key) { showToast('API 키를 입력해주세요!'); return; }
+    if (!key.startsWith('AIza')) { showToast('올바른 Gemini API 키가 아닌 것 같아요'); return; }
+    localStorage.setItem(STORAGE_KEY, key);
+    renderApiState();
+    showToast('API 키가 저장되었어요!');
+}
+
+function saveApiKeyFromModal() {
+    const key = document.getElementById('modalKeyInput').value.trim();
+    if (!key) { showToast('API 키를 입력해주세요!'); return; }
+    if (!key.startsWith('AIza')) { showToast('올바른 Gemini API 키가 아닌 것 같아요'); return; }
+    localStorage.setItem(STORAGE_KEY, key);
+    renderApiState();
+    closeKeyModal();
+    showToast('API 키가 저장되었어요!');
+}
+
+function deleteApiKey() {
+    localStorage.removeItem(STORAGE_KEY);
+    renderApiState();
+    showToast('API 키가 삭제되었어요');
+}
+
+function showKeyInput() {
+    document.getElementById('apiInputArea').style.display = '';
+    document.getElementById('apiSavedArea').style.display = 'none';
+    document.getElementById('apiKeyInput').value = getApiKey();
+    document.getElementById('apiKeyInput').focus();
+}
+
+function renderApiState() {
+    const key = getApiKey();
+    const card = document.getElementById('apiCard');
+    const status = document.getElementById('apiStatus');
+    const inputArea = document.getElementById('apiInputArea');
+    const savedArea = document.getElementById('apiSavedArea');
+    const topBtn = document.getElementById('topKeyBtn');
+
+    if (key) {
+        status.textContent = '연결됨';
+        status.className = 'status connected';
+        inputArea.style.display = 'none';
+        savedArea.style.display = '';
+        document.getElementById('keyPreview').textContent =
+            key.slice(0, 6) + '****...' + key.slice(-4);
+        topBtn.classList.add('has-key');
+    } else {
+        status.textContent = '미연결';
+        status.className = 'status none';
+        inputArea.style.display = '';
+        savedArea.style.display = 'none';
+        topBtn.classList.remove('has-key');
+    }
+}
+
+function openKeyModal() {
+    document.getElementById('keyModal').classList.add('show');
+    document.getElementById('modalKeyInput').value = getApiKey();
+}
+function closeKeyModal() {
+    document.getElementById('keyModal').classList.remove('show');
+}
+
+/* ═══════════════════════════════════════
+   Upload Handlers
+   ═══════════════════════════════════════ */
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const cameraInput = document.getElementById('cameraInput');
+
+uploadZone.addEventListener('click', (e) => {
+    if (e.target.closest('.camera-btn')) return;
+    fileInput.click();
+});
+fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+cameraInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+// Drag & drop
+uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+
+// Paste
+document.addEventListener('paste', (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+        if (item.type.startsWith('image/')) { handleFile(item.getAsFile()); break; }
+    }
+});
+
+// Style picker
+document.querySelectorAll('.style-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+        document.querySelectorAll('.style-opt').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        selectedStyle = opt.dataset.style;
+        const names = { watercolor: '수채화', oilpaint: '유화', crayon: '크레파스', pastel: '파스텔' };
+        document.getElementById('colorizeBtn').innerHTML =
+            '<span class="material-symbols-outlined">auto_fix_high</span> 마법 ' + names[selectedStyle] + ' 채색!';
+    });
+});
+
+function handleFile(file) {
+    if (!file || !file.type.startsWith('image/')) {
+        showToast('이미지 파일만 올려주세요!');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            originalImage = img;
+            const { base64, mime } = resizeImage(img, 1024);
+            originalBase64 = base64;
+            originalMime = mime;
+
+            document.getElementById('previewImg').src = e.target.result;
+            uploadZone.style.display = 'none';
+            document.getElementById('previewPanel').style.display = 'block';
+            document.getElementById('stylePicker').style.display = 'block';
+            document.getElementById('colorizeWrap').style.display = 'block';
+            document.getElementById('tipsArea').style.display = 'none';
+            document.getElementById('resultArea').style.display = 'none';
+            document.getElementById('actionsWrap').style.display = 'none';
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function resizeImage(img, maxSize) {
+    const canvas = document.createElement('canvas');
+    let w = img.naturalWidth, h = img.naturalHeight;
+    if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else { w = Math.round(w * maxSize / h); h = maxSize; }
+    }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    return { base64: canvas.toDataURL('image/jpeg', 0.9).split(',')[1], mime: 'image/jpeg' };
+}
+
+/* ═══════════════════════════════════════
+   Gemini API — Direct REST Call
+   ═══════════════════════════════════════ */
+async function callGeminiImageGen(apiKey, imageBase64, mimeType, prompt) {
+    // Official Gemini image generation models (2026)
+    // https://ai.google.dev/gemini-api/docs/image-generation
+    const models = [
+        'gemini-2.5-flash-image',
+        'gemini-3.1-flash-image-preview'
+    ];
+
+    let lastError = null;
+
+    for (const model of models) {
+        try {
+            const url = `${API_BASE}/${model}:generateContent?key=${apiKey}`;
+            const body = {
+                contents: [{
+                    parts: [
+                        { inlineData: { mimeType: mimeType, data: imageBase64 } },
+                        { text: prompt }
+                    ]
+                }],
+                generationConfig: {
+                    responseModalities: ['TEXT', 'IMAGE']
+                }
+            };
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                const errMsg = errData?.error?.message || res.statusText;
+                console.warn(`[${model}] ${res.status}: ${errMsg}`);
+                // If model not found or not supported, try next
+                if (res.status === 404 || res.status === 400 && (errMsg.includes('not found') || errMsg.includes('not supported') || errMsg.includes('does not support'))) {
+                    lastError = new Error(`모델 ${model}: ${errMsg}`);
+                    continue;
+                }
+                throw new Error(errMsg);
+            }
+
+            const data = await res.json();
+            console.log(`[${model}] 응답 수신 성공`);
+            const candidate = data?.candidates?.[0];
+
+            if (!candidate?.content?.parts) {
+                // Check for prompt feedback (safety block)
+                const block = data?.promptFeedback?.blockReason;
+                if (block) throw new Error(`안전 필터 차단: ${block}`);
+                throw new Error('응답에 콘텐츠가 없습니다');
+            }
+
+            // Find image part in response
+            for (const part of candidate.content.parts) {
+                if (part.inlineData) {
+                    return {
+                        imageBase64: part.inlineData.data,
+                        mimeType: part.inlineData.mimeType || 'image/png'
+                    };
+                }
+            }
+
+            // No image — check for text feedback
+            const texts = candidate.content.parts.filter(p => p.text).map(p => p.text).join(' ');
+            throw new Error(texts || '이미지가 생성되지 않았습니다. 다른 그림으로 시도해보세요.');
+
+        } catch (err) {
+            lastError = err;
+            console.warn(`[${model}] 실패:`, err.message);
+            // Continue to next model if model-related error
+            if (err.message?.includes('not found') || err.message?.includes('not support')) continue;
+            throw err;
+        }
+    }
+
+    throw lastError || new Error('사용 가능한 모델이 없습니다');
+}
+
+/* ═══════════════════════════════════════
+   Colorize Flow
+   ═══════════════════════════════════════ */
+async function startColorize() {
+    if (!originalBase64) return;
+
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        showToast('먼저 Gemini API 키를 입력해주세요!');
+        document.getElementById('apiKeyInput').focus();
+        return;
+    }
+
+    // Switch to loading
+    document.getElementById('colorizeWrap').style.display = 'none';
+    document.getElementById('stylePicker').style.display = 'none';
+    document.getElementById('previewPanel').style.display = 'none';
+    document.getElementById('loadingWrap').style.display = 'block';
+    document.getElementById('resultArea').style.display = 'none';
+    document.getElementById('actionsWrap').style.display = 'none';
+
+    // Progress animation
+    let progress = 0;
+    const pFill = document.getElementById('progressFill');
+    pFill.style.width = '0%';
+    const pInterval = setInterval(() => {
+        progress += Math.random() * 8;
+        if (progress > 90) progress = 90;
+        pFill.style.width = progress + '%';
+    }, 500);
+
+    const msgs = ['AI가 그림을 분석하는 중...', '색감을 고르고 있어요...', '붓으로 칠하는 중...', '거의 다 됐어요!'];
+    let mi = 0;
+    const mInterval = setInterval(() => {
+        mi = Math.min(mi + 1, msgs.length - 1);
+        document.getElementById('loadingText').textContent = msgs[mi];
+    }, 5000);
+
+    try {
+        const prompt = STYLE_PROMPTS[selectedStyle] || STYLE_PROMPTS.watercolor;
+        const result = await callGeminiImageGen(apiKey, originalBase64, originalMime, prompt);
+
+        clearInterval(pInterval);
+        clearInterval(mInterval);
+        pFill.style.width = '100%';
+
+        resultBase64 = result.imageBase64;
+        resultImage = new Image();
+        resultImage.onload = () => {
+            document.getElementById('loadingWrap').style.display = 'none';
+            showResult();
+        };
+        resultImage.onerror = () => {
+            throw new Error('생성된 이미지를 불러올 수 없습니다');
+        };
+        resultImage.src = `data:${result.mimeType};base64,${resultBase64}`;
+
+    } catch (err) {
+        clearInterval(pInterval);
+        clearInterval(mInterval);
+        console.error('Colorize error:', err);
+        document.getElementById('loadingWrap').style.display = 'none';
+        document.getElementById('previewPanel').style.display = 'block';
+        document.getElementById('stylePicker').style.display = 'block';
+        document.getElementById('colorizeWrap').style.display = 'block';
+
+        let msg = '채색에 실패했어요.';
+        if (err.message?.includes('API key')) msg = 'API 키가 올바르지 않아요. 확인해주세요!';
+        else if (err.message?.includes('quota')) msg = 'API 사용량 초과! 잠시 후 다시 시도해주세요.';
+        else if (err.message?.includes('safety')) msg = 'AI 안전 필터에 걸렸어요. 다른 그림으로 시도해주세요.';
+        else if (err.message) msg += ' ' + err.message;
+        showToast(msg);
+    }
+}
+
+/* ═══════════════════════════════════════
+   Result — Compare Slider
+   ═══════════════════════════════════════ */
+function showResult() {
+    const resultArea = document.getElementById('resultArea');
+    resultArea.style.display = 'block';
+    document.getElementById('actionsWrap').style.display = 'flex';
+
+    // Setup slider FIRST (cloneNode destroys canvas content)
+    document.getElementById('compareSlider').style.left = '50%';
+    setupSlider();
+
+    // NOW set canvas size and draw on the new (cloned) canvas
+    const w = Math.max(originalImage.naturalWidth, resultImage.naturalWidth);
+    const h = Math.max(originalImage.naturalHeight, resultImage.naturalHeight);
+    const canvas = document.getElementById('compareCanvas');
+    canvas.width = w; canvas.height = h;
+    drawComparison(0.5);
+}
+
+// splitRatio: 0.0 (all result) to 1.0 (all original)
+function drawComparison(splitRatio) {
+    const canvas = document.getElementById('compareCanvas');
+    const ctx = canvas.getContext('2d');
+    const cw = canvas.width, ch = canvas.height;
+    const splitX = Math.round(cw * splitRatio);
+
+    ctx.clearRect(0, 0, cw, ch);
+    // Draw result full
+    ctx.drawImage(resultImage, 0, 0, cw, ch);
+    // Clip left side with original
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, 0, splitX, ch); ctx.clip();
+    ctx.drawImage(originalImage, 0, 0, cw, ch);
+    ctx.restore();
+    // Divider line
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(splitX, 0); ctx.lineTo(splitX, ch); ctx.stroke();
+}
+
+function setupSlider() {
+    const wrap = document.getElementById('compareWrap');
+    const slider = document.getElementById('compareSlider');
+    let dragging = false;
+
+    function update(clientX) {
+        const rect = wrap.getBoundingClientRect();
+        // Use CSS percentage — works regardless of canvas vs display size
+        const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        slider.style.left = (ratio * 100) + '%';
+        drawComparison(ratio);
+    }
+
+    // Remove old listeners by cloning
+    const newWrap = wrap.cloneNode(true);
+    wrap.parentNode.replaceChild(newWrap, wrap);
+
+    newWrap.addEventListener('mousedown', (e) => { dragging = true; update(e.clientX); });
+    window.addEventListener('mousemove', (e) => { if (dragging) update(e.clientX); });
+    window.addEventListener('mouseup', () => dragging = false);
+    newWrap.addEventListener('touchstart', (e) => { dragging = true; update(e.touches[0].clientX); }, { passive: true });
+    window.addEventListener('touchmove', (e) => { if (dragging) update(e.touches[0].clientX); }, { passive: true });
+    window.addEventListener('touchend', () => dragging = false);
+}
+
+/* ═══════════════════════════════════════
+   Actions
+   ═══════════════════════════════════════ */
+function downloadResult() {
+    if (!resultBase64) return;
+    const a = document.createElement('a');
+    a.href = `data:image/png;base64,${resultBase64}`;
+    a.download = `luna-watercolor-${Date.now()}.png`;
+    a.click();
+    showToast('저장 완료!');
+}
+
+function retryColorize() {
+    document.getElementById('resultArea').style.display = 'none';
+    document.getElementById('actionsWrap').style.display = 'none';
+    document.getElementById('previewPanel').style.display = 'block';
+    document.getElementById('stylePicker').style.display = 'block';
+    document.getElementById('colorizeWrap').style.display = 'block';
+}
+
+function resetAll() {
+    originalImage = null; originalBase64 = null;
+    resultImage = null; resultBase64 = null;
+    fileInput.value = ''; cameraInput.value = '';
+    uploadZone.style.display = '';
+    document.getElementById('previewPanel').style.display = 'none';
+    document.getElementById('stylePicker').style.display = 'none';
+    document.getElementById('colorizeWrap').style.display = 'none';
+    document.getElementById('loadingWrap').style.display = 'none';
+    document.getElementById('resultArea').style.display = 'none';
+    document.getElementById('actionsWrap').style.display = 'none';
+    document.getElementById('tipsArea').style.display = '';
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ═══════════════════════════════════════
+   Init
+   ═══════════════════════════════════════ */
+renderApiState();
+</script>
+</body>
+</html>

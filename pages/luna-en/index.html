@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luna EN - English Gamification</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        @font-face {
+            font-family: 'CookieRun-Bold';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Bold.woff') format('woff');
+            font-weight: bold; font-style: normal;
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #080C18;
+            --card: rgba(255,255,255,0.03);
+            --border: rgba(255,255,255,0.06);
+            --red: #FF6B6B;
+            --yellow: #FFE66D;
+            --cyan: #4ECDC4;
+            --purple: #B39DDB;
+            --blue: #64B5F6;
+        }
+
+        body {
+            font-family: 'Space Grotesk', 'Pretendard Variable', sans-serif;
+            background: var(--bg);
+            color: #E8E8E8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ═══ Animated Background ═══ */
+        .bg-mesh {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        }
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.12;
+            animation: orbFloat 20s ease-in-out infinite alternate;
+        }
+        .bg-orb:nth-child(1) {
+            width: 500px; height: 500px;
+            background: var(--red);
+            top: -10%; left: -5%;
+            animation-duration: 18s;
+        }
+        .bg-orb:nth-child(2) {
+            width: 400px; height: 400px;
+            background: var(--cyan);
+            top: 50%; right: -8%;
+            animation-duration: 22s;
+            animation-delay: -5s;
+        }
+        .bg-orb:nth-child(3) {
+            width: 350px; height: 350px;
+            background: var(--yellow);
+            bottom: -5%; left: 30%;
+            animation-duration: 25s;
+            animation-delay: -10s;
+        }
+        .bg-orb:nth-child(4) {
+            width: 300px; height: 300px;
+            background: var(--purple);
+            top: 20%; left: 60%;
+            animation-duration: 20s;
+            animation-delay: -3s;
+        }
+        @keyframes orbFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(40px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 40px) scale(0.9); }
+            100% { transform: translate(30px, 20px) scale(1.05); }
+        }
+
+        /* Grid overlay */
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* Floating letters */
+        .floating-letters {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+        }
+        .float-letter {
+            position: absolute;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            opacity: 0.03;
+            animation: letterDrift linear infinite;
+        }
+        @keyframes letterDrift {
+            0% { transform: translateY(110vh) rotate(0deg); }
+            100% { transform: translateY(-10vh) rotate(360deg); }
+        }
+
+        /* ═══ Content ═══ */
+        .content { position: relative; z-index: 1; }
+
+        /* ─── Header ─── */
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 24px;
+            background: rgba(8,12,24,0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .header-left { display: flex; align-items: center; gap: 14px; }
+        .back-btn {
+            width: 38px; height: 38px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: white; font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s;
+            text-decoration: none;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--red); }
+        .header-brand {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 22px;
+            background: linear-gradient(135deg, var(--red), var(--yellow), var(--cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-sub { font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 2px; text-transform: uppercase; }
+
+        /* ─── Layout: one-screen ─── */
+        body { overflow: hidden; height: 100vh; }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* ─── Stats bar ─── */
+        .stats-bar {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 0;
+            padding: 6px 20px;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .stat-item {
+            flex: 1;
+            display: flex; align-items: center; gap: 6px;
+            padding: 4px 8px;
+            border-right: 1px solid var(--border);
+            min-width: 0;
+        }
+        .stat-item:last-child { border-right: none; }
+        .stat-num {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .stat-item:nth-child(1) .stat-num { color: var(--blue); }
+        .stat-item:nth-child(2) .stat-num { color: var(--purple); }
+        .stat-item:nth-child(3) .stat-num { color: var(--red); }
+        .stat-item:nth-child(4) .stat-num { color: var(--cyan); }
+        .stat-item:nth-child(5) .stat-num { color: var(--yellow); }
+        .stat-label {
+            font-size: 11px; color: rgba(255,255,255,0.35);
+            font-weight: 600; line-height: 1.2;
+        }
+
+        /* ─── Main area ─── */
+        .main-area {
+            display: flex;
+            flex-direction: column;
+            padding: 12px 20px 16px;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section-head {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+        .section-icon {
+            width: 28px; height: 28px;
+            background: rgba(255,107,107,0.08);
+            border: 1px solid rgba(255,107,107,0.15);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+        }
+        .section-title {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 15px; color: rgba(255,255,255,0.7);
+        }
+        .section-line {
+            flex: 1; height: 1px;
+            background: linear-gradient(90deg, var(--border), transparent);
+        }
+        .section-count {
+            font-size: 11px; color: rgba(255,255,255,0.2);
+        }
+
+        /* ─── Game Cards: 3x2 compact grid ─── */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .game-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 14px 12px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        .game-card::before {
+            content: '';
+            position: absolute; inset: 0;
+            border-radius: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .game-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255,255,255,0.14);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+        }
+        .game-card:hover::before { opacity: 1; }
+
+        /* Card themes */
+        .card-vocab  { border-top: 2px solid var(--blue); }
+        .card-idiom  { border-top: 2px solid var(--purple); }
+        .card-talk   { border-top: 2px solid var(--red); }
+        .card-scene  { border-top: 2px solid var(--cyan); }
+        .card-listen { border-top: 2px solid var(--yellow); }
+        .card-vocab-note { border-top: 2px solid #FFB74D; }
+
+        .card-vocab::before  { background: radial-gradient(ellipse at 0% 0%, rgba(100,181,246,0.07), transparent 60%); }
+        .card-idiom::before  { background: radial-gradient(ellipse at 0% 0%, rgba(179,157,219,0.07), transparent 60%); }
+        .card-talk::before   { background: radial-gradient(ellipse at 0% 0%, rgba(255,107,107,0.07), transparent 60%); }
+        .card-scene::before  { background: radial-gradient(ellipse at 0% 0%, rgba(78,205,196,0.07), transparent 60%); }
+        .card-listen::before { background: radial-gradient(ellipse at 0% 0%, rgba(255,230,109,0.07), transparent 60%); }
+        .card-vocab-note::before { background: radial-gradient(ellipse at 0% 0%, rgba(255,183,77,0.09), transparent 60%); }
+
+        .card-top {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .card-icon {
+            font-size: 30px;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+            line-height: 1;
+        }
+        .card-arrow {
+            width: 24px; height: 24px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; color: rgba(255,255,255,0.25);
+            transition: all 0.25s;
+            flex-shrink: 0;
+        }
+        .game-card:hover .card-arrow {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(2px);
+        }
+
+        .card-title {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 16px;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+        .card-vocab .card-title      { color: var(--blue); }
+        .card-idiom .card-title      { color: var(--purple); }
+        .card-talk .card-title       { color: var(--red); }
+        .card-scene .card-title      { color: var(--cyan); }
+        .card-listen .card-title     { color: var(--yellow); }
+        .card-vocab-note .card-title { color: #FFB74D; }
+
+        .card-desc {
+            font-size: 11px;
+            color: rgba(255,255,255,0.38);
+            line-height: 1.45;
+            margin-bottom: 8px;
+        }
+        .card-tag {
+            font-size: 10px; font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.4);
+            display: inline-block;
+        }
+
+        /* ─── Features strip ─── */
+        .feat-strip {
+            display: flex;
+            gap: 8px;
+            padding: 10px 0 6px;
+            flex-shrink: 0;
+            border-top: 1px solid var(--border);
+            margin-top: 12px;
+        }
+        .feat-item {
+            flex: 1;
+            display: flex; align-items: center; gap: 8px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 10px;
+            transition: border-color 0.2s;
+        }
+        .feat-item:hover { border-color: rgba(255,255,255,0.1); }
+        .feat-icon { font-size: 18px; flex-shrink: 0; }
+        .feat-text {}
+        .feat-name {
+            font-family: 'CookieRun-Bold', sans-serif;
+            font-size: 11px; color: rgba(255,255,255,0.8);
+        }
+        .feat-desc { font-size: 10px; color: rgba(255,255,255,0.3); }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 480px) {
+            body { overflow: auto; height: auto; }
+            .content { height: auto; }
+            .game-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: auto; }
+            .stats-bar { flex-wrap: wrap; }
+            .stat-item { flex: 1 1 33%; border-right: none; border-bottom: 1px solid var(--border); }
+            .feat-strip { flex-wrap: wrap; }
+            .feat-item { flex: 1 1 45%; }
+        }
+        @media (max-width: 360px) {
+            .game-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+<!-- luna-nav.js 제거: global-nav.js가 대체 -->
+</head>
+<body>
+    <!-- ═══ Background ═══ -->
+    <div class="bg-mesh">
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+    </div>
+    <div class="bg-grid"></div>
+    <div class="floating-letters" id="floatingLetters"></div>
+
+    <!-- ═══ Content ═══ -->
+    <div class="content">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <!-- back button removed: global-nav -->
+                <div>
+                    <div class="header-brand">Luna EN</div>
+                    <div class="header-sub">English Gamification</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-num">1,381</div>
+                <div class="stat-label">영단어</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">374</div>
+                <div class="stat-label">영숙어</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">88</div>
+                <div class="stat-label">회화</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">360</div>
+                <div class="stat-label">상황영어</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">1,755</div>
+                <div class="stat-label">듣기 문항</div>
+            </div>
+        </div>
+
+        <!-- Main Area -->
+        <div class="main-area">
+            <!-- Section head -->
+            <div class="section-head">
+                <div class="section-icon">🎮</div>
+                <div class="section-title">Games</div>
+                <div class="section-line"></div>
+                <div class="section-count">6 games · 2,200+ 문항</div>
+            </div>
+
+            <!-- Games 3x2 grid -->
+            <div class="game-grid">
+                <a href="../games/english-run.html" class="game-card card-vocab">
+                    <div class="card-top">
+                        <div class="card-icon">🎓</div>
+                        <div class="card-arrow">→</div>
+                    </div>
+                    <div class="card-title">English Run!</div>
+                    <div class="card-desc">뜻을 보고 올바른 영단어를 골라 달려라! Oxford 5000 기반</div>
+                    <span class="card-tag">🏃 1,381 단어</span>
+                </a>
+
+                <a href="../games/english-idiom-run.html" class="game-card card-idiom">
+                    <div class="card-top">
+                        <div class="card-icon">📖</div>
+                        <div class="card-arrow">→</div>
+                    </div>
+                    <div class="card-title">Idiom Run!</div>
+                    <div class="card-desc">영숙어 뜻을 보고 올바른 표현을 찾아라! 핵심 숙어</div>
+                    <span class="card-tag">🏃 374 숙어</span>
+                </a>
+
+                <a href="../games/english-talk.html" class="game-card card-talk">
+                    <div class="card-top">
+                        <div class="card-icon">🎙️</div>
+                        <div class="card-arrow">→</div>
+                    </div>
+                    <div class="card-title">Talk Rhythm!</div>
+                    <div class="card-desc">외국인이 말을 걸면 리듬에 맞춰 대답! 점점 빨라지는 긴장감</div>
+                    <span class="card-tag">🎵 88 문항</span>
+                </a>
+
+                <a href="../games/english-scene.html" class="game-card card-scene">
+                    <div class="card-top">
+                        <div class="card-icon">🌍</div>
+                        <div class="card-arrow">→</div>
+                    </div>
+                    <div class="card-title">Scene Talk!</div>
+                    <div class="card-desc">병원, 공항, 카페 등 35가지 상황별 영어회화 + TTS 음성</div>
+                    <span class="card-tag">🔊 35장면 360문항</span>
+                </a>
+
+                <a href="../games/english-listen.html" class="game-card card-listen">
+                    <div class="card-top">
+                        <div class="card-icon">👂</div>
+                        <div class="card-arrow">→</div>
+                    </div>
+                    <div class="card-title">Listen Up!</div>
+                    <div class="card-desc">영어 음성을 듣고 한국어 뜻을 골라라! 단어·문장 듣기 훈련</div>
+                    <span class="card-tag">👂 단어+문장 TTS</span>
+                </a>
+
+                <a href="../games/english-vocab-note.html" class="game-card card-vocab-note">
+                    <div class="card-top">
+                        <div class="card-icon">📓</div>
+                        <div class="card-arrow">→</div>
+                    </div>
+                    <div class="card-title">My Vocab Note</div>
+                    <div class="card-desc">틀린 단어를 자동 수집! 플래시카드·퀴즈로 복습</div>
+                    <span class="card-tag">📋 자동 수집 · 졸업 시스템</span>
+                </a>
+            </div>
+
+            <!-- Features strip -->
+            <div class="feat-strip">
+                <div class="feat-item">
+                    <div class="feat-icon">🧠</div>
+                    <div class="feat-text">
+                        <div class="feat-name">스마트 마스터리</div>
+                        <div class="feat-desc">3회 정답 시 자동 제외</div>
+                    </div>
+                </div>
+                <div class="feat-item">
+                    <div class="feat-icon">⚡</div>
+                    <div class="feat-text">
+                        <div class="feat-name">점점 빨라짐</div>
+                        <div class="feat-desc">5초 → 최소 2초</div>
+                    </div>
+                </div>
+                <div class="feat-item">
+                    <div class="feat-icon">🔊</div>
+                    <div class="feat-text">
+                        <div class="feat-name">TTS 영어 음성</div>
+                        <div class="feat-desc">원어민 발음 자동 재생</div>
+                    </div>
+                </div>
+                <div class="feat-item">
+                    <div class="feat-icon">🏆</div>
+                    <div class="feat-text">
+                        <div class="feat-name">랭킹 시스템</div>
+                        <div class="feat-desc">Hall of Fame 리더보드</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Floating letters animation
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
+        const container = document.getElementById('floatingLetters');
+        for (let i = 0; i < 30; i++) {
+            const el = document.createElement('div');
+            el.className = 'float-letter';
+            el.textContent = letters[Math.floor(Math.random() * letters.length)];
+            el.style.left = Math.random() * 100 + '%';
+            el.style.fontSize = (20 + Math.random() * 60) + 'px';
+            el.style.animationDuration = (15 + Math.random() * 25) + 's';
+            el.style.animationDelay = -(Math.random() * 30) + 's';
+            container.appendChild(el);
+        }
+    </script>
+<script src="../../assets/js/global-nav.js?v=20260329f"></script>
+</body>
+</html>

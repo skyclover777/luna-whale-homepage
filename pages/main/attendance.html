@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title data-i18n="page_curriculum">Attendance Planner - Luna Whale</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../../assets/data/i18n.js?v=0312-2330"></script>
+    <script src="../../assets/js/app.js?v=0312-2330"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "primary": "#1337ec", "background-light": "#f6f6f8", "background-dark": "#101322" },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] },
+                },
+            },
+        }
+    </script>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @media (min-width: 1024px) {
+            .app-sidebar {
+                display: flex !important;
+            }
+
+            .bottom-nav {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+
+        /* Sidebar Submenu */
+        .submenu-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .submenu-container.open {
+            max-height: 400px;
+        }
+
+        .submenu-item {
+            display: block;
+            padding: 0.5rem 1rem 0.5rem 3.2rem;
+            font-size: 0.75rem;
+            color: #64748b;
+            transition: all 0.2s;
+            border-radius: 0.75rem;
+            margin: 0.1rem 0;
+            font-weight: 500;
+        }
+
+        .submenu-item:hover {
+            color: #1337ec;
+            background: rgba(19, 55, 236, 0.05);
+        }
+
+        /* Custom Scrollbar for Matrix */
+        .custom-table-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .custom-table-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .custom-table-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .dark .custom-table-scroll::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        .dark .custom-table-scroll::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        /* Sticky Column shadows */
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 20;
+        }
+
+        .sticky-col::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -5px;
+            bottom: 0;
+            width: 5px;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.05), transparent);
+        }
+
+        .dark .sticky-col::after {
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.2), transparent);
+        }
+
+        /* Student Pill */
+        .student-pill {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .student-pill.present {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .dark .student-pill.present {
+            background-color: rgba(22, 101, 52, 0.3);
+            color: #4ade80;
+            border-color: rgba(74, 222, 128, 0.2);
+        }
+
+        .student-pill.absent {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            text-decoration: line-through;
+            border: 1px solid #e2e8f0;
+        }
+
+        .dark .student-pill.absent {
+            background-color: rgba(30, 41, 59, 0.5);
+            color: #64748b;
+            border-color: rgba(51, 65, 85, 0.5);
+        }
+
+        /* Matrix Specific Overhaul */
+        .matrix-cell {
+            position: relative;
+            transition: all 0.2s;
+            min-width: 60px;
+            height: 60px;
+            cursor: pointer;
+        }
+
+        .matrix-cell:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        /* Click-to-open cell actions panel */
+        .cell-actions {
+            position: fixed;
+            z-index: 200;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 8px;
+            display: none;
+            flex-wrap: wrap;
+            gap: 4px;
+            max-width: 180px;
+            box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.15), 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+            animation: cellActionsIn 0.15s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes cellActionsIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .cell-actions.active {
+            display: flex;
+        }
+
+        .dark .cell-actions {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        /* Color picker row inside actions */
+        .cell-actions .color-row {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            width: 100%;
+            padding: 4px 0;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 2px;
+            padding-top: 6px;
+        }
+
+        .dark .cell-actions .color-row {
+            border-top-color: #334155;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: #f1f5f9;
+            transform: scale(1.1);
+        }
+
+        .dark .action-btn:hover {
+            background: #334155;
+        }
+
+        .action-btn span {
+            font-size: 16px;
+        }
+
+        .matrix-marker {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .color-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.15s;
+        }
+
+        .color-dot:hover {
+            transform: scale(1.3);
+        }
+
+        /* Inline memo text in cell */
+        .memo-inline {
+            position: absolute;
+            bottom: 2px;
+            left: 3px;
+            right: 3px;
+            top: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(80, 60, 0, 0.7);
+            overflow: hidden;
+            z-index: 15;
+            pointer-events: none;
+            font-weight: 700;
+            line-height: 1.15;
+            text-align: center;
+            word-break: break-all;
+        }
+
+        /* Backdrop for dismissing cell actions */
+        .cell-actions-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 199;
+            background: transparent;
+        }
+
+        .sunday-text {
+            color: #ef4444 !important;
+        }
+
+        .matrix-header-cell {
+            position: relative;
+            padding: 12px 8px !important;
+        }
+
+        .matrix-header-date {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .matrix-header-day {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            opacity: 0.6;
+        }
+
+        .row-drag-handle {
+            cursor: grab;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+        }
+
+        tr:hover .row-drag-handle {
+            opacity: 1;
+        }
+
+        .lesson-badge {
+            font-size: 13px;
+            font-weight: 900;
+            color: #1e293b;
+            z-index: 5;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 6px;
+            padding: 1px 5px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .dark .lesson-badge {
+            color: #f1f5f9;
+        }
+
+        .lesson-badge.inactive {
+            opacity: 0.2;
+            text-decoration: line-through;
+        }
+
+        .color-overlay {
+            position: absolute;
+            inset: 0;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        [data-matrix-color="red"] {
+            background-color: #ef4444;
+        }
+
+        [data-matrix-color="blue"] {
+            background-color: #3b82f6;
+        }
+
+        [data-matrix-color="green"] {
+            background-color: #22c55e;
+        }
+
+        [data-matrix-color="yellow"] {
+            background-color: #eab308;
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+    <!-- No Sidebar for Planner to maximize space -->
+    <div class="attendance-content w-full min-h-screen flex flex-col">
+        <!-- Header -->
+        <header
+            class="sticky top-0 z-[100] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button onclick="LunaApp.navigate('home')"
+                    class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    <span class="material-symbols-outlined text-slate-600 dark:text-slate-300">arrow_back</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-black text-xl text-slate-900 dark:text-white" data-i18n="nav_curriculum">Curriculum
+                    </h1>
+                    <span
+                        class="bg-primary/10 text-primary text-[10px] font-black uppercase px-2 py-0.5 rounded ml-2">Planner</span>
+                </div>
+            </div>
+            <div class="flex gap-2 items-center">
+                <button onclick="toggleDarkMode()"
+                    class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    <span class="material-symbols-outlined text-slate-600 dark:text-slate-300 text-lg">contrast</span>
+                </button>
+                <!-- Language switcher -->
+                <div class="relative" id="lang-container">
+                    <button onclick="lwToggleLang('lang-menu')"
+                        class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                        title="Language">
+                        <span
+                            class="material-symbols-outlined text-slate-600 dark:text-slate-300 text-lg">language</span>
+                    </button>
+                    <div id="lang-menu"
+                        class="absolute right-0 top-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl w-44 py-1.5 z-50"
+                        style="display:none"></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 w-full pb-28 lg:pb-12 px-6 sm:px-10 lg:px-12 pt-6 flex flex-col min-h-0">
+            <!-- Planner Header / Nav -->
+            <div
+                class="flex flex-col md:flex-row justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 mb-6 gap-4">
+                <div class="flex items-center gap-4">
+                    <button id="btn-prev-month"
+                        class="w-10 h-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    <h2 id="current-month-display"
+                        class="text-xl md:text-2xl font-black text-slate-900 dark:text-white w-40 text-center tracking-tight">
+                        February 2026</h2>
+                    <button id="btn-next-month"
+                        class="w-10 h-10 flex items-center justify-center bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                    <button id="btn-today"
+                        class="ml-2 px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold uppercase rounded-lg hover:bg-primary/20 transition-colors">Today</button>
+                </div>
+
+                <div
+                    class="flex items-center bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 gap-1">
+                    <!-- Print Button -->
+                    <button onclick="window.print()"
+                        class="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all print:hidden"
+                        title="Print Calendar">
+                        <span class="material-symbols-outlined text-xl">print</span>
+                    </button>
+                    <div class="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1 print:hidden"></div>
+
+                    <button id="tab-calendar"
+                        class="px-5 py-2.5 text-sm font-bold bg-white dark:bg-slate-700 shadow-sm rounded-xl text-primary transition-all">Calendar</button>
+                    <button id="tab-matrix"
+                        class="px-5 py-2.5 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl transition-all">Matrix</button>
+                </div>
+            </div>
+
+            <!-- View 1: Calendar Grid -->
+            <div id="view-calendar"
+                class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm p-4 sm:p-6 mb-6">
+                <!-- Days of Week (Mon-Sun) -->
+                <div class="grid grid-cols-7 gap-2 sm:gap-4 mb-2">
+                    <div
+                        class="text-center text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                        Mon</div>
+                    <div
+                        class="text-center text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                        Tue</div>
+                    <div
+                        class="text-center text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                        Wed</div>
+                    <div
+                        class="text-center text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                        Thu</div>
+                    <div
+                        class="text-center text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                        Fri</div>
+                    <div class="text-center text-[10px] sm:text-xs font-black text-blue-500 uppercase tracking-widest">
+                        Sat</div>
+                    <div class="text-center text-[10px] sm:text-xs font-black text-red-500 uppercase tracking-widest">
+                        Sun</div>
+                </div>
+                <!-- Calendar Grid Container -->
+                <div id="calendar-grid" class="grid grid-cols-7 gap-2 sm:gap-4">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Student Roster -->
+                <div class="student-roster-section mt-4 p-4 border-t border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">학생
+                            명단</span>
+                    </div>
+                    <div id="student-roster" class="flex flex-wrap gap-2 mb-3">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="new-student-input" type="text" placeholder="학생 이름 입력..."
+                            class="flex-1 px-3 py-1.5 text-sm border border-slate-200 dark:border-slate-700 rounded-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            onkeydown="if(event.key==='Enter') addStudentInline()">
+                        <button onclick="addStudentInline()"
+                            class="px-3 py-1.5 text-sm font-bold bg-primary text-white rounded-full hover:scale-105 transition-transform">추가</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 2: Horizontal Matrix (Hidden by default) -->
+            <div id="view-matrix"
+                class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm hidden mb-6 flex-col">
+                <div class="overflow-x-auto custom-table-scroll">
+                    <table class="w-full text-left border-collapse min-w-[1200px]">
+                        <thead>
+                            <tr id="matrix-header"
+                                class="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
+                                <!-- Sticky Name Col -->
+                                <th
+                                    class="p-4 sticky-col bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest min-w-[140px]">
+                                    Student Name</th>
+                                <!-- Days 1-31 populated by JS -->
+                            </tr>
+                        </thead>
+                        <tbody id="matrix-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- View 3: Daily Detail View (Full Page-ish Overlay) -->
+            <div id="view-detail"
+                class="fixed inset-0 z-[500] bg-white dark:bg-slate-900 hidden flex flex-col overflow-hidden min-h-0">
+
+                <header
+                    class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shrink-0">
+                    <div class="flex items-center gap-4">
+                        <button onclick="closeDailyDetail()"
+                            class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-all">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                        </button>
+                        <div>
+                            <h2 id="detail-date-title" class="text-2xl font-black text-slate-900 dark:text-white">
+                                January 28, 2026</h2>
+                            <p id="detail-date-subtitle" class="text-sm font-bold text-primary">Wednesday</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="saveDetailAndClose()"
+                            class="px-6 py-2.5 bg-primary text-white font-black rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
+                            Done
+                        </button>
+                    </div>
+                </header>
+
+                <div class="flex-1 flex overflow-hidden min-h-0">
+                    <!-- Left: Timeline -->
+                    <div class="flex-1 relative overflow-hidden min-h-0 bg-slate-50/50 dark:bg-slate-900/50 block">
+                        <!-- Strict bounds for Safari scroll bug -->
+                        <div class="absolute inset-0 overflow-y-auto p-6" id="detail-timeline-container">
+                            <div class="max-w-4xl mx-auto space-y-2" id="detail-timeline">
+                                <!-- Populated by JS: 15-minute slots -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Tooling Sidebar -->
+                    <div
+                        class="w-80 border-l border-slate-100 dark:border-slate-800 overflow-y-auto bg-white dark:bg-slate-900 flex flex-col shrink-0 relative z-[5] custom-scrollbar">
+
+                        <!-- Class Creator (Sticky at top) -->
+                        <div
+                            class="sticky top-0 z-20 bg-white dark:bg-slate-900 p-6 border-b border-slate-50 dark:border-slate-800 shadow-sm">
+                            <h3 class="text-xs font-black uppercase text-primary mb-4 tracking-widest">Create Class Item
+                            </h3>
+                            <div class="space-y-4">
+                                <textarea id="detail-new-memo" rows="2"
+                                    class="w-full text-sm font-medium p-3 rounded-2xl border-none ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-primary bg-white dark:bg-slate-800"
+                                    placeholder="Describe class or topic..."></textarea>
+                                <button onclick="createCustomClassItem()"
+                                    class="w-full py-3 bg-primary text-white font-black text-sm rounded-2xl shadow-sm border border-primary/10 hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+                                    <span class="material-symbols-outlined text-lg">category</span>
+                                    Generate Block
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Student Roster for DnD -->
+                        <div class="p-6 pt-8">
+                            <h3 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-widest">Student Roster
+                            </h3>
+                            <div id="detail-roster" class="flex flex-wrap gap-2">
+                                <!-- Populated by JS -->
+                            </div>
+
+                            <div
+                                class="mt-12 pt-6 border-t border-slate-100 dark:border-slate-800 italic text-[10px] text-slate-400">
+                                Drag student names onto the timeline to schedule. Use the creator to add custom
+                                activities.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 4: Matrix Memo Modal (Post-it Style) -->
+            <div id="matrix-memo-modal"
+                class="fixed inset-0 z-[1000] hidden items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+                <div class="post-it w-full max-w-md p-8 rounded-sm animate-in fade-in zoom-in duration-300">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                            <span class="material-symbols-outlined text-amber-600">edit_note</span>
+                            Class Notes
+                        </h3>
+                        <button onclick="closeMatrixMemo()"
+                            class="text-slate-400 hover:text-slate-600 transition-colors">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div class="mb-2 text-[11px] font-bold text-amber-700 uppercase tracking-widest opacity-60"
+                        id="memo-date-label">February 28, 2026</div>
+                    <div class="mb-6 text-sm font-bold text-slate-600" id="memo-student-label">Student Name</div>
+                    <textarea id="matrix-memo-input"
+                        class="w-full h-48 bg-transparent border-none focus:ring-0 text-slate-700 font-medium placeholder-slate-400 p-0 resize-none leading-relaxed"
+                        placeholder="Type your notes here..."></textarea>
+                    <div class="flex justify-end mt-4">
+                        <button onclick="saveMatrixMemo()"
+                            class="bg-amber-500 hover:bg-amber-600 text-white font-black px-6 py-2 rounded-full shadow-lg shadow-amber-200 transition-all hover:scale-105 active:scale-95">
+                            Save Note
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+        </main>
+    </div>
+
+    <!-- Modals are kept as fallback or for small edits, but main interaction shifts to Detail View -->
+
+    <!-- App Logic for Planner -->
+    <!-- App Logic for Planner -->
+    <!-- App Logic for Planner -->
+    <!-- App Logic for Planner -->
+    <!-- App Logic for Planner -->
+    <script src="../../assets/js/planner.js?v=0312-2330"></script>
+
+    <style>
+        /* CRITICAL V26: Reset root positioning to ensure fixed-coordinate system is pure */
+        html,
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100% !important;
+            transform: none !important;
+            filter: none !important;
+            perspective: none !important;
+            position: static !important;
+        }
+
+        /* V30: Day Expansion & Hover Styles */
+        .calendar-day-cell {
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, z-index 0s;
+            transform-origin: center;
+        }
+
+        .calendar-day-cell:hover {
+            transform: scale(1.1);
+            z-index: 50;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Timeline Slot Styles */
+        .time-slot {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            padding: 0;
+            border-radius: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .time-slot:hover {
+            background: rgba(19, 55, 236, 0.05);
+        }
+
+        .time-label {
+            width: 45px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #94a3b8;
+            text-align: right;
+        }
+
+        .slot-target {
+            flex: 1;
+            min-height: 32px;
+            background: white;
+            border: 1px dashed #e2e8f0;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            padding: 0;
+            transition: all 0.2s;
+        }
+
+        .slot-target.drag-over {
+            background: rgba(19, 55, 236, 0.1);
+            border-color: #1337ec;
+        }
+
+        /* Resize Handle Styles */
+        .resize-handle,
+        .resize-handle-x {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .relative:hover>.resize-handle,
+        .relative:hover>.resize-handle-x {
+            opacity: 1 !important;
+        }
+
+        /* Expand Button animation */
+        @keyframes pulse-soft {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+        }
+
+        .expand-btn-pulse {
+            animation: pulse-soft 2s infinite ease-in-out;
+        }
+
+        .slot-target:hover {
+            border-color: #1337ec;
+            background: rgba(19, 55, 236, 0.02);
+            transition: all 0.2s;
+        }
+
+        .dark .slot-target {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .slot-target.drag-over {
+            border-color: #1337ec;
+            background: rgba(19, 55, 236, 0.03);
+            transform: scale(1.01);
+        }
+
+        /* Calendar Mini Content */
+        .mini-schedule-item {
+            font-size: 8px;
+            line-height: 1.1;
+            padding: 2px 4px;
+            border-radius: 4px;
+            margin-bottom: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* V66: Print Optimization for A4 Portrait */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+
+            body {
+                background: white !important;
+                color: black !important;
+            }
+
+            /* Hide navigation, toolbars, sidebars, and inactive views */
+            header,
+            #tab-calendar,
+            #tab-matrix,
+            #btn-prev-month,
+            #btn-next-month,
+            #btn-today,
+            #view-matrix,
+            #view-detail,
+            .student-roster-section,
+            .print\:hidden {
+                display: none !important;
+            }
+
+            /* Reset flex wrappers to standard block flow and center content */
+            .attendance-content,
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 100% !important;
+                height: 100% !important;
+                min-height: 0 !important;
+            }
+
+            /* Remove wrapper decoration around the month title */
+            main>div:first-child {
+                border: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                padding: 0 0 20px 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                display: flex !important;
+                justify-content: center !important;
+            }
+
+            #current-month-display {
+                font-size: 28pt !important;
+                text-align: center;
+                width: 100%;
+                color: black !important;
+                margin: 0 !important;
+            }
+
+            /* Calendar Grid sizing for A4 */
+            #view-calendar {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 auto !important;
+                width: 100% !important;
+                background: white !important;
+            }
+
+            .calendar-day-cell {
+                min-height: 140px !important;
+                border: 1px solid #94a3b8 !important;
+                /* Slightly darker for print */
+                border-radius: 4px !important;
+                padding: 4px !important;
+                background: white !important;
+                break-inside: avoid;
+            }
+
+            /* Ensure time and name are always visible in print */
+            .mini-schedule-item {
+                font-size: 5.5pt !important;
+                padding: 2px 4px !important;
+                margin-bottom: 2px !important;
+                border-radius: 3px !important;
+                white-space: normal !important;
+                /* Allow wrapping to see full name */
+                overflow: visible !important;
+                text-overflow: clip !important;
+                height: auto !important;
+                display: block !important;
+                width: 100% !important;
+                color: black !important;
+                /* Better contrast for print */
+                border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            }
+
+            /* Concurrent blocks should stack instead of horizontal row in print if they would hide text */
+            #view-calendar .flex.gap-1.mb-0\.5 {
+                display: block !important;
+                width: 100% !important;
+            }
+
+            #view-calendar .flex-1.mini-schedule-item {
+                flex: none !important;
+                width: 100% !important;
+                margin-bottom: 3px !important;
+            }
+
+            /* Hide the tiny zoom icon in calendar cell */
+            .calendar-day-cell .material-symbols-outlined {
+                display: none !important;
+            }
+
+            /* Hide More badge in print to focus on content, or you might want to show it. 
+               User wants names visible, so if they are hidden behind "+X more", it might be an issue.
+               However, without interactive scaling, we can only fit so much. */
+
+            /* Ensure background graphics (chips/gradients) print */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .attendance-content main {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+
+            /* Matrix optimizations */
+            .matrix-cell {
+                min-width: 45px;
+                height: 48px;
+            }
+
+            .matrix-header-date {
+                font-size: 13px;
+            }
+
+            .sticky-col {
+                min-width: 85px !important;
+                max-width: 100px !important;
+                font-size: 11px !important;
+                padding: 6px !important;
+                z-index: 30 !important;
+            }
+
+            /* Hide row reorder handles on mobile for more space */
+            .row-drag-handle,
+            .sticky-col .flex-col.gap-1 {
+                display: none !important;
+            }
+
+            .lesson-badge {
+                font-size: 11px;
+                font-weight: 900;
+            }
+
+            .action-btn {
+                width: 26px;
+                height: 26px;
+            }
+
+            .action-btn span {
+                font-size: 14px;
+            }
+
+            /* Calendar (Timeline) horizontal scroll on mobile */
+            #calendar-grid {
+                display: flex !important;
+                overflow-x: auto !important;
+                gap: 0.5rem !important;
+                padding-bottom: 1rem;
+                -webkit-overflow-scrolling: touch;
+                scroll-snap-type: x mandatory;
+            }
+
+            .calendar-day-cell {
+                min-width: 85vw !important;
+                /* One day takes most of the screen */
+                min-height: 250px !important;
+                flex-shrink: 0;
+                scroll-snap-align: center;
+                transform: none !important;
+                /* Disable hover scale on mobile */
+            }
+
+            /* Hide the Mon-Sun header grid on mobile */
+            #view-calendar>.grid.grid-cols-7:first-child {
+                display: none !important;
+            }
+
+            header .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            h2#current-month-display {
+                font-size: 1.1rem;
+                width: auto;
+            }
+        }
+
+        /* Matrix Row Pastel Backgrounds */
+        .matrix-row-pastel {
+            transition: background-color 0.3s ease;
+        }
+
+        .matrix-row-pastel:hover {
+            filter: brightness(0.98);
+        }
+
+        /* Memo Indicator */
+        .memo-indicator {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 6px;
+            height: 6px;
+            background: #f59e0b;
+            /* Amber 500 */
+            border-radius: 50%;
+            z-index: 20;
+            box-shadow: 0 0 4px rgba(245, 158, 11, 0.5);
+        }
+
+        /* Post-it Modal */
+        #matrix-memo-modal .post-it {
+            background: #fef08a;
+            /* Yellow 200 */
+            box-shadow:
+                5px 5px 15px rgba(0, 0, 0, 0.1),
+                inset 0 0 40px rgba(0, 0, 0, 0.05);
+            transform: rotate(-1deg);
+            position: relative;
+        }
+
+        #matrix-memo-modal .post-it::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            border-width: 20px 20px 0 0;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.1) transparent transparent transparent;
+            box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

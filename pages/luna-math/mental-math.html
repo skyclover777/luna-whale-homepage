@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ 번개암산 - Lightning Mental Math</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0e1a;--bg2:#111827;--bg3:#1a2035;
+  --gold:#ffd700;--neon:#00d4ff;--green:#00ff88;--red:#ff3366;--purple:#a855f7;--orange:#ff8c00;
+  --text:#e2e8f0;--dim:#64748b;
+}
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Black+Han+Sans&family=Orbitron:wght@700;900&display=swap');
+body{background:var(--bg);color:var(--text);font-family:'Jua',sans-serif;overflow:hidden;height:100vh;width:100vw;position:relative}
+
+/* Background */
+.bg-grid{position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);
+  background-size:50px 50px;
+}
+.bg-orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.15;z-index:0;animation:orbFloat 20s ease-in-out infinite}
+.bg-orb:nth-child(1){width:400px;height:400px;background:var(--neon);top:-100px;left:-100px}
+.bg-orb:nth-child(2){width:350px;height:350px;background:var(--purple);bottom:-80px;right:-80px;animation-delay:-7s}
+.bg-orb:nth-child(3){width:300px;height:300px;background:var(--gold);top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:-13s}
+@keyframes orbFloat{0%,100%{transform:translate(0,0)}25%{transform:translate(30px,-20px)}50%{transform:translate(-20px,30px)}75%{transform:translate(20px,20px)}}
+
+/* Screens */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;transition:opacity .4s,transform .4s;padding:20px}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(.95)}
+
+/* ===== START SCREEN ===== */
+.start-title{font-family:'Orbitron',sans-serif;font-size:clamp(2rem,6vw,4rem);font-weight:900;
+  background:linear-gradient(135deg,var(--gold),var(--neon));-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:0 0 40px rgba(0,212,255,.3);margin-bottom:8px}
+.start-sub{color:var(--dim);font-size:1.1rem;margin-bottom:24px}
+
+.nickname-row{display:flex;gap:10px;margin-bottom:28px}
+.nickname-row input{background:var(--bg2);border:2px solid rgba(0,212,255,.3);border-radius:12px;padding:10px 16px;font-size:1.1rem;color:var(--text);font-family:'Jua';width:200px;outline:none;transition:border .3s}
+.nickname-row input:focus{border-color:var(--neon)}
+
+/* Level Grid */
+.level-section{margin-bottom:20px;text-align:center;width:100%;max-width:600px}
+.level-section h3{color:var(--dim);font-size:.9rem;margin-bottom:8px;letter-spacing:2px}
+.level-grid{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.level-btn{
+  width:72px;height:72px;border-radius:14px;border:2px solid rgba(255,255,255,.1);
+  background:var(--bg2);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:all .3s;position:relative;overflow:hidden
+}
+.level-btn:hover{transform:translateY(-3px);border-color:var(--neon);box-shadow:0 4px 20px rgba(0,212,255,.2)}
+.level-btn.selected{border-color:var(--gold);background:rgba(255,215,0,.1);box-shadow:0 0 20px rgba(255,215,0,.3)}
+.level-btn.locked{opacity:.4;cursor:not-allowed}
+.level-btn .grade{font-size:1.3rem;font-weight:bold;color:var(--text)}
+.level-btn .label{font-size:.65rem;color:var(--dim);margin-top:2px}
+.level-btn .best{position:absolute;top:3px;right:5px;font-size:.55rem;color:var(--gold)}
+
+.level-row{display:flex;gap:6px;justify-content:center}
+.section-label{font-size:.75rem;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin:12px 0 6px;
+  display:flex;align-items:center;gap:8px}
+.section-label::before,.section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.1)}
+
+.start-btn{
+  margin-top:24px;padding:14px 48px;font-size:1.3rem;font-family:'Black Han Sans';
+  background:linear-gradient(135deg,var(--neon),var(--purple));color:#fff;border:none;border-radius:16px;
+  cursor:pointer;transition:all .3s;letter-spacing:2px
+}
+.start-btn:hover{transform:scale(1.05);box-shadow:0 0 30px rgba(0,212,255,.4)}
+.start-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.start-stats{color:var(--dim);font-size:.85rem;margin-top:12px}
+
+/* ===== GAME SCREEN ===== */
+/* HUD */
+.hud{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:700px;padding:8px 0;flex-shrink:0}
+.hud-item{text-align:center;min-width:60px}
+.hud-label{font-size:.6rem;color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+.hud-val{font-size:1.2rem;font-weight:bold}
+.hud-val.combo{color:var(--red)}
+.hud-val.score{color:var(--gold)}
+.hud-val.streak{color:var(--green)}
+.hud-val.level{color:var(--neon)}
+
+.lives{display:flex;gap:2px;font-size:1rem}
+
+/* Problem Area */
+.problem-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:700px;gap:16px}
+
+.level-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:.8rem;
+  background:rgba(0,212,255,.15);color:var(--neon);border:1px solid rgba(0,212,255,.3)}
+.level-badge .type-tag{font-size:.65rem;color:var(--dim);margin-left:4px}
+
+.problem-card{
+  background:linear-gradient(135deg,rgba(26,32,53,.9),rgba(17,24,39,.9));
+  border:2px solid rgba(0,212,255,.2);border-radius:24px;padding:32px 48px;
+  text-align:center;min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;width:100%;max-width:500px;
+  box-shadow:0 8px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05)
+}
+.problem-text{font-family:'Orbitron','Jua',sans-serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:700;color:#fff;line-height:1.4;
+  text-shadow:0 0 20px rgba(0,212,255,.3)}
+.problem-text .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 6px;font-size:.7em}
+.problem-text .frac-num{border-bottom:2px solid var(--text);padding-bottom:2px;min-width:24px}
+.problem-text .frac-den{padding-top:2px}
+.problem-hint{color:var(--dim);font-size:.85rem;margin-top:8px}
+
+/* Timer */
+.timer-wrap{width:100%;max-width:500px;height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;position:relative}
+.timer-bar{height:100%;border-radius:4px;transition:width 50ms linear;
+  background:linear-gradient(90deg,var(--neon),var(--green))}
+.timer-bar.urgent{background:linear-gradient(90deg,var(--red),var(--orange))}
+.timer-bar.warning{background:linear-gradient(90deg,var(--orange),var(--gold))}
+.timer-text{text-align:right;font-size:.75rem;color:var(--dim);margin-top:4px;width:100%;max-width:500px}
+
+/* Answers */
+.answers-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:500px}
+.ans-btn{
+  display:flex;align-items:center;gap:12px;padding:14px 18px;
+  background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1);border-radius:14px;
+  cursor:pointer;transition:all .2s;color:var(--text);font-family:'Jua';font-size:1.2rem;
+  position:relative;overflow:hidden
+}
+.ans-btn:hover{border-color:var(--neon);background:rgba(0,212,255,.05);transform:translateY(-2px)}
+.ans-btn .key-hint{
+  width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--dim);flex-shrink:0
+}
+.ans-btn.correct{border-color:var(--green);background:rgba(0,255,136,.15);animation:correctPulse .5s}
+.ans-btn.wrong{border-color:var(--red);background:rgba(255,51,102,.15);animation:wrongShake .4s}
+.ans-btn.reveal{border-color:var(--green);opacity:.6}
+@keyframes correctPulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* Judgments */
+.judgment{position:fixed;top:18%;left:50%;transform:translate(-50%,-50%) scale(0);font-family:'Orbitron',sans-serif;
+  font-size:2.5rem;font-weight:900;z-index:100;pointer-events:none;text-shadow:0 0 30px currentColor}
+.judgment.show{animation:judgPop .7s cubic-bezier(.18,.89,.32,1.28) forwards}
+@keyframes judgPop{0%{transform:translate(-50%,-50%) scale(0) rotate(-10deg);opacity:0}
+  30%{transform:translate(-50%,-50%) scale(1.2) rotate(3deg);opacity:1}
+  100%{transform:translate(-50%,-50%) scale(.8) rotate(0);opacity:0}}
+.judgment.perfect{color:var(--neon)}
+.judgment.great{color:var(--gold)}
+.judgment.good{color:var(--green)}
+.judgment.miss{color:var(--red)}
+
+.combo-popup{position:fixed;top:28%;left:50%;transform:translate(-50%,0) scale(0);
+  font-family:'Orbitron';font-size:1.5rem;font-weight:700;color:var(--gold);z-index:99;pointer-events:none;
+  text-shadow:0 0 20px rgba(255,215,0,.5)}
+.combo-popup.show{animation:comboPop .6s ease-out forwards}
+@keyframes comboPop{0%{transform:translate(-50%,0) scale(0);opacity:0}
+  40%{transform:translate(-50%,-10px) scale(1.1);opacity:1}
+  100%{transform:translate(-50%,-30px) scale(.9);opacity:0}}
+
+.points-fly{position:fixed;pointer-events:none;z-index:98;font-family:'Orbitron';font-weight:700;font-size:1rem;
+  color:var(--gold);text-shadow:0 0 10px rgba(255,215,0,.4)}
+.points-fly.show{animation:ptsFly .8s ease-out forwards}
+@keyframes ptsFly{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-60px);opacity:0}}
+
+/* Level Up Modal */
+.levelup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s}
+.levelup-overlay.show{opacity:1;pointer-events:all}
+.levelup-box{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:2px solid var(--gold);border-radius:24px;
+  padding:40px;text-align:center;max-width:400px;width:90%;transform:scale(.8);transition:transform .3s;
+  box-shadow:0 0 60px rgba(255,215,0,.2)}
+.levelup-overlay.show .levelup-box{transform:scale(1)}
+.levelup-icon{font-size:4rem;margin-bottom:12px;animation:levelFloat 2s ease-in-out infinite}
+@keyframes levelFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.levelup-title{font-family:'Orbitron';font-size:1.8rem;font-weight:900;
+  background:linear-gradient(135deg,var(--gold),var(--neon));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.levelup-desc{color:var(--dim);font-size:.95rem;margin-bottom:24px;line-height:1.5}
+.levelup-next{color:var(--neon);font-size:1.1rem;margin-bottom:20px}
+.levelup-btns{display:flex;gap:12px;justify-content:center}
+.lu-btn{padding:12px 28px;border-radius:12px;font-family:'Jua';font-size:1.1rem;cursor:pointer;border:none;transition:all .3s}
+.lu-btn.yes{background:linear-gradient(135deg,var(--gold),var(--orange));color:#000}
+.lu-btn.no{background:rgba(255,255,255,.08);color:var(--dim);border:1px solid rgba(255,255,255,.1)}
+.lu-btn:hover{transform:scale(1.05)}
+
+/* ===== GAME OVER ===== */
+.go-title{font-family:'Orbitron';font-size:2rem;font-weight:900;color:var(--red);margin-bottom:4px}
+.go-score-label{color:var(--dim);font-size:.8rem}
+.go-score{font-family:'Orbitron';font-size:3rem;font-weight:900;color:var(--gold);text-shadow:0 0 30px rgba(255,215,0,.3)}
+.go-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:400px;margin:16px 0}
+.go-stat{background:var(--bg2);border-radius:12px;padding:10px;text-align:center}
+.go-stat .val{font-size:1.3rem;font-weight:bold}
+.go-stat .lbl{font-size:.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.go-level-reached{color:var(--neon);font-size:1rem;margin:8px 0}
+
+.go-ranks{width:100%;max-width:380px;margin:12px 0}
+.go-ranks h4{color:var(--dim);font-size:.8rem;text-align:center;margin-bottom:8px;letter-spacing:2px}
+.rank-row{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;font-size:.85rem;margin-bottom:4px}
+.rank-row:nth-child(odd){background:rgba(255,255,255,.02)}
+.rank-row .rank-num{width:20px;color:var(--dim);font-size:.75rem;text-align:center}
+.rank-row .rank-name{flex:1;color:var(--text)}
+.rank-row .rank-score{color:var(--gold);font-weight:bold}
+.rank-row .rank-level{color:var(--neon);font-size:.75rem}
+.rank-row.me{background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2)}
+
+.go-btns{display:flex;gap:12px;margin-top:16px}
+.go-btn{padding:12px 28px;border-radius:12px;font-family:'Jua';font-size:1.1rem;cursor:pointer;border:none;transition:all .3s}
+.go-btn.retry{background:linear-gradient(135deg,var(--neon),var(--purple));color:#fff}
+.go-btn.home{background:rgba(255,255,255,.08);color:var(--dim)}
+.go-btn:hover{transform:scale(1.05)}
+
+/* Speed badge colors */
+.speed-badge{display:inline-block;padding:1px 6px;border-radius:6px;font-size:.7rem;margin-left:6px}
+.speed-badge.fast{background:rgba(0,255,136,.15);color:var(--green)}
+.speed-badge.normal{background:rgba(255,215,0,.15);color:var(--gold)}
+.speed-badge.slow{background:rgba(255,51,102,.15);color:var(--red)}
+
+/* Responsive */
+@media(max-width:600px){
+  .problem-card{padding:24px 20px}
+  .problem-text{font-size:clamp(1.4rem,6vw,2.2rem)}
+  .answers-grid{grid-template-columns:1fr;gap:8px}
+  .ans-btn{padding:12px 14px;font-size:1.1rem}
+  .hud{flex-wrap:wrap;gap:4px}
+  .level-btn{width:56px;height:56px}
+  .go-stats{grid-template-columns:repeat(3,1fr);gap:6px}
+}
+</style>
+</head>
+<body>
+<div class="bg-orb"></div><div class="bg-orb"></div><div class="bg-orb"></div>
+<div class="bg-grid"></div>
+
+<!-- ===== START SCREEN ===== -->
+<div class="screen" id="startScreen">
+  <div class="start-title">⚡ 번개암산</div>
+  <div class="start-sub">눈으로 풀고, 번개처럼 답하라!</div>
+  <div class="nickname-row">
+    <input type="text" id="nickname" placeholder="닉네임 입력" maxlength="10">
+  </div>
+
+  <div class="section-label">초등학교</div>
+  <div class="level-grid" id="elemGrid"></div>
+  <div class="section-label">중학교</div>
+  <div class="level-grid" id="midGrid"></div>
+  <div class="section-label">고등학교</div>
+  <div class="level-grid" id="highGrid"></div>
+
+  <div class="start-stats" id="startStats"></div>
+  <button class="start-btn" id="startBtn" disabled>도전 시작!</button>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div class="screen hidden" id="gameScreen">
+  <div class="hud">
+    <div class="hud-item"><div class="hud-label">COMBO</div><div class="hud-val combo" id="hudCombo">0</div></div>
+    <div class="hud-item"><div class="hud-label">ROUND</div><div class="hud-val" id="hudRound">1</div></div>
+    <div class="hud-item"><div class="hud-label">SCORE</div><div class="hud-val score" id="hudScore">0</div></div>
+    <div class="hud-item"><div class="hud-label">STREAK</div><div class="hud-val streak" id="hudStreak">0</div></div>
+    <div class="hud-item"><div class="hud-label">LEVEL</div><div class="hud-val level" id="hudLevel">초1</div></div>
+    <div class="hud-item"><div class="hud-label">LIVES</div><div class="lives" id="hudLives"></div></div>
+    <div class="hud-item"><div class="hud-label">SPEED</div><div class="hud-val" id="hudSpeed">⚡5.0s</div></div>
+  </div>
+
+  <div class="problem-area">
+    <div class="level-badge" id="levelBadge">초등 1학년 <span class="type-tag" id="typeTag">덧셈</span></div>
+    <div class="problem-card">
+      <div class="problem-text" id="problemText">3 + 5 = ?</div>
+      <div class="problem-hint" id="problemHint"></div>
+    </div>
+    <div class="timer-wrap"><div class="timer-bar" id="timerBar"></div></div>
+    <div class="timer-text" id="timerText">5.0초</div>
+    <div class="answers-grid" id="answersGrid"></div>
+  </div>
+</div>
+
+<!-- ===== LEVEL UP MODAL ===== -->
+<div class="levelup-overlay" id="levelupOverlay">
+  <div class="levelup-box">
+    <div class="levelup-icon">🔥</div>
+    <div class="levelup-title">LEVEL UP!</div>
+    <div class="levelup-desc">10연속 정답 + <span id="luScore">2000</span>점 돌파!<br>이 레벨은 완전히 마스터했어!</div>
+    <div class="levelup-next">다음 도전: <strong id="luNext">초등 2학년</strong></div>
+    <div class="levelup-btns">
+      <button class="lu-btn yes" onclick="acceptLevelUp()">도전한다! 🚀</button>
+      <button class="lu-btn no" onclick="declineLevelUp()">여기서 더 연습</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GAME OVER ===== -->
+<div class="screen hidden" id="overScreen">
+  <div class="go-title">GAME OVER</div>
+  <div class="go-score-label">FINAL SCORE</div>
+  <div class="go-score" id="goScore">0</div>
+  <div class="go-level-reached" id="goLevel">도달 레벨: 초등 1학년</div>
+  <div class="go-stats" id="goStats"></div>
+  <div class="go-ranks" id="goRanks"></div>
+  <div class="go-btns">
+    <button class="go-btn retry" onclick="restartGame()">다시 도전! ⚡</button>
+    <button class="go-btn home" onclick="goHome()">🏠 홈</button>
+  </div>
+</div>
+
+<!-- Judgment overlays -->
+<div class="judgment" id="judgment"></div>
+<div class="combo-popup" id="comboPopup"></div>
+
+<script>
+// ===== LEVEL DEFINITIONS =====
+const LEVELS = [
+  {id:'e1',name:'초1',full:'초등 1학년',color:'#4ade80',baseTime:8000,minTime:4000,decr:100},
+  {id:'e2',name:'초2',full:'초등 2학년',color:'#22d3ee',baseTime:7500,minTime:3800,decr:100},
+  {id:'e3',name:'초3',full:'초등 3학년',color:'#60a5fa',baseTime:7000,minTime:3500,decr:100},
+  {id:'e4',name:'초4',full:'초등 4학년',color:'#818cf8',baseTime:6500,minTime:3200,decr:100},
+  {id:'e5',name:'초5',full:'초등 5학년',color:'#a78bfa',baseTime:6000,minTime:3000,decr:100},
+  {id:'e6',name:'초6',full:'초등 6학년',color:'#c084fc',baseTime:6000,minTime:2800,decr:100},
+  {id:'m1',name:'중1',full:'중학교 1학년',color:'#f472b6',baseTime:6000,minTime:2500,decr:80},
+  {id:'m2',name:'중2',full:'중학교 2학년',color:'#fb923c',baseTime:5500,minTime:2500,decr:80},
+  {id:'m3',name:'중3',full:'중학교 3학년',color:'#f87171',baseTime:5500,minTime:2000,decr:80},
+  {id:'h1',name:'고1',full:'고등학교 1학년',color:'#fbbf24',baseTime:5000,minTime:2000,decr:60},
+  {id:'h2',name:'고2',full:'고등학교 2학년',color:'#f59e0b',baseTime:5000,minTime:2000,decr:60},
+  {id:'h3',name:'고3',full:'고등학교 3학년',color:'#ef4444',baseTime:5000,minTime:2000,decr:60},
+];
+
+// ===== GAME STATE =====
+let state = {
+  screen:'start', levelIdx:0, round:0, score:0, combo:0, streak:0, maxCombo:0,
+  lives:5, perfect:0, great:0, good:0, miss:0,
+  currentProblem:null, answered:false, timerInterval:null, timerStart:0, timeLimit:0,
+  levelUpOffered:false, startLevelIdx:0, highestLevel:0,
+  nickname:''
+};
+
+const $=id=>document.getElementById(id);
+const LS_KEY='lw_mental_math';
+function loadData(){try{return JSON.parse(localStorage.getItem(LS_KEY))||{}}catch{return{}}}
+function saveData(d){localStorage.setItem(LS_KEY,JSON.stringify(d))}
+
+// ===== INIT =====
+function init(){
+  const data=loadData();
+  $('nickname').value=data.nickname||'';
+  buildLevelGrid();
+  updateStartStats();
+  $('nickname').addEventListener('input',checkReady);
+}
+
+function buildLevelGrid(){
+  const data=loadData();
+  const unlocked=11; // 전체 해금 (12레벨 모두 열림)
+  [['elemGrid',0,6],['midGrid',6,9],['highGrid',9,12]].forEach(([gid,s,e])=>{
+    const g=$(gid);g.innerHTML='';
+    for(let i=s;i<e;i++){
+      const lv=LEVELS[i];
+      const best=data.bestScores?.[lv.id]||0;
+      const isLocked=i>unlocked;
+      const btn=document.createElement('div');
+      btn.className='level-btn'+(isLocked?' locked':'')+(state.levelIdx===i?' selected':'');
+      btn.innerHTML=`<span class="grade" style="color:${lv.color}">${lv.name}</span>
+        <span class="label">${['1학년','2학년','3학년','4학년','5학년','6학년'][i<6?i:i<9?i-6:i-9]}</span>
+        ${best?`<span class="best">⭐${best}</span>`:''}`;
+      if(!isLocked)btn.onclick=()=>selectLevel(i);
+      g.appendChild(btn);
+    }
+  });
+}
+
+function selectLevel(idx){
+  state.levelIdx=idx;
+  document.querySelectorAll('.level-btn').forEach((b,i)=>{
+    const base=i; // index matches
+    b.classList.toggle('selected',false);
+  });
+  buildLevelGrid();
+  // Re-select
+  const allBtns=document.querySelectorAll('.level-btn');
+  allBtns.forEach((b,i)=>b.classList.toggle('selected',i===idx));
+  checkReady();
+}
+
+function checkReady(){
+  $('startBtn').disabled=!$('nickname').value.trim();
+}
+
+function updateStartStats(){
+  const data=loadData();
+  const total=Object.values(data.bestScores||{}).reduce((a,b)=>a+b,0);
+  const unlocked=(data.unlockedLevel||0)+1;
+  $('startStats').textContent=`해금 레벨: ${unlocked}/12 | 최고 총점: ${total}`;
+}
+
+// ===== START GAME =====
+$('startBtn').onclick=startGame;
+
+function startGame(){
+  const name=$('nickname').value.trim();
+  if(!name)return;
+  state={
+    screen:'game',levelIdx:state.levelIdx,round:0,score:0,combo:0,streak:0,maxCombo:0,
+    lives:5,perfect:0,great:0,good:0,miss:0,
+    currentProblem:null,answered:false,timerInterval:null,timerStart:0,timeLimit:0,
+    levelUpOffered:false,startLevelIdx:state.levelIdx,highestLevel:state.levelIdx,
+    nickname:name
+  };
+  const data=loadData();data.nickname=name;saveData(data);
+  showScreen('gameScreen');
+  nextProblem();
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+  $(id).classList.remove('hidden');
+}
+
+// ===== PROBLEM GENERATION =====
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function pick(arr){return arr[rand(0,arr.length-1)]}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=rand(0,i);[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function genProblem(lvIdx){
+  const generators=[genE1,genE2,genE3,genE4,genE5,genE6,genM1,genM2,genM3,genH1,genH2,genH3];
+  return generators[lvIdx]();
+}
+
+function genE1(){
+  if(Math.random()<.5){
+    const a=rand(1,9),b=rand(1,10-a);
+    return prob(`${a} + ${b}`,a+b,'덧셈');
+  }else{
+    const a=rand(3,18),b=rand(1,a);
+    return prob(`${a} − ${b}`,a-b,'뺄셈');
+  }
+}
+function genE2(){
+  const r=Math.random();
+  if(r<.35){const a=rand(10,50),b=rand(1,9);return prob(`${a} + ${b}`,a+b,'덧셈')}
+  if(r<.65){const a=rand(20,50),b=rand(1,a>30?9:a-10);return prob(`${a} − ${b}`,a-b,'뺄셈')}
+  const a=rand(2,5),b=rand(2,9);return prob(`${a} × ${b}`,a*b,'구구단');
+}
+function genE3(){
+  const r=Math.random();
+  if(r<.25){const a=rand(100,500),b=rand(10,99);return prob(`${a} + ${b}`,a+b,'덧셈')}
+  if(r<.45){const a=rand(100,500),b=rand(10,Math.min(99,a-10));return prob(`${a} − ${b}`,a-b,'뺄셈')}
+  if(r<.75){const a=rand(2,9),b=rand(2,9);return prob(`${a} × ${b}`,a*b,'구구단')}
+  const b=rand(2,9),c=rand(2,9);return prob(`${b*c} ÷ ${b}`,c,'나눗셈');
+}
+function genE4(){
+  const r=Math.random();
+  if(r<.3){const a=rand(2,9),b=rand(10,25);return prob(`${a} × ${b}`,a*b,'곱셈')}
+  if(r<.6){const a=rand(2,9),b=rand(2,9),c=rand(1,20);return prob(`${a} × ${b} + ${c}`,a*b+c,'혼합계산')}
+  if(r<.8){const a=rand(2,9),b=rand(2,9),c=rand(1,20);return prob(`${a} × ${b} − ${c}`,a*b-c,'혼합계산')}
+  const a=rand(50,200),b=rand(3,9),q=Math.floor(a/b),rem=a%b;
+  return prob(`${a} ÷ ${b}`,q,'나눗셈',rem?`나머지: ${rem}`:'');
+}
+function genE5(){
+  const r=Math.random();
+  if(r<.3){
+    const a1=rand(1,9),a2=rand(1,9),b1=rand(1,9),b2=rand(1,9);
+    const ans=Math.round((a1+a2/10+b1+b2/10)*10)/10;
+    return prob(`${a1}.${a2} + ${b1}.${b2}`,ans,'소수 덧셈');
+  }
+  if(r<.5){
+    // Simple fraction addition
+    const denoms=[2,3,4,5,6];const d=pick(denoms);const n1=rand(1,d-1),n2=rand(1,d-1);
+    return probFrac(n1,d,'+',n2,d);
+  }
+  if(r<.7){
+    // GCD
+    const pairs=[[12,8],[18,12],[24,16],[15,10],[20,12],[30,18],[36,24],[28,21],[42,28],[60,45]];
+    const [a,b]=pick(pairs);
+    return prob(`GCD(${a}, ${b})`,gcd(a,b),'최대공약수');
+  }
+  // LCM
+  const pairs=[[3,4],[4,6],[6,8],[5,6],[3,5],[4,5],[6,9],[8,12]];
+  const [a,b]=pick(pairs);
+  return prob(`LCM(${a}, ${b})`,lcm(a,b),'최소공배수');
+}
+function genE6(){
+  const r=Math.random();
+  if(r<.4){
+    const pcts=[10,20,25,30,50,75];const p=pick(pcts);const m=pick([100,200,300,400,500,1000]);
+    return prob(`${m}의 ${p}%`,m*p/100,'백분율');
+  }
+  if(r<.7){
+    // Fraction multiplication
+    const d1=rand(2,6),n1=rand(1,d1-1),d2=rand(2,6),n2=rand(1,d2-1);
+    const num=n1*n2,den=d1*d2,g=gcd(num,den);
+    return prob(`<span class="frac"><span class="frac-num">${n1}</span><span class="frac-den">${d1}</span></span> × <span class="frac"><span class="frac-num">${n2}</span><span class="frac-den">${d2}</span></span>`,
+      num/den,'분수곱셈',null,`${num/g}/${den/g}`);
+  }
+  // Ratio
+  const a=rand(2,8),b=rand(2,8);const g2=gcd(a,b);
+  const mult=rand(2,5);
+  return prob(`${a} : ${b} = ? : ${b/g2*mult}`,a/g2*mult,'비율');
+}
+function genM1(){
+  const r=Math.random();
+  if(r<.3){
+    const a=rand(-20,-1),b=rand(-15,15);
+    const op=b>=0?'+':'−';const bv=Math.abs(b);
+    return prob(`(${a}) ${op} ${bv}`,a+(b>=0?b:-bv),'정수 연산');
+  }
+  if(r<.6){
+    // Linear equation: ax + b = c
+    const x=rand(-5,10);const a=pick([2,3,4,5,-2,-3]);const b=rand(-10,10);const c=a*x+b;
+    const bStr=b>=0?`+ ${b}`:b<0?`− ${Math.abs(b)}`:'';
+    return prob(`${a}x ${bStr} = ${c}, x = ?`,x,'일차방정식');
+  }
+  if(r<.8){
+    const base=rand(2,5),exp=rand(2,4);
+    return prob(`${base}<sup>${exp}</sup>`,Math.pow(base,exp),'거듭제곱');
+  }
+  const a=rand(-15,15),b=rand(-15,15);
+  return prob(`|${a} − ${b}|`,Math.abs(a-b),'절댓값');
+}
+function genM2(){
+  const r=Math.random();
+  if(r<.35){
+    // f(x) = ax + b, find f(c)
+    const a=rand(-5,5)||1;const b=rand(-10,10);const c=rand(-3,5);
+    const bStr=b>=0?`+ ${b}`:`− ${Math.abs(b)}`;
+    return prob(`f(x) = ${a===1?'':a===-1?'−':a}x ${bStr}<br>f(${c}) = ?`,a*c+b,'함수값');
+  }
+  if(r<.65){
+    // Simultaneous: x+y=a, x-y=b → x=(a+b)/2
+    const x=rand(1,10),y=rand(1,8);
+    return prob(`x + y = ${x+y}<br>x − y = ${x-y}<br>x = ?`,x,'연립방정식');
+  }
+  if(r<.85){
+    // Probability as fraction
+    const scenarios=[
+      ['동전 2개, 둘다 앞면',1,4],['주사위 1개, 짝수',1,2],
+      ['주사위 1개, 3의 배수',1,3],['동전 3개, 모두 앞면',1,8],
+      ['주사위 1개, 5 이상',1,3],['카드 1~10, 소수 뽑기',4,10],
+    ];
+    const [desc,n,d]=pick(scenarios);
+    return prob(`${desc}<br>확률 = ?`,n/d,'확률',null,`${n}/${d}`);
+  }
+  // Inequality
+  const a=rand(2,5),b=rand(1,10);const ans=Math.ceil(b/a);
+  return prob(`${a}x ≥ ${b}<br>x의 최솟값(정수)?`,ans,'부등식');
+}
+function genM3(){
+  const r=Math.random();
+  if(r<.3){
+    // Quadratic: (x-a)(x-b)=0
+    const a=rand(-5,8),b=rand(-5,8);
+    if(a===b)return genM3();
+    const s=a+b,p=a*b;
+    const sStr=s>=0?`− ${s}`:`+ ${Math.abs(s)}`;
+    const pStr=p>=0?`+ ${p}`:`− ${Math.abs(p)}`;
+    return prob(`x² ${sStr}x ${pStr} = 0<br>큰 근 = ?`,Math.max(a,b),'이차방정식',`(작은 근: ${Math.min(a,b)})`);
+  }
+  if(r<.55){
+    // Factoring: x²+7x+12 → (x+3)(x+4), find missing
+    const a=rand(1,6),b=rand(1,6);
+    return prob(`x² + ${a+b}x + ${a*b}<br>= (x + ?)(x + ${b})`,a,'인수분해');
+  }
+  if(r<.8){
+    // Pythagorean
+    const triples=[[3,4,5],[5,12,13],[6,8,10],[8,15,17],[7,24,25],[9,12,15]];
+    const [a,b,c]=pick(triples);
+    const which=rand(0,2);
+    if(which===0)return prob(`?² + ${b}² = ${c}²<br>? = `,a,'피타고라스');
+    if(which===1)return prob(`${a}² + ?² = ${c}²<br>? = `,b,'피타고라스');
+    return prob(`${a}² + ${b}² = ?²<br>? = `,c,'피타고라스');
+  }
+  const squares=[4,9,16,25,36,49,64,81,100,121,144,169,196,225];
+  const n=pick(squares);
+  return prob(`√${n}`,Math.sqrt(n),'제곱근');
+}
+function genH1(){
+  const r=Math.random();
+  if(r<.35){
+    // nCr
+    const n=rand(4,8),rr=rand(1,Math.min(3,n-1));
+    return prob(`${n}C${rr} = ?`,comb(n,rr),'조합');
+  }
+  if(r<.65){
+    // nPr
+    const n=rand(4,7),rr=rand(2,Math.min(3,n-1));
+    return prob(`${n}P${rr} = ?`,perm(n,rr),'순열');
+  }
+  if(r<.85){
+    // Polynomial: (x+a)(x+b) expand, find coefficient
+    const a=rand(1,5),b=rand(1,5);
+    return prob(`(x + ${a})(x + ${b})<br>x의 계수 = ?`,a+b,'다항식');
+  }
+  // Function composition f(x)=2x+1, g(x)=x-3, f(g(a))
+  const fa=rand(1,3),fb=rand(-3,3),ga=1,gb=rand(-5,5);const x=rand(1,5);
+  const gx=ga*x+gb;const fgx=fa*gx+fb;
+  const fbStr=fb>=0?`+${fb}`:fb;const gbStr=gb>=0?`+${gb}`:gb;
+  return prob(`f(x) = ${fa}x${fbStr}, g(x) = x${gbStr}<br>f(g(${x})) = ?`,fgx,'함수합성');
+}
+function genH2(){
+  const r=Math.random();
+  if(r<.3){
+    // Trig
+    const angles=[
+      ['sin 30°',0.5],['cos 60°',0.5],['sin 90°',1],['cos 0°',1],
+      ['tan 45°',1],['sin 60°',null,'√3/2'],['cos 30°',null,'√3/2'],
+      ['sin 45°',null,'√2/2'],['cos 90°',0],['tan 60°',null,'√3']
+    ];
+    const [q,a,disp]=pick(angles);
+    return prob(`${q} = ?`,a,'삼각함수',null,disp);
+  }
+  if(r<.55){
+    // Log
+    const pairs=[[2,8,3],[2,16,4],[2,32,5],[3,9,2],[3,27,3],[5,25,2],[10,100,2],[10,1000,3],[2,4,2],[4,16,2]];
+    const [b,n,a]=pick(pairs);
+    return prob(`log<sub>${b}</sub>${n} = ?`,a,'로그');
+  }
+  if(r<.8){
+    // Arithmetic sequence: find nth term
+    const a1=rand(1,10),d=rand(1,5),n=rand(5,12);
+    return prob(`등차수열: ${a1}, ${a1+d}, ${a1+2*d}, ...<br>${n}번째 항 = ?`,a1+(n-1)*d,'수열');
+  }
+  // Geometric
+  const a1=rand(1,3),ratio=rand(2,3),n=rand(4,6);
+  return prob(`등비수열: ${a1}, ${a1*ratio}, ${a1*ratio*ratio}, ...<br>${n}번째 항 = ?`,a1*Math.pow(ratio,n-1),'수열');
+}
+function genH3(){
+  const r=Math.random();
+  if(r<.35){
+    // Limits: lim (x²-a²)/(x-a) as x→a = 2a
+    const a=rand(1,6);
+    return prob(`lim<sub>x→${a}</sub> (x² − ${a*a}) / (x − ${a})`,2*a,'극한');
+  }
+  if(r<.65){
+    // Derivatives: d/dx x^n = nx^(n-1), evaluate at x=a
+    const n=rand(2,5),a=rand(1,4);
+    return prob(`f(x) = x<sup>${n}</sup><br>f'(${a}) = ?`,n*Math.pow(a,n-1),'미분');
+  }
+  if(r<.85){
+    // Basic integral: ∫ax^n dx evaluated
+    const n=rand(1,3),coef=rand(1,4);const a=rand(0,2),b=rand(a+1,5);
+    const val=(x)=>coef*Math.pow(x,n+1)/(n+1);
+    const ans=val(b)-val(a);
+    if(!Number.isInteger(ans))return genH3();
+    return prob(`∫<sub>${a}</sub><sup>${b}</sup> ${coef}x${n>1?`<sup>${n}</sup>`:''}dx = ?`,ans,'적분');
+  }
+  // Derivative of polynomial
+  const a=rand(1,5),b=rand(-5,5),x=rand(1,3);
+  const bStr=b>=0?`+ ${b}`:`− ${Math.abs(b)}`;
+  return prob(`f(x) = ${a}x² ${bStr}x<br>f'(${x}) = ?`,2*a*x+b,'미분');
+}
+
+// Helper: create problem object
+function prob(display,answer,type,hint,displayAnswer){
+  // For fraction answers, displayAnswer is the string form
+  const numAnswer=typeof answer==='number'?Math.round(answer*1000)/1000:answer;
+  return {display,answer:numAnswer,type:type||'계산',hint:hint||'',displayAnswer:displayAnswer||null};
+}
+
+function probFrac(n1,d1,op,n2,d2){
+  const lcd=lcm(d1,d2);
+  let num;
+  if(op==='+')num=n1*(lcd/d1)+n2*(lcd/d2);
+  else num=n1*(lcd/d1)-n2*(lcd/d2);
+  const g=gcd(Math.abs(num),lcd);
+  const rn=num/g,rd=lcd/g;
+  const display=`<span class="frac"><span class="frac-num">${n1}</span><span class="frac-den">${d1}</span></span> ${op} <span class="frac"><span class="frac-num">${n2}</span><span class="frac-den">${d2}</span></span>`;
+  return {display,answer:rn/rd,type:'분수',hint:'',displayAnswer:`${rn}/${rd}`};
+}
+
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a}
+function lcm(a,b){return Math.abs(a*b)/gcd(a,b)}
+function factorial(n){let r=1;for(let i=2;i<=n;i++)r*=i;return r}
+function perm(n,r){return factorial(n)/factorial(n-r)}
+function comb(n,r){return factorial(n)/(factorial(r)*factorial(n-r))}
+
+// Generate wrong answers
+function genWrongAnswers(correct,lvIdx,dispAns){
+  if(dispAns){
+    return genWrongFrac(correct,dispAns);
+  }
+  const wrongs=new Set();
+  const mag=Math.max(Math.abs(correct),1);
+  const noNeg=lvIdx<6; // 초등은 음수 오답 금지
+  const offsets=mag<10?[1,-1,2,-2,3,-3,5,10,-5]:
+                mag<100?[1,-1,2,-2,5,-5,10,-10,3,-3]:
+                [1,-1,5,-5,10,-10,20,-20,50,-50];
+  for(const off of shuffle(offsets)){
+    const w=correct+off;
+    if(w!==correct&&!wrongs.has(w)&&(!noNeg||w>=0)){wrongs.add(w);if(wrongs.size>=6)break}
+  }
+  // Fill with positive randoms if needed
+  for(let i=0;i<10&&wrongs.size<6;i++){
+    const range=Math.max(Math.ceil(mag*.5),3);
+    const w=correct+rand(noNeg&&correct<range?0:-range,range);
+    if(w!==correct&&w>=0)wrongs.add(w);
+  }
+  // Absolute fallback
+  while(wrongs.size<3){wrongs.add(correct+wrongs.size+1)}
+  return shuffle([...wrongs]).slice(0,3);
+}
+
+function genWrongFrac(correct,dispAns){
+  // dispAns like "3/4"
+  const [n,d]=dispAns.split('/').map(Number);
+  const wrongs=new Set();
+  const candidates=[
+    `${n+1}/${d}`,`${n-1}/${d}`,`${n}/${d+1}`,`${n}/${d-1}`,
+    `${n+2}/${d}`,`${n}/${d+2}`,`${d}/${n}`,`${n+1}/${d+1}`
+  ].filter(s=>{const[a,b]=s.split('/').map(Number);return b>0&&a>0&&s!==dispAns});
+  for(const c of shuffle(candidates)){wrongs.add(c);if(wrongs.size>=3)break}
+  while(wrongs.size<3)wrongs.add(`${rand(1,8)}/${rand(2,8)}`);
+  return [...wrongs].slice(0,3);
+}
+
+// ===== GAME ENGINE =====
+function nextProblem(){
+  if(state.lives<=0)return gameOver();
+  state.round++;
+  state.answered=false;
+
+  const lv=LEVELS[state.levelIdx];
+  const problem=genProblem(state.levelIdx);
+  state.currentProblem=problem;
+
+  // Time limit
+  state.timeLimit=Math.max(lv.minTime,lv.baseTime-(state.round-1)*lv.decr);
+
+  // Update HUD
+  updateHUD();
+
+  // Display problem
+  $('problemText').innerHTML=problem.display+' = ?';
+  $('problemHint').textContent=problem.hint;
+  $('levelBadge').innerHTML=`${lv.full} <span class="type-tag">${problem.type}</span>`;
+  $('levelBadge').style.borderColor=lv.color;$('levelBadge').style.color=lv.color;
+
+  // Generate answers
+  const isFrac=!!problem.displayAnswer;
+  const correctDisp=isFrac?problem.displayAnswer:formatNum(problem.answer);
+  const wrongDisps=genWrongAnswers(problem.answer,state.levelIdx,problem.displayAnswer);
+  const options=shuffle([{val:correctDisp,correct:true},...wrongDisps.map(w=>({val:typeof w==='number'?formatNum(w):w,correct:false}))]);
+
+  const grid=$('answersGrid');grid.innerHTML='';
+  options.forEach((opt,i)=>{
+    const btn=document.createElement('div');
+    btn.className='ans-btn';
+    btn.innerHTML=`<span class="key-hint">${i+1}</span><span>${opt.val}</span>`;
+    btn.onclick=()=>submitAnswer(btn,opt.correct,correctDisp);
+    btn.dataset.correct=opt.correct;
+    grid.appendChild(btn);
+  });
+
+  // Start timer
+  startTimer();
+  playSound('appear');
+}
+
+function formatNum(n){
+  if(Number.isInteger(n))return n.toString();
+  return Math.round(n*100)/100+'';
+}
+
+function submitAnswer(btn,isCorrect,correctDisp){
+  if(state.answered)return;
+  state.answered=true;
+  clearInterval(state.timerInterval);
+
+  const elapsed=Date.now()-state.timerStart;
+  const ratio=elapsed/state.timeLimit;
+
+  if(isCorrect){
+    btn.classList.add('correct');
+    let pts,judgeType;
+    if(ratio<=.3){pts=300;judgeType='perfect';state.perfect++}
+    else if(ratio<=.6){pts=200;judgeType='great';state.great++}
+    else{pts=100;judgeType='good';state.good++}
+    state.combo++;state.streak++;
+    if(state.combo>state.maxCombo)state.maxCombo=state.combo;
+    const bonus=state.combo*10;
+    const total=pts+bonus;
+    state.score+=total;
+
+    showJudgment(judgeType);
+    showPoints(total);
+    if(state.combo>0&&state.combo%5===0)showCombo();
+    playSound(judgeType==='perfect'?'perfect':judgeType==='great'?'great':'good');
+
+    // Check level up
+    if(!state.levelUpOffered&&state.streak>=10&&state.score>=2000&&state.levelIdx<11){
+      setTimeout(()=>offerLevelUp(),600);
+      return;
+    }
+  }else{
+    btn.classList.add('wrong');
+    state.combo=0;state.streak=0;state.miss++;state.lives--;
+    // Reveal correct
+    document.querySelectorAll('.ans-btn').forEach(b=>{if(b.dataset.correct==='true')b.classList.add('reveal')});
+    showJudgment('miss');
+    playSound('miss');
+    if(state.lives<=1)playSound('heartbeat');
+  }
+
+  updateHUD();
+  setTimeout(()=>{if(state.screen==='game'&&!$('levelupOverlay').classList.contains('show'))nextProblem()},isCorrect?800:1200);
+}
+
+// Timer
+function startTimer(){
+  state.timerStart=Date.now();
+  const bar=$('timerBar');
+  bar.style.width='100%';bar.className='timer-bar';
+  clearInterval(state.timerInterval);
+
+  state.timerInterval=setInterval(()=>{
+    const elapsed=Date.now()-state.timerStart;
+    const pct=Math.max(0,1-elapsed/state.timeLimit)*100;
+    bar.style.width=pct+'%';
+
+    const remain=Math.max(0,(state.timeLimit-elapsed)/1000);
+    $('timerText').textContent=remain.toFixed(1)+'초';
+
+    if(pct<25){bar.className='timer-bar urgent';if(Math.random()<.1)playSound('urgentTick')}
+    else if(pct<50)bar.className='timer-bar warning';
+    else bar.className='timer-bar';
+
+    if(elapsed>=state.timeLimit){
+      clearInterval(state.timerInterval);
+      if(!state.answered)timeout();
+    }
+  },50);
+}
+
+function timeout(){
+  state.answered=true;state.combo=0;state.streak=0;state.miss++;state.lives--;
+  document.querySelectorAll('.ans-btn').forEach(b=>{if(b.dataset.correct==='true')b.classList.add('reveal')});
+  showJudgment('miss');
+  playSound('miss');
+  updateHUD();
+  setTimeout(()=>{if(state.screen==='game')nextProblem()},1200);
+}
+
+// ===== LEVEL UP =====
+function offerLevelUp(){
+  state.levelUpOffered=true;
+  clearInterval(state.timerInterval);
+  const next=LEVELS[state.levelIdx+1];
+  $('luScore').textContent=state.score;
+  $('luNext').textContent=next.full;
+  $('levelupOverlay').classList.add('show');
+  playSound('levelup');
+}
+
+function acceptLevelUp(){
+  $('levelupOverlay').classList.remove('show');
+  state.levelIdx++;
+  if(state.levelIdx>state.highestLevel)state.highestLevel=state.levelIdx;
+  state.streak=0;
+  state.levelUpOffered=false;
+  // Unlock next level
+  const data=loadData();
+  if(!data.unlockedLevel||data.unlockedLevel<state.levelIdx){
+    data.unlockedLevel=state.levelIdx;saveData(data);
+  }
+  // Reset round counter for new level's timer scaling
+  state.round=0;
+  updateHUD();
+  playSound('perfect');
+  nextProblem();
+}
+
+function declineLevelUp(){
+  $('levelupOverlay').classList.remove('show');
+  state.levelUpOffered=false;
+  // Will re-trigger when streak breaks and rebuilds to 10
+  state.streak=0;
+  nextProblem();
+}
+
+// ===== HUD =====
+function updateHUD(){
+  $('hudCombo').textContent=state.combo;
+  $('hudRound').textContent=state.round;
+  $('hudScore').textContent=state.score;
+  $('hudStreak').textContent=state.streak;
+  $('hudLevel').textContent=LEVELS[state.levelIdx].name;
+  $('hudLevel').style.color=LEVELS[state.levelIdx].color;
+
+  const lives=[];
+  for(let i=0;i<5;i++)lives.push(i<state.lives?'❤️':'🖤');
+  $('hudLives').innerHTML=lives.join('');
+
+  const t=(state.timeLimit/1000).toFixed(1);
+  const spd=$('hudSpeed');
+  spd.textContent='⚡'+t+'s';
+  spd.style.color=t<=2.5?'var(--red)':t<=3.5?'var(--orange)':'var(--text)';
+}
+
+// ===== JUDGMENTS =====
+function showJudgment(type){
+  const el=$('judgment');
+  el.className='judgment '+type;
+  el.textContent={perfect:'PERFECT!',great:'GREAT!',good:'GOOD!',miss:'MISS...'}[type];
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),700);
+}
+function showCombo(){
+  const el=$('comboPopup');
+  el.textContent=state.combo+' COMBO!';
+  el.className='combo-popup show';
+  setTimeout(()=>el.classList.remove('show'),600);
+}
+function showPoints(pts){
+  const el=document.createElement('div');
+  el.className='points-fly show';
+  el.textContent='+'+pts;
+  el.style.left='50%';el.style.top='45%';el.style.transform='translateX(-50%)';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),800);
+}
+
+// ===== GAME OVER =====
+function gameOver(){
+  state.screen='over';
+  clearInterval(state.timerInterval);
+  showScreen('overScreen');
+
+  $('goScore').textContent=state.score;
+  $('goLevel').textContent=`도달 레벨: ${LEVELS[state.highestLevel].full}`;
+
+  $('goStats').innerHTML=[
+    ['ROUND',state.round,'var(--text)'],
+    ['PERFECT',state.perfect,'var(--neon)'],
+    ['GREAT',state.great,'var(--gold)'],
+    ['GOOD',state.good,'var(--green)'],
+    ['MISS',state.miss,'var(--red)'],
+    ['MAX COMBO',state.maxCombo,'var(--purple)']
+  ].map(([l,v,c])=>`<div class="go-stat"><div class="val" style="color:${c}">${v}</div><div class="lbl">${l}</div></div>`).join('');
+
+  // Save score
+  const data=loadData();
+  if(!data.bestScores)data.bestScores={};
+  const lvId=LEVELS[state.startLevelIdx].id;
+  if(!data.bestScores[lvId]||state.score>data.bestScores[lvId])data.bestScores[lvId]=state.score;
+  if(!data.ranks)data.ranks=[];
+  data.ranks.push({name:state.nickname,score:state.score,level:LEVELS[state.highestLevel].name,date:new Date().toISOString()});
+  data.ranks.sort((a,b)=>b.score-a.score);
+  data.ranks=data.ranks.slice(0,10);
+  saveData(data);
+
+  // Leaderboard
+  const ranksDiv=$('goRanks');
+  ranksDiv.innerHTML='<h4>🏆 HALL OF FAME</h4>'+
+    data.ranks.map((r,i)=>{
+      const isMe=r.name===state.nickname&&r.score===state.score;
+      return `<div class="rank-row${isMe?' me':''}">
+        <span class="rank-num">${i+1}</span>
+        <span class="rank-name">${r.name}</span>
+        <span class="rank-level">${r.level}</span>
+        <span class="rank-score">${r.score}</span>
+      </div>`;
+    }).join('');
+
+  playSound('gameover');
+}
+
+function restartGame(){
+  state.screen='start';
+  showScreen('startScreen');
+  buildLevelGrid();
+  updateStartStats();
+}
+
+function goHome(){
+  window.location.href='index.html';
+}
+
+// ===== KEYBOARD =====
+document.addEventListener('keydown',e=>{
+  if(state.screen!=='game'||state.answered)return;
+  const idx={'1':0,'2':1,'3':2,'4':3}[e.key];
+  if(idx!==undefined){
+    const btns=document.querySelectorAll('.ans-btn');
+    if(btns[idx])btns[idx].click();
+  }
+});
+
+// ===== AUDIO =====
+let audioCtx;
+function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
+
+function playSound(type){
+  try{
+    const ctx=getAudio();const now=ctx.currentTime;
+    const osc=(f,t,dur,wave='sine',g=.15)=>{
+      const o=ctx.createOscillator();const gn=ctx.createGain();
+      o.type=wave;o.frequency.setValueAtTime(f,t);
+      gn.gain.setValueAtTime(g,t);gn.gain.exponentialRampToValueAtTime(.001,t+dur);
+      o.connect(gn);gn.connect(ctx.destination);o.start(t);o.stop(t+dur);
+    };
+    switch(type){
+      case'perfect':osc(880,now,.1);osc(1100,now+.08,.1);osc(1320,now+.16,.15);osc(1760,now+.22,.2,'triangle',.1);break;
+      case'great':osc(660,now,.1);osc(880,now+.1,.15);break;
+      case'good':osc(523,now,.12);break;
+      case'miss':osc(200,now,.3,'sawtooth',.08);osc(150,now+.1,.2,'square',.06);break;
+      case'appear':osc(400,now,.08,.05);osc(600,now+.05,.08,'triangle',.05);break;
+      case'levelup':osc(523,now,.15);osc(659,now+.1,.15);osc(784,now+.2,.15);osc(1047,now+.3,.3,'triangle',.12);break;
+      case'gameover':osc(400,now,.2,'sawtooth',.08);osc(300,now+.2,.2,'sawtooth',.06);osc(200,now+.4,.4,'sawtooth',.04);break;
+      case'urgentTick':osc(1800,now,.04,'square',.03);break;
+      case'heartbeat':osc(60,now,.15,'sine',.1);osc(65,now+.15,.1,'sine',.06);break;
+    }
+  }catch(e){}
+}
+
+// ===== INIT =====
+init();
+</script>
+</body>
+</html>

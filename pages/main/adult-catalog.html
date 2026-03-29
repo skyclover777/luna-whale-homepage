@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luna - Adult Classes</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d4a853",
+                        "primary-dim": "#8b6914",
+                    },
+                    fontFamily: {
+                        sans: ['Lexend', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="../../assets/data/i18n.js?v=0315"></script>
+    <script src="../../assets/js/app.js?v=0315"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background: #06080e;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        /* Floating Orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .orb-1 {
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, rgba(212,168,83,0.25) 0%, rgba(139,105,20,0.15) 40%, transparent 70%);
+            filter: blur(100px);
+            top: -15%; left: -10%;
+            animation: orbFloat1 40s ease-in-out infinite alternate;
+        }
+        .orb-2 {
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(90,60,160,0.2) 0%, rgba(45,21,96,0.12) 40%, transparent 70%);
+            filter: blur(100px);
+            bottom: -20%; right: -15%;
+            animation: orbFloat2 50s ease-in-out infinite alternate;
+        }
+        @keyframes orbFloat1 {
+            0%   { transform: translate(0, 0) scale(1); }
+            50%  { transform: translate(12vw, 8vh) scale(1.08); }
+            100% { transform: translate(5vw, 15vh) scale(1); }
+        }
+        @keyframes orbFloat2 {
+            0%   { transform: translate(0, 0) scale(1); }
+            50%  { transform: translate(-10vw, -12vh) scale(1.1); }
+            100% { transform: translate(-5vw, -8vh) scale(1.05); }
+        }
+
+        /* Glass Nav */
+        .glass-nav {
+            background: rgba(6, 8, 14, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Book Card */
+        .book-card-container {
+            perspective: 1200px;
+        }
+        .book-card {
+            transform: rotateY(-18deg) rotateX(4deg);
+            transform-style: preserve-3d;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: -12px 12px 30px rgba(0, 0, 0, 0.5);
+        }
+        .book-card-container:hover .book-card {
+            transform: rotateY(0deg) rotateX(0deg) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+        .book-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px 0 0 4px;
+            z-index: 10;
+        }
+        .book-spine {
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 20px;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, transparent 100%);
+            z-index: 5;
+        }
+
+        /* Coming Soon Card */
+        .coming-soon-card {
+            border: 2px dashed rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.02);
+        }
+        .coming-soon-card:hover {
+            border-color: rgba(212,168,83,0.3);
+            background: rgba(212,168,83,0.03);
+        }
+
+        /* Gold line */
+        .gold-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212,168,83,0.3), transparent);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="dark overflow-x-hidden">
+    <!-- Orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <!-- Navbar -->
+    <nav class="glass-nav fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <button onclick="history.back()"
+                class="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-all">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <div>
+                <h1 class="text-lg font-black tracking-tight" data-i18n="adult_catalog_title">성인 클래스</h1>
+                <p class="text-[10px] text-white/40 font-semibold uppercase tracking-widest">Adult Classes</p>
+            </div>
+        </div>
+        <div id="lang-dropdown"></div>
+    </nav>
+
+    <main class="relative z-10 w-full max-w-7xl mx-auto px-6 pt-32 pb-20">
+        <!-- Header -->
+        <header class="mb-16 text-center animate-fade-in">
+            <span class="text-primary font-black uppercase tracking-[0.3em] text-[10px] mb-4 block">Premium Collection</span>
+            <h2 class="text-3xl md:text-5xl font-black mb-6 leading-tight" data-i18n="adult_catalog_heading">성인을 위한<br>프리미엄 아트 클래스</h2>
+            <p class="text-slate-400 max-w-2xl mx-auto text-sm md:text-base leading-relaxed" data-i18n="adult_catalog_desc">
+                미술사 거장들의 기법을 깊이 있게 배우는 성인 전용 커리큘럼입니다.
+            </p>
+        </header>
+
+        <!-- Course Grid -->
+        <div id="course-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-24">
+            <div class="gold-line w-full max-w-sm mx-auto mb-10"></div>
+            <p class="text-sm text-white/20 font-medium tracking-wide" data-i18n="adult_catalog_footer">더 많은 코스가 추가될 예정입니다</p>
+            <p class="text-[10px] text-white/10 mt-2 uppercase tracking-[0.3em] font-semibold">Luna Whale &middot; Art Education</p>
+        </div>
+    </main>
+
+    <script>
+        const ADULT_COURSES = [
+            {
+                id: 'impressionism',
+                title: '유럽 회화 여행',
+                subtitle: '인상주의 20강',
+                desc: '모네, 세잔, 고흐 등 인상주의 거장들의 빛과 색채를 탐험합니다.',
+                lessons: 20,
+                masters: 6,
+                status: 'active',
+                thumb: '../../assets/images/cards/impressionism/thumb/monet_water_lilies.jpg',
+                link: 'masterpiece-catalog.html',
+                colors: ['#1a2040', '#0d1117']
+            },
+            {
+                id: 'coming-soon-1',
+                title: '준비 중',
+                subtitle: '새로운 코스',
+                desc: '새로운 성인 아트 클래스가 곧 추가됩니다.',
+                lessons: null,
+                masters: null,
+                status: 'coming',
+                thumb: null,
+                link: null,
+                colors: ['#1a1a1a', '#0a0a0a']
+            },
+            {
+                id: 'coming-soon-2',
+                title: '준비 중',
+                subtitle: '새로운 코스',
+                desc: '새로운 성인 아트 클래스가 곧 추가됩니다.',
+                lessons: null,
+                masters: null,
+                status: 'coming',
+                thumb: null,
+                link: null,
+                colors: ['#1a1a1a', '#0a0a0a']
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lwRenderLangPicker) lwRenderLangPicker('lang-dropdown');
+            renderCourses();
+        });
+
+        function renderCourses() {
+            const grid = document.getElementById('course-grid');
+            if (!grid) return;
+
+            grid.innerHTML = ADULT_COURSES.map((course, i) => {
+                if (course.status === 'coming') {
+                    return `
+                        <div class="animate-fade-in" style="animation-delay:${i * 150}ms">
+                            <div class="coming-soon-card aspect-[3/4] rounded-2xl flex flex-col items-center justify-center gap-4 p-8 transition-all duration-500 cursor-default">
+                                <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-3xl text-white/20">add_circle</span>
+                                </div>
+                                <p class="text-sm text-white/20 font-bold">Coming Soon</p>
+                                <p class="text-xs text-white/10 text-center">${course.desc}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="book-card-container animate-fade-in" style="animation-delay:${i * 150}ms">
+                        <a href="${course.link}" class="block">
+                            <div class="book-card relative aspect-[3/4] rounded-r-xl overflow-hidden bg-slate-800 cursor-pointer group">
+                                <div class="book-spine"></div>
+                                <img src="${course.thumb}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="${course.title}">
+
+                                <!-- Overlay -->
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-6 flex flex-col justify-end">
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                        <span class="text-[9px] font-bold uppercase tracking-widest text-white/60">${course.status}</span>
+                                    </div>
+                                    <h3 class="text-2xl font-black text-white leading-tight mb-1">${course.title}</h3>
+                                    <p class="text-lg font-bold bg-gradient-to-r from-primary via-yellow-200 to-primary bg-clip-text text-transparent mb-3">${course.subtitle}</p>
+                                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">${course.desc}</p>
+
+                                    <div class="flex items-center justify-between mt-auto">
+                                        ${course.lessons ? `
+                                        <div class="flex flex-col">
+                                            <span class="text-[9px] font-black text-white/40 uppercase tracking-widest mb-0.5">Lessons</span>
+                                            <span class="text-sm font-black text-primary">${course.lessons}</span>
+                                        </div>` : ''}
+                                        ${course.masters ? `
+                                        <div class="flex flex-col items-end">
+                                            <span class="text-[9px] font-black text-white/40 uppercase tracking-widest mb-0.5">Masters</span>
+                                            <span class="text-sm font-black text-white">${course.masters}</span>
+                                        </div>` : ''}
+                                    </div>
+                                </div>
+
+                                <!-- Hover Button -->
+                                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">
+                                    <div class="w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-2xl shadow-primary/50">
+                                        <span class="material-symbols-outlined text-white text-3xl">auto_stories</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

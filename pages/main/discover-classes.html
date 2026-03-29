@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Luna Whale Art Lab - Discover Classes</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../../assets/data/i18n.js?v=0312-2330"></script>
+    <script src="../../assets/data/classes-data.js?v=0312-2330"></script>
+    <script src="../../assets/data/artists-data.js?v=0312-2330"></script>
+    <script src="../../assets/js/app.js?v=0312-2330"></script>
+
+    <!-- Firebase SDK (compat mode) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="../../assets/js/firebase-auth.js?v=0312-2330"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "primary": "#1337ec", "background-light": "#f6f6f8", "background-dark": "#101322", "accent-purple": "#8b5cf6" },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @media (min-width: 1024px) {
+            .app-sidebar {
+                display: flex !important;
+            }
+
+            .bottom-nav {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+
+        /* Category Cards */
+        .category-card {
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            border-radius: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--color-1, #1337ec) 0%, var(--color-2, #8b5cf6) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .category-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 50px rgba(19, 55, 236, 0.2);
+        }
+
+        .category-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Popular Class Cards */
+        .masonry-grid {
+            columns: 2;
+            column-gap: 12px;
+            width: 100%;
+        }
+
+        @media (min-width: 640px) {
+            .masonry-grid {
+                columns: 3;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .masonry-grid {
+                columns: 4;
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .masonry-grid {
+                columns: 5;
+            }
+        }
+
+        .masonry-item {
+            display: block;
+            break-inside: avoid;
+            margin-bottom: 12px;
+            border-radius: 1.5rem;
+            overflow: hidden;
+        }
+
+        .premium-card {
+            background-color: transparent !important;
+            border-radius: 1.5rem;
+            overflow: visible;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .dark .premium-card {
+            background-color: transparent !important;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .premium-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-image-container {
+            position: relative;
+            aspect-ratio: 4/5;
+            overflow: hidden;
+            background: var(--bg-fallback, #f1f5f9);
+            border-radius: 1.4rem;
+            margin: 0;
+            transition: all 0.4s ease;
+        }
+
+        .dark .card-image-container {
+            background: #1e293b;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .premium-card:hover .card-image {
+            transform: scale(1.08);
+        }
+
+        .card-overlay {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 30%, transparent 60%);
+            transition: all 0.4s ease;
+        }
+
+        .card-text-shadow {
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+        /* Create Button - Fixed Position */
+        .create-button-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 40;
+        }
+
+        @media (max-width: 768px) {
+            .create-button-container {
+                bottom: 5rem;
+                right: 1rem;
+            }
+        }
+
+        .floating-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1337ec 0%, #8b5cf6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(19, 55, 236, 0.3);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .floating-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 32px rgba(19, 55, 236, 0.4);
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+
+    <!-- Sidebar (Desktop) -->
+    <aside
+        class="app-sidebar hidden fixed left-0 top-0 h-full w-60 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-col z-40 p-4">
+        <!-- Logo -->
+        <a href="../../index.html" class="flex items-center gap-3 px-2 py-4 mb-6 hover:opacity-80 transition-opacity">
+            <img src="../../logo.png" alt="Luna Whale" class="w-10 h-10 object-contain rounded-xl" />
+            <div>
+                <div class="text-sm font-black text-primary leading-none">Luna Whale</div>
+                <div class="text-xs text-slate-500 font-medium">Art Lab</div>
+            </div>
+        </a>
+        <!-- User Quick Info -->
+        <div class="flex items-center gap-3 px-2 py-3 rounded-xl bg-primary/5 mb-6">
+            <div
+                class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-sm">person</span>
+            </div>
+            <div>
+                <div class="text-xs font-bold">Luna Artist</div>
+                <div class="text-[10px] text-slate-500">Lvl 1 Explorer</div>
+            </div>
+        </div>
+        <!-- Nav Items -->
+        <nav class="flex-1 min-h-0 space-y-1 overflow-y-auto pr-2 custom-scrollbar">
+            <a href="classes.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">school</span>
+                <span data-i18n="nav_classes">Classes</span>
+            </a>
+            <a href="art-shop.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">palette</span>
+                <span data-i18n="nav_illustration">Illustration</span>
+            </a>
+            <a href="art-cosmos.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">hub</span>
+                <span data-i18n="nav_art_cosmos">Art Cosmos</span>
+            </a>
+            <a href="artists-eye.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">visibility</span> <span
+                    data-i18n="cat_artists_eye">Artist's Eye</span>
+            </a>
+            <a href="encyclopedia.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">book</span> <span
+                    data-i18n="nav_encyclopedia">Encyclopedia</span>
+            </a>
+            <a href="gallery.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">gallery_thumbnail</span> <span
+                    data-i18n="nav_gallery">Student Works</span>
+            </a>
+            <a href="my-classes.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">folder_special</span> <span
+                    data-i18n="nav_my_classes">My Classes</span>
+            </a>
+            <a href="profile.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">account_circle</span> <span
+                    data-i18n="nav_profile">Profile</span>
+            </a>
+            <a href="pricing.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">card_membership</span> <span
+                    data-i18n="nav_membership">Membership</span>
+            </a>
+            <a href="support.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">help</span> <span data-i18n="nav_support">Support</span>
+            </a>
+            <a href="notices.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">campaign</span> <span
+                    data-i18n="nav_notice">Notice</span>
+            </a>
+            <a href="settings.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">settings</span> <span
+                    data-i18n="nav_settings">Settings</span>
+            </a>
+            <!-- Admin & Language Link -->
+            <div class="border-t border-slate-200 pt-4 mt-4 space-y-2">
+                <a href="../admin/admin.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-100 font-medium text-sm transition-colors">
+                    <span class="material-symbols-outlined text-xl">admin_panel_settings</span> <span
+                        data-i18n="nav_admin">Admin</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <div class="main-content lg:ml-60 min-h-screen">
+        <!-- Header -->
+        <header
+            class="sticky top-0 z-30 bg-white/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-slate-200/60 px-6 py-4 flex items-center gap-3">
+            <div class="lg:hidden flex items-center gap-2">
+                <img src="../../logo.png" alt="Luna Whale" class="w-8 h-8 object-contain rounded-lg" />
+            </div>
+            <h1 class="flex-1 font-black text-xl" data-i18n="page_discover_classes">Class Discovery</h1>
+            <div class="flex items-center gap-1">
+                <!-- Search -->
+                <button
+                    class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">
+                    <span class="material-symbols-outlined text-slate-600 text-lg">search</span>
+                </button>
+                <!-- Language switcher -->
+                <div class="relative" id="lang-container">
+                    <button onclick="lwToggleLang('lang-menu')"
+                        class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+                        title="Language">
+                        <span class="material-symbols-outlined text-slate-600 text-lg">language</span>
+                    </button>
+                    <div id="lang-menu"
+                        class="absolute right-0 top-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl w-44 py-1.5 z-50"
+                        style="display:none">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto pb-28 lg:pb-8 px-4 pt-8">
+
+            <!-- Category Grid Section -->
+            <section class="mb-16 animate-slide-up">
+                <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6"
+                    data-i18n="discover_categories">Find Classes By</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Level Classes -->
+                    <a href="classes.html" onclick="filterByCategory('level'); return false;"
+                        class="category-card p-8 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 border border-blue-200 dark:border-blue-800"
+                        style="--color-1: #3b82f6; --color-2: #1e40af;">
+                        <div class="flex items-center justify-between mb-4">
+                            <span
+                                class="material-symbols-outlined text-5xl text-blue-600 dark:text-blue-400">trending_up</span>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2" data-i18n="cat_by_level">
+                            Classes by Level</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400" data-i18n="cat_by_level_desc">Beginner,
+                            Intermediate, Advanced</p>
+                    </a>
+
+                    <!-- Material Classes -->
+                    <a href="classes.html" onclick="filterByCategory('material'); return false;"
+                        class="category-card p-8 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/30 border border-purple-200 dark:border-purple-800"
+                        style="--color-1: #a855f7; --color-2: #6d28d9;">
+                        <div class="flex items-center justify-between mb-4">
+                            <span
+                                class="material-symbols-outlined text-5xl text-purple-600 dark:text-purple-400">palette</span>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2" data-i18n="cat_by_material">
+                            Classes by Material</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400" data-i18n="cat_by_material_desc">Paint,
+                            Clay, Paper, Digital</p>
+                    </a>
+
+                    <!-- Masterpiece Classes -->
+                    <a href="classes.html" onclick="filterByCategory('masterpiece'); return false;"
+                        class="category-card p-8 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/30 dark:to-amber-900/30 border border-amber-200 dark:border-amber-800"
+                        style="--color-1: #f59e0b; --color-2: #d97706;">
+                        <div class="flex items-center justify-between mb-4">
+                            <span
+                                class="material-symbols-outlined text-5xl text-amber-600 dark:text-amber-400">frame_5_plus</span>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2"
+                            data-i18n="cat_masterpiece_study">Masterpiece Study</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400" data-i18n="cat_masterpiece_study_desc">
+                            Famous artworks & techniques</p>
+                    </a>
+
+                    <!-- Science & Art Classes -->
+                    <a href="classes.html" onclick="filterByCategory('science'); return false;"
+                        class="category-card p-8 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/30 border border-green-200 dark:border-green-800"
+                        style="--color-1: #10b981; --color-2: #047857;">
+                        <div class="flex items-center justify-between mb-4">
+                            <span
+                                class="material-symbols-outlined text-5xl text-green-600 dark:text-green-400">science</span>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2" data-i18n="cat_science_art">
+                            Science & Art</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400" data-i18n="cat_science_art_desc">Explore
+                            creative science projects</p>
+                    </a>
+
+                    <!-- Creativity Classes -->
+                    <a href="classes.html" onclick="filterByCategory('creativity'); return false;"
+                        class="category-card p-8 bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/30 dark:to-pink-900/30 border border-pink-200 dark:border-pink-800"
+                        style="--color-1: #ec4899; --color-2: #be185d;">
+                        <div class="flex items-center justify-between mb-4">
+                            <span
+                                class="material-symbols-outlined text-5xl text-pink-600 dark:text-pink-400">lightbulb</span>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2" data-i18n="cat_creativity">
+                            Creative Classes</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400" data-i18n="cat_creativity_desc">Develop
+                            your creative thinking</p>
+                    </a>
+
+                    <!-- Adult Classes -->
+                    <a href="classes.html" onclick="filterByCategory('adult'); return false;"
+                        class="category-card p-8 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/30 dark:to-indigo-900/30 border border-indigo-200 dark:border-indigo-800"
+                        style="--color-1: #6366f1; --color-2: #4f46e5;">
+                        <div class="flex items-center justify-between mb-4">
+                            <span
+                                class="material-symbols-outlined text-5xl text-indigo-600 dark:text-indigo-400">people</span>
+                        </div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white mb-2"
+                            data-i18n="cat_adult_classes">Adult Classes</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400" data-i18n="cat_adult_classes_desc">Classes
+                            for grown-up artists</p>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Trending This Week Section -->
+            <section class="mb-16 animate-slide-up" style="animation-delay: 0.1s;">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400"
+                        data-i18n="trending_this_week">Trending This Week</h2>
+                    <a href="classes.html"
+                        class="text-[10px] font-bold text-primary hover:underline uppercase tracking-wider"
+                        data-i18n="btn_view_all">View All</a>
+                </div>
+                <div id="trending-grid" class="masonry-grid">
+                    <!-- Filled via JS -->
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Bottom Nav (Mobile Only) -->
+    <nav
+        class="bottom-nav lg:hidden fixed bottom-0 left-0 right-0 flex border-t border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl px-4 pb-5 pt-2 z-50">
+        <a href="../../index.html"
+            class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-xl">home</span>
+            <span class="text-[10px] font-bold uppercase" data-i18n="nav_home">Home</span>
+        </a>
+        <a href="classes.html" class="flex flex-1 flex-col items-center gap-1 text-primary">
+            <span class="material-symbols-outlined text-xl">school</span>
+            <span class="text-[10px] font-bold uppercase" data-i18n="nav_classes">Classes</span>
+        </a>
+        <a href="artists-eye.html"
+            class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-xl">visibility</span>
+            <span class="text-[10px] font-bold uppercase" data-i18n="cat_artists_eye">Artist's Eye</span>
+        </a>
+        <div class="flex-1 flex flex-col items-center relative -top-5 gap-1">
+            <a href="../admin/create-class.html"
+                class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-xl shadow-primary/40 border-4 border-background-light dark:border-background-dark">
+                <span class="material-symbols-outlined text-2xl">add</span>
+            </a>
+            <span class="text-[10px] font-bold uppercase text-slate-400" data-i18n="nav_create">Create</span>
+        </div>
+        <a href="encyclopedia.html"
+            class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-xl">book</span>
+            <span class="text-[10px] font-bold uppercase" data-i18n="nav_encyclopedia">Encyclopedia</span>
+        </a>
+        <a href="gallery.html"
+            class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-xl">gallery_thumbnail</span>
+            <span class="text-[10px] font-bold uppercase" data-i18n="nav_gallery">Student Works</span>
+        </a>
+        <a href="profile.html"
+            class="flex flex-1 flex-col items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-xl">person</span>
+            <span class="text-[10px] font-bold uppercase" data-i18n="nav_profile">Profile</span>
+        </a>
+    </nav>
+
+    <!-- Floating Create Button (Desktop) -->
+    <div id="create-button" class="create-button-container hidden lg:flex">
+        <a href="../admin/create-class.html" class="floating-button" title="Create New Class">
+            <span class="material-symbols-outlined">add</span>
+        </a>
+    </div>
+
+    <script>
+        // Category Filter Function
+        function filterByCategory(category) {
+            // Store category in sessionStorage and redirect
+            sessionStorage.setItem('filterCategory', category);
+            window.location.href = 'classes.html';
+        }
+
+        // Load and Display Trending Classes
+        async function loadTrendingClasses() {
+            const grid = document.getElementById('trending-grid');
+            if (!grid) return;
+
+            try {
+                // Get all classes and sort by popularity
+                let classes = window.CURRENT_CLASSES || CLASSES_DATA || [];
+
+                // Shuffle and get top 5
+                classes = classes.sort(() => Math.random() - 0.5).slice(0, 5);
+
+                grid.innerHTML = '';
+                const fragment = document.createDocumentFragment();
+
+                classes.forEach((item) => {
+                    let displayImg = item.thumbnail || item.image || item.thumb;
+                    if (displayImg && !displayImg.startsWith('http') && !displayImg.startsWith('../')) {
+                        displayImg = '../../' + displayImg;
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = "masonry-item premium-card group animate-fade-in";
+
+                    let finalLink = item.link;
+                    if (finalLink && !finalLink.startsWith('http') && !finalLink.startsWith('../')) {
+                        if (finalLink.startsWith('lesson-') && !finalLink.includes('lesson-viewer.html')) {
+                            finalLink = `../lessons/${finalLink}`;
+                        } else if (!finalLink.includes('lesson-viewer.html') && !finalLink.includes('masterpiece-kids.html')) {
+                            finalLink = `../../${finalLink}`;
+                        }
+                    }
+
+                    card.onclick = () => {
+                        const isPurchased = window.LunaApp && LunaApp.hasAccessToClass(item.id);
+                        if (isPurchased && finalLink) {
+                            window.location.href = finalLink;
+                        } else {
+                            openClassModal(item.id);
+                        }
+                    };
+
+                    const titleHtml = item.titleKey
+                        ? `<h3 class="text-[13px] text-slate-800 dark:text-slate-100 font-bold leading-tight tracking-tight line-clamp-2" data-i18n="${item.titleKey}"></h3>`
+                        : `<h3 class="text-[13px] text-slate-800 dark:text-slate-100 font-bold leading-tight tracking-tight line-clamp-2">${item.title}</h3>`;
+
+                    const tagHtml = item.tagKey
+                        ? `<span class="text-[10px] text-primary uppercase font-extrabold tracking-widest mb-1.5 inline-block" data-i18n="${item.tagKey}"></span>`
+                        : `<span class="text-[10px] text-primary uppercase font-extrabold tracking-widest mb-1.5 inline-block">${item.subCategory || ''}</span>`;
+
+                    card.innerHTML = `
+                        <div class="feed-card bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700/50 h-full flex flex-col group-hover:shadow-md transition-all duration-300">
+                            <div class="relative w-full aspect-video overflow-hidden bg-slate-100 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+                                ${displayImg ? `<img data-src="${displayImg}" class="card-image lazy-load-img w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Class Image">` : ''}
+                                ${item.youtubeId ? `<div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><span class="material-symbols-outlined text-white text-4xl drop-shadow-md">play_circle</span></div>` : ''}
+                            </div>
+                            <div class="p-3.5 flex flex-col flex-1">
+                                ${tagHtml}
+                                ${titleHtml}
+                            </div>
+                        </div>
+                    `;
+
+                    fragment.appendChild(card);
+                });
+
+                grid.appendChild(fragment);
+                if (window.lwApplyLang) lwApplyLang();
+                LunaApp.utils.lazyLoad('.lazy-load-img');
+            } catch (error) {
+                console.error('Error loading trending classes:', error);
+            }
+        }
+
+        function openClassModal(classId) {
+            // Simple redirect for now - can expand with modal later
+            window.location.href = `classes.html#${classId}`;
+        }
+
+        // Check if user is admin and show/hide create button
+        function checkAdminStatus() {
+            const user = JSON.parse(localStorage.getItem('lw_user') || '{}');
+            const createBtn = document.getElementById('create-button');
+            const adminCreateBtn = document.getElementById('admin-create-class-btn');
+
+            if (user.role === 'admin' || user.isAdmin) {
+                if (createBtn) createBtn.style.display = 'flex';
+                if (adminCreateBtn) adminCreateBtn.style.display = 'flex';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.lwRenderLangPicker) {
+                lwRenderLangPicker('lang-menu');
+            }
+
+            // Fetch from Firestore if available
+            if (window.LunaAuth && window.LunaAuth.getDb) {
+                try {
+                    const db = LunaAuth.getDb();
+                    db.collection('classes').orderBy('createdAt', 'desc').get().then(snapshot => {
+                        const data = [];
+                        snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+                        window.CURRENT_CLASSES = data;
+                        loadTrendingClasses();
+                    }).catch(() => {
+                        loadTrendingClasses();
+                    });
+                } catch (error) {
+                    loadTrendingClasses();
+                }
+            } else {
+                loadTrendingClasses();
+            }
+
+            checkAdminStatus();
+        });
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

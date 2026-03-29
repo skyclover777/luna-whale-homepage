@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>감성 타자기 — 타이핑</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Gowun+Batang:wght@400;700&family=Special+Elite&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --night: #0a0e1a;
+            --paper: #f5e6c8;
+            --paper-dark: #e8d5a8;
+            --ink: #2a1f10;
+            --gold: #d4a843;
+            --wood: #5c3a1e;
+            --red-err: #c0392b;
+        }
+
+        body {
+            font-family: 'Gowun Batang', serif;
+            background: var(--night);
+            color: #e0d5c0;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ---- Stars ---- */
+        .starfield {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: #ffe8a0;
+            border-radius: 50%;
+            animation: twinkle var(--dur) ease-in-out infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% {
+                opacity: 0.2;
+                transform: scale(0.8);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* ---- Moon ---- */
+        .moon {
+            position: fixed;
+            top: 25px;
+            right: 40px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #fff8dc, #f0d060);
+            box-shadow: 0 0 25px 8px rgba(240, 208, 96, 0.2);
+            z-index: 1;
+        }
+
+        .moon::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: 10px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--night);
+        }
+
+        /* ---- Top Bar ---- */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background: rgba(10, 14, 26, 0.92);
+            border-bottom: 1px solid rgba(212, 168, 67, 0.15);
+            backdrop-filter: blur(8px);
+        }
+
+        .top-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-link {
+            color: #a09880;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--gold);
+        }
+
+        .novel-title-bar {
+            font-family: 'Noto Serif KR', serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--gold);
+        }
+
+        .top-center {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.82rem;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #c0b090;
+        }
+
+        .stat .label {
+            color: #807060;
+        }
+
+        .stat .value {
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .hearts {
+            display: flex;
+            gap: 2px;
+            font-size: 1rem;
+        }
+
+        .top-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .coin-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(212, 168, 67, 0.15);
+            border: 1px solid rgba(212, 168, 67, 0.3);
+            border-radius: 14px;
+            padding: 4px 12px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .coin-mini {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #ffe07a, #c8922a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.5rem;
+            font-weight: 900;
+            color: var(--wood);
+        }
+
+        /* ---- Main Layout ---- */
+        .game-layout {
+            position: relative;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            height: 100vh;
+            padding-top: 48px;
+        }
+
+        /* ---- Left Pane: Original Text ---- */
+        .text-pane {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .text-page {
+            background: var(--paper);
+            width: 100%;
+            max-width: 460px;
+            border-radius: 4px;
+            padding: 36px 32px;
+            box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.4), inset 0 0 60px rgba(0, 0, 0, 0.05);
+            position: relative;
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .text-page::before {
+            content: '';
+            position: absolute;
+            left: 28px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: rgba(200, 100, 100, 0.2);
+        }
+
+        .page-header {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 0.72rem;
+            color: #a09070;
+            margin-bottom: 16px;
+            text-align: right;
+        }
+
+        .text-lines {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .text-line {
+            font-size: 0.92rem;
+            line-height: 2;
+            color: var(--ink);
+            padding: 2px 4px;
+            border-radius: 2px;
+            transition: background 0.3s;
+            min-height: 1.8em;
+            position: relative;
+        }
+
+        .text-line.active {
+            background: rgba(212, 168, 67, 0.15);
+            border-left: 3px solid var(--gold);
+            padding-left: 8px;
+        }
+
+        .text-line.completed {
+            color: #b0a080;
+        }
+
+        .text-line.completed::after {
+            content: '✓';
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8a9a5a;
+            font-size: 0.7rem;
+        }
+
+        .page-footer {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 0.72rem;
+            color: #a09070;
+        }
+
+        /* ---- Right Pane: Typewriter ---- */
+        .typewriter-pane {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            position: relative;
+        }
+
+        /* Typewriter Paper */
+        .tw-paper-container {
+            width: 100%;
+            max-width: 420px;
+            height: 300px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .tw-paper {
+            background: var(--paper);
+            width: 100%;
+            border-radius: 4px 4px 0 0;
+            padding: 28px 28px 20px;
+            box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.3);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            min-height: 300px;
+        }
+
+        .tw-paper-line {
+            font-family: 'Special Elite', 'Gowun Batang', serif;
+            font-size: 0.88rem;
+            color: var(--ink);
+            line-height: 2;
+            min-height: 1.8em;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .tw-paper-line .char-correct {
+            color: var(--ink);
+        }
+
+        .tw-paper-line .char-wrong {
+            color: var(--red-err);
+            text-decoration: underline;
+            animation: charShake 0.2s;
+        }
+
+        .tw-paper-line .cursor-char {
+            border-left: 2px solid var(--gold);
+            animation: blink 0.8s step-end infinite;
+            margin-left: -1px;
+        }
+
+        @keyframes charShake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-2px);
+            }
+
+            75% {
+                transform: translateX(2px);
+            }
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                border-color: var(--gold);
+            }
+
+            50% {
+                border-color: transparent;
+            }
+        }
+
+        /* Typewriter Body */
+        .tw-body {
+            width: 100%;
+            max-width: 440px;
+            height: 120px;
+            background: linear-gradient(180deg, #4a3a2a, #3a2a1a, #2a1a0a);
+            border-radius: 12px 12px 8px 8px;
+            position: relative;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 14px;
+        }
+
+        .tw-body::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 16px;
+            background: linear-gradient(180deg, #5a4a3a, #4a3a2a);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .tw-roller {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 85%;
+            height: 18px;
+            background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+            border-radius: 9px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .tw-roller::before,
+        .tw-roller::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #555, #333);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .tw-roller::before {
+            left: 4px;
+        }
+
+        .tw-roller::after {
+            right: 4px;
+        }
+
+        .tw-keys {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 360px;
+        }
+
+        .tw-key {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 35%, #555, #333);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: transform 0.1s;
+        }
+
+        .tw-key.pressed {
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        }
+
+        /* ---- Floating Coin Animation ---- */
+        .coin-float {
+            position: fixed;
+            z-index: 500;
+            font-weight: 900;
+            color: var(--gold);
+            font-size: 1.1rem;
+            pointer-events: none;
+            animation: coinUp 1.2s ease-out forwards;
+            text-shadow: 0 0 8px rgba(212, 168, 67, 0.6);
+        }
+
+        @keyframes coinUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            70% {
+                opacity: 1;
+                transform: translateY(-60px) scale(1.1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-90px) scale(0.8);
+            }
+        }
+
+        /* ---- Page Turn Animation ---- */
+        .page-turn-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            background: rgba(5, 5, 15, 0.6);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .page-turn-overlay.active {
+            display: flex;
+        }
+
+        .page-turn-paper {
+            width: 300px;
+            height: 400px;
+            background: var(--paper);
+            border-radius: 4px;
+            box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.5);
+            animation: paperEject 1s ease-in-out forwards;
+        }
+
+        @keyframes paperEject {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+
+            50% {
+                transform: translateY(-100px) rotate(-5deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-600px) rotate(-15deg);
+                opacity: 0;
+            }
+        }
+
+        .page-turn-text {
+            color: var(--gold);
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 20px;
+            opacity: 0;
+            animation: fadeIn 0.5s 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* ---- Completion Modal ---- */
+        .complete-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 400;
+            background: rgba(5, 5, 15, 0.85);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .complete-modal.open {
+            display: flex;
+        }
+
+        .complete-card {
+            background: var(--paper);
+            color: var(--ink);
+            border-radius: 8px;
+            padding: 40px 36px;
+            max-width: 380px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            animation: cardIn 0.5s ease forwards;
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .complete-card h2 {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            color: var(--wood);
+        }
+
+        .complete-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .complete-stat-label {
+            font-size: 0.72rem;
+            color: #8a7a60;
+        }
+
+        .complete-stat-value {
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: var(--wood);
+        }
+
+        .complete-coin-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #c8922a;
+        }
+
+        .complete-btn {
+            display: inline-block;
+            padding: 12px 28px;
+            margin: 6px;
+            background: linear-gradient(135deg, var(--wood), #7a4a20);
+            color: var(--paper);
+            font-family: 'Noto Serif KR', serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .complete-btn:hover {
+            background: linear-gradient(135deg, #7a4a20, var(--gold));
+            transform: translateY(-2px);
+        }
+
+        .complete-btn.secondary {
+            background: transparent;
+            color: var(--wood);
+            border: 1px solid var(--wood);
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 768px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+
+            .text-page {
+                min-height: 280px;
+                padding: 20px 18px;
+            }
+
+            .tw-paper-container {
+                height: 200px;
+            }
+
+            .tw-body {
+                height: 80px;
+            }
+
+            .top-center {
+                gap: 10px;
+                font-size: 0.72rem;
+            }
+        }
+
+        .save-exit-btn {
+            background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .save-exit-btn:hover {
+            background: linear-gradient(135deg, #daa520 0%, #f0c040 100%);
+            transform: scale(1.05);
+        }
+
+        .save-toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(30, 30, 20, 0.95);
+            color: #daa520;
+            padding: 12px 28px;
+            border-radius: 12px;
+            border: 1px solid #b8860b;
+            font-size: 0.95rem;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.4s;
+            pointer-events: none;
+        }
+
+        .save-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Page Speed Badges - right side */
+        .page-speed-strip {
+            position: fixed;
+            right: 12px;
+            top: 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 50;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+
+        .page-speed-badge {
+            background: rgba(20, 18, 12, 0.85);
+            border: 1px solid rgba(218, 165, 32, 0.3);
+            border-radius: 8px;
+            padding: 3px 8px;
+            font-size: 0.65rem;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            animation: badgeIn 0.4s ease;
+        }
+
+        .page-speed-badge .badge-page {
+            color: #888;
+            font-size: 0.58rem;
+        }
+
+        .page-speed-badge .badge-speed {
+            color: #daa520;
+            font-weight: 600;
+        }
+
+        @keyframes badgeIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Page Complete Stats Popup */
+        .page-stats-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .page-stats-popup.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .page-stats-card {
+            background: linear-gradient(135deg, #1a1814 0%, #2a2520 100%);
+            border: 1px solid #b8860b;
+            border-radius: 16px;
+            padding: 28px 40px;
+            text-align: center;
+            animation: statsCardIn 0.4s ease;
+        }
+
+        @keyframes statsCardIn {
+            from {
+                transform: scale(0.8) translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .page-stats-card h3 {
+            color: #daa520;
+            font-size: 1.1rem;
+            margin: 0 0 16px 0;
+        }
+
+        .page-stats-row {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+        }
+
+        .page-stat-item {
+            text-align: center;
+        }
+
+        .page-stat-item .stat-val {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #f0c040;
+        }
+
+        .page-stat-item .stat-label {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: 2px;
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body>
+
+    <div class="starfield" id="starfield"></div>
+    <div class="moon"></div>
+    <div class="save-toast" id="save-toast">💾 저장되었습니다!</div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-left">
+            <a href="emotion-typewriter.html" class="back-link">← 책장</a>
+            <span class="novel-title-bar" id="novel-title-bar">로딩 중...</span>
+        </div>
+        <div class="top-center">
+            <div class="stat">
+                <span class="label">페이지</span>
+                <span class="value" id="stat-page">1/1</span>
+            </div>
+            <div class="stat">
+                <span class="label">정확도</span>
+                <span class="value" id="stat-accuracy">100%</span>
+            </div>
+            <div class="stat">
+                <span class="label">줄</span>
+                <span class="value" id="stat-line">1/10</span>
+            </div>
+            <div class="hearts" id="hearts">❤️❤️❤️</div>
+        </div>
+        <div class="top-right">
+            <button class="save-exit-btn" id="btn-save-exit" title="저장하고 나가기">💾 저장</button>
+            <div class="coin-badge">
+                <div class="coin-mini">₩</div>
+                <span id="coin-count">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Layout -->
+    <div class="game-layout">
+        <!-- Left: Original Text -->
+        <div class="text-pane">
+            <div class="text-page" id="text-page">
+                <div class="page-header" id="page-header">페이지 1</div>
+                <div class="text-lines" id="text-lines"></div>
+                <div class="page-footer" id="page-footer"></div>
+            </div>
+        </div>
+
+        <!-- Right: Typewriter -->
+        <div class="typewriter-pane">
+            <div class="tw-paper-container">
+                <div class="tw-paper" id="tw-paper"></div>
+            </div>
+            <div class="tw-body">
+                <div class="tw-roller"></div>
+                <div class="tw-keys" id="tw-keys"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Speed Badges (right side) -->
+    <div class="page-speed-strip" id="page-speed-strip"></div>
+
+    <!-- Page Stats Popup -->
+    <div class="page-stats-popup" id="page-stats-popup">
+        <div class="page-stats-card">
+            <h3 id="psp-title">📄 페이지 1 완료!</h3>
+            <div class="page-stats-row">
+                <div class="page-stat-item">
+                    <div class="stat-val" id="psp-speed">0</div>
+                    <div class="stat-label">타/분</div>
+                </div>
+                <div class="page-stat-item">
+                    <div class="stat-val" id="psp-accuracy">0%</div>
+                    <div class="stat-label">정확도</div>
+                </div>
+                <div class="page-stat-item">
+                    <div class="stat-val" id="psp-chars">0</div>
+                    <div class="stat-label">타수</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Input for Korean IME -->
+    <input type="text" id="hidden-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+        style="position:fixed; left:-9999px; top:-9999px; opacity:0; width:1px; height:1px; border:none; outline:none; padding:0; margin:0; font-size:16px;">
+
+    <!-- Page Turn Overlay -->
+    <div class="page-turn-overlay" id="page-turn-overlay">
+        <div class="page-turn-paper"></div>
+        <div class="page-turn-text">📄 다음 페이지로...</div>
+    </div>
+
+    <!-- Completion Modal -->
+    <div class="complete-modal" id="complete-modal">
+        <div class="complete-card">
+            <h2>✦ 타이핑 완료! ✦</h2>
+            <div class="complete-stats">
+                <div>
+                    <div class="complete-stat-label">완료한 페이지</div>
+                    <div class="complete-stat-value" id="result-pages">0</div>
+                </div>
+                <div>
+                    <div class="complete-stat-label">정확도</div>
+                    <div class="complete-stat-value" id="result-accuracy">0%</div>
+                </div>
+                <div>
+                    <div class="complete-stat-label">입력한 글자</div>
+                    <div class="complete-stat-value" id="result-chars">0</div>
+                </div>
+                <div>
+                    <div class="complete-stat-label">획득 코인</div>
+                    <div class="complete-coin-value" id="result-coins">🪙 0</div>
+                </div>
+            </div>
+            <a href="emotion-typewriter.html" class="complete-btn">📚 책장으로 돌아가기</a>
+            <button class="complete-btn secondary" id="btn-retry">다시 타이핑하기</button>
+        </div>
+    </div>
+
+    <script>
+        // ---- Stars ----
+        (function () {
+            var sf = document.getElementById('starfield');
+            for (var i = 0; i < 80; i++) {
+                var s = document.createElement('div');
+                s.className = 'star';
+                var size = Math.random() * 2 + 0.5;
+                s.style.width = size + 'px';
+                s.style.height = size + 'px';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top = Math.random() * 100 + '%';
+                s.style.setProperty('--dur', (Math.random() * 3 + 2) + 's');
+                s.style.animationDelay = (Math.random() * 5) + 's';
+                sf.appendChild(s);
+            }
+        })();
+
+        // ---- Typewriter Keys ----
+        (function () {
+            var keysEl = document.getElementById('tw-keys');
+            for (var i = 0; i < 30; i++) {
+                var k = document.createElement('div');
+                k.className = 'tw-key';
+                k.id = 'tw-key-' + i;
+                keysEl.appendChild(k);
+            }
+        })();
+
+        // ---- Game State ----
+        var state = {
+            novelId: '',
+            novelData: null,
+            currentPage: 0,
+            currentLine: 0,
+            currentChar: 0,
+            totalCorrect: 0,
+            totalTyped: 0,
+            lives: 3,
+            coins: parseInt(localStorage.getItem('lw-typewriter-coins') || '0'),
+            sessionCoins: 0,
+            typedLines: [],      // completed typed text per line on current page
+            currentTyped: '',    // what user has typed on current line so far
+            isComplete: false,
+            isComposing: false,  // IME composition flag
+            pageStartTime: null, // timestamp when page typing starts
+            pageTyped: 0,        // chars typed on current page
+            pageCorrect: 0,      // correct chars on current page
+            pageStats: []        // array of {page, speed, accuracy, chars} per completed page
+        };
+
+        document.getElementById('coin-count').textContent = state.coins;
+
+        // ---- Get Novel ID from URL ----
+        var params = new URLSearchParams(window.location.search);
+        state.novelId = params.get('novel') || 'wings';
+
+        // ---- Hidden Input Element ----
+        var hiddenInput = document.getElementById('hidden-input');
+
+        // ---- Load Novel & Metadata ----
+        fetch('../../data/novels/metadata.json')
+            .then(function (r) { return r.json(); })
+            .then(function (meta) {
+                var novelMeta = meta.novels.find(function (n) { return n.id === state.novelId; });
+                if (!novelMeta && meta.poems) {
+                    novelMeta = meta.poems.find(function (n) { return n.id === state.novelId; });
+                }
+                if (!novelMeta) { alert('작품을 찾을 수 없습니다.'); return; }
+                document.getElementById('novel-title-bar').textContent = novelMeta.title + ' — ' + novelMeta.author;
+                return fetch('../../data/novels/' + novelMeta.file);
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                state.novelData = data;
+                // Check saved progress & restore full state
+                var saved = JSON.parse(localStorage.getItem('lw-progress-' + state.novelId) || '{}');
+                if (saved.currentPage) state.currentPage = saved.currentPage;
+                if (saved.currentLine) state.savedLine = saved.currentLine;
+                if (saved.currentChar) state.savedChar = saved.currentChar;
+                if (saved.totalCorrect) state.totalCorrect = saved.totalCorrect;
+                if (saved.totalTyped) state.totalTyped = saved.totalTyped;
+                renderPage();
+                // After renderPage, restore line/char position if saved
+                if (state.savedLine > 0 || state.savedChar > 0) {
+                    restoreSavedPosition();
+                }
+                initTyping();
+                initSaveButton();
+            })
+            .catch(function (err) {
+                console.error('Load error:', err);
+                document.getElementById('novel-title-bar').textContent = '로딩 실패';
+            });
+
+        // ---- Render Page ----
+        function renderPage() {
+            var page = state.novelData.pages[state.currentPage];
+            if (!page) { showCompletion(); return; }
+
+            document.getElementById('page-header').textContent = state.novelData.title + ' — 페이지 ' + page.pageNum;
+            document.getElementById('stat-page').textContent = (state.currentPage + 1) + '/' + state.novelData.pages.length;
+            document.getElementById('page-footer').textContent = page.pageNum + ' / ' + state.novelData.pages.length;
+
+            // Left pane: original lines
+            var linesEl = document.getElementById('text-lines');
+            linesEl.innerHTML = '';
+            page.lines.forEach(function (line, idx) {
+                var div = document.createElement('div');
+                div.className = 'text-line';
+                div.id = 'orig-line-' + idx;
+                div.textContent = line;
+                if (idx === 0) div.classList.add('active');
+                linesEl.appendChild(div);
+            });
+
+            // Right pane: reset typed paper
+            state.currentLine = 0;
+            state.currentChar = 0;
+            state.currentTyped = '';
+            state.typedLines = [];
+            hiddenInput.value = '';
+
+            // Start page timer
+            if (!state.pageStartTime) state.pageStartTime = Date.now();
+
+            renderTypedPaper();
+            updateStats();
+            focusInput();
+        }
+
+        // ---- Render Typed Paper (with composing preview) ----
+        function renderTypedPaper(composingText) {
+            var paper = document.getElementById('tw-paper');
+            paper.innerHTML = '';
+
+            // Previously completed lines
+            state.typedLines.forEach(function (lineText) {
+                var lineDiv = document.createElement('div');
+                lineDiv.className = 'tw-paper-line';
+                lineDiv.innerHTML = '<span class="char-correct">' + escapeHtml(lineText) + '</span>';
+                paper.appendChild(lineDiv);
+            });
+
+            // Current line being typed
+            var page = state.novelData.pages[state.currentPage];
+            if (page && state.currentLine < page.lines.length) {
+                var originalLine = page.lines[state.currentLine];
+                var lineDiv = document.createElement('div');
+                lineDiv.className = 'tw-paper-line';
+                var html = '';
+
+                // Render already committed characters
+                for (var i = 0; i < state.currentTyped.length; i++) {
+                    if (state.currentTyped[i] === originalLine[i]) {
+                        html += '<span class="char-correct">' + escapeHtml(state.currentTyped[i]) + '</span>';
+                    } else {
+                        html += '<span class="char-wrong">' + escapeHtml(state.currentTyped[i]) + '</span>';
+                    }
+                }
+
+                // Show composing (in-progress) character with special style
+                if (composingText && composingText.length > 0) {
+                    html += '<span style="color:#b8860b; opacity:0.7; border-bottom:2px solid #b8860b;">' + escapeHtml(composingText) + '</span>';
+                }
+
+                html += '<span class="cursor-char">&nbsp;</span>';
+                lineDiv.innerHTML = html;
+                paper.appendChild(lineDiv);
+            }
+
+            // Scroll paper up
+            var lineH = 32;
+            var totalLines = state.typedLines.length + 1;
+            var offset = Math.max(0, (totalLines - 8) * lineH);
+            paper.style.transform = 'translateY(-' + offset + 'px)';
+        }
+
+        // ---- Focus hidden input ----
+        function focusInput() {
+            hiddenInput.focus();
+        }
+
+        // Keep input focused when clicking anywhere on the page
+        document.addEventListener('click', function (e) {
+            if (state.isComplete) return;
+            // Don't steal focus from links/buttons
+            if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
+            focusInput();
+        });
+
+        // ---- Init Typing (IME-aware) ----
+        function initTyping() {
+            var skipNextInput = false;
+            focusInput();
+
+            // Track IME composition state
+            hiddenInput.addEventListener('compositionstart', function () {
+                state.isComposing = true;
+            });
+
+            hiddenInput.addEventListener('compositionupdate', function (e) {
+                // Show the in-progress composed character as a preview
+                animateKey();
+                renderTypedPaper(e.data);
+            });
+
+            hiddenInput.addEventListener('compositionend', function (e) {
+                state.isComposing = false;
+                if (state.isComplete) return;
+
+                var page = state.novelData.pages[state.currentPage];
+                if (!page) return;
+                var line = page.lines[state.currentLine];
+                if (!line) return;
+
+                // e.data contains the final composed text (e.g., "박")
+                var composed = e.data || '';
+                for (var i = 0; i < composed.length; i++) {
+                    if (state.currentChar >= line.length) break;
+                    processChar(composed[i], line);
+                }
+
+                // Clear hidden input to prevent accumulation
+                hiddenInput.value = '';
+                skipNextInput = true; // Prevent the subsequent input event from double-processing
+
+                animateKey();
+                renderTypedPaper();
+                updateStats();
+                checkLineComplete();
+            });
+
+            // Handle non-IME input (English, space, punctuation, numbers)
+            hiddenInput.addEventListener('input', function (e) {
+                if (state.isComplete) return;
+
+                // During IME composition, just show preview
+                if (state.isComposing || (e && e.isComposing)) {
+                    renderTypedPaper(hiddenInput.value);
+                    animateKey();
+                    return;
+                }
+
+                // Skip the input event that fires right after compositionend
+                // But only if it looks like a duplicate of what compositionend already handled
+                if (skipNextInput) {
+                    skipNextInput = false;
+                    // Check if this is truly a duplicate from compositionend
+                    var inputType = e && e.inputType;
+                    if (inputType === 'insertCompositionText' || inputType === 'insertFromComposition') {
+                        hiddenInput.value = '';
+                        return;
+                    }
+                    // If it's a regular insert (space, punctuation), DON'T skip — process it
+                }
+
+                var page = state.novelData.pages[state.currentPage];
+                if (!page) return;
+                var line = page.lines[state.currentLine];
+                if (!line) return;
+
+                // Process whatever is in the input as new characters
+                var val = hiddenInput.value;
+                if (val.length > 0) {
+                    for (var i = 0; i < val.length; i++) {
+                        if (state.currentChar >= line.length) break;
+                        processChar(val[i], line);
+                    }
+                    hiddenInput.value = '';
+                    animateKey();
+                    renderTypedPaper();
+                    updateStats();
+                    checkLineComplete();
+                }
+            });
+
+            // Handle Enter, Backspace, and direct character input via keydown
+            hiddenInput.addEventListener('keydown', function (e) {
+                if (state.isComplete) return;
+                if (state.isComposing) return;
+
+                if (e.key === 'Enter') {
+                    var page = state.novelData.pages[state.currentPage];
+                    if (!page) return;
+                    var line = page.lines[state.currentLine];
+                    if (!line) return;
+                    if (state.currentChar >= line.length) {
+                        advanceLine();
+                    }
+                    e.preventDefault();
+                    return;
+                }
+
+                if (e.key === 'Backspace') {
+                    if (state.currentTyped.length > 0) {
+                        state.currentTyped = state.currentTyped.slice(0, -1);
+                        state.currentChar = state.currentTyped.length;
+                        renderTypedPaper();
+                        updateStats();
+                    }
+                    // Don't preventDefault — let the browser clear the hidden input naturally
+                    return;
+                }
+
+                // Handle space directly via keydown as fallback
+                // (space sometimes doesn't trigger input event reliably after IME)
+                if (e.key === ' ') {
+                    var page = state.novelData.pages[state.currentPage];
+                    if (!page) return;
+                    var line = page.lines[state.currentLine];
+                    if (!line) return;
+                    if (state.currentChar < line.length) {
+                        processChar(' ', line);
+                        hiddenInput.value = '';
+                        animateKey();
+                        renderTypedPaper();
+                        updateStats();
+                        checkLineComplete();
+                    }
+                    e.preventDefault();
+                    return;
+                }
+            });
+
+            // Re-focus if input loses focus (unless modal is open)
+            hiddenInput.addEventListener('blur', function () {
+                if (!state.isComplete) {
+                    setTimeout(focusInput, 100);
+                }
+            });
+        }
+
+        // ---- Check if current line is complete ----
+        function checkLineComplete() {
+            var page = state.novelData.pages[state.currentPage];
+            if (!page) return;
+            var line = page.lines[state.currentLine];
+            if (!line) return;
+            if (state.currentChar >= line.length) {
+                var origLine = document.getElementById('orig-line-' + state.currentLine);
+                if (origLine) {
+                    origLine.classList.remove('active');
+                    origLine.classList.add('completed');
+                }
+            }
+        }
+
+        // ---- Save Progress ----
+        function saveProgress() {
+            var data = {
+                currentPage: state.currentPage,
+                currentLine: state.currentLine,
+                currentChar: state.currentChar,
+                totalCorrect: state.totalCorrect,
+                totalTyped: state.totalTyped,
+                sessionCoins: state.sessionCoins,
+                completedPages: state.currentPage,
+                savedAt: new Date().toISOString()
+            };
+            localStorage.setItem('lw-progress-' + state.novelId, JSON.stringify(data));
+        }
+
+        // ---- Restore saved line/char position ----
+        function restoreSavedPosition() {
+            var page = state.novelData.pages[state.currentPage];
+            if (!page) return;
+            var targetLine = Math.min(state.savedLine || 0, page.lines.length - 1);
+            // Mark previous lines as completed
+            for (var i = 0; i < targetLine; i++) {
+                var origLine = document.getElementById('orig-line-' + i);
+                if (origLine) {
+                    origLine.classList.remove('active');
+                    origLine.classList.add('completed');
+                }
+                state.typedLines.push(page.lines[i]); // treat as fully typed
+            }
+            state.currentLine = targetLine;
+            state.currentChar = 0; // start at beginning of saved line
+            // Highlight current line
+            var currOrig = document.getElementById('orig-line-' + state.currentLine);
+            if (currOrig) currOrig.classList.add('active');
+            renderTypedPaper();
+            updateStats();
+            delete state.savedLine;
+            delete state.savedChar;
+        }
+
+        // ---- Init Save Button ----
+        function initSaveButton() {
+            var btn = document.getElementById('btn-save-exit');
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                saveProgress();
+                // Show toast
+                var toast = document.getElementById('save-toast');
+                toast.classList.add('show');
+                setTimeout(function () {
+                    toast.classList.remove('show');
+                    // Navigate back to bookshelf
+                    window.location.href = 'emotion-typewriter.html';
+                }, 1200);
+            });
+        }
+
+        // ---- Process a single committed character ----
+        function processChar(ch, line) {
+            var expected = line[state.currentChar];
+            if (expected === undefined) return;
+
+            state.totalTyped++;
+            state.pageTyped++;
+
+            if (ch === expected) {
+                state.totalCorrect++;
+                state.pageCorrect++;
+                state.currentTyped += ch;
+                state.currentChar++;
+
+                // Coin for every 10 correct chars
+                if (state.totalCorrect % 10 === 0) {
+                    addCoin(1);
+                }
+            } else {
+                state.currentTyped += ch;
+                state.currentChar++;
+            }
+        }
+
+        function advanceLine() {
+            var page = state.novelData.pages[state.currentPage];
+            state.typedLines.push(state.currentTyped);
+            state.currentTyped = '';
+            state.currentLine++;
+            state.currentChar = 0;
+
+            // Reset hidden input for new line
+            hiddenInput.value = '';
+
+            if (state.currentLine >= page.lines.length) {
+                // Page complete
+                pageTurnAnimation();
+                return;
+            }
+
+            // Highlight next line
+            var nextOrig = document.getElementById('orig-line-' + state.currentLine);
+            if (nextOrig) nextOrig.classList.add('active');
+
+            updateStats();
+            renderTypedPaper();
+            focusInput();
+        }
+
+        // ---- Page Turn ----
+        function pageTurnAnimation() {
+            // Calculate page stats
+            var elapsed = state.pageStartTime ? (Date.now() - state.pageStartTime) / 60000 : 1; // minutes
+            if (elapsed < 0.01) elapsed = 0.01;
+            var speed = Math.round(state.pageTyped / elapsed);
+            var accuracy = state.pageTyped > 0 ? Math.round(state.pageCorrect / state.pageTyped * 100) : 0;
+            var pageNum = state.currentPage + 1;
+
+            // Store page stats
+            state.pageStats.push({ page: pageNum, speed: speed, accuracy: accuracy, chars: state.pageTyped });
+
+            // Add speed badge to the right strip
+            addSpeedBadge(pageNum, speed, accuracy);
+
+            // Show page stats popup briefly
+            document.getElementById('psp-title').textContent = '📄 페이지 ' + pageNum + ' 완료!';
+            document.getElementById('psp-speed').textContent = speed;
+            document.getElementById('psp-accuracy').textContent = accuracy + '%';
+            document.getElementById('psp-chars').textContent = state.pageTyped;
+            var popup = document.getElementById('page-stats-popup');
+            popup.classList.add('show');
+
+            setTimeout(function () {
+                popup.classList.remove('show');
+
+                // Now do the page turn animation
+                var overlay = document.getElementById('page-turn-overlay');
+                overlay.classList.add('active');
+                addCoin(5);
+                floatingCoin(window.innerWidth / 2, window.innerHeight / 2, '+5 COIN');
+
+                setTimeout(function () {
+                    overlay.classList.remove('active');
+                    overlay.innerHTML = '<div class="page-turn-paper"></div><div class="page-turn-text">📄 다음 페이지로...</div>';
+                    state.currentPage++;
+
+                    // Reset page-level counters
+                    state.pageTyped = 0;
+                    state.pageCorrect = 0;
+                    state.pageStartTime = Date.now();
+
+                    localStorage.setItem('lw-progress-' + state.novelId, JSON.stringify({
+                        currentPage: state.currentPage,
+                        completedPages: state.currentPage
+                    }));
+
+                    if (state.currentPage >= state.novelData.pages.length) {
+                        showCompletion();
+                    } else {
+                        renderPage();
+                    }
+                }, 1500);
+            }, 1800); // show stats for 1.8 seconds
+        }
+
+        // ---- Add Speed Badge ----
+        function addSpeedBadge(pageNum, speed, accuracy) {
+            var strip = document.getElementById('page-speed-strip');
+            var badge = document.createElement('div');
+            badge.className = 'page-speed-badge';
+            badge.innerHTML = '<span class="badge-page">P' + pageNum + '</span> <span class="badge-speed">' + speed + '</span><span style="color:#888;font-size:0.55rem">타/분</span>';
+            badge.title = '페이지 ' + pageNum + ': ' + speed + '타/분, 정확도 ' + accuracy + '%';
+            strip.appendChild(badge);
+        }
+
+        // ---- Completion ----
+        function showCompletion() {
+            state.isComplete = true;
+            var accuracy = state.totalTyped > 0 ? Math.round(state.totalCorrect / state.totalTyped * 100) : 0;
+            var bonus = Math.round(state.totalCorrect * accuracy / 100 / 10);
+            addCoin(bonus);
+
+            document.getElementById('result-pages').textContent = state.novelData.pages.length;
+            document.getElementById('result-accuracy').textContent = accuracy + '%';
+            document.getElementById('result-chars').textContent = state.totalTyped;
+            document.getElementById('result-coins').textContent = '🪙 ' + state.sessionCoins;
+
+            // Save completed progress
+            localStorage.setItem('lw-progress-' + state.novelId, JSON.stringify({
+                currentPage: 0,
+                completedPages: state.novelData.pages.length,
+                completed: true
+            }));
+
+            document.getElementById('complete-modal').classList.add('open');
+
+            document.getElementById('btn-retry').onclick = function () {
+                state.currentPage = 0;
+                state.totalCorrect = 0;
+                state.totalTyped = 0;
+                state.sessionCoins = 0;
+                state.isComplete = false;
+                state.lives = 3;
+                document.getElementById('complete-modal').classList.remove('open');
+                renderPage();
+            };
+        }
+
+        // ---- Coin System ----
+        function addCoin(amount) {
+            state.coins += amount;
+            state.sessionCoins += amount;
+            localStorage.setItem('lw-typewriter-coins', state.coins);
+            document.getElementById('coin-count').textContent = state.coins;
+        }
+
+        function floatingCoin(x, y, text) {
+            var el = document.createElement('div');
+            el.className = 'coin-float';
+            el.textContent = text;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.body.appendChild(el);
+            setTimeout(function () { el.remove(); }, 1300);
+        }
+
+        // ---- Animate Key ----
+        function animateKey() {
+            var idx = Math.floor(Math.random() * 30);
+            var key = document.getElementById('tw-key-' + idx);
+            if (key) {
+                key.classList.add('pressed');
+                setTimeout(function () { key.classList.remove('pressed'); }, 120);
+            }
+        }
+
+        // ---- Stats ----
+        function updateStats() {
+            var accuracy = state.totalTyped > 0 ? Math.round(state.totalCorrect / state.totalTyped * 100) : 100;
+            document.getElementById('stat-accuracy').textContent = accuracy + '%';
+
+            var page = state.novelData ? state.novelData.pages[state.currentPage] : null;
+            if (page) {
+                document.getElementById('stat-line').textContent = (state.currentLine + 1) + '/' + page.lines.length;
+            }
+
+            // Hearts
+            var heartsStr = '';
+            for (var i = 0; i < 3; i++) {
+                heartsStr += i < state.lives ? '❤️' : '🖤';
+            }
+            document.getElementById('hearts').textContent = heartsStr;
+        }
+
+        // ---- Helpers ----
+        function escapeHtml(str) {
+            var d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+    </script>
+</body>
+
+</html>

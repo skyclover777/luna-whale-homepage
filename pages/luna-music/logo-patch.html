@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { margin:20px; background:#333; font-family:monospace; color:#aaa; }
+  canvas { image-rendering:pixelated; display:block; margin:10px 0; border:1px solid #555; max-width:100%; }
+  button { padding:10px 20px; font-size:16px; cursor:pointer; margin:10px 5px; }
+</style>
+</head>
+<body>
+<h2>OP-1 → LUNA 로고 패치</h2>
+<p>원본 이미지 로드 → "OP-1" 영역을 크림색으로 덮고 → "LUNA" 도트 로고 삽입</p>
+<canvas id="c"></canvas>
+<button onclick="downloadPNG()">PNG 다운로드 (luna-op1.png)</button>
+<script>
+const img = new Image();
+img.crossOrigin = 'anonymous';
+img.src = '/images/op-1/op-1.png';
+
+img.onload = () => {
+  const c = document.getElementById('c');
+  c.width = img.width;
+  c.height = img.height;
+  const $ = c.getContext('2d');
+  $.imageSmoothingEnabled = false;
+
+  // Draw original
+  $.drawImage(img, 0, 0);
+
+  // OP-1 text is at approximately x:1548-1566, y:335-440
+  // Sample the cream background color from nearby area
+  const bgSample = $.getImageData(1555, 310, 1, 1).data;
+  const cream = `rgb(${bgSample[0]},${bgSample[1]},${bgSample[2]})`;
+
+  // Cover OP-1 text area with sampled cream
+  $.fillStyle = cream;
+  $.fillRect(1548, 335, 22, 110);
+
+  // Draw LUNA vertically in dot style (matching original OP-1 text style)
+  const col = '#A0A090';
+  const lx = 1552;
+  let ly = 340;
+  const dotS = 2; // dot size
+
+  function px(x,y){ $.fillStyle=col; $.fillRect(x,y,dotS,dotS); }
+
+  // L
+  px(lx,ly);px(lx,ly+3);px(lx,ly+6);px(lx,ly+9);px(lx,ly+12);
+  px(lx+3,ly+12);px(lx+6,ly+12);
+
+  ly += 20;
+  // U
+  px(lx,ly);px(lx+6,ly);
+  px(lx,ly+3);px(lx+6,ly+3);
+  px(lx,ly+6);px(lx+6,ly+6);
+  px(lx,ly+9);px(lx+6,ly+9);
+  px(lx,ly+12);px(lx+3,ly+12);px(lx+6,ly+12);
+
+  ly += 20;
+  // N
+  px(lx,ly);px(lx+6,ly);
+  px(lx,ly+3);px(lx+3,ly+3);px(lx+6,ly+3);
+  px(lx,ly+6);px(lx+3,ly+6);px(lx+6,ly+6);
+  px(lx,ly+9);px(lx+6,ly+9);
+  px(lx,ly+12);px(lx+6,ly+12);
+
+  ly += 20;
+  // A
+  px(lx+3,ly);
+  px(lx,ly+3);px(lx+6,ly+3);
+  px(lx,ly+6);px(lx+3,ly+6);px(lx+6,ly+6);
+  px(lx,ly+9);px(lx+6,ly+9);
+  px(lx,ly+12);px(lx+6,ly+12);
+};
+
+function downloadPNG(){
+  const c = document.getElementById('c');
+  const a = document.createElement('a');
+  a.download = 'luna-op1.png';
+  a.href = c.toDataURL('image/png');
+  a.click();
+}
+</script>
+</body>
+</html>

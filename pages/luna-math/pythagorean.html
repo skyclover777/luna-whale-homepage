@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>피타고라스 시나리오 - Luna Math</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1729;--card:#1a2640;--gold:#f59e0b;--gold2:#d97706;--text:#e2e8f0;--dim:#64748b;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--radius:16px}
+body{font-family:'Pretendard Variable',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{color:var(--gold);text-decoration:none}
+
+/* Header */
+.header{padding:16px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.back-btn{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+.back-btn:hover{background:rgba(255,255,255,0.14)}
+.header-title{font-size:18px;font-weight:700;color:var(--gold)}
+
+/* Scenario Grid */
+.grid-wrap{max-width:900px;margin:0 auto;padding:24px}
+.grid-title{font-size:14px;color:var(--dim);letter-spacing:2px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.sc-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius);padding:20px 16px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.sc-card:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 8px 24px rgba(245,158,11,0.15)}
+.sc-card.active{border-color:var(--gold);background:rgba(245,158,11,0.08)}
+.sc-emoji{font-size:36px;margin-bottom:8px}
+.sc-name{font-size:15px;font-weight:700;margin-bottom:4px}
+.sc-diff{font-size:11px;color:var(--dim);letter-spacing:1px}
+.sc-stars{margin-top:8px;font-size:14px;color:var(--gold)}
+.sc-card .done-badge{position:absolute;top:8px;right:8px;font-size:14px}
+
+/* Game Area */
+.game-area{max-width:900px;margin:0 auto;padding:0 24px 40px;display:none}
+.game-area.visible{display:block}
+.canvas-wrap{background:var(--card);border-radius:var(--radius);overflow:hidden;border:1px solid rgba(255,255,255,0.08);margin-bottom:16px;position:relative}
+canvas{width:100%;display:block}
+
+/* Problem Panel */
+.problem-panel{background:var(--card);border-radius:var(--radius);padding:24px;border:1px solid rgba(255,255,255,0.08)}
+.problem-title{font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:8px;font-weight:700}
+.problem-text{font-size:18px;font-weight:700;line-height:1.6;margin-bottom:16px;word-break:keep-all}
+.problem-formula{font-size:14px;color:var(--dim);margin-bottom:16px;font-style:italic}
+.answer-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.answer-row label{font-size:16px;font-weight:700;color:var(--gold)}
+.answer-input{background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);color:white;padding:12px 16px;border-radius:12px;font-size:20px;font-weight:700;width:120px;outline:none;font-family:inherit;text-align:center;transition:border-color .2s}
+.answer-input:focus{border-color:var(--gold)}
+
+/* Digit Spinner */
+.digit-spinner{display:flex;gap:2px;align-items:center}
+.digit-col{display:flex;flex-direction:column;align-items:center;width:36px}
+.digit-col .digit-up,.digit-col .digit-down{
+  width:34px;height:24px;border:none;border-radius:6px;cursor:pointer;
+  background:rgba(255,255,255,0.08);color:var(--gold);font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.digit-col .digit-up:hover,.digit-col .digit-down:hover{background:rgba(245,158,11,0.2)}
+.digit-col .digit-up:active,.digit-col .digit-down:active{transform:scale(.9)}
+.digit-val{
+  font-size:28px;font-weight:800;color:var(--text);line-height:1;
+  width:34px;height:36px;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.3);border-radius:8px;border:1.5px solid rgba(255,255,255,0.1);
+  font-family:'Pretendard Variable',monospace;
+}
+.digit-label{font-size:9px;color:var(--dim);margin-top:2px}
+.digit-sep{font-size:24px;color:var(--dim);font-weight:300;align-self:center;margin:0 1px}
+.answer-unit{font-size:16px;color:var(--dim)}
+.submit-btn{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-weight:700;font-size:15px;padding:12px 24px;border:none;border-radius:12px;cursor:pointer;transition:all .2s;font-family:inherit}
+.submit-btn:hover{transform:scale(1.03)}
+.submit-btn:active{transform:scale(0.97)}
+.next-btn{background:rgba(255,255,255,0.1);color:var(--text);font-weight:600;font-size:14px;padding:10px 20px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;cursor:pointer;transition:all .2s;font-family:inherit;margin-left:auto}
+.next-btn:hover{background:rgba(255,255,255,0.18)}
+.feedback{margin-top:12px;font-size:15px;font-weight:600;min-height:24px}
+.feedback.correct{color:var(--green)}
+.feedback.wrong{color:var(--red)}
+
+/* Stats */
+.stats-bar{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
+.stat{font-size:13px;color:var(--dim)}
+.stat b{color:var(--text)}
+
+/* ── Calculator Floating Icons ── */
+.calc-icons{position:fixed;top:70px;right:20px;z-index:400;display:flex;flex-direction:column;gap:8px}
+.calc-icon-btn{
+  width:44px;height:44px;border-radius:12px;border:1.5px solid rgba(245,158,11,.3);
+  background:var(--card);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:20px;transition:all .25s;backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(0,0,0,.3);
+}
+.calc-icon-btn:hover{border-color:var(--gold);transform:scale(1.1);box-shadow:0 4px 20px rgba(245,158,11,.2)}
+.calc-icon-btn.active{background:rgba(245,158,11,.15);border-color:var(--gold)}
+.calc-icon-btn .calc-label{position:absolute;right:52px;white-space:nowrap;font-size:11px;color:var(--dim);opacity:0;pointer-events:none;transition:opacity .2s}
+.calc-icon-btn:hover .calc-label{opacity:1}
+
+/* ── Calculator Popup ── */
+.calc-popup{
+  position:fixed;z-index:500;display:none;
+  background:var(--card);border:1.5px solid rgba(245,158,11,.25);border-radius:16px;
+  box-shadow:0 12px 48px rgba(0,0,0,.5),0 0 20px rgba(245,158,11,.08);
+  backdrop-filter:blur(16px);overflow:hidden;
+}
+.calc-popup.open{display:block}
+.calc-popup.basic{width:260px;top:70px;left:24px}
+.calc-popup.sci{width:320px;top:70px;left:24px}
+
+.calc-titlebar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:rgba(245,158,11,.08);cursor:grab;user-select:none;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.calc-titlebar:active{cursor:grabbing}
+.calc-titlebar-text{font-size:13px;font-weight:700;color:var(--gold)}
+.calc-titlebar-btns{display:flex;gap:4px}
+.calc-close,.calc-minimize{width:24px;height:24px;border-radius:6px;border:none;background:rgba(255,255,255,.1);color:var(--dim);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.calc-close:hover{background:rgba(239,68,68,.2);color:#ef4444}
+.calc-minimize:hover{background:rgba(59,130,246,.2);color:var(--blue)}
+.calc-popup.minimized .calc-display,.calc-popup.minimized .calc-btns{display:none}
+.calc-popup.minimized{width:180px !important}
+
+.calc-display{
+  margin:10px 12px 8px;padding:12px 14px;text-align:right;
+  font-size:24px;font-weight:700;color:var(--text);font-family:'Pretendard Variable',monospace;
+  background:rgba(0,0,0,.3);border-radius:10px;border:1px solid rgba(255,255,255,.08);
+  min-height:48px;overflow:hidden;word-break:break-all;line-height:1.3;
+}
+.calc-display .calc-expr{font-size:12px;color:var(--dim);display:block;min-height:16px}
+
+.calc-btns{display:grid;gap:6px;padding:8px 12px 12px}
+.calc-btns.basic-grid{grid-template-columns:repeat(4,1fr)}
+.calc-btns.sci-grid{grid-template-columns:repeat(5,1fr)}
+
+.calc-btn{
+  padding:12px 4px;border:none;border-radius:10px;font-size:16px;font-weight:600;
+  cursor:pointer;transition:all .15s;font-family:inherit;
+  background:rgba(255,255,255,.08);color:var(--text);
+}
+.calc-btn:hover{background:rgba(255,255,255,.15)}
+.calc-btn:active{transform:scale(.93)}
+.calc-btn.op{background:rgba(245,158,11,.12);color:var(--gold)}
+.calc-btn.op:hover{background:rgba(245,158,11,.2)}
+.calc-btn.eq{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-weight:800}
+.calc-btn.eq:hover{filter:brightness(1.1)}
+.calc-btn.fn{background:rgba(59,130,246,.1);color:var(--blue);font-size:13px}
+.calc-btn.fn:hover{background:rgba(59,130,246,.18)}
+.calc-btn.clear{background:rgba(239,68,68,.1);color:var(--red)}
+.calc-btn.clear:hover{background:rgba(239,68,68,.18)}
+
+/* Mobile */
+@media(max-width:600px){
+    .grid{grid-template-columns:repeat(3,1fr);gap:10px}
+    .sc-card{padding:14px 10px}
+    .sc-emoji{font-size:28px}
+    .sc-name{font-size:13px}
+    .problem-panel{padding:16px}
+    .problem-text{font-size:16px}
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<div class="header">
+    <button class="back-btn" onclick="location.href='index.html'">← Luna Math</button>
+    <span class="header-title">📐 피타고라스 시나리오</span>
+</div>
+
+<div class="grid-wrap" id="gridWrap">
+    <div class="grid-title">시나리오를 선택하세요</div>
+    <div class="grid" id="scenarioGrid"></div>
+</div>
+
+<div class="game-area" id="gameArea">
+    <div class="canvas-wrap">
+        <canvas id="sceneCanvas" width="880" height="440"></canvas>
+    </div>
+    <div class="problem-panel">
+        <div class="problem-title">문제</div>
+        <div class="problem-text" id="problemText"></div>
+        <div class="problem-formula" id="formulaHint">a² + b² = c²</div>
+        <div class="answer-row">
+            <label id="answerLabel">c =</label>
+            <input type="number" class="answer-input" id="answerInput" placeholder="?" min="1" max="9999" step="any" style="display:none">
+            <div class="digit-spinner" id="digitSpinner">
+              <div class="digit-col"><button class="digit-up" onclick="spinDigit(3,1)">▲</button><div class="digit-val" id="d3">0</div><button class="digit-down" onclick="spinDigit(3,-1)">▼</button><div class="digit-label">천</div></div>
+              <div class="digit-col"><button class="digit-up" onclick="spinDigit(2,1)">▲</button><div class="digit-val" id="d2">0</div><button class="digit-down" onclick="spinDigit(2,-1)">▼</button><div class="digit-label">백</div></div>
+              <div class="digit-col"><button class="digit-up" onclick="spinDigit(1,1)">▲</button><div class="digit-val" id="d1">0</div><button class="digit-down" onclick="spinDigit(1,-1)">▼</button><div class="digit-label">십</div></div>
+              <div class="digit-col"><button class="digit-up" onclick="spinDigit(0,1)">▲</button><div class="digit-val" id="d0">0</div><button class="digit-down" onclick="spinDigit(0,-1)">▼</button><div class="digit-label">일</div></div>
+            </div>
+            <span class="answer-unit" id="answerUnit">m</span>
+            <button class="submit-btn" id="submitBtn" onclick="checkAnswer()">확인!</button>
+            <button class="next-btn" onclick="nextProblem()">다음 문제 →</button>
+            <button class="next-btn" onclick="backToGrid()">시나리오 선택 ↩</button>
+        </div>
+        <div class="feedback" id="feedback"></div>
+        <div class="stats-bar">
+            <div class="stat">정답: <b id="statCorrect">0</b></div>
+            <div class="stat">오답: <b id="statWrong">0</b></div>
+            <div class="stat">연속: <b id="statStreak">0</b></div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   Pythagorean Scenarios Engine
+   ═══════════════════════════════════════ */
+
+const canvas = document.getElementById('sceneCanvas');
+const ctx = canvas.getContext('2d');
+
+// Pythagorean triples for clean answers
+const TRIPLES = [
+    [3,4,5],[5,12,13],[6,8,10],[7,24,25],[8,15,17],
+    [9,12,15],[9,40,41],[12,16,20],[15,20,25],[20,21,29],
+    [11,60,61],[12,35,37],[13,84,85],[14,48,50],[15,36,39],
+    [16,30,34],[18,24,30],[20,48,52],[24,32,40],[30,40,50]
+];
+
+function randTriple() {
+    const t = TRIPLES[Math.floor(Math.random() * TRIPLES.length)];
+    const scale = [1,1,1,2,2,3][Math.floor(Math.random()*6)];
+    return [t[0]*scale, t[1]*scale, t[2]*scale];
+}
+
+function shuffle(arr) {
+    const a = [...arr];
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+    return a;
+}
+
+// ── Scenarios ──
+const SCENARIOS = [
+    {
+        id:'ladder', name:'사다리 문제', emoji:'🪜', diff:'초급',
+        desc:'벽에 기댄 사다리 길이를 구하세요',
+        gen(){
+            const [a,b,c] = randTriple();
+            const modes = shuffle([
+                {q:`벽 높이 ${a}m, 바닥에서 벽까지 ${b}m일 때\n사다리의 길이는?`,solve:'c',ans:c,labels:{a,b},solveFor:c,label:'사다리 길이(c)'},
+                {q:`사다리 길이 ${c}m, 바닥 거리 ${b}m일 때\n벽에 닿는 높이는?`,solve:'a',ans:a,labels:{b,c:c},solveFor:a,label:'벽 높이(a)'},
+            ]);
+            return {...modes[0], a, b, c, unit:'m'};
+        },
+        draw(p,state){ drawLadder(p,state); }
+    },
+    {
+        id:'tv', name:'TV 대각선', emoji:'📺', diff:'초급',
+        desc:'TV 화면 대각선 길이를 구하세요',
+        gen(){
+            const pairs = [[16,12,20],[32,24,40],[48,36,60],[21,28,35],[27,36,45],[40,30,50],[24,18,30],[36,48,60]];
+            const [w,h,d] = pairs[Math.floor(Math.random()*pairs.length)];
+            return {q:`TV 가로 ${w}인치, 세로 ${h}인치일 때\n대각선 길이는?`,a:h,b:w,c:d,ans:d,solve:'c',label:'대각선(c)',unit:'인치'};
+        },
+        draw(p,state){ drawTV(p,state); }
+    },
+    {
+        id:'baseball', name:'야구 다이아몬드', emoji:'⚾', diff:'중급',
+        desc:'홈에서 2루까지 직선 거리를 구하세요',
+        gen(){
+            const sides = [90,60,80,70]; // feet or m
+            const s = sides[Math.floor(Math.random()*sides.length)];
+            const diag = Math.round(Math.sqrt(2)*s*10)/10;
+            const diag_r = Math.round(diag);
+            return {q:`한 변이 ${s}m인 정사각형 야구장에서\n홈→2루(대각선) 직선거리는? (반올림)`,
+                a:s,b:s,c:diag_r,ans:diag_r,solve:'c',label:'대각선 거리(c)',unit:'m',exact:diag};
+        },
+        draw(p,state){ drawBaseball(p,state); }
+    },
+    {
+        id:'kite', name:'연 날리기', emoji:'🪁', diff:'초급',
+        desc:'연줄의 길이를 구하세요',
+        gen(){
+            const [a,b,c] = randTriple();
+            const modes = shuffle([
+                {q:`연이 높이 ${a}m에 떠 있고, 수평 거리 ${b}m일 때\n연줄의 길이는?`,solve:'c',ans:c,label:'연줄 길이(c)'},
+                {q:`연줄 길이 ${c}m, 수평 거리 ${b}m일 때\n연의 높이는?`,solve:'a',ans:a,label:'연 높이(a)'},
+            ]);
+            return {...modes[0], a, b, c, unit:'m'};
+        },
+        draw(p,state){ drawKite(p,state); }
+    },
+    {
+        id:'shadow', name:'건물 그림자', emoji:'🏢', diff:'중급',
+        desc:'건물 꼭대기에서 그림자 끝까지 거리를 구하세요',
+        gen(){
+            const [a,b,c] = randTriple();
+            return {q:`건물 높이 ${a}m, 그림자 길이 ${b}m일 때\n건물 꼭대기 → 그림자 끝의 거리는?`,
+                a,b,c,ans:c,solve:'c',label:'빗변 거리(c)',unit:'m'};
+        },
+        draw(p,state){ drawShadow(p,state); }
+    },
+    // ── 추가 시나리오 5개 ──
+    {
+        id:'cable', name:'케이블카', emoji:'🚡', diff:'중급',
+        desc:'산 위 케이블카의 길이를 구하세요',
+        gen(){
+            const [a,b,c] = randTriple();
+            return {q:`고도 차이 ${a}m, 수평 거리 ${b}m일 때\n케이블의 길이는?`,
+                a,b,c,ans:c,solve:'c',label:'케이블 길이(c)',unit:'m'};
+        },
+        draw(p,state){ drawCable(p,state); }
+    },
+    {
+        id:'pool', name:'수영장 대각선', emoji:'🏊', diff:'초급',
+        desc:'직사각형 수영장의 대각선 거리를 구하세요',
+        gen(){
+            const pairs = [[15,20,25],[12,16,20],[9,12,15],[24,32,40],[18,24,30],[30,40,50]];
+            const [w,h,d] = pairs[Math.floor(Math.random()*pairs.length)];
+            return {q:`수영장 가로 ${w}m, 세로 ${h}m일 때\n대각선으로 수영하면 거리는?`,
+                a:h,b:w,c:d,ans:d,solve:'c',label:'대각선(c)',unit:'m'};
+        },
+        draw(p,state){ drawPool(p,state); }
+    },
+    {
+        id:'sail', name:'항해', emoji:'⛵', diff:'중급',
+        desc:'배의 직선 이동 거리를 구하세요',
+        gen(){
+            const [a,b,c] = randTriple();
+            const modes = shuffle([
+                {q:`동쪽으로 ${b}km, 북쪽으로 ${a}km 이동했을 때\n출발점에서 직선 거리는?`,solve:'c',ans:c,label:'직선 거리(c)'},
+                {q:`직선 거리 ${c}km, 동쪽으로 ${b}km 갔다면\n북쪽으로 이동한 거리는?`,solve:'a',ans:a,label:'북쪽 거리(a)'},
+            ]);
+            return {...modes[0], a, b, c, unit:'km'};
+        },
+        draw(p,state){ drawSail(p,state); }
+    },
+    {
+        id:'frame', name:'액자 걸기', emoji:'🖼️', diff:'초급',
+        desc:'액자의 대각선 또는 변 길이를 구하세요',
+        gen(){
+            const pairs = [[9,12,15],[12,16,20],[15,20,25],[8,15,17],[5,12,13],[20,21,29]];
+            const [h,w,d] = pairs[Math.floor(Math.random()*pairs.length)];
+            const modes = shuffle([
+                {q:`액자 가로 ${w}cm, 세로 ${h}cm일 때\n대각선 길이는?`,solve:'c',ans:d,label:'대각선(c)'},
+                {q:`액자 대각선 ${d}cm, 가로 ${w}cm일 때\n세로 길이는?`,solve:'a',ans:h,label:'세로(a)'},
+            ]);
+            return {...modes[0], a:h, b:w, c:d, unit:'cm'};
+        },
+        draw(p,state){ drawFrame(p,state); }
+    },
+    {
+        id:'plane', name:'비행기 착륙', emoji:'✈️', diff:'고급',
+        desc:'비행기 활공 거리를 구하세요',
+        gen(){
+            const [a,b,c] = randTriple();
+            const scale = [10,100][Math.floor(Math.random()*2)];
+            const sa=a*scale, sb=b*scale, sc=c*scale;
+            return {q:`고도 ${sa}m에서 활주로까지 수평 ${sb}m일 때\n비행기 활공 거리는?`,
+                a:sa,b:sb,c:sc,ans:sc,solve:'c',label:'활공 거리(c)',unit:'m'};
+        },
+        draw(p,state){ drawPlane(p,state); }
+    },
+];
+
+let current = null; // {scenario, problem}
+let stats = JSON.parse(localStorage.getItem('lm_pyth_stats')||'{}');
+let correct = 0, wrong = 0, streak = 0;
+let answered = false;
+
+// ── Render Grid ──
+function renderGrid(){
+    const g = document.getElementById('scenarioGrid');
+    g.innerHTML = SCENARIOS.map(s=>{
+        const st = stats[s.id] || {best:0,solved:0};
+        const stars = st.best >= 5 ? '⭐⭐⭐' : st.best >= 3 ? '⭐⭐' : st.best >= 1 ? '⭐' : '';
+        return `<div class="sc-card" onclick="selectScenario('${s.id}')" data-id="${s.id}">
+            ${st.solved>=3?'<span class="done-badge">✅</span>':''}
+            <div class="sc-emoji">${s.emoji}</div>
+            <div class="sc-name">${s.name}</div>
+            <div class="sc-diff">${s.diff}</div>
+            ${stars?`<div class="sc-stars">${stars}</div>`:''}
+        </div>`;
+    }).join('');
+}
+
+function selectScenario(id){
+    const sc = SCENARIOS.find(s=>s.id===id);
+    if(!sc) return;
+    current = {scenario:sc, problem:null};
+    document.getElementById('gridWrap').style.display='none';
+    document.getElementById('gameArea').classList.add('visible');
+    nextProblem();
+}
+
+function backToGrid(){
+    document.getElementById('gridWrap').style.display='';
+    document.getElementById('gameArea').classList.remove('visible');
+    current = null;
+    renderGrid();
+}
+
+function nextProblem(){
+    if(!current) return;
+    const p = current.scenario.gen();
+    current.problem = p;
+    answered = false;
+    document.getElementById('problemText').innerText = p.q;
+    document.getElementById('answerLabel').innerText = p.label.split('(')[1]?.replace(')','') + ' =' || 'c =';
+    document.getElementById('answerUnit').innerText = p.unit;
+    document.getElementById('answerInput').value = '';
+    document.getElementById('answerInput').disabled = false;
+    resetSpinner();
+    document.getElementById('submitBtn').disabled = false;
+    document.querySelectorAll('.digit-up,.digit-down').forEach(b=>b.disabled=false);
+    document.getElementById('feedback').innerText = '';
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('formulaHint').innerText = 'a² + b² = c²  →  c = √(a² + b²),  a = √(c² − b²)';
+    drawScene('idle');
+    document.getElementById('answerInput').focus();
+}
+
+function checkAnswer(){
+    if(!current?.problem || answered) return;
+    const input = parseFloat(document.getElementById('answerInput').value);
+    if(isNaN(input)) return;
+    const p = current.problem;
+    const fb = document.getElementById('feedback');
+    answered = true;
+
+    // Allow ±1 tolerance for rounding
+    if(Math.abs(input - p.ans) <= 1){
+        correct++;
+        streak++;
+        fb.innerText = `정답! ${p.label.split('(')[0].trim()} = ${p.ans}${p.unit} ✅`;
+        fb.className = 'feedback correct';
+        if(!stats[current.scenario.id]) stats[current.scenario.id]={best:0,solved:0};
+        stats[current.scenario.id].solved++;
+        stats[current.scenario.id].best = Math.max(stats[current.scenario.id].best, streak);
+        localStorage.setItem('lm_pyth_stats', JSON.stringify(stats));
+        playDing();
+        drawScene('correct');
+    } else {
+        wrong++;
+        streak = 0;
+        fb.innerText = `틀렸어요! 정답은 ${p.ans}${p.unit}이에요. (${p.a}² + ${p.b}² = ${p.a**2} + ${p.b**2} = ${p.a**2+p.b**2}, √${p.a**2+p.b**2} ≈ ${p.ans})`;
+        fb.className = 'feedback wrong';
+        playBuzz();
+        drawScene('wrong');
+    }
+    document.getElementById('answerInput').disabled = true;
+    document.getElementById('submitBtn').disabled = true;
+    document.querySelectorAll('.digit-up,.digit-down').forEach(b=>b.disabled=true);
+    document.getElementById('statCorrect').innerText = correct;
+    document.getElementById('statWrong').innerText = wrong;
+    document.getElementById('statStreak').innerText = streak;
+}
+
+// Enter to submit
+document.getElementById('answerInput').addEventListener('keydown', e=>{
+    if(e.key==='Enter') checkAnswer();
+});
+
+// ── Digit Spinner ──
+const digits = [0,0,0,0]; // d0=ones, d1=tens, d2=hundreds, d3=thousands
+function spinDigit(pos, dir) {
+    digits[pos] = (digits[pos] + dir + 10) % 10;
+    document.getElementById('d'+pos).textContent = digits[pos];
+    syncSpinnerToInput();
+}
+function syncSpinnerToInput() {
+    const val = digits[3]*1000 + digits[2]*100 + digits[1]*10 + digits[0];
+    document.getElementById('answerInput').value = val;
+}
+function resetSpinner() {
+    for(let i=0;i<4;i++) { digits[i]=0; document.getElementById('d'+i).textContent='0'; }
+}
+
+// ── Audio ──
+let audioCtx;
+function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playDing(){
+    const a=getAudio(),t=a.currentTime;
+    if(a.state==='suspended')a.resume();
+    const o=a.createOscillator(),g=a.createGain();
+    o.type='sine';o.frequency.setValueAtTime(880,t);
+    g.gain.setValueAtTime(0.2,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+    o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+0.3);
+}
+function playBuzz(){
+    const a=getAudio(),t=a.currentTime;
+    if(a.state==='suspended')a.resume();
+    const o=a.createOscillator(),g=a.createGain();
+    o.type='sawtooth';o.frequency.setValueAtTime(150,t);o.frequency.linearRampToValueAtTime(80,t+0.2);
+    g.gain.setValueAtTime(0.12,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.2);
+    o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+0.2);
+}
+
+// ═══════════════════════════════════
+//  CANVAS DRAWING
+// ═══════════════════════════════════
+function drawScene(state){
+    if(!current) return;
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+    current.scenario.draw(current.problem, state);
+}
+
+// Helpers
+function label(x,y,text,size=16,color='#fff',align='center'){
+    ctx.font=`bold ${size}px 'Pretendard Variable',sans-serif`;
+    ctx.fillStyle='rgba(0,0,0,0.6)';
+    ctx.textAlign=align; ctx.textBaseline='middle';
+    ctx.fillText(text,x+1,y+1);
+    ctx.fillStyle=color;
+    ctx.fillText(text,x,y);
+}
+
+function dimLine(x1,y1,x2,y2,text,color='#f59e0b'){
+    ctx.save();
+    ctx.setLineDash([6,4]);
+    ctx.strokeStyle=color; ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    ctx.setLineDash([]);
+    const mx=(x1+x2)/2, my=(y1+y2)/2;
+    ctx.font='bold 15px Pretendard Variable,sans-serif';
+    ctx.fillStyle='rgba(0,0,0,0.7)';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    const pad=4;
+    const tw=ctx.measureText(text).width;
+    ctx.fillStyle='rgba(0,0,0,0.55)';
+    ctx.fillRect(mx-tw/2-pad, my-10-pad, tw+pad*2, 20+pad*2);
+    ctx.fillStyle=color;
+    ctx.fillText(text, mx, my);
+    ctx.restore();
+}
+
+function resultBanner(text, color){
+    ctx.save();
+    ctx.fillStyle='rgba(0,0,0,0.5)';
+    ctx.fillRect(0,canvas.height/2-30,canvas.width,60);
+    ctx.font='bold 28px Pretendard Variable,sans-serif';
+    ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(text,canvas.width/2,canvas.height/2);
+    ctx.restore();
+}
+
+// ─── 1. LADDER ───
+function drawLadder(p, state){
+    const w=canvas.width, h=canvas.height;
+    // Sky
+    const sky=ctx.createLinearGradient(0,0,0,h);
+    sky.addColorStop(0,'#87CEEB');sky.addColorStop(1,'#E0F0FF');
+    ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+
+    // Ground
+    ctx.fillStyle='#8B9D6F';ctx.fillRect(0,h*0.7,w,h*0.3);
+    ctx.fillStyle='#6B7D4F';ctx.fillRect(0,h*0.7,w,4);
+
+    // Wall (left side)
+    const wallX=w*0.3, wallW=80, wallTop=h*0.15, wallBot=h*0.7;
+    // Bricks
+    ctx.fillStyle='#C4775A';ctx.fillRect(wallX,wallTop,wallW,wallBot-wallTop);
+    ctx.strokeStyle='#A0604A';ctx.lineWidth=1;
+    for(let r=0;r<15;r++){
+        const ry=wallTop+r*((wallBot-wallTop)/15);
+        ctx.beginPath();ctx.moveTo(wallX,ry);ctx.lineTo(wallX+wallW,ry);ctx.stroke();
+        const off=r%2===0?wallW/2:0;
+        ctx.beginPath();ctx.moveTo(wallX+off,ry);ctx.lineTo(wallX+off,ry+((wallBot-wallTop)/15));ctx.stroke();
+    }
+
+    // Ladder
+    const ladBot={x:wallX+wallW+p.b*4, y:wallBot};
+    const ladTop={x:wallX+wallW, y:wallBot-p.a*4};
+    // clamp
+    const maxA = (wallBot-wallTop)/4;
+    const scaleA = Math.min(p.a, maxA);
+    const lbx=wallX+wallW+Math.min(p.b*8,w*0.35), lby=wallBot;
+    const ltx=wallX+wallW, lty=wallBot-Math.min(scaleA*8, wallBot-wallTop-20);
+
+    ctx.strokeStyle='#D4A84B';ctx.lineWidth=6;
+    ctx.beginPath();ctx.moveTo(ltx,lty);ctx.lineTo(lbx,lby);ctx.stroke();
+    // second rail
+    ctx.beginPath();ctx.moveTo(ltx+8,lty+4);ctx.lineTo(lbx+8,lby);ctx.stroke();
+    // rungs
+    ctx.lineWidth=3;ctx.strokeStyle='#C49A3B';
+    for(let i=1;i<8;i++){
+        const t=i/8;
+        const rx=ltx+(lbx-ltx)*t, ry=lty+(lby-lty)*t;
+        ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx+8,ry+4);ctx.stroke();
+    }
+
+    // Dimension labels
+    dimLine(wallX+wallW/2, lty, wallX+wallW/2, wallBot, `a = ${p.a}m`, '#FF6B6B');
+    dimLine(wallX+wallW, wallBot+20, lbx, wallBot+20, `b = ${p.b}m`, '#4ECDC4');
+
+    if(state==='correct'){
+        dimLine(ltx, lty, lbx, lby, `c = ${p.ans}m ✓`, '#22c55e');
+        resultBanner('정답! 🎉', '#22c55e');
+    } else if(state==='wrong'){
+        dimLine(ltx, lty, lbx, lby, `c = ${p.ans}m`, '#ef4444');
+        resultBanner(`정답: ${p.ans}m`, '#ef4444');
+    } else {
+        dimLine(ltx, lty, lbx, lby, 'c = ?', '#f59e0b');
+    }
+
+    label(w*0.15, h*0.1, '🪜 사다리 문제', 20);
+}
+
+// ─── 2. TV ───
+function drawTV(p, state){
+    const w=canvas.width, h=canvas.height;
+    // Room
+    ctx.fillStyle='#2C3E50';ctx.fillRect(0,0,w,h);
+    // Wall
+    const wallGrad=ctx.createLinearGradient(0,0,0,h*0.75);
+    wallGrad.addColorStop(0,'#ECE0C8');wallGrad.addColorStop(1,'#D4C8B0');
+    ctx.fillStyle=wallGrad;ctx.fillRect(0,0,w,h*0.75);
+    // Floor
+    ctx.fillStyle='#5D4037';ctx.fillRect(0,h*0.75,w,h*0.25);
+
+    // TV
+    const tvW=Math.min(360,w*0.45), tvH=tvW*0.6;
+    const tvX=(w-tvW)/2, tvY=h*0.15;
+    // TV frame
+    ctx.fillStyle='#111';
+    ctx.beginPath();ctx.roundRect(tvX-10,tvY-10,tvW+20,tvH+20,8);ctx.fill();
+    // Screen
+    const scrGrad=ctx.createLinearGradient(tvX,tvY,tvX+tvW,tvY+tvH);
+    scrGrad.addColorStop(0,'#1a1a2e');scrGrad.addColorStop(1,'#16213e');
+    ctx.fillStyle=scrGrad;ctx.fillRect(tvX,tvY,tvW,tvH);
+    // Screen glare
+    ctx.fillStyle='rgba(255,255,255,0.04)';
+    ctx.fillRect(tvX,tvY,tvW*0.6,tvH);
+
+    // Stand
+    ctx.fillStyle='#222';
+    ctx.fillRect(w/2-30, tvY+tvH+10, 60, 15);
+    ctx.fillRect(w/2-50, tvY+tvH+22, 100, 6);
+
+    // Dimensions
+    dimLine(tvX, tvY+tvH+40, tvX+tvW, tvY+tvH+40, `가로 = ${p.b}인치`, '#4ECDC4');
+    dimLine(tvX-30, tvY, tvX-30, tvY+tvH, `세로 = ${p.a}인치`, '#FF6B6B');
+
+    // Diagonal
+    if(state==='correct'){
+        dimLine(tvX, tvY+tvH, tvX+tvW, tvY, `대각선 = ${p.ans}인치 ✓`, '#22c55e');
+        resultBanner('정답! 📺🎉', '#22c55e');
+    } else if(state==='wrong'){
+        dimLine(tvX, tvY+tvH, tvX+tvW, tvY, `대각선 = ${p.ans}인치`, '#ef4444');
+        resultBanner(`정답: ${p.ans}인치`, '#ef4444');
+    } else {
+        ctx.setLineDash([8,6]);
+        ctx.strokeStyle='rgba(245,158,11,0.6)';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(tvX,tvY+tvH);ctx.lineTo(tvX+tvW,tvY);ctx.stroke();
+        ctx.setLineDash([]);
+        label(w/2+20, tvY+tvH/2-10, 'c = ?', 18, '#f59e0b');
+    }
+
+    label(w*0.15, h*0.06, '📺 TV 대각선', 20);
+}
+
+// ─── 3. BASEBALL ───
+function drawBaseball(p, state){
+    const w=canvas.width, h=canvas.height;
+    // Grass
+    ctx.fillStyle='#3D8B37';ctx.fillRect(0,0,w,h);
+    // Darker grass pattern
+    ctx.fillStyle='rgba(0,0,0,0.05)';
+    for(let i=0;i<20;i++){
+        ctx.fillRect(0, i*(h/20), w, h/40);
+    }
+
+    // Dirt infield (rotated square)
+    const cx=w/2, cy=h*0.52;
+    const side=Math.min(180, w*0.22);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(Math.PI/4);
+    ctx.fillStyle='#C4A265';
+    ctx.fillRect(-side,-side,side*2,side*2);
+    ctx.strokeStyle='#fff';ctx.lineWidth=3;
+    ctx.strokeRect(-side,-side,side*2,side*2);
+    ctx.restore();
+
+    // Bases
+    const baseSize=14;
+    const bases = [
+        {x:cx, y:cy+side*Math.sqrt(2)/2, name:'홈'},     // Home
+        {x:cx+side*Math.sqrt(2)/2, y:cy, name:'1루'},     // 1st
+        {x:cx, y:cy-side*Math.sqrt(2)/2, name:'2루'},     // 2nd
+        {x:cx-side*Math.sqrt(2)/2, y:cy, name:'3루'},     // 3rd
+    ];
+    bases.forEach((b,i)=>{
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(Math.PI/4);
+        ctx.fillStyle=i===0?'#fff':'#f5f5f5';
+        ctx.fillRect(-baseSize/2,-baseSize/2,baseSize,baseSize);
+        ctx.restore();
+        label(b.x, b.y+(i===2?-22:22), b.name, 13, '#fff');
+    });
+
+    // Side dimension
+    dimLine(bases[0].x+15, bases[0].y, bases[1].x+15, bases[1].y, `${p.a}m`, '#4ECDC4');
+
+    // Diagonal (Home to 2nd)
+    if(state==='correct'){
+        dimLine(bases[0].x, bases[0].y, bases[2].x, bases[2].y, `${p.ans}m ✓`, '#22c55e');
+        resultBanner('정답! ⚾🎉', '#22c55e');
+    } else if(state==='wrong'){
+        dimLine(bases[0].x, bases[0].y, bases[2].x, bases[2].y, `${p.ans}m`, '#ef4444');
+        resultBanner(`정답: ${p.ans}m`, '#ef4444');
+    } else {
+        ctx.setLineDash([10,6]);
+        ctx.strokeStyle='rgba(245,158,11,0.7)';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(bases[0].x,bases[0].y);ctx.lineTo(bases[2].x,bases[2].y);ctx.stroke();
+        ctx.setLineDash([]);
+        label(cx+8, cy, '? m', 18, '#f59e0b');
+    }
+
+    label(w*0.12, 30, '⚾ 야구 다이아몬드', 20);
+    label(w*0.12, 55, `한 변 = ${p.a}m`, 14, '#aaa');
+}
+
+// ─── 4. KITE ───
+function drawKite(p, state){
+    const w=canvas.width, h=canvas.height;
+    // Sky
+    const sky=ctx.createLinearGradient(0,0,0,h);
+    sky.addColorStop(0,'#4A90D9');sky.addColorStop(0.7,'#87CEEB');sky.addColorStop(1,'#C5E8C5');
+    ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+
+    // Clouds
+    ctx.fillStyle='rgba(255,255,255,0.5)';
+    [[150,60,40],[400,40,50],[650,80,35]].forEach(([cx,cy,r])=>{
+        ctx.beginPath();ctx.ellipse(cx,cy,r*1.5,r*0.5,0,0,Math.PI*2);ctx.fill();
+    });
+
+    // Ground
+    ctx.fillStyle='#6B8F3C';ctx.fillRect(0,h*0.78,w,h*0.22);
+
+    // Kid
+    const kidX=w*0.3, kidY=h*0.72;
+    // body
+    ctx.fillStyle='#E8B89D';ctx.beginPath();ctx.arc(kidX,kidY-30,12,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#3498DB';ctx.fillRect(kidX-8,kidY-18,16,25);
+    ctx.fillStyle='#2C3E50';ctx.fillRect(kidX-6,kidY+7,5,15);ctx.fillRect(kidX+1,kidY+7,5,15);
+    // arm up
+    ctx.strokeStyle='#E8B89D';ctx.lineWidth=4;
+    ctx.beginPath();ctx.moveTo(kidX+6,kidY-14);ctx.lineTo(kidX+14,kidY-28);ctx.stroke();
+
+    // Kite position
+    const kiteX=w*0.65, kiteY=h*0.15;
+    // String (hypotenuse)
+    ctx.strokeStyle='#666';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(kidX+14,kidY-28);ctx.lineTo(kiteX,kiteY);ctx.stroke();
+
+    // Kite shape
+    ctx.save();ctx.translate(kiteX,kiteY);
+    ctx.fillStyle='#E74C3C';
+    ctx.beginPath();ctx.moveTo(0,-28);ctx.lineTo(18,0);ctx.lineTo(0,35);ctx.lineTo(-18,0);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='#C0392B';ctx.lineWidth=2;ctx.stroke();
+    // Cross
+    ctx.strokeStyle='#F1C40F';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(0,-28);ctx.lineTo(0,35);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-18,0);ctx.lineTo(18,0);ctx.stroke();
+    // Tail
+    ctx.strokeStyle='#F39C12';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(0,35);
+    ctx.quadraticCurveTo(10,50,-5,65);
+    ctx.quadraticCurveTo(-15,75,0,85);ctx.stroke();
+    ctx.restore();
+
+    // Dimensions
+    dimLine(kidX, kidY-28, kidX, kiteY, `a = ${p.a}m`, '#FF6B6B');
+    dimLine(kidX, kidY-35, kiteX, kidY-35, `b = ${p.b}m`, '#4ECDC4');
+
+    if(state==='correct'){
+        dimLine(kidX+14, kidY-28, kiteX, kiteY, `c = ${p.ans}m ✓`, '#22c55e');
+        resultBanner('정답! 🪁🎉', '#22c55e');
+    } else if(state==='wrong'){
+        dimLine(kidX+14, kidY-28, kiteX, kiteY, `c = ${p.ans}m`, '#ef4444');
+        resultBanner(`정답: ${p.ans}m`, '#ef4444');
+    } else {
+        label((kidX+kiteX)/2+20, (kidY-28+kiteY)/2, 'c = ?', 18, '#f59e0b');
+    }
+
+    label(w*0.82, 30, '🪁 연 날리기', 20);
+}
+
+// ─── 5. SHADOW ───
+function drawShadow(p, state){
+    const w=canvas.width, h=canvas.height;
+    // Sky (warm sunset)
+    const sky=ctx.createLinearGradient(0,0,0,h*0.65);
+    sky.addColorStop(0,'#FF8C42');sky.addColorStop(0.5,'#FFB366');sky.addColorStop(1,'#FFE0B2');
+    ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+
+    // Sun
+    ctx.fillStyle='#FFF3E0';
+    ctx.beginPath();ctx.arc(w*0.8, h*0.15, 40, 0, Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,243,224,0.3)';
+    ctx.beginPath();ctx.arc(w*0.8, h*0.15, 60, 0, Math.PI*2);ctx.fill();
+
+    // Ground
+    ctx.fillStyle='#B0A18C';ctx.fillRect(0,h*0.65,w,h*0.35);
+    ctx.fillStyle='#9E9080';ctx.fillRect(0,h*0.65,w,3);
+
+    // Building
+    const bx=w*0.3, bw=70, groundY=h*0.65;
+    const bh=Math.min(p.a*6, groundY-40);
+    const by=groundY-bh;
+    ctx.fillStyle='#546E7A';ctx.fillRect(bx,by,bw,bh);
+    // Windows
+    ctx.fillStyle='#FFF9C4';
+    for(let r=0;r<Math.min(5,Math.floor(bh/30));r++){
+        for(let c=0;c<2;c++){
+            ctx.fillRect(bx+12+c*32, by+12+r*30, 18, 14);
+        }
+    }
+    // Roof
+    ctx.fillStyle='#37474F';ctx.fillRect(bx-5,by-8,bw+10,10);
+
+    // Shadow on ground
+    const shadowEnd = bx + bw + Math.min(p.b*6, w*0.35);
+    ctx.fillStyle='rgba(0,0,0,0.2)';
+    ctx.beginPath();
+    ctx.moveTo(bx+bw, groundY);
+    ctx.lineTo(shadowEnd, groundY);
+    ctx.lineTo(shadowEnd, groundY+3);
+    ctx.lineTo(bx+bw, groundY+3);
+    ctx.closePath();ctx.fill();
+
+    // Sunray (hypotenuse)
+    ctx.setLineDash([6,4]);
+    ctx.strokeStyle='rgba(255,200,0,0.4)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(bx+bw/2, by);ctx.lineTo(shadowEnd, groundY);ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Dimensions
+    dimLine(bx-25, by, bx-25, groundY, `a = ${p.a}m`, '#FF6B6B');
+    dimLine(bx+bw, groundY+25, shadowEnd, groundY+25, `b = ${p.b}m`, '#4ECDC4');
+
+    if(state==='correct'){
+        dimLine(bx+bw/2, by, shadowEnd, groundY, `c = ${p.ans}m ✓`, '#22c55e');
+        resultBanner('정답! 🏢🎉', '#22c55e');
+    } else if(state==='wrong'){
+        dimLine(bx+bw/2, by, shadowEnd, groundY, `c = ${p.ans}m`, '#ef4444');
+        resultBanner(`정답: ${p.ans}m`, '#ef4444');
+    } else {
+        label((bx+bw/2+shadowEnd)/2+15, (by+groundY)/2-10, 'c = ?', 18, '#f59e0b');
+    }
+
+    label(w*0.75, h*0.55, '🏢 건물 그림자', 20);
+}
+
+// ─── 6. CABLE CAR ───
+function drawCable(p, state){
+    const w=canvas.width, h=canvas.height;
+    const sky=ctx.createLinearGradient(0,0,0,h);
+    sky.addColorStop(0,'#4A90D9');sky.addColorStop(0.6,'#87CEEB');sky.addColorStop(1,'#C8E6C9');
+    ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+
+    // Mountains
+    ctx.fillStyle='#5D8C5A';
+    ctx.beginPath();ctx.moveTo(0,h*0.9);ctx.lineTo(w*0.15,h*0.35);ctx.lineTo(w*0.35,h*0.6);ctx.lineTo(w*0.5,h*0.9);ctx.fill();
+    ctx.fillStyle='#4A7A48';
+    ctx.beginPath();ctx.moveTo(w*0.4,h*0.9);ctx.lineTo(w*0.65,h*0.25);ctx.lineTo(w*0.85,h*0.5);ctx.lineTo(w,h*0.9);ctx.fill();
+
+    // Ground
+    ctx.fillStyle='#6B8E5A';ctx.fillRect(0,h*0.9,w,h*0.1);
+
+    // Tower left (bottom)
+    const t1x=w*0.2, t1y=h*0.65;
+    ctx.fillStyle='#555';ctx.fillRect(t1x-5,t1y,10,h*0.9-t1y);
+    ctx.fillRect(t1x-15,t1y-5,30,8);
+
+    // Tower right (top, on mountain)
+    const t2x=w*0.75, t2y=h*0.3;
+    ctx.fillStyle='#555';ctx.fillRect(t2x-5,t2y,10,h*0.5-t2y+h*0.15);
+    ctx.fillRect(t2x-15,t2y-5,30,8);
+
+    // Cable line
+    ctx.strokeStyle='#333';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(t1x,t1y);ctx.lineTo(t2x,t2y);ctx.stroke();
+
+    // Gondola (midpoint)
+    const gx=(t1x+t2x)*0.55, gy=(t1y+t2y)*0.55;
+    ctx.fillStyle='#E53935';
+    ctx.beginPath();ctx.roundRect(gx-18,gy,36,25,4);ctx.fill();
+    ctx.strokeStyle='#333';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(gx,gy-10);ctx.stroke();
+
+    // Dimensions
+    dimLine(t1x, t1y, t1x, t2y, `a = ${p.a}m`, '#FF6B6B');
+    dimLine(t1x, t1y+20, t2x, t1y+20, `b = ${p.b}m`, '#4ECDC4');
+
+    if(state==='correct'){
+        dimLine(t1x, t1y, t2x, t2y, `c = ${p.ans}m ✓`, '#22c55e');
+        resultBanner('정답! 🚡🎉', '#22c55e');
+    } else if(state==='wrong'){
+        dimLine(t1x, t1y, t2x, t2y, `c = ${p.ans}m`, '#ef4444');
+        resultBanner(`정답: ${p.ans}m`, '#ef4444');
+    } else {
+        label((t1x+t2x)/2+25, (t1y+t2y)/2-15, 'c = ?', 18, '#f59e0b');
+    }
+    label(w*0.5, h*0.08, '🚡 케이블카', 20);
+}
+
+// ─── 7. POOL ───
+function drawPool(p, state){
+    const w=canvas.width, h=canvas.height;
+    ctx.fillStyle='#E8F5E9';ctx.fillRect(0,0,w,h);
+
+    // Pool deck
+    ctx.fillStyle='#D7CCC8';ctx.fillRect(w*0.1,h*0.1,w*0.8,h*0.8);
+
+    // Pool water
+    const px=w*0.15, py=h*0.15, pw=w*0.7, ph=h*0.7;
+    const water=ctx.createLinearGradient(px,py,px+pw,py+ph);
+    water.addColorStop(0,'#29B6F6');water.addColorStop(1,'#0288D1');
+    ctx.fillStyle=water;ctx.fillRect(px,py,pw,ph);
+
+    // Lane lines
+    ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=1;
+    for(let i=1;i<5;i++){
+        const ly=py+ph*i/5;
+        ctx.beginPath();ctx.moveTo(px,ly);ctx.lineTo(px+pw,ly);ctx.stroke();
+    }
+
+    // Water ripples
+    ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;
+    for(let i=0;i<8;i++){
+        const rx=px+Math.random()*pw, ry=py+Math.random()*ph;
+        ctx.beginPath();ctx.arc(rx,ry,8+Math.random()*12,0,Math.PI*2);ctx.stroke();
+    }
+
+    // Dimensions
+    dimLine(px, py+ph+25, px+pw, py+ph+25, `가로 = ${p.b}m`, '#4ECDC4');
+    dimLine(px-25, py, px-25, py+ph, `세로 = ${p.a}m`, '#FF6B6B');
+
+    if(state==='correct'){
+        dimLine(px, py+ph, px+pw, py, `대각선 = ${p.ans}m ✓`, '#22c55e');
+        resultBanner('정답! 🏊🎉', '#22c55e');
+    } else if(state==='wrong'){
+        dimLine(px, py+ph, px+pw, py, `대각선 = ${p.ans}m`, '#ef4444');
+        resultBanner(`정답: ${p.ans}m`, '#ef4444');
+    } else {
+        ctx.setLineDash([8,6]);ctx.strokeStyle='rgba(245,158,11,0.5)';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(px,py+ph);ctx.lineTo(px+pw,py);ctx.stroke();ctx.setLineDash([]);
+        label(w/2+15, h/2-10, 'c = ?', 18, '#f59e0b');
+    }
+    label(w*0.5, h*0.05, '🏊 수영장 대각선', 20);
+}
+
+// ─── 8. SAIL ───
+function drawSail(p, state){
+    const w=canvas.width, h=canvas.height;
+    // Ocean
+    const ocean=ctx.createLinearGradient(0,0,0,h);
+    ocean.addColorStop(0,'#1565C0');ocean.addColorStop(1,'#0D47A1');
+    ctx.fillStyle=ocean;ctx.fillRect(0,0,w,h);
+
+    // Grid lines (like a map)
+    ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1;
+    for(let i=0;i<10;i++){
+        ctx.beginPath();ctx.moveTo(w*i/10,0);ctx.lineTo(w*i/10,h);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(0,h*i/10);ctx.lineTo(w,h*i/10);ctx.stroke();
+    }
+
+    // Compass rose (top right)
+    const cx=w*0.85, cy=h*0.15;
+    ctx.fillStyle='rgba(255,255,255,0.15)';ctx.beginPath();ctx.arc(cx,cy,30,0,Math.PI*2);ctx.fill();
+    label(cx,cy-22,'N',12,'#fff');label(cx,cy+22,'S',12,'#fff');
+    label(cx-22,cy,'W',12,'#fff');label(cx+22,cy,'E',12,'#fff');
+
+    // Start point
+    const sx=w*0.2, sy=h*0.75;
+    ctx.fillStyle='#4CAF50';ctx.beginPath();ctx.arc(sx,sy,8,0,Math.PI*2);ctx.fill();
+    label(sx,sy+20,'출발',13,'#81C784');
+
+    // End point (east + north)
+    const ex=sx+Math.min(p.b*5,w*0.5), ey=sy-Math.min(p.a*5,h*0.5);
+    ctx.fillStyle='#FF5722';ctx.beginPath();ctx.arc(ex,ey,8,0,Math.PI*2);ctx.fill();
+    label(ex,ey-18,'도착',13,'#FF8A65');
+
+    // Boat emoji at end
+    label(ex+15,ey,'⛵',22);
+
+    // Path arrows
+    // East arrow
+    ctx.strokeStyle='#4ECDC4';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,sy);ctx.stroke();
+    // North arrow
+    ctx.strokeStyle='#FF6B6B';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(ex,sy);ctx.lineTo(ex,ey);ctx.stroke();
+
+    dimLine(sx, sy+25, ex, sy+25, `동쪽 = ${p.b}km`, '#4ECDC4');
+    dimLine(ex+25, sy, ex+25, ey, `북쪽 = ${p.a}km`, '#FF6B6B');
+
+    if(state==='correct'){
+        dimLine(sx, sy, ex, ey, `직선 = ${p.ans}km ✓`, '#22c55e');
+        resultBanner('정답! ⛵🎉', '#22c55e');
+    } else if(state==='wrong'){
+        dimLine(sx, sy, ex, ey, `직선 = ${p.ans}km`, '#ef4444');
+        resultBanner(`정답: ${p.ans}km`, '#ef4444');
+    } else {
+        ctx.setLineDash([8,6]);ctx.strokeStyle='rgba(245,158,11,0.6)';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);ctx.stroke();ctx.setLineDash([]);
+        label((sx+ex)/2-15, (sy+ey)/2, 'c = ?', 18, '#f59e0b');
+    }
+    label(w*0.15, h*0.08, '⛵ 항해', 20);
+}
+
+// ─── 9. FRAME ───
+function drawFrame(p, state){
+    const w=canvas.width, h=canvas.height;
+    // Room wall
+    const wallG=ctx.createLinearGradient(0,0,0,h);
+    wallG.addColorStop(0,'#EFEBE9');wallG.addColorStop(1,'#D7CCC8');
+    ctx.fillStyle=wallG;ctx.fillRect(0,0,w,h);
+
+    // Wallpaper pattern
+    ctx.fillStyle='rgba(0,0,0,0.02)';
+    for(let i=0;i<w;i+=40)for(let j=0;j<h;j+=40){
+        ctx.beginPath();ctx.arc(i,j,2,0,Math.PI*2);ctx.fill();
+    }
+
+    // Frame
+    const fw=Math.min(320,w*0.45), fh=fw*0.65;
+    const fx=(w-fw)/2, fy=(h-fh)/2-20;
+    // Outer frame (gold)
+    ctx.fillStyle='#C49A3B';ctx.fillRect(fx-12,fy-12,fw+24,fh+24);
+    ctx.fillStyle='#D4AA4B';ctx.fillRect(fx-8,fy-8,fw+16,fh+16);
+    // Inner frame
+    ctx.fillStyle='#E8D5A3';ctx.fillRect(fx,fy,fw,fh);
+    // "Painting" inside
+    const paintG=ctx.createLinearGradient(fx,fy,fx+fw,fy+fh);
+    paintG.addColorStop(0,'#E8F5E9');paintG.addColorStop(0.5,'#FFFDE7');paintG.addColorStop(1,'#E3F2FD');
+    ctx.fillStyle=paintG;ctx.fillRect(fx+4,fy+4,fw-8,fh-8);
+    // Abstract shapes in painting
+    ctx.fillStyle='rgba(76,175,80,0.3)';ctx.beginPath();ctx.arc(fx+fw*0.3,fy+fh*0.5,30,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(33,150,243,0.3)';ctx.beginPath();ctx.arc(fx+fw*0.7,fy+fh*0.4,25,0,Math.PI*2);ctx.fill();
+
+    // Hanging wire
+    ctx.strokeStyle='#888';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(fx+fw/2,0);ctx.lineTo(fx+fw/2,fy-12);ctx.stroke();
+
+    // Dimensions
+    dimLine(fx, fy+fh+30, fx+fw, fy+fh+30, `가로 = ${p.b}cm`, '#4ECDC4');
+    dimLine(fx-30, fy, fx-30, fy+fh, `세로 = ${p.a}cm`, '#FF6B6B');
+
+    if(state==='correct'){
+        dimLine(fx, fy+fh, fx+fw, fy, `대각선 = ${p.ans}cm ✓`, '#22c55e');
+        resultBanner('정답! 🖼️🎉', '#22c55e');
+    } else if(state==='wrong'){
+        dimLine(fx, fy+fh, fx+fw, fy, `대각선 = ${p.ans}cm`, '#ef4444');
+        resultBanner(`정답: ${p.ans}cm`, '#ef4444');
+    } else {
+        ctx.setLineDash([8,6]);ctx.strokeStyle='rgba(245,158,11,0.5)';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(fx,fy+fh);ctx.lineTo(fx+fw,fy);ctx.stroke();ctx.setLineDash([]);
+        label(w/2+15, h/2-10, 'c = ?', 18, '#f59e0b');
+    }
+    label(w*0.5, h*0.06, '🖼️ 액자 걸기', 20);
+}
+
+// ─── 10. PLANE ───
+function drawPlane(p, state){
+    const w=canvas.width, h=canvas.height;
+    // Sky gradient
+    const sky=ctx.createLinearGradient(0,0,0,h);
+    sky.addColorStop(0,'#1A237E');sky.addColorStop(0.4,'#3F51B5');sky.addColorStop(0.8,'#90CAF9');sky.addColorStop(1,'#E8F5E9');
+    ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+
+    // Clouds
+    ctx.fillStyle='rgba(255,255,255,0.3)';
+    [[w*0.1,h*0.15,40],[w*0.4,h*0.08,35],[w*0.7,h*0.2,30],[w*0.85,h*0.12,25]].forEach(([cx,cy,r])=>{
+        ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.arc(cx+r*0.8,cy-r*0.3,r*0.7,0,Math.PI*2);ctx.fill();
+    });
+
+    // Ground / runway
+    const groundY=h*0.85;
+    ctx.fillStyle='#4CAF50';ctx.fillRect(0,groundY,w,h-groundY);
+    // Runway
+    ctx.fillStyle='#555';ctx.fillRect(w*0.55,groundY,w*0.4,h-groundY);
+    // Runway markings
+    ctx.fillStyle='#fff';
+    for(let i=0;i<5;i++){
+        ctx.fillRect(w*0.73+i*18, groundY+5, 12, 3);
+    }
+
+    // Plane position (top left, flying down-right)
+    const planeX=w*0.15, planeY=h*0.2;
+    const landX=w*0.8, landY=groundY;
+
+    // Plane emoji
+    label(planeX, planeY, '✈️', 36);
+
+    // Descent path (hypotenuse)
+    ctx.setLineDash([10,6]);ctx.strokeStyle='rgba(255,255,0,0.4)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(planeX+20,planeY+15);ctx.lineTo(landX,landY);ctx.stroke();ctx.setLineDash([]);
+
+    // Height line (vertical)
+    ctx.strokeStyle='rgba(255,100,100,0.5)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(planeX+20,planeY+15);ctx.lineTo(planeX+20,landY);ctx.stroke();
+
+    // Horizontal line
+    ctx.strokeStyle='rgba(78,205,196,0.5)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(planeX+20,landY);ctx.lineTo(landX,landY);ctx.stroke();
+
+    dimLine(planeX-15, planeY+15, planeX-15, landY, `a = ${p.a}m`, '#FF6B6B');
+    dimLine(planeX+20, landY+20, landX, landY+20, `b = ${p.b}m`, '#4ECDC4');
+
+    if(state==='correct'){
+        dimLine(planeX+20, planeY+15, landX, landY, `c = ${p.ans}m ✓`, '#22c55e');
+        resultBanner('정답! ✈️🎉', '#22c55e');
+    } else if(state==='wrong'){
+        dimLine(planeX+20, planeY+15, landX, landY, `c = ${p.ans}m`, '#ef4444');
+        resultBanner(`정답: ${p.ans}m`, '#ef4444');
+    } else {
+        label((planeX+landX)/2+20, (planeY+landY)/2-10, 'c = ?', 18, '#f59e0b');
+    }
+    label(w*0.5, h*0.05, '✈️ 비행기 착륙', 20);
+}
+
+// ═══════════════════════════════════
+//  GENERIC DRAW (for new scenarios)
+// ═══════════════════════════════════
+function drawGeneric(p, state, cfg){
+    const w=canvas.width, h=canvas.height;
+    // Background
+    if(cfg.bgType==='sky'){
+        const g=ctx.createLinearGradient(0,0,0,h);
+        g.addColorStop(0,cfg.sky1||'#4A90D9');g.addColorStop(1,cfg.sky2||'#C5E8C5');
+        ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+        ctx.fillStyle=cfg.ground||'#6B8F3C';ctx.fillRect(0,h*0.75,w,h*0.25);
+    } else if(cfg.bgType==='room'){
+        ctx.fillStyle=cfg.wall||'#EFEBE9';ctx.fillRect(0,0,w,h);
+        ctx.fillStyle=cfg.floor||'#5D4037';ctx.fillRect(0,h*0.75,w,h*0.25);
+    } else if(cfg.bgType==='grid'){
+        ctx.fillStyle=cfg.bg||'#1A237E';ctx.fillRect(0,0,w,h);
+        ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;
+        for(let i=0;i<12;i++){ctx.beginPath();ctx.moveTo(w*i/12,0);ctx.lineTo(w*i/12,h);ctx.stroke();ctx.beginPath();ctx.moveTo(0,h*i/12);ctx.lineTo(w,h*i/12);ctx.stroke();}
+    } else {
+        ctx.fillStyle=cfg.bg||'#2C3E50';ctx.fillRect(0,0,w,h);
+    }
+
+    // Emoji scene
+    if(cfg.emoji) label(w*0.5, h*0.35, cfg.emoji, 60);
+
+    // Triangle visualization
+    const groundY = h * (cfg.groundRatio || 0.75);
+    const ax = w * (cfg.ax || 0.25), ay = groundY;
+    const bx = w * (cfg.bx || 0.65), by = groundY;
+    const cx = cfg.triType === 'right' ? ax : w * (cfg.cx || 0.25);
+    const cy = cfg.triType === 'right' ? groundY - Math.min(p.a * (cfg.scale||5), h*0.55) : h * (cfg.cy || 0.2);
+
+    // Draw triangle sides
+    ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.lineTo(cx,cy);ctx.closePath();ctx.stroke();
+    ctx.fillStyle='rgba(245,158,11,0.05)';ctx.fill();
+
+    // Right angle marker
+    if(cfg.triType==='right'){
+        ctx.strokeStyle='rgba(255,255,255,0.4)';ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(cx+15,cy);ctx.lineTo(cx+15,cy+15);ctx.lineTo(cx,cy+15);ctx.stroke();
+    }
+
+    // Dimension labels
+    dimLine(ax, ay+20, bx, ay+20, `b = ${p.b}${p.unit}`, '#4ECDC4');
+    if(cfg.triType==='right') dimLine(cx-25, cy, cx-25, ay, `a = ${p.a}${p.unit}`, '#FF6B6B');
+    else dimLine(cx-25, cy, ax-25, ay, `a = ${p.a}${p.unit}`, '#FF6B6B');
+
+    if(state==='correct'){
+        dimLine(cx,cy,bx,by, `c = ${p.ans}${p.unit} ✓`, '#22c55e');
+        resultBanner('정답! ' + (cfg.winEmoji||'🎉'), '#22c55e');
+    } else if(state==='wrong'){
+        dimLine(cx,cy,bx,by, `c = ${p.ans}${p.unit}`, '#ef4444');
+        resultBanner(`정답: ${p.ans}${p.unit}`, '#ef4444');
+    } else {
+        ctx.setLineDash([8,6]);ctx.strokeStyle='rgba(245,158,11,0.5)';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(bx,by);ctx.stroke();ctx.setLineDash([]);
+        label((cx+bx)/2+15,(cy+by)/2-10,'c = ?',18,'#f59e0b');
+    }
+
+    label(w*0.5, h*0.06, (cfg.titleEmoji||'') + ' ' + (cfg.title||''), 20);
+}
+
+// ═══════════════════════════════════
+//  20 NEW SCENARIOS
+// ═══════════════════════════════════
+
+// Helper: scenario with generic draw
+function mkScenario(id,name,emoji,diff,desc,genFn,drawCfg){
+    return {
+        id, name, emoji, diff, desc,
+        gen: genFn,
+        draw(p,state){ drawGeneric(p,state,drawCfg); }
+    };
+}
+
+const NEW_SCENARIOS = [
+    // 11. 🏔️ 산 높이 측정
+    mkScenario('mountain','산 높이 측정','🏔️','중급','산의 높이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();return{q:`관측 지점에서 산까지 수평 ${b}m,\n산 정상까지 직선 ${c}m일 때 산 높이는?`,a,b,c,ans:a,solve:'a',label:'산 높이(a)',unit:'m'};},
+        {bgType:'sky',sky1:'#87CEEB',sky2:'#90EE90',ground:'#5D8C5A',triType:'right',emoji:'🏔️',title:'산 높이 측정',titleEmoji:'🏔️',winEmoji:'🏔️🎉'}
+    ),
+    // 12. ⛺ 텐트 지지대
+    mkScenario('tent','텐트 지지대','⛺','초급','텐트 지지대 길이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();return{q:`텐트 높이 ${a}m, 바닥 넓이의 절반 ${b}m일 때\n경사면(지지대) 길이는?`,a,b,c,ans:c,solve:'c',label:'지지대 길이(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#4A90D9',sky2:'#C5E8C5',ground:'#6B8F3C',triType:'right',emoji:'⛺',title:'텐트 지지대',titleEmoji:'⛺',winEmoji:'⛺🎉'}
+    ),
+    // 13. 🌉 다리 길이
+    mkScenario('bridge','다리 길이','🌉','중급','강을 건너는 다리 길이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();const s=10;return{q:`강 너비 ${b*s}m, 다리 높이 차이 ${a*s}m일 때\n다리의 실제 길이는?`,a:a*s,b:b*s,c:c*s,ans:c*s,solve:'c',label:'다리 길이(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#87CEEB',sky2:'#B3E5FC',ground:'#1565C0',groundRatio:0.7,triType:'right',emoji:'🌉',title:'다리 길이',titleEmoji:'🌉',winEmoji:'🌉🎉'}
+    ),
+    // 14. 🎄 트리 조명 길이
+    mkScenario('tree','크리스마스 트리 조명','🎄','초급','트리 꼭대기에서 바닥까지 조명 줄 길이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();return{q:`트리 높이 ${a}m, 바닥 반지름 ${b}m일 때\n꼭대기→바닥 가장자리 조명 줄 길이는?`,a,b,c,ans:c,solve:'c',label:'조명 줄(c)',unit:'m'};},
+        {bgType:'room',wall:'#1B5E20',floor:'#5D4037',triType:'right',emoji:'🎄',title:'트리 조명 길이',titleEmoji:'🎄',winEmoji:'🎄🎉'}
+    ),
+    // 15. 🏗️ 크레인 팔
+    mkScenario('crane','크레인 팔','🏗️','중급','크레인 팔의 길이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();const s=10;return{q:`크레인 높이 ${a*s}m, 수평 이동 ${b*s}m일 때\n크레인 팔 길이는?`,a:a*s,b:b*s,c:c*s,ans:c*s,solve:'c',label:'크레인 팔(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#90CAF9',sky2:'#E3F2FD',ground:'#9E9E9E',triType:'right',emoji:'🏗️',title:'크레인 팔',titleEmoji:'🏗️',winEmoji:'🏗️🎉'}
+    ),
+    // 16. 🗼 탑 높이
+    mkScenario('tower','탑 높이','🗼','중급','탑의 높이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();const s=10;return{q:`탑에서 ${b*s}m 떨어진 곳에서\n탑 꼭대기까지 ${c*s}m일 때 탑 높이는?`,a:a*s,b:b*s,c:c*s,ans:a*s,solve:'a',label:'탑 높이(a)',unit:'m'};},
+        {bgType:'sky',sky1:'#FF8C42',sky2:'#FFE0B2',ground:'#B0A18C',triType:'right',emoji:'🗼',title:'탑 높이',titleEmoji:'🗼',winEmoji:'🗼🎉'}
+    ),
+    // 17. 🛝 미끄럼틀
+    mkScenario('slide','미끄럼틀','🛝','초급','미끄럼틀의 길이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();return{q:`높이 ${a}m, 수평 거리 ${b}m인\n미끄럼틀의 경사면 길이는?`,a,b,c,ans:c,solve:'c',label:'경사면(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#4FC3F7',sky2:'#E8F5E9',ground:'#AED581',triType:'right',emoji:'🛝',title:'미끄럼틀',titleEmoji:'🛝',winEmoji:'🛝🎉'}
+    ),
+    // 18. 🚀 로켓 발사
+    mkScenario('rocket','로켓 발사','🚀','고급','로켓의 이동 거리를 구하세요',
+        ()=>{const [a,b,c]=randTriple();const s=100;return{q:`로켓이 수직 ${a*s}m, 수평 ${b*s}m 이동했을 때\n실제 이동 거리는?`,a:a*s,b:b*s,c:c*s,ans:c*s,solve:'c',label:'이동 거리(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#1A237E',sky2:'#311B92',ground:'#4E342E',triType:'right',emoji:'🚀',title:'로켓 발사',titleEmoji:'🚀',winEmoji:'🚀🎉'}
+    ),
+    // 19. 🏠 지붕 경사
+    mkScenario('roof','지붕 경사','🏠','초급','지붕의 경사면 길이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();return{q:`지붕 높이 ${a}m, 밑변 절반 ${b}m일 때\n경사면 길이는?`,a,b,c,ans:c,solve:'c',label:'경사면(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#87CEEB',sky2:'#FFE0B2',ground:'#8D6E63',triType:'right',emoji:'🏠',title:'지붕 경사',titleEmoji:'🏠',winEmoji:'🏠🎉'}
+    ),
+    // 20. 🎡 관람차
+    mkScenario('ferris','관람차','🎡','중급','관람차 지지대 길이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();const s=5;return{q:`관람차 반지름 ${a*s}m, 지면에서 중심까지 수평 ${b*s}m일 때\n지면→중심 지지대 길이는?`,a:a*s,b:b*s,c:c*s,ans:c*s,solve:'c',label:'지지대(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#E040FB',sky2:'#1A237E',ground:'#424242',triType:'right',emoji:'🎡',title:'관람차',titleEmoji:'🎡',winEmoji:'🎡🎉'}
+    ),
+    // 21. 📐 정삼각형 높이
+    mkScenario('equilateral','정삼각형 높이','📐','중급','정삼각형의 높이를 구하세요',
+        ()=>{const sides=[6,8,10,12,14,16,20];const s=sides[Math.floor(Math.random()*sides.length)];
+            const h_val=Math.round(s*Math.sqrt(3)/2*10)/10;const h_r=Math.round(h_val);
+            return{q:`한 변이 ${s}cm인 정삼각형의\n높이는? (반올림)`,a:h_r,b:s/2,c:s,ans:h_r,solve:'a',label:'높이(a)',unit:'cm'};},
+        {bgType:'grid',bg:'#263238',triType:'right',emoji:'📐',title:'정삼각형 높이',titleEmoji:'📐',winEmoji:'📐🎉',scale:8}
+    ),
+    // 22. 🧊 직육면체 대각선
+    mkScenario('cuboid','직육면체 대각선','🧊','고급','직육면체의 공간 대각선을 구하세요',
+        ()=>{const sets=[[3,4,12,13],[6,8,24,26],[5,12,0,13],[8,15,0,17]];
+            const [a,b,_,c]=sets[Math.floor(Math.random()*sets.length)];
+            const faceD=Math.round(Math.sqrt(a*a+b*b));
+            return{q:`밑면 가로 ${a}cm, 세로 ${b}cm일 때\n밑면 대각선 길이는?`,a,b,c:faceD,ans:faceD,solve:'c',label:'대각선(c)',unit:'cm'};},
+        {bgType:'grid',bg:'#37474F',triType:'right',emoji:'🧊',title:'직육면체 대각선',titleEmoji:'🧊',winEmoji:'🧊🎉',scale:6}
+    ),
+    // 23. 🗺️ 좌표 거리
+    mkScenario('coords','좌표 거리','🗺️','중급','두 점 사이 거리를 구하세요',
+        ()=>{const [a,b,c]=randTriple();
+            return{q:`점 A(0,0)에서 점 B(${b},${a})까지\n거리는?`,a,b,c,ans:c,solve:'c',label:'거리(c)',unit:''};},
+        {bgType:'grid',bg:'#1A237E',triType:'right',emoji:'🗺️',title:'좌표 거리',titleEmoji:'🗺️',winEmoji:'🗺️🎉',scale:5}
+    ),
+    // 24. 🎪 줄타기
+    mkScenario('tightrope','서커스 줄타기','🎪','중급','줄타기 줄의 길이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();return{q:`기둥 높이 차이 ${a}m, 기둥 간 수평 거리 ${b}m일 때\n줄의 길이는?`,a,b,c,ans:c,solve:'c',label:'줄 길이(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#4A148C',sky2:'#880E4F',ground:'#3E2723',triType:'right',emoji:'🎪',title:'줄타기',titleEmoji:'🎪',winEmoji:'🎪🎉'}
+    ),
+    // 25. ⛰️ 등산로
+    mkScenario('hiking','등산로','⛰️','중급','등산로의 실제 거리를 구하세요',
+        ()=>{const [a,b,c]=randTriple();const s=10;return{q:`고도 차이 ${a*s}m, 지도상 수평 거리 ${b*s}m일 때\n실제 등산 거리는?`,a:a*s,b:b*s,c:c*s,ans:c*s,solve:'c',label:'등산 거리(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#4CAF50',sky2:'#81C784',ground:'#33691E',triType:'right',emoji:'⛰️',title:'등산로',titleEmoji:'⛰️',winEmoji:'⛰️🎉'}
+    ),
+    // 26. 🚗 경사로
+    mkScenario('ramp','경사로','🚗','초급','경사로의 길이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();return{q:`높이 ${a}m, 수평 거리 ${b}m인\n주차장 경사로의 길이는?`,a,b,c,ans:c,solve:'c',label:'경사로(c)',unit:'m'};},
+        {bgType:'room',wall:'#CFD8DC',floor:'#78909C',triType:'right',emoji:'🚗',title:'경사로',titleEmoji:'🚗',winEmoji:'🚗🎉'}
+    ),
+    // 27. 🌳 나무 높이
+    mkScenario('tree_height','나무 높이','🌳','초급','나무의 높이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();return{q:`나무에서 ${b}m 떨어진 곳에서\n나무 꼭대기까지 ${c}m일 때 나무 높이는?`,a,b,c,ans:a,solve:'a',label:'나무 높이(a)',unit:'m'};},
+        {bgType:'sky',sky1:'#81C784',sky2:'#E8F5E9',ground:'#558B2F',triType:'right',emoji:'🌳',title:'나무 높이',titleEmoji:'🌳',winEmoji:'🌳🎉'}
+    ),
+    // 28. 📡 안테나
+    mkScenario('antenna','안테나 와이어','📡','중급','안테나 지지 와이어 길이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();const s=10;return{q:`안테나 높이 ${a*s}m, 고정점까지 수평 ${b*s}m일 때\n지지 와이어 길이는?`,a:a*s,b:b*s,c:c*s,ans:c*s,solve:'c',label:'와이어(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#90CAF9',sky2:'#E3F2FD',ground:'#8D6E63',triType:'right',emoji:'📡',title:'안테나 와이어',titleEmoji:'📡',winEmoji:'📡🎉'}
+    ),
+    // 29. 🏰 성벽 사다리
+    mkScenario('castle','성벽 사다리','🏰','중급','성벽에 기대는 사다리 길이를 구하세요',
+        ()=>{const [a,b,c]=randTriple();const s=2;return{q:`성벽 높이 ${a*s}m, 바닥 거리 ${b*s}m일 때\n사다리 길이는?`,a:a*s,b:b*s,c:c*s,ans:c*s,solve:'c',label:'사다리(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#5C6BC0',sky2:'#9FA8DA',ground:'#4E342E',triType:'right',emoji:'🏰',title:'성벽 사다리',titleEmoji:'🏰',winEmoji:'🏰🎉'}
+    ),
+    // 30. 🎯 표적 거리
+    mkScenario('target','표적 거리','🎯','고급','높이 차이를 포함한 실제 표적 거리를 구하세요',
+        ()=>{const [a,b,c]=randTriple();const s=10;return{q:`수평 거리 ${b*s}m, 높이 차이 ${a*s}m일 때\n실제 직선 거리는?`,a:a*s,b:b*s,c:c*s,ans:c*s,solve:'c',label:'직선 거리(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#FFF9C4',sky2:'#F0F4C3',ground:'#8BC34A',triType:'right',emoji:'🎯',title:'표적 거리',titleEmoji:'🎯',winEmoji:'🎯🎉'}
+    ),
+    // ── Phase 3: 고급 5개 추가 (3/25) ──
+    // 31. 💧 강 건너기
+    mkScenario('river','강 건너기','💧','중급','강을 건너는 실제 이동 거리를 구하세요',
+        ()=>{const [a,b,c]=randTriple();const s=5;return{q:`강 폭 ${a*s}m, 유속으로 인한 표류 ${b*s}m일 때\n실제 이동 거리는?`,a:a*s,b:b*s,c:c*s,ans:c*s,solve:'c',label:'이동 거리(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#4A90D9',sky2:'#81D4FA',ground:'#1565C0',groundRatio:0.7,triType:'right',emoji:'🚣',title:'강 건너기',titleEmoji:'💧',winEmoji:'💧✅'}
+    ),
+    // 32. 📐 토지 측량
+    mkScenario('survey','토지 측량','📐','중급','고대 이집트식 토지 측량! 직각 확인용 밧줄 길이를 구하세요',
+        ()=>{const triples=[[3,4,5],[5,12,13],[8,15,17],[7,24,25]];const t=triples[Math.floor(Math.random()*triples.length)];const s=Math.floor(Math.random()*3)+1;return{q:`가로 ${t[0]*s}m, 세로 ${t[1]*s}m인 직사각형 토지의\n대각선(확인 밧줄) 길이는?`,a:t[0]*s,b:t[1]*s,c:t[2]*s,ans:t[2]*s,solve:'c',label:'대각선(c)',unit:'m'};},
+        {bgType:'grid',sky1:'#FFF8E1',sky2:'#FFE0B2',ground:'#D7CCC8',triType:'right',emoji:'📐',title:'토지 측량',titleEmoji:'📐',winEmoji:'📐🏆'}
+    ),
+    // 33. 🏞️ 호수 건너편
+    mkScenario('lake','호수 건너편','🏞️','중급','호수 건너편까지의 직선 거리를 구하세요',
+        ()=>{const [a,b,c]=randTriple();const s=10;return{q:`호수 한쪽에서 동쪽 ${b*s}m, 북쪽 ${a*s}m을 걸어 도착\n직선(호수 건너편) 거리는?`,a:a*s,b:b*s,c:c*s,ans:c*s,solve:'c',label:'직선 거리(c)',unit:'m'};},
+        {bgType:'sky',sky1:'#4FC3F7',sky2:'#B3E5FC',ground:'#2196F3',groundRatio:0.5,triType:'right',emoji:'🏞️',title:'호수 건너편',titleEmoji:'🏞️',winEmoji:'🏞️🎉'}
+    ),
+    // 34. 🗺️ 지도/GPS 거리
+    mkScenario('gps','지도 거리','🗺️','중급','동서/남북 이동으로 직선 거리를 구하세요',
+        ()=>{const [a,b,c]=randTriple();const s=Math.random()<0.5?1:0.1;const u=s===1?'km':'km';return{q:`동쪽으로 ${(b*s).toFixed(1)}${u}, 북쪽으로 ${(a*s).toFixed(1)}${u} 이동\n출발점까지의 직선 거리는?`,a:+(a*s).toFixed(1),b:+(b*s).toFixed(1),c:+(c*s).toFixed(1),ans:+(c*s).toFixed(1),solve:'c',label:'직선 거리(c)',unit:u};},
+        {bgType:'grid',sky1:'#E8F5E9',sky2:'#C8E6C9',ground:'#A5D6A7',triType:'right',emoji:'🗺️',title:'지도 거리',titleEmoji:'🗺️',winEmoji:'🗺️📍',scale:10}
+    ),
+    // 35. 🔢 피타고라스 수
+    mkScenario('triple','피타고라스 수','🔢','고급','세 번째 수를 찾아 피타고라스 수를 완성하세요',
+        ()=>{const triples=[[3,4,5],[5,12,13],[8,15,17],[7,24,25],[20,21,29],[9,40,41],[11,60,61],[12,35,37]];const t=triples[Math.floor(Math.random()*triples.length)];const which=Math.floor(Math.random()*3);const labels=['a','b','c'];const qs=[`( ? , ${t[1]}, ${t[2]} )`,`( ${t[0]}, ? , ${t[2]} )`,`( ${t[0]}, ${t[1]}, ? )`];return{q:`피타고라스 수(자연수 세 쌍)\n${qs[which]}\n물음표에 들어갈 수는?`,a:t[0],b:t[1],c:t[2],ans:t[which],solve:labels[which],label:`${labels[which]}=?`,unit:''};},
+        {bgType:'grid',sky1:'#1A237E',sky2:'#283593',ground:'#0D47A1',triType:'right',emoji:'🔢',title:'피타고라스 수',titleEmoji:'🔢',winEmoji:'🔢💯',scale:5}
+    ),
+];
+
+// Append new scenarios to SCENARIOS array
+SCENARIOS.push(...NEW_SCENARIOS);
+
+// ── Init ──
+renderGrid();
+</script>
+<!-- ── Calculator Icons ── -->
+<div class="calc-icons">
+  <button class="calc-icon-btn" onclick="toggleCalc('basic')" title="일반 계산기">🔢<span class="calc-label">일반 계산기</span></button>
+  <button class="calc-icon-btn" onclick="toggleCalc('sci')" title="공학 계산기">📐<span class="calc-label">공학 계산기</span></button>
+</div>
+
+<!-- Basic Calculator -->
+<div class="calc-popup basic" id="calcBasic">
+  <div class="calc-titlebar" data-drag="calcBasic">
+    <span class="calc-titlebar-text">🔢 일반 계산기</span>
+    <div class="calc-titlebar-btns"><button class="calc-minimize" onclick="document.getElementById('calcBasic').classList.toggle('minimized')">─</button><button class="calc-close" onclick="toggleCalc('basic')">✕</button></div>
+  </div>
+  <div class="calc-display"><span class="calc-expr" id="basicExpr"></span><span id="basicDisp">0</span></div>
+  <div class="calc-btns basic-grid">
+    <button class="calc-btn clear" onclick="calcClear('basic')">C</button>
+    <button class="calc-btn clear" onclick="calcBack('basic')">←</button>
+    <button class="calc-btn op" onclick="calcOp('basic','√')">√</button>
+    <button class="calc-btn op" onclick="calcOp('basic','÷')">÷</button>
+    <button class="calc-btn" onclick="calcNum('basic','7')">7</button>
+    <button class="calc-btn" onclick="calcNum('basic','8')">8</button>
+    <button class="calc-btn" onclick="calcNum('basic','9')">9</button>
+    <button class="calc-btn op" onclick="calcOp('basic','×')">×</button>
+    <button class="calc-btn" onclick="calcNum('basic','4')">4</button>
+    <button class="calc-btn" onclick="calcNum('basic','5')">5</button>
+    <button class="calc-btn" onclick="calcNum('basic','6')">6</button>
+    <button class="calc-btn op" onclick="calcOp('basic','-')">−</button>
+    <button class="calc-btn" onclick="calcNum('basic','1')">1</button>
+    <button class="calc-btn" onclick="calcNum('basic','2')">2</button>
+    <button class="calc-btn" onclick="calcNum('basic','3')">3</button>
+    <button class="calc-btn op" onclick="calcOp('basic','+')">+</button>
+    <button class="calc-btn" onclick="calcNum('basic','0')" style="grid-column:span 2">0</button>
+    <button class="calc-btn" onclick="calcNum('basic','.')">.</button>
+    <button class="calc-btn eq" onclick="calcEq('basic')">=</button>
+  </div>
+</div>
+
+<!-- Scientific Calculator -->
+<div class="calc-popup sci" id="calcSci">
+  <div class="calc-titlebar" data-drag="calcSci">
+    <span class="calc-titlebar-text">📐 공학 계산기</span>
+    <div class="calc-titlebar-btns"><button class="calc-minimize" onclick="document.getElementById('calcSci').classList.toggle('minimized')">─</button><button class="calc-close" onclick="toggleCalc('sci')">✕</button></div>
+  </div>
+  <div class="calc-display"><span class="calc-expr" id="sciExpr"></span><span id="sciDisp">0</span></div>
+  <div class="calc-btns sci-grid">
+    <button class="calc-btn fn" onclick="calcFn('sci','sin')">sin</button>
+    <button class="calc-btn fn" onclick="calcFn('sci','cos')">cos</button>
+    <button class="calc-btn fn" onclick="calcFn('sci','tan')">tan</button>
+    <button class="calc-btn fn" onclick="calcFn('sci','log')">log</button>
+    <button class="calc-btn fn" onclick="calcFn('sci','ln')">ln</button>
+    <button class="calc-btn fn" onclick="calcOp('sci','(')"> ( </button>
+    <button class="calc-btn fn" onclick="calcOp('sci',')')"> ) </button>
+    <button class="calc-btn fn" onclick="calcFn('sci','x²')">x²</button>
+    <button class="calc-btn fn" onclick="calcFn('sci','π')">π</button>
+    <button class="calc-btn fn" onclick="calcOp('sci','%')">%</button>
+    <button class="calc-btn clear" onclick="calcClear('sci')">C</button>
+    <button class="calc-btn clear" onclick="calcBack('sci')">←</button>
+    <button class="calc-btn op" onclick="calcOp('sci','√')">√</button>
+    <button class="calc-btn op" onclick="calcOp('sci','÷')">÷</button>
+    <button class="calc-btn op" onclick="calcOp('sci','^')">^</button>
+    <button class="calc-btn" onclick="calcNum('sci','7')">7</button>
+    <button class="calc-btn" onclick="calcNum('sci','8')">8</button>
+    <button class="calc-btn" onclick="calcNum('sci','9')">9</button>
+    <button class="calc-btn op" onclick="calcOp('sci','×')">×</button>
+    <button class="calc-btn op" onclick="calcOp('sci','-')">−</button>
+    <button class="calc-btn" onclick="calcNum('sci','4')">4</button>
+    <button class="calc-btn" onclick="calcNum('sci','5')">5</button>
+    <button class="calc-btn" onclick="calcNum('sci','6')">6</button>
+    <button class="calc-btn op" onclick="calcOp('sci','+')">+</button>
+    <button class="calc-btn" onclick="calcNum('sci','0')" style="grid-column:span 2">0</button>
+    <button class="calc-btn" onclick="calcNum('sci','1')">1</button>
+    <button class="calc-btn" onclick="calcNum('sci','2')">2</button>
+    <button class="calc-btn" onclick="calcNum('sci','3')">3</button>
+    <button class="calc-btn" onclick="calcNum('sci','.')">.</button>
+    <button class="calc-btn eq" onclick="calcEq('sci')" style="grid-column:span 2">=</button>
+    <button class="calc-btn fn" onclick="calcFn('sci','±')">±</button>
+  </div>
+</div>
+
+<script>
+// ── Calculator Engine ──
+const calcs = {
+  basic: { expr: '', display: '0', newNum: true },
+  sci:   { expr: '', display: '0', newNum: true }
+};
+
+function getEls(type) {
+  return {
+    disp: document.getElementById(type === 'basic' ? 'basicDisp' : 'sciDisp'),
+    expr: document.getElementById(type === 'basic' ? 'basicExpr' : 'sciExpr'),
+  };
+}
+
+function updateDisplay(type) {
+  const { disp, expr } = getEls(type);
+  const c = calcs[type];
+  disp.textContent = c.display;
+  expr.textContent = c.expr;
+}
+
+function toggleCalc(type) {
+  const popup = document.getElementById(type === 'basic' ? 'calcBasic' : 'calcSci');
+  const btn = document.querySelectorAll('.calc-icon-btn')[type === 'basic' ? 0 : 1];
+  popup.classList.toggle('open');
+  btn.classList.toggle('active');
+}
+
+function calcNum(type, n) {
+  const c = calcs[type];
+  if (c.newNum) { c.display = n; c.newNum = false; }
+  else { c.display = c.display === '0' ? n : c.display + n; }
+  updateDisplay(type);
+}
+
+function calcOp(type, op) {
+  const c = calcs[type];
+  if (op === '√') {
+    const val = parseFloat(c.display) || 0;
+    c.expr = `√(${c.display})`;
+    c.display = String(roundSmart(Math.sqrt(val)));
+    c.newNum = true;
+  } else if (op === '(' || op === ')') {
+    c.expr += op;
+    c.newNum = true;
+  } else {
+    c.expr = c.display + ' ' + op + ' ';
+    c.newNum = true;
+  }
+  updateDisplay(type);
+}
+
+function calcFn(type, fn) {
+  const c = calcs[type];
+  const val = parseFloat(c.display) || 0;
+  let result;
+  switch(fn) {
+    case 'sin': result = Math.sin(val * Math.PI / 180); c.expr = `sin(${val}°)`; break;
+    case 'cos': result = Math.cos(val * Math.PI / 180); c.expr = `cos(${val}°)`; break;
+    case 'tan': result = Math.tan(val * Math.PI / 180); c.expr = `tan(${val}°)`; break;
+    case 'log': result = Math.log10(val); c.expr = `log(${val})`; break;
+    case 'ln':  result = Math.log(val); c.expr = `ln(${val})`; break;
+    case 'x²':  result = val * val; c.expr = `${val}²`; break;
+    case 'π':   result = Math.PI; c.expr = 'π'; break;
+    case '±':   result = -val; c.expr = `-(${val})`; break;
+    default: return;
+  }
+  c.display = String(roundSmart(result));
+  c.newNum = true;
+  updateDisplay(type);
+}
+
+function calcEq(type) {
+  const c = calcs[type];
+  try {
+    const expression = c.expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-') + c.display;
+    // Safe eval
+    const sanitized = expression.replace(/[^0-9+\-*/.()%^ ]/g, '');
+    let result;
+    if (sanitized.includes('^')) {
+      result = Function('"use strict"; return ' + sanitized.replace(/(\d+)\^(\d+)/g, 'Math.pow($1,$2)'))();
+    } else {
+      result = Function('"use strict"; return ' + sanitized)();
+    }
+    c.expr = c.expr + c.display + ' =';
+    c.display = String(roundSmart(result));
+  } catch { c.display = 'Error'; }
+  c.newNum = true;
+  updateDisplay(type);
+}
+
+function calcClear(type) {
+  calcs[type] = { expr: '', display: '0', newNum: true };
+  updateDisplay(type);
+}
+
+function calcBack(type) {
+  const c = calcs[type];
+  if (c.display.length > 1) c.display = c.display.slice(0, -1);
+  else c.display = '0';
+  updateDisplay(type);
+}
+
+function roundSmart(n) {
+  if (!isFinite(n)) return 'Error';
+  return Math.round(n * 1000000) / 1000000;
+}
+
+// ── Draggable ──
+document.querySelectorAll('[data-drag]').forEach(bar => {
+  const popup = document.getElementById(bar.dataset.drag);
+  let isDragging = false, startX, startY, origX, origY;
+  bar.addEventListener('mousedown', e => {
+    isDragging = true;
+    startX = e.clientX; startY = e.clientY;
+    const rect = popup.getBoundingClientRect();
+    origX = rect.left; origY = rect.top;
+    popup.style.right = 'auto';
+    popup.style.left = origX + 'px';
+    popup.style.top = origY + 'px';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    popup.style.left = (origX + e.clientX - startX) + 'px';
+    popup.style.top = (origY + e.clientY - startY) + 'px';
+  });
+  document.addEventListener('mouseup', () => isDragging = false);
+});
+</script>
+
+</body>
+</html>

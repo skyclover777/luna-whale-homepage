@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Luna Whale Art Lab - Class Guide</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../../assets/data/i18n.js?v=0312-2330"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "primary": "#1337ec", "background-light": "#f6f6f8", "background-dark": "#101322" },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen pb-28">
+
+    <!-- Header -->
+    <header
+        class="bg-white dark:bg-slate-900 sticky top-0 z-20 border-b border-slate-200 px-6 py-4 flex items-center gap-3">
+        <button onclick="history.back()"
+            class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-colors">
+            <span class="material-symbols-outlined text-slate-600 dark:text-slate-300">arrow_back</span>
+        </button>
+        <div>
+            <h1 class="font-black text-xl leading-tight">Lesson 4 – Intricate Floral Patterns</h1>
+            <p class="text-[10px] text-slate-500">Matryoshka Dolls · 30 min</p>
+        </div>
+        <button class="ml-auto w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100">
+            <span class="material-symbols-outlined text-slate-600">bookmark_border</span>
+        </button>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="bg-white dark:bg-slate-900 border-b border-slate-200 px-4 py-3">
+            <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar">
+                <div class="flex-none flex flex-col items-center gap-1">
+                    <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
+                        <span class="material-symbols-outlined text-sm">check</span>
+                    </div>
+                    <span class="text-[9px] text-green-500 font-bold">Done</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-green-500 min-w-4"></div>
+                <div class="flex-none flex flex-col items-center gap-1">
+                    <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
+                        <span class="material-symbols-outlined text-sm">check</span>
+                    </div>
+                    <span class="text-[9px] text-green-500 font-bold">Done</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-green-500 min-w-4"></div>
+                <div class="flex-none flex flex-col items-center gap-1">
+                    <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
+                        <span class="material-symbols-outlined text-sm">check</span>
+                    </div>
+                    <span class="text-[9px] text-green-500 font-bold">Done</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-primary min-w-4"></div>
+                <div class="flex-none flex flex-col items-center gap-1">
+                    <div
+                        class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center border-2 border-primary ring-2 ring-primary/30">
+                        <span class="text-xs font-black">4</span>
+                    </div>
+                    <span class="text-[9px] text-primary font-bold">Now</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-slate-200 min-w-4"></div>
+                <div class="flex-none flex flex-col items-center gap-1">
+                    <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center">
+                        <span class="text-xs font-black">5</span>
+                    </div>
+                    <span class="text-[9px] text-slate-400 font-bold">Next</span>
+                </div>
+                <div class="flex-1 h-0.5 bg-slate-200 min-w-4"></div>
+                <div class="flex-none flex flex-col items-center gap-1">
+                    <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center">
+                        <span class="text-xs font-black">•••</span>
+                    </div>
+                    <span class="text-[9px] text-slate-400 font-bold">12</span>
+                </div>
+            </div>
+        </div>
+
+        <main class="px-4 pt-5 space-y-4">
+            <!-- Lesson Hero Image -->
+            <div class="relative rounded-2xl overflow-hidden h-52 bg-gradient-to-br from-pink-400 to-rose-600">
+                <div class="absolute inset-0 flex items-center justify-center opacity-30">
+                    <span class="material-symbols-outlined text-white text-[120px]">local_florist</span>
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                    <span class="text-white font-bold">Intricate Floral Patterns</span>
+                    <p class="text-white/70 text-xs">Fine brushwork for traditional motifs</p>
+                </div>
+            </div>
+
+            <!-- About this Step -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200">
+                <button class="w-full flex items-center justify-between" onclick="toggleCard(this)">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-lg">info</span>
+                        <span class="font-bold text-sm" data-i18n="gui_step">About this Step</span>
+                    </div>
+                    <span class="material-symbols-outlined text-slate-400"
+                        style="transform:rotate(180deg)">expand_more</span>
+                </button>
+                <div class="mt-3">
+                    <p class="text-sm text-slate-600 leading-relaxed">In this lesson you will master fine brushwork
+                        techniques to create traditional flower and leaf motifs found on authentic Matryoshka dolls.
+                        Focus
+                        on consistency and gentle pressure.</p>
+                </div>
+            </div>
+
+            <!-- Reference Images -->
+            <div>
+                <h3 class="font-bold text-sm mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-lg">photo_library</span>
+                    <span data-i18n="gui_ref">Reference Images</span>
+                </h3>
+                <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
+                    <div
+                        class="flex-none w-28 h-28 rounded-xl bg-gradient-to-br from-pink-300 to-rose-400 overflow-hidden">
+                    </div>
+                    <div
+                        class="flex-none w-28 h-28 rounded-xl bg-gradient-to-br from-amber-300 to-orange-400 overflow-hidden">
+                    </div>
+                    <div
+                        class="flex-none w-28 h-28 rounded-xl bg-gradient-to-br from-violet-300 to-purple-400 overflow-hidden">
+                    </div>
+                    <div
+                        class="flex-none w-28 h-28 rounded-xl bg-gradient-to-br from-blue-300 to-cyan-400 overflow-hidden">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technique Tips -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200">
+                <button class="w-full flex items-center justify-between" onclick="toggleCard(this)">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-lg">lightbulb</span>
+                        <span class="font-bold text-sm" data-i18n="gui_tips">Technique Tips</span>
+                    </div>
+                    <span class="material-symbols-outlined text-slate-400">expand_more</span>
+                </button>
+                <div class="hidden mt-3 space-y-2">
+                    <div class="flex items-start gap-2">
+                        <span
+                            class="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">1</span>
+                        <p class="text-xs text-slate-600">Load only the tip of the brush with paint for fine detail work
+                        </p>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <span
+                            class="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">2</span>
+                        <p class="text-xs text-slate-600">Use a steady wrist rotation for curved petal shapes</p>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <span
+                            class="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">3</span>
+                        <p class="text-xs text-slate-600">Allow each color to dry completely before adding details on
+                            top
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Materials Checklist -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200">
+                <button class="w-full flex items-center justify-between" onclick="toggleCard(this)">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-lg">checklist</span>
+                        <span class="font-bold text-sm" data-i18n="gui_check">Materials Checklist</span>
+                    </div>
+                    <span class="material-symbols-outlined text-slate-400">expand_more</span>
+                </button>
+                <div class="hidden mt-3 space-y-2">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" checked class="w-4 h-4 rounded accent-primary" />
+                        <span class="text-xs text-slate-600">Round brush size 0 (liner)</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" checked class="w-4 h-4 rounded accent-primary" />
+                        <span class="text-xs text-slate-600">Red + white acrylic paint</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" class="w-4 h-4 rounded accent-primary" />
+                        <span class="text-xs text-slate-600">Fine tip pencil for sketching</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" class="w-4 h-4 rounded accent-primary" />
+                        <span class="text-xs text-slate-600">Water cup and palette</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Pro Tip -->
+            <div class="bg-primary/5 border border-primary/20 rounded-2xl p-4">
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-primary text-xl mt-0.5">auto_awesome</span>
+                    <div>
+                        <div class="font-bold text-sm text-primary mb-1" data-i18n="gui_pro">Pro Tip</div>
+                        <p class="text-xs text-slate-600 leading-relaxed">Practice your floral motifs on scrap paper
+                            before
+                            applying to your Matryoshka. This builds muscle memory and confidence!</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Nav: Lesson Navigation -->
+        <div
+            class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-200 px-4 pb-6 pt-3 z-30">
+            <div class="flex gap-3">
+                <button onclick="history.back()"
+                    class="flex-none h-12 px-5 rounded-2xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-slate-400 text-lg">arrow_back</span>
+                    <span data-i18n="gui_prev">Prev</span>
+                </button>
+                <button onclick="window.location.href='class-guide-app.html'"
+                    class="flex-1 h-12 bg-primary hover:bg-blue-700 text-white rounded-2xl font-bold text-sm shadow-lg shadow-primary/25 flex items-center justify-center gap-2 active:scale-95">
+                    <span data-i18n="gui_next">Next Lesson</span>
+                    <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+
+        <script>
+            function toggleCard(btn) {
+                const content = btn.nextElementSibling;
+                const icon = btn.querySelector('.material-symbols-outlined:last-child');
+                content.classList.toggle('hidden');
+                icon.style.transform = content.classList.contains('hidden') ? '' : 'rotate(180deg)';
+            }
+        </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

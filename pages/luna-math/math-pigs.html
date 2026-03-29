@@ -1,0 +1,4444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Pigs — Luna Math</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=JetBrains+Mono:wght@400;700&family=Bagel+Fat+One&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   RESET & VARIABLES
+   ═══════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --sky: #87CEEB;
+    --sky-top: #4A90D9;
+    --grass: #4CAF50;
+    --grass-dark: #388E3C;
+    --dirt: #8B6914;
+    --wood: #A0522D;
+    --wood-light: #CD853F;
+    --pig-pink: #FFB6C1;
+    --pig-dark: #FF8FA0;
+    --gold: #FFD700;
+    --red: #FF5252;
+    --grid-bg: #1a2d45;
+    --grid-line: #2a5080;
+    --bp-bg: #0d2137;
+    --bp-panel: rgba(13,33,55,0.92);
+    --bp-border: #38bdf8;
+    --bp-accent: #22d3ee;
+    --bp-glow: rgba(56,189,248,0.25);
+    --font-kr: 'Jua', sans-serif;
+    --font-title: 'Bagel Fat One', 'Jua', cursive;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: var(--font-kr);
+    background: #0d2137;
+}
+
+/* ═══════════════════════════════════════
+   LEVEL SELECT — WORLD MAP STYLE
+   ═══════════════════════════════════════ */
+#levelSelect {
+    position:fixed;inset:0;z-index:999;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+}
+.map-topbar {
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 24px;
+    background:rgba(0,0,0,0.5);
+    backdrop-filter:blur(8px);
+    z-index:10;
+    border-bottom:2px solid rgba(255,215,0,0.3);
+}
+.map-topbar .map-logo {
+    display:flex;align-items:center;gap:10px;
+    font-family:var(--font-title);font-size:28px;color:#fff;
+    text-shadow:2px 2px 0 rgba(0,0,0,0.4),0 0 20px rgba(255,182,193,0.4);
+}
+.map-topbar .map-logo .pig-icon-map {
+    font-size:32px;animation:pigBounceSmall 1.5s ease-in-out infinite;
+}
+.map-topbar .map-stars-total {
+    font-size:20px;color:#FFD700;font-family:var(--font-title);
+    text-shadow:0 0 12px rgba(255,215,0,0.5);
+}
+.map-topbar .btn-back-map {
+    background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);
+    border-radius:12px;padding:8px 18px;font-family:var(--font-kr);font-size:14px;
+    color:#fff;cursor:pointer;transition:all .2s;backdrop-filter:blur(4px);
+}
+.map-topbar .btn-back-map:hover {background:rgba(255,255,255,0.3);border-color:#fff}
+
+.map-scroll {
+    flex:1;overflow-y:auto;overflow-x:hidden;position:relative;
+    scroll-behavior:smooth;
+}
+.world-map {
+    position:relative;width:100%;min-height:100vh;
+}
+
+/* World 1 background */
+.world-section-land {
+    position:relative;width:100%;padding:40px 0 60px;
+    background:linear-gradient(180deg,#4A90D9 0%,#87CEEB 40%,#7ec850 65%,#4CAF50 100%);
+    overflow:hidden;
+}
+.world-section-land .map-clouds {
+    position:absolute;inset:0;pointer-events:none;overflow:hidden;
+}
+.map-cloud {
+    position:absolute;background:rgba(255,255,255,0.7);border-radius:50px;
+    animation:mapCloudFloat linear infinite;
+}
+.map-cloud::before,.map-cloud::after {content:'';position:absolute;background:rgba(255,255,255,0.7);border-radius:50%}
+.map-cloud::before {width:40px;height:40px;top:-20px;left:10px}
+.map-cloud::after {width:30px;height:30px;top:-12px;right:10px}
+
+/* World 2 background */
+.world-section-sea {
+    position:relative;width:100%;padding:40px 0 60px;
+    background:linear-gradient(180deg,#0a2a4a 0%,#1a4d7a 50%,#2b6cb0 100%);
+    overflow:hidden;
+}
+.world-section-sea .sea-bubbles {
+    position:absolute;inset:0;pointer-events:none;overflow:hidden;
+}
+.sea-bubble {
+    position:absolute;width:8px;height:8px;background:rgba(255,255,255,0.12);
+    border-radius:50%;animation:bubbleRise 6s ease-in infinite;
+}
+.sea-fish {
+    position:absolute;font-size:20px;animation:fishSwim 12s linear infinite;pointer-events:none;
+}
+
+/* Transition zone */
+.world-transition {
+    position:relative;width:100%;height:80px;
+    background:linear-gradient(180deg,#4CAF50,#2d5a27 40%,#1a3a20 50%,#0a2a4a);
+    overflow:hidden;
+}
+.world-transition::before {
+    content:'';position:absolute;bottom:0;left:0;right:0;height:30px;
+    background:linear-gradient(90deg,transparent,rgba(56,178,172,0.3),transparent);
+    animation:waterShimmer 3s ease-in-out infinite;
+}
+
+/* World signpost */
+.world-sign {
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    margin:0 auto 20px;padding:10px 28px;width:fit-content;
+    background:linear-gradient(180deg,#c4873a,#8B6914);
+    border:3px solid #6B4F12;border-radius:8px;
+    font-size:20px;color:#fff;font-family:var(--font-title);
+    box-shadow:0 4px 0 #5a3d0a,0 6px 16px rgba(0,0,0,0.3);
+    text-shadow:1px 1px 0 rgba(0,0,0,0.4);
+    position:relative;
+}
+.world-sign::before,.world-sign::after {
+    content:'';position:absolute;bottom:-20px;width:8px;height:20px;
+    background:#6B4F12;border-radius:0 0 3px 3px;
+}
+.world-sign::before {left:20%}
+.world-sign::after {right:20%}
+.world-sign.sea-sign {
+    background:linear-gradient(180deg,#2b6cb0,#1a4d7a);
+    border-color:#0a2a4a;
+    box-shadow:0 4px 0 #071e36,0 6px 16px rgba(0,0,0,0.4);
+}
+
+/* Path & Nodes */
+.map-path {
+    position:relative;display:flex;flex-direction:column;align-items:center;gap:0;
+    padding:20px 0;
+}
+.path-segment {
+    width:4px;height:40px;
+    background:repeating-linear-gradient(180deg,#A0522D 0,#A0522D 8px,transparent 8px,transparent 16px);
+    position:relative;
+}
+.path-segment.sea-path {
+    background:repeating-linear-gradient(180deg,rgba(129,230,217,0.5) 0,rgba(129,230,217,0.5) 8px,transparent 8px,transparent 16px);
+}
+
+.level-node {
+    position:relative;width:100px;height:100px;
+    border-radius:50%;cursor:pointer;transition:all .3s;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(145deg,#fff9f0,#f0e6d2);
+    border:4px solid #A0522D;
+    box-shadow:0 6px 0 rgba(139,105,20,0.4),0 8px 24px rgba(0,0,0,0.2);
+    z-index:5;
+}
+.level-node:hover {
+    transform:scale(1.1);
+    box-shadow:0 8px 0 rgba(139,105,20,0.3),0 12px 32px rgba(0,0,0,0.25);
+    border-color:#FFD700;
+}
+.level-node.sea-node {
+    background:linear-gradient(145deg,#e0f7fa,#b2dfdb);
+    border-color:#0a6b5a;
+    box-shadow:0 6px 0 rgba(10,42,74,0.4),0 8px 24px rgba(0,0,0,0.3);
+}
+.level-node.sea-node:hover {border-color:#38B2AC}
+.level-node.locked {
+    opacity:0.5;cursor:not-allowed;filter:grayscale(0.6);
+}
+.level-node.locked:hover {transform:none;border-color:#A0522D}
+.level-node .node-emoji {font-size:32px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.2))}
+.level-node .node-id {
+    font-size:10px;font-family:var(--font-mono);font-weight:700;
+    color:#888;letter-spacing:1px;margin-top:2px;
+}
+.level-node .node-stars {
+    position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);
+    display:flex;gap:2px;font-size:14px;
+    filter:drop-shadow(0 1px 3px rgba(255,215,0,0.6));
+}
+.level-node .node-lock {
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:28px;background:rgba(0,0,0,0.2);border-radius:50%;
+}
+.level-node.current::after {
+    content:'';position:absolute;inset:-8px;border-radius:50%;
+    border:3px solid #FFD700;
+    animation:currentPulse 2s ease-in-out infinite;
+}
+
+/* Current pig indicator */
+.current-pig {
+    position:absolute;top:-32px;left:50%;transform:translateX(-50%);
+    font-size:28px;animation:pigBounce 1s ease-in-out infinite;
+    filter:drop-shadow(0 3px 6px rgba(0,0,0,0.3));
+    z-index:10;
+}
+
+/* Sparkle on completed levels */
+.node-sparkle {
+    position:absolute;width:6px;height:6px;background:#FFD700;border-radius:50%;
+    animation:sparkle 2s ease-in-out infinite;pointer-events:none;
+}
+
+/* Map decorative elements */
+.map-tree {position:absolute;font-size:24px;pointer-events:none;z-index:2}
+.map-flower {position:absolute;font-size:14px;pointer-events:none;z-index:2}
+.map-coral {position:absolute;font-size:18px;pointer-events:none;z-index:2}
+
+/* ═══════════════════════════════════════
+   GAME CONTAINER — BLUEPRINT THEME
+   ═══════════════════════════════════════ */
+#game {
+    width: 100vw; height: 100vh;
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, #0d2137 0%, #1a3a5c 50%, #0d2137 100%);
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+}
+/* Blueprint grid overlay */
+#game::before {
+    content:'';position:absolute;inset:0;
+    background-image:
+        linear-gradient(rgba(56,189,248,0.06) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(56,189,248,0.06) 1px,transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none;z-index:0;
+}
+
+/* Clouds — hidden in blueprint mode */
+.cloud { display:none; }
+
+/* ═══════════════════════════════════════
+   HEADER BAR — BLUEPRINT
+   ═══════════════════════════════════════ */
+.header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 24px;
+    background: rgba(13,33,55,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--bp-border);
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(56,189,248,0.15);
+}
+.header-left {
+    display: flex; align-items: center; gap: 12px;
+}
+.header-left .pig-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg,#1a3a5c,#0d2137);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    border: 2px solid var(--bp-border);
+    box-shadow: 0 0 12px var(--bp-glow);
+}
+.header-left h1 {
+    font-size: 24px; color: var(--bp-accent);
+    font-family: var(--font-title);
+    text-shadow: 0 0 12px rgba(34,211,238,0.4);
+}
+.header-level {
+    font-size: 14px; color: var(--bp-accent);
+    background: rgba(56,189,248,0.1);
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(56,189,248,0.3);
+    font-family: var(--font-mono);
+}
+.btn-back {
+    background: none; border: 1px solid rgba(56,189,248,0.4);
+    border-radius: 12px; padding: 8px 16px;
+    font-family: var(--font-kr); font-size: 14px;
+    color: var(--bp-accent); cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-back:hover {
+    background: rgba(56,189,248,0.2); border-color: var(--bp-border);
+    box-shadow: 0 0 12px var(--bp-glow);
+}
+
+/* ═══════════════════════════════════════
+   MAIN GAME AREA
+   ═══════════════════════════════════════ */
+.game-body {
+    flex: 1; display: flex;
+    position: relative; z-index: 10;
+    overflow: hidden;
+}
+
+/* ═══════════════════════════════════════
+   BUILD PHASE — BLUEPRINT
+   ═══════════════════════════════════════ */
+#buildPhase {
+    flex: 1; display: flex;
+    padding: 16px;
+    gap: 16px;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* Parts Panel — Blueprint */
+.parts-panel {
+    width: 140px;
+    background: var(--bp-panel);
+    border-radius: 12px;
+    padding: 16px 12px;
+    border: 1px solid var(--bp-border);
+    box-shadow: 0 0 20px var(--bp-glow), inset 0 0 30px rgba(56,189,248,0.05);
+    display: flex; flex-direction: column; gap: 8px;
+}
+.parts-panel h3 {
+    font-size: 14px; color: var(--bp-accent);
+    text-align: center;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed rgba(56,189,248,0.3);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.part-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px;
+    background: rgba(26,61,92,0.6);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 8px;
+    cursor: grab;
+    transition: all 0.2s;
+    font-size: 14px;
+    color: #a8d4f0;
+}
+.part-item:hover {
+    border-color: var(--bp-accent);
+    box-shadow: 0 0 12px var(--bp-glow);
+    background: rgba(26,61,92,0.9);
+    transform: translateY(-1px);
+}
+.part-item:active { cursor: grabbing; }
+.part-item.used {
+    opacity: 0.3;
+    pointer-events: none;
+    border-style: dashed;
+}
+.part-item .part-emoji {
+    font-size: 22px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* Grid — Blueprint */
+.grid-container {
+    background: var(--bp-panel);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--bp-border);
+    box-shadow: 0 0 20px var(--bp-glow), inset 0 0 30px rgba(56,189,248,0.05);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.grid-container h3 {
+    font-size: 14px; color: var(--bp-accent);
+    padding-bottom: 4px;
+    font-family: var(--font-mono);
+}
+#buildGrid {
+    display: grid;
+    grid-template-columns: repeat(5, 60px);
+    grid-template-rows: repeat(5, 60px);
+    gap: 2px;
+    background: rgba(56,189,248,0.15);
+    border: 2px solid var(--bp-border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.grid-cell {
+    width: 60px; height: 60px;
+    background: var(--grid-bg);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    transition: background 0.2s;
+}
+.grid-cell.highlight {
+    background: rgba(34,211,238,0.2);
+}
+.grid-cell.invalid {
+    background: rgba(255,82,82,0.2);
+}
+.grid-cell.occupied {
+    background: rgba(56,189,248,0.1);
+}
+.grid-cell .cell-part {
+    font-size: 12px; color: #5a8ab5;
+    pointer-events: none;
+    text-align: center;
+    line-height: 1.2;
+}
+.grid-cell.engine-slot {
+    background: rgba(255,215,0,0.1);
+    border: 1px dashed rgba(255,215,0,0.4);
+}
+.grid-cell.engine-slot::after {
+    content: '엔진';
+    font-size: 10px;
+    color: rgba(255,215,0,0.6);
+    position: absolute;
+    bottom: 2px;
+}
+
+/* Placed parts on grid — Blueprint */
+.placed-part {
+    position: absolute;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+    border: 1px solid rgba(56,189,248,0.3);
+    box-shadow: 0 0 8px var(--bp-glow);
+}
+.placed-part:hover {
+    box-shadow: 0 0 16px rgba(255,82,82,0.4);
+}
+.placed-part .remove-hint {
+    display: none;
+    position: absolute;
+    top: -8px; right: -8px;
+    width: 20px; height: 20px;
+    background: var(--red);
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+}
+.placed-part:hover .remove-hint {
+    display: flex;
+}
+
+/* Formula Panel — Blueprint with Cyan Glow */
+.formula-panel {
+    width: 160px;
+    background: var(--bp-panel);
+    border-radius: 12px;
+    padding: 16px 12px;
+    border: 1px solid var(--bp-border);
+    box-shadow: 0 0 20px var(--bp-glow), inset 0 0 30px rgba(56,189,248,0.05);
+    display: flex; flex-direction: column; gap: 8px;
+}
+.formula-panel h3 {
+    font-size: 14px; color: var(--bp-accent);
+    text-align: center;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed rgba(56,189,248,0.3);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.formula-block {
+    padding: 10px;
+    background: linear-gradient(135deg, #0e7490, #155e75);
+    color: #e0f7fa;
+    border-radius: 10px;
+    cursor: grab;
+    transition: all 0.2s;
+    text-align: center;
+    border: 1px solid rgba(34,211,238,0.4);
+    box-shadow: 0 0 12px rgba(34,211,238,0.2);
+}
+.formula-block:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(34,211,238,0.4);
+    border-color: var(--bp-accent);
+}
+.formula-block:active { cursor: grabbing; }
+.formula-block.used {
+    opacity: 0.3;
+    pointer-events: none;
+}
+.formula-block .formula-text {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 700;
+}
+.formula-block .formula-name {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 3px;
+}
+
+/* Build Phase Bottom Controls — Blueprint */
+.build-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%; transform: translateX(-50%);
+    display: flex; gap: 16px;
+    z-index: 50;
+}
+.btn-go {
+    padding: 14px 48px;
+    font-family: var(--font-kr);
+    font-size: 22px;
+    background: linear-gradient(135deg, #0e7490, #0891b2);
+    color: #e0f7fa;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #065a6e, 0 0 20px rgba(34,211,238,0.3);
+    transition: all 0.15s;
+    position: relative;
+    top: 0;
+}
+.btn-go:hover {
+    top: -2px;
+    box-shadow: 0 6px 0 #065a6e, 0 0 30px rgba(34,211,238,0.5);
+}
+.btn-go:active {
+    top: 4px;
+    box-shadow: 0 1px 0 #065a6e, 0 0 10px rgba(34,211,238,0.2);
+}
+.btn-go:disabled {
+    background: #2a3a4a;
+    box-shadow: 0 4px 0 #1a2a3a;
+    cursor: not-allowed;
+    color: #5a6a7a;
+}
+.btn-reset {
+    padding: 14px 28px;
+    font-family: var(--font-kr);
+    font-size: 16px;
+    background: rgba(13,33,55,0.9);
+    color: var(--bp-accent);
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-reset:hover {
+    background: rgba(255,82,82,0.2);
+    color: #ff8a80;
+    border-color: rgba(255,82,82,0.5);
+}
+
+/* Pig speech bubble — Blueprint */
+.pig-speech {
+    position: absolute;
+    bottom: 80px;
+    left: 50%; transform: translateX(-50%);
+    background: rgba(13,33,55,0.95);
+    border: 1px solid var(--bp-border);
+    border-radius: 16px;
+    padding: 12px 24px;
+    font-size: 16px;
+    color: #e0f7fa;
+    box-shadow: 0 0 20px var(--bp-glow);
+    z-index: 50;
+    max-width: 400px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+}
+.pig-speech.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.pig-speech::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid rgba(13,33,55,0.95);
+}
+
+/* ═══════════════════════════════════════
+   PREDICT PHASE — BLUEPRINT
+   ═══════════════════════════════════════ */
+#predictPhase {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+.predict-card {
+    background: var(--bp-panel);
+    border-radius: 16px;
+    padding: 32px 48px;
+    border: 1px solid var(--bp-border);
+    box-shadow: 0 0 30px var(--bp-glow), inset 0 0 40px rgba(56,189,248,0.03);
+    text-align: center;
+    max-width: 480px;
+    width: 100%;
+    position:relative;
+    overflow:hidden;
+}
+.predict-card::before {
+    content:'';position:absolute;inset:0;
+    background-image:
+        linear-gradient(rgba(56,189,248,0.04) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(56,189,248,0.04) 1px,transparent 1px);
+    background-size:20px 20px;
+    pointer-events:none;
+}
+.predict-card h2 {
+    font-size: 22px;
+    color: var(--bp-accent);
+    margin-bottom: 8px;
+}
+.predict-card .predict-question {
+    font-size: 18px;
+    color: #a8d4f0;
+    margin-bottom: 24px;
+}
+.predict-info {
+    display: flex; gap: 24px;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+.predict-info .info-box {
+    background: rgba(56,189,248,0.08);
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(56,189,248,0.25);
+}
+.predict-info .info-label {
+    font-size: 12px; color: #5a8ab5;
+    font-family: var(--font-mono);
+}
+.predict-info .info-value {
+    font-size: 24px; color: var(--bp-accent);
+    font-family: var(--font-mono);
+}
+.predict-input-group {
+    display: flex; align-items: center; gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.predict-input-group label {
+    font-size: 16px; color: #a8d4f0;
+}
+.predict-input-group .unit {
+    font-size: 16px; color: #5a8ab5;
+    font-family: var(--font-mono);
+}
+/* Spinner — Blueprint */
+.spinner-wrap {
+    display: flex; align-items: center; gap: 4px;
+}
+.spinner-col {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.spinner-col .spin-label {
+    font-size: 9px; color: #5a8ab5; font-family: var(--font-mono);
+}
+.spinner-btn {
+    width: 36px; height: 26px; border: none; border-radius: 6px;
+    background: rgba(56,189,248,0.15);
+    color: var(--bp-accent); font-size: 14px; font-weight: bold;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.1s; border:1px solid rgba(56,189,248,0.3);
+}
+.spinner-btn:hover { background: rgba(34,211,238,0.3); box-shadow: 0 0 8px var(--bp-glow); }
+.spinner-btn:active { transform: translateY(1px); }
+.spinner-display {
+    width: 100px; height: 48px;
+    background: rgba(0,0,0,0.3); border: 2px solid var(--bp-border); border-radius: 10px;
+    font-family: var(--font-mono); font-size: 28px; font-weight: 700;
+    color: var(--bp-accent); display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    text-shadow: 0 0 8px rgba(34,211,238,0.5);
+}
+.spinner-display::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(56,189,248,0.08) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.1) 100%);
+    pointer-events: none;
+}
+.predict-formula-hint {
+    background: linear-gradient(135deg, #0e7490, #155e75);
+    color: #e0f7fa;
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    border: 1px solid rgba(34,211,238,0.3);
+    box-shadow: 0 0 12px rgba(34,211,238,0.15);
+}
+
+/* ═══════════════════════════════════════
+   TEST PHASE (Canvas animation) — Blueprint border
+   ═══════════════════════════════════════ */
+#testPhase {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#trackCanvas {
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(56,189,248,0.2), 0 8px 32px rgba(0,0,0,0.3);
+    border: 2px solid rgba(56,189,248,0.3);
+}
+
+/* ═══════════════════════════════════════
+   RESULT OVERLAY — CELEBRATION PARTY STYLE
+   ═══════════════════════════════════════ */
+#resultOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    overflow: hidden;
+}
+/* CSS Confetti */
+.result-confetti {
+    position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;
+}
+.result-confetti-piece {
+    position:absolute;width:10px;height:10px;top:-20px;
+    animation:confettiFall linear forwards;
+}
+
+.result-card {
+    background: linear-gradient(145deg,#1a1a2e,#16213e);
+    border-radius: 24px;
+    padding: 48px 56px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    max-width: 480px;
+    width:90%;
+    animation: resultPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position:relative;z-index:1;
+    overflow:hidden;
+}
+.result-card::before {
+    content:'';position:absolute;inset:-2px;border-radius:26px;z-index:-1;
+    background:linear-gradient(135deg,#FFD700,#FF6B35,#FF1493,#00CED1,#FFD700);
+    background-size:300% 300%;
+    animation:gradientBorder 3s ease infinite;
+}
+.result-card::after {
+    content:'';position:absolute;inset:2px;border-radius:22px;z-index:-1;
+    background:linear-gradient(145deg,#1a1a2e,#16213e);
+}
+.result-card.fail-card::before {
+    background:linear-gradient(135deg,#FF5252,#FF8A80,#FF5252);
+    background-size:300% 300%;
+}
+@keyframes gradientBorder {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+}
+
+@keyframes resultPop {
+    from { transform: scale(0.3) rotate(-5deg); opacity: 0; }
+    60% { transform: scale(1.05) rotate(1deg); }
+    to { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.result-trophy {
+    font-size:56px;margin-bottom:8px;
+    animation:trophyBounce 1s ease-in-out;
+}
+
+.result-stars {
+    font-size: 64px;
+    margin-bottom: 16px;
+    display: flex; justify-content: center; gap: 12px;
+}
+.result-stars .star {
+    transition: all 0.3s;
+    filter: grayscale(1) opacity(0.2);
+    display:inline-block;
+}
+.result-stars .star.earned {
+    filter: none;
+    animation: starPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-shadow: 0 0 20px rgba(255,215,0,0.6);
+}
+@keyframes starPop {
+    0% { transform: scale(0) rotate(-180deg); }
+    50% { transform: scale(1.4) rotate(10deg); }
+    70% { transform: scale(0.9) rotate(-5deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+.result-title {
+    font-size: 36px;
+    font-family: var(--font-title);
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #FFD700, #FF6B35, #FF1493);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 2px 4px rgba(255,215,0,0.3));
+}
+.result-card.fail-card .result-title {
+    background: linear-gradient(135deg, #FF8A80, #FF5252);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+.result-pig-reaction {
+    font-size:32px;margin-bottom:8px;
+}
+.result-message {
+    font-size: 16px;
+    color: #a8c4d8;
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+.result-formula {
+    background: #0d1b2a;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: #e0f7fa;
+    margin-bottom: 28px;
+    border: 1px solid rgba(56,189,248,0.2);
+    text-align: left;
+    line-height: 1.6;
+    position:relative;
+}
+.result-formula::before {
+    content:'SOLUTION';position:absolute;top:-10px;left:16px;
+    font-size:9px;color:#5a8ab5;background:#0d1b2a;padding:0 8px;
+    letter-spacing:2px;
+}
+.result-buttons {
+    display: flex; gap: 16px; justify-content: center;
+}
+.result-buttons button {
+    padding: 14px 32px;
+    font-family: var(--font-kr);
+    font-size: 17px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display:flex;align-items:center;gap:8px;
+}
+.btn-retry {
+    background: rgba(255,255,255,0.08);
+    color: #a8c4d8;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+}
+.btn-retry:hover { background: rgba(255,82,82,0.2); color: #ff8a80; border-color:rgba(255,82,82,0.4)!important; }
+.btn-next {
+    background: linear-gradient(135deg, #0e7490, #0891b2);
+    color: #e0f7fa;
+    box-shadow: 0 4px 0 #065a6e, 0 0 16px rgba(34,211,238,0.3);
+}
+.btn-next:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #065a6e, 0 0 24px rgba(34,211,238,0.4); }
+.btn-next:disabled {
+    background: #2a3a4a;
+    box-shadow: 0 4px 0 #1a2a3a;
+    cursor: not-allowed;
+    color: #5a6a7a;
+}
+
+/* ═══════════════════════════════════════
+   DRAG GHOST
+   ═══════════════════════════════════════ */
+#dragGhost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.85;
+    transition: none;
+    display: none;
+}
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════ */
+@keyframes pigBounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-12px); }
+}
+@keyframes pigBounceSmall {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+@keyframes mapCloudFloat {
+    from { transform: translateX(100vw); }
+    to { transform: translateX(-200px); }
+}
+@keyframes bubbleRise {
+    0% { transform: translateY(100%) scale(0.5); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
+}
+@keyframes fishSwim {
+    0% { transform: translateX(-50px) scaleX(1); }
+    49% { transform: translateX(calc(100vw + 50px)) scaleX(1); }
+    50% { transform: translateX(calc(100vw + 50px)) scaleX(-1); }
+    99% { transform: translateX(-50px) scaleX(-1); }
+    100% { transform: translateX(-50px) scaleX(1); }
+}
+@keyframes sparkle {
+    0%,100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1.2); }
+}
+@keyframes currentPulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.1); }
+}
+@keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+@keyframes trophyBounce {
+    0% { transform: scale(0) rotate(-30deg); }
+    50% { transform: scale(1.3) rotate(10deg); }
+    70% { transform: scale(0.9) rotate(-5deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+@keyframes waterShimmer {
+    0%,100% { opacity:0.3; }
+    50% { opacity:0.8; }
+}
+@keyframes cloudFloat {
+    from { transform: translateX(110vw); }
+    to { transform: translateX(-200px); }
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════ */
+@media (max-width: 768px) {
+    .header h1 { font-size: 16px; }
+    .header-level { font-size: 11px; padding: 4px 10px; }
+    #buildPhase { flex-direction: column; align-items: center; padding: 8px; gap: 8px; }
+    .parts-panel, .formula-panel { flex-direction: row; width: 100%; flex-wrap: wrap; justify-content: center; }
+    .parts-panel h3, .formula-panel h3 { width: 100%; }
+    #buildGrid { grid-template-columns: repeat(5, 50px); grid-template-rows: repeat(5, 50px); }
+    .grid-cell { width: 50px; height: 50px; }
+    .level-node { width:80px;height:80px; }
+    .level-node .node-emoji { font-size:24px; }
+    .map-topbar .map-logo { font-size:20px; }
+    .result-card { padding:32px 24px; }
+    .result-stars { font-size:48px; }
+    .result-title { font-size:28px; }
+}
+
+/* Tutorial highlight */
+.tutorial-highlight {
+    animation: tutPulse 1.5s ease-in-out infinite;
+}
+@keyframes tutPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34,211,238,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(34,211,238,0); }
+}
+
+/* Particle effects */
+.confetti {
+    position: fixed;
+    width: 8px; height: 8px;
+    z-index: 2000;
+    pointer-events: none;
+}
+</style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+<body>
+
+<!-- Drag ghost element -->
+<div id="dragGhost"></div>
+
+<!-- ═══════════════════════════════════════
+     GAME WRAPPER
+     ═══════════════════════════════════════ -->
+<!-- Level Selector — World Map -->
+<div id="levelSelect">
+    <div class="map-topbar">
+        <div class="map-logo">
+            <span class="pig-icon-map">🐷</span> Math Pigs
+        </div>
+        <div class="map-stars-total" id="mapStarsTotal">⭐ 0/30</div>
+        <button class="btn-back-map" onclick="location.href='index.html'">← Luna Math</button>
+    </div>
+    <div class="map-scroll" id="mapScroll">
+        <div class="world-map" id="levelGrid"></div>
+    </div>
+</div>
+
+<div id="game" style="display:none">
+
+    <!-- Clouds -->
+    <div class="cloud" style="width:120px;height:40px;top:8%;animation-duration:35s;animation-delay:-5s;"></div>
+    <div class="cloud" style="width:80px;height:30px;top:15%;animation-duration:45s;animation-delay:-15s;"></div>
+    <div class="cloud" style="width:100px;height:35px;top:5%;animation-duration:55s;animation-delay:-25s;"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="pig-icon">🐷</div>
+            <h1>Math Pigs</h1>
+        </div>
+        <div class="header-level">Level 1-1: 시장까지 이동</div>
+        <button class="btn-back" onclick="backToLevelSelect()">← 레벨 선택</button>
+    </header>
+
+    <!-- Game Body -->
+    <div class="game-body">
+
+        <!-- ======== BUILD PHASE ======== -->
+        <div id="buildPhase">
+            <!-- Parts Panel -->
+            <div class="parts-panel">
+                <h3>부품 파츠</h3>
+                <div class="part-item" data-part="body" draggable="false">
+                    <span class="part-emoji">🔧</span>
+                    <span>본체</span>
+                </div>
+                <div class="part-item" data-part="wheel1" data-type="wheel" draggable="false">
+                    <span class="part-emoji">⚙️</span>
+                    <span>바퀴 1</span>
+                </div>
+                <div class="part-item" data-part="wheel2" data-type="wheel" draggable="false">
+                    <span class="part-emoji">⚙️</span>
+                    <span>바퀴 2</span>
+                </div>
+            </div>
+
+            <!-- Build Grid -->
+            <div class="grid-container">
+                <h3>조립 격자</h3>
+                <div id="buildGrid" style="position:relative;"></div>
+                <div style="font-size:12px; color:#5a8ab5; margin-top:4px; font-family:var(--font-mono);">
+                    부품을 드래그해서 격자에 놓으세요
+                </div>
+            </div>
+
+            <!-- Formula Panel -->
+            <div class="formula-panel">
+                <h3>공식 블록</h3>
+                <div class="formula-block" data-formula="vdt" draggable="false">
+                    <div class="formula-text">v = d/t</div>
+                    <div class="formula-name">속도 공식</div>
+                </div>
+                <div class="formula-block" data-formula="fma" draggable="false">
+                    <div class="formula-text">F = ma</div>
+                    <div class="formula-name">힘 공식</div>
+                </div>
+                <div class="formula-block" data-formula="pyth" draggable="false">
+                    <div class="formula-text">a²+b²=c²</div>
+                    <div class="formula-name">피타고라스</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======== PREDICT PHASE ======== -->
+        <div id="predictPhase">
+            <div class="predict-card">
+                <h2>🐷 예측해 볼까?</h2>
+                <p class="predict-question">이 차가 시장까지 갈 수 있을까?</p>
+                <div class="predict-info">
+                    <div class="info-box">
+                        <div class="info-label">거리</div>
+                        <div class="info-value">100m</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">장착 공식</div>
+                        <div class="info-value" id="predictFormulaDisplay">v=d/t</div>
+                    </div>
+                </div>
+                <div class="predict-formula-hint" id="predictHint">
+                    속도 = 거리 ÷ 시간
+                </div>
+                <div class="predict-input-group">
+                    <label>예상 값:</label>
+                    <div class="spinner-wrap">
+                        <div class="spinner-col">
+                            <div class="spin-label">100</div>
+                            <button class="spinner-btn" onclick="spinPredict(100)">▲</button>
+                            <button class="spinner-btn" onclick="spinPredict(-100)">▼</button>
+                        </div>
+                        <div class="spinner-col">
+                            <div class="spin-label">10</div>
+                            <button class="spinner-btn" onclick="spinPredict(10)">▲</button>
+                            <button class="spinner-btn" onclick="spinPredict(-10)">▼</button>
+                        </div>
+                        <div class="spinner-col">
+                            <div class="spin-label">1</div>
+                            <button class="spinner-btn" onclick="spinPredict(1)">▲</button>
+                            <button class="spinner-btn" onclick="spinPredict(-1)">▼</button>
+                        </div>
+                        <div class="spinner-display" id="spinnerDisplay">0</div>
+                    </div>
+                    <input type="hidden" id="predictTime" value="0">
+                    <span class="unit" id="predictUnit">초</span>
+                </div>
+                <div style="margin-bottom:8px;font-size:13px;color:#5a8ab5;font-family:var(--font-mono);" id="predictHintText">
+                    힌트: 속도가 10m/s라면 100m는 몇 초?
+                </div>
+                <button class="btn-go" onclick="startTest()" id="btnPredict">▶ 출발!</button>
+            </div>
+        </div>
+
+        <!-- ======== TEST PHASE (Canvas) ======== -->
+        <div id="testPhase">
+            <canvas id="trackCanvas"></canvas>
+        </div>
+    </div>
+
+    <!-- Pig Speech Bubble -->
+    <div class="pig-speech" id="pigSpeech"></div>
+
+    <!-- Build controls -->
+    <div class="build-controls" id="buildControls">
+        <button class="btn-reset" onclick="resetGrid()">🔄 다시 조립</button>
+        <button class="btn-go" id="btnGo" onclick="goToPredict()">▶ 출발!</button>
+    </div>
+</div>
+
+<!-- Result Overlay — Celebration -->
+<div id="resultOverlay">
+    <div class="result-confetti" id="resultConfetti"></div>
+    <div class="result-card" id="resultCard">
+        <div class="result-trophy" id="resultTrophy"></div>
+        <div class="result-stars">
+            <span class="star" id="star1">⭐</span>
+            <span class="star" id="star2">⭐</span>
+            <span class="star" id="star3">⭐</span>
+        </div>
+        <div class="result-title" id="resultTitle">축하해요!</div>
+        <div class="result-pig-reaction" id="resultPigReaction"></div>
+        <div class="result-message" id="resultMessage"></div>
+        <div class="result-formula" id="resultFormula"></div>
+        <div class="result-buttons">
+            <button class="btn-retry" onclick="retryLevel()">🔄 다시 하기</button>
+            <button class="btn-next" id="btnNextLevel" onclick="nextLevel()">▶ 다음 레벨</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   MATH PIGS — Level 1-1: 시장까지 이동
+   ═══════════════════════════════════════════════════════ */
+
+// ──── SOUND ────
+const SFX = {
+    place: '../../assets/sounds/SonSounds/DA - Pop - 3.mp3',
+    engine: '../../assets/sounds/SonSounds/KF - Transforming Element - 4.mp3',
+    drive: '../../assets/sounds/SonSounds/KF - Whoosh Dramatic - 3.mp3',
+    crash: '../../assets/sounds/SonSounds/025_터지는소리BOOM.WAV',
+    success: '../../assets/sounds/SonSounds/049_띠룽 (슈퍼마리오 코인먹).mp3',
+    wrong: '../../assets/sounds/SonSounds/063_삐삑 (오답 -짧은).mp3',
+    click: '../../assets/sounds/SonSounds/DA - Digital Click - 1.mp3',
+};
+
+function playSound(key) {
+    try {
+        const a = new Audio(SFX[key]);
+        a.volume = 0.5;
+        a.play().catch(() => {});
+    } catch(e) {}
+}
+
+// ──── LEVELS ────
+const LEVELS = [
+    {
+        id:'1-1', name:'시장까지 이동', emoji:'🏪',
+        partsHTML: [
+            {id:'body',type:'body',name:'본체',emoji:'🔧'},
+            {id:'wheel1',type:'wheel',name:'바퀴 1',emoji:'⚙️'},
+            {id:'wheel2',type:'wheel',name:'바퀴 2',emoji:'⚙️'},
+        ],
+        formulas: {
+            vdt:{formula:'v = d/t',name:'속도 공식',correct:true,desc:'속도 = 거리 ÷ 시간'},
+            fma:{formula:'F = ma',name:'힘 공식',correct:false,desc:'힘 = 질량 × 가속도'},
+            pyth:{formula:'a²+b²=c²',name:'피타고라스',correct:false,desc:'직각삼각형'},
+        },
+        velocity:{dist:100, speed:10, unit:'m'},
+        predict:{q:'이 차가 시장까지 갈 수 있을까?',dist:'100m',hint:'힌트: 속도가 10m/s라면 100m는 몇 초?',ans:10,unit:'초'},
+        anim:{start:'🏠 집',end:'🏪 시장',dist:'거리: 100m',arrive:'🎉 시장에 도착했어요!',
+            result:'피타가 시장에 무사히 도착했어요!',formulaR:'속도 = 거리 ÷ 시간 = 100m ÷ 10s = 10m/s'},
+    },
+    {
+        id:'1-2', name:'무거운 짐 밀기', emoji:'📦',
+        partsHTML: [
+            {id:'body',type:'body',name:'트럭',emoji:'🚛'},
+            {id:'wheel1',type:'wheel',name:'바퀴 1',emoji:'⚙️'},
+            {id:'wheel2',type:'wheel',name:'바퀴 2',emoji:'⚙️'},
+        ],
+        formulas: {
+            fma:{formula:'F = ma',name:'힘 공식',correct:true,desc:'힘 = 질량 × 가속도'},
+            vdt:{formula:'v = d/t',name:'속도 공식',correct:false,desc:'속도 = 거리 ÷ 시간'},
+            emc:{formula:'E = mc²',name:'질량-에너지',correct:false,desc:'에너지 = 질량 × 빛의속도²'},
+        },
+        force:{mass:50, accel:2, unit:'N'},
+        predict:{q:'50kg 상자를 2m/s²로 밀려면 힘은?',dist:'50kg',hint:'힌트: F = 50 × 2 = ?',ans:100,unit:'N'},
+        anim:{start:'📦 짐',end:'🏠 집',dist:'질량: 50kg',arrive:'🎉 짐을 옮겼어요!',
+            result:'피타가 짐을 성공적으로 옮겼어요!',formulaR:'F = ma = 50kg × 2m/s² = 100N'},
+    },
+    {
+        id:'1-3', name:'언덕 올라가기', emoji:'⛰️',
+        partsHTML: [
+            {id:'body',type:'body',name:'본체',emoji:'🔧'},
+            {id:'wheel1',type:'wheel',name:'바퀴 1',emoji:'⚙️'},
+            {id:'wheel2',type:'wheel',name:'바퀴 2',emoji:'⚙️'},
+        ],
+        formulas: {
+            mgh:{formula:'E = mgh',name:'위치에너지',correct:true,desc:'에너지 = 질량 × 중력 × 높이'},
+            vdt:{formula:'v = d/t',name:'속도 공식',correct:false,desc:'속도 = 거리 ÷ 시간'},
+            fma:{formula:'F = ma',name:'힘 공식',correct:false,desc:'힘 = 질량 × 가속도'},
+        },
+        potentialE:{mass:10, height:5, g:10},
+        predict:{q:'10kg 차가 5m 올라가려면 에너지는?',dist:'높이 5m',hint:'힌트: E = 10 × 10 × 5 = ?',ans:500,unit:'J'},
+        anim:{start:'🏠 출발',end:'⛰️ 정상',dist:'높이: 5m',arrive:'🎉 정상에 도착했어요!',
+            result:'피타가 언덕 정상에 도착했어요!',formulaR:'E = mgh = 10 × 10 × 5 = 500J'},
+    },
+    {
+        id:'1-4', name:'다리 건설', emoji:'🌉',
+        partsHTML: [
+            {id:'body',type:'body',name:'본체',emoji:'🔧'},
+            {id:'wheel1',type:'wheel',name:'바퀴 1',emoji:'⚙️'},
+            {id:'wheel2',type:'wheel',name:'바퀴 2',emoji:'⚙️'},
+        ],
+        formulas: {
+            pyth:{formula:'a²+b²=c²',name:'피타고라스',correct:true,desc:'직각삼각형의 세 변의 관계'},
+            vdt:{formula:'v = d/t',name:'속도 공식',correct:false,desc:'속도 = 거리 ÷ 시간'},
+            fma:{formula:'F = ma',name:'힘 공식',correct:false,desc:'힘 = 질량 × 가속도'},
+        },
+        pythag:{a:30, b:40, c:50},
+        predict:{q:'강 폭 30m, 높이차 40m → 다리 길이는?',dist:'30m+40m',hint:'힌트: √(900+1600) = √2500 = ?',ans:50,unit:'m'},
+        anim:{start:'🏠 이쪽',end:'🏪 저쪽',dist:'강 폭: 30m',arrive:'🎉 다리를 건넜어요!',
+            result:'피타가 강을 건넜어요!',formulaR:'c = √(30²+40²) = √2500 = 50m'},
+    },
+    {
+        id:'1-5', name:'로켓 발사', emoji:'🚀',
+        partsHTML: [
+            {id:'body',type:'body',name:'로켓',emoji:'🚀'},
+            {id:'wheel1',type:'wheel',name:'부스터 1',emoji:'🔥'},
+            {id:'wheel2',type:'wheel',name:'부스터 2',emoji:'🔥'},
+        ],
+        formulas: {
+            ke:{formula:'E = ½mv²',name:'운동에너지',correct:true,desc:'에너지 = ½ × 질량 × 속도²'},
+            vdt:{formula:'v = d/t',name:'속도 공식',correct:false,desc:'속도 = 거리 ÷ 시간'},
+            mgh:{formula:'E = mgh',name:'위치에너지',correct:false,desc:'에너지 = 질량 × 중력 × 높이'},
+        },
+        kineticE:{mass:5, vMax:30, vTarget:20},
+        predict:{q:'5kg 로켓이 20m/s로 날면 운동에너지는?',dist:'속도 20m/s',hint:'힌트: ½ × 5 × 400 = ?',ans:1000,unit:'J'},
+        anim:{start:'🚀 발사대',end:'🌟 목표',dist:'속도: 20m/s',arrive:'🎉 로켓 발사 성공!',
+            result:'피타의 로켓이 목표에 도착했어요!',formulaR:'E = ½mv² = ½ × 5 × 400 = 1000J'},
+    },
+    // ──── WORLD 2: 바다의 모험 ────
+    {
+        id:'2-1', name:'잠수함 탈출', emoji:'🫧', world:'sea',
+        partsHTML: [
+            {id:'body',type:'body',name:'잠수함',emoji:'🚢'},
+            {id:'wheel1',type:'wheel',name:'스크루 1',emoji:'🔩'},
+            {id:'wheel2',type:'wheel',name:'부력탱크',emoji:'🎈'},
+        ],
+        formulas: {
+            buoy:{formula:'F = ρVg',name:'부력 공식',correct:true,desc:'부력 = 밀도 × 부피 × 중력가속도'},
+            vdt:{formula:'v = d/t',name:'속도 공식',correct:false,desc:'속도 = 거리 ÷ 시간'},
+            fma:{formula:'F = ma',name:'힘 공식',correct:false,desc:'힘 = 질량 × 가속도'},
+        },
+        predict:{q:'밀도 1025kg/m³, 부피 2m³일 때 부력은?',dist:'수심 50m',hint:'힌트: F = 1025 × 2 × 10 = ?',ans:20500,unit:'N'},
+        anim:{start:'🌊 해저',end:'🏖️ 수면',dist:'수심: 50m',arrive:'🎉 수면에 도착했어요!',
+            result:'아르키가 부력으로 떠올랐어요!',formulaR:'F = ρVg = 1025 × 2 × 10 = 20,500N',
+            type:'sea_rise'},
+        intro:{char:'아르키',msg:'유레카! 🛁 나는 아르키메데스 돼지야!\n물 속에선 부력이 핵심이지!'},
+        buoyancy: { rho:1025, vMin:0, vMax:4, vTarget:2, g:10, weight:20000, vehicleType:'submarine' },
+    },
+    {
+        id:'2-2', name:'소방관 레펠', emoji:'🧗', world:'sea',
+        partsHTML: [
+            {id:'body',type:'body',name:'소방차',emoji:'🚒'},
+            {id:'wheel1',type:'wheel',name:'바퀴 1',emoji:'⚙️'},
+            {id:'wheel2',type:'wheel',name:'레펠 줄',emoji:'🪢'},
+        ],
+        formulas: {
+            pyth:{formula:'a²+b²=c²',name:'피타고라스',correct:true,desc:'직각삼각형의 빗변 = √(높이²+거리²)'},
+            buoy:{formula:'F = ρVg',name:'부력 공식',correct:false,desc:'부력 = 밀도 × 부피 × 중력'},
+            fma:{formula:'F = ma',name:'힘 공식',correct:false,desc:'힘 = 질량 × 가속도'},
+        },
+        predict:{q:'건물 높이 30m, 수평거리 40m → 줄 길이는?',dist:'30m + 40m',hint:'힌트: √(900+1600) = √2500 = ?',ans:50,unit:'m'},
+        anim:{start:'🚒 소방차',end:'🏢 옥상',dist:'높이 30m, 거리 40m',arrive:'🎉 옥상에 도착했어요!',
+            result:'아르키가 정확한 줄 길이로 옥상에 도착했어요!',formulaR:'c = √(30²+40²) = √(900+1600) = √2500 = 50m',
+            type:'rappel'},
+    },
+    {
+        id:'2-3', name:'뗏목 띄우기', emoji:'🪵', world:'sea',
+        partsHTML: [
+            {id:'body',type:'body',name:'뗏목',emoji:'🪵'},
+            {id:'wheel1',type:'wheel',name:'통나무 1',emoji:'🪵'},
+            {id:'wheel2',type:'wheel',name:'돛',emoji:'⛵'},
+        ],
+        formulas: {
+            buoy:{formula:'F = ρVg',name:'부력 공식',correct:true,desc:'부력 = 밀도 × 부피 × 중력'},
+            pres:{formula:'P = ρgh',name:'수압 공식',correct:false,desc:'압력 = 밀도 × 중력 × 깊이'},
+            mgh:{formula:'E = mgh',name:'위치에너지',correct:false,desc:'에너지 = 질량 × 중력 × 높이'},
+        },
+        predict:{q:'통나무 부피 0.5m³, 물 밀도 1000 → 부력은?',dist:'부피 0.5m³',hint:'힌트: F = 1000 × 0.5 × 10 = ?',ans:5000,unit:'N'},
+        anim:{start:'🏝️ 섬',end:'🏠 육지',dist:'거리: 2km',arrive:'🎉 육지에 도착했어요!',
+            result:'아르키가 뗏목으로 바다를 건넜어요!',formulaR:'F = ρVg = 1000 × 0.5 × 10 = 5,000N',
+            type:'sea_sail'},
+        buoyancy: { rho:1000, vMin:0, vMax:1.5, vTarget:0.5, g:10, weight:4500, vehicleType:'raft' },
+    },
+    {
+        id:'2-4', name:'물대포 발사', emoji:'💦', world:'sea',
+        partsHTML: [
+            {id:'body',type:'body',name:'물대포',emoji:'🔫'},
+            {id:'wheel1',type:'wheel',name:'펌프 1',emoji:'⚡'},
+            {id:'wheel2',type:'wheel',name:'펌프 2',emoji:'⚡'},
+        ],
+        formulas: {
+            ke:{formula:'E = ½mv²',name:'운동에너지',correct:true,desc:'에너지 = ½ × 질량 × 속도²'},
+            buoy:{formula:'F = ρVg',name:'부력 공식',correct:false,desc:'부력 = 밀도 × 부피 × 중력'},
+            fma:{formula:'F = ma',name:'힘 공식',correct:false,desc:'힘 = 질량 × 가속도'},
+        },
+        predict:{q:'물 2kg을 30m/s로 쏘면 운동에너지는?',dist:'속도 30m/s',hint:'힌트: ½ × 2 × 900 = ?',ans:900,unit:'J'},
+        anim:{start:'🔫 대포',end:'🎯 표적',dist:'속도: 30m/s',arrive:'🎉 명중이에요!',
+            result:'아르키의 물대포가 표적을 맞혔어요!',formulaR:'E = ½mv² = ½ × 2 × 900 = 900J',
+            type:'sea_cannon'},
+    },
+    {
+        id:'2-5', name:'보물선 인양', emoji:'🏴‍☠️', world:'sea',
+        partsHTML: [
+            {id:'body',type:'body',name:'크레인',emoji:'🏗️'},
+            {id:'wheel1',type:'wheel',name:'풍선 1',emoji:'🎈'},
+            {id:'wheel2',type:'wheel',name:'풍선 2',emoji:'🎈'},
+        ],
+        formulas: {
+            buoy:{formula:'F = ρVg',name:'부력 공식',correct:true,desc:'부력 > 무게여야 떠오름'},
+            pyth:{formula:'a²+b²=c²',name:'피타고라스',correct:false,desc:'직각삼각형'},
+            vdt:{formula:'v = d/t',name:'속도 공식',correct:false,desc:'속도 = 거리 ÷ 시간'},
+        },
+        predict:{q:'3000N 보물선, 풍선 밀도차 300kg/m³ → 필요 부피?',dist:'무게 3000N',hint:'힌트: V = F/(ρg) = 3000/(300×10) = ?',ans:1,unit:'m³'},
+        anim:{start:'🌊 해저',end:'🏖️ 수면',dist:'무게: 3000N',arrive:'🎉 보물선을 인양했어요!',
+            result:'아르키가 보물선을 띄웠어요!',formulaR:'V = F/(ρg) = 3000/(300×10) = 1m³',
+            type:'sea_rise'},
+        buoyancy: { rho:300, vMin:0, vMax:2, vTarget:1, g:10, weight:3000, vehicleType:'treasure' },
+    },
+];
+
+let currentLevelIdx = 0;
+let lvProgress = JSON.parse(localStorage.getItem('mp_progress') || '[true,false,false,false,false,false,false,false,false,false]');
+
+function renderLevelSelect() {
+    const grid = document.getElementById('levelGrid');
+    const w1 = LEVELS.filter(l => l.id.startsWith('1'));
+    const w2 = LEVELS.filter(l => l.id.startsWith('2'));
+
+    // Calculate total stars
+    let totalStars = 0;
+    for (let i = 0; i < LEVELS.length; i++) {
+        totalStars += parseInt(localStorage.getItem('mp_stars_'+i) || '0');
+    }
+    document.getElementById('mapStarsTotal').textContent = `⭐ ${totalStars}/30`;
+
+    // Find current (latest unlocked) level
+    let currentIdx = 0;
+    for (let i = LEVELS.length - 1; i >= 0; i--) {
+        if (lvProgress[i]) { currentIdx = i; break; }
+    }
+
+    // Decorative elements for land
+    const trees = ['🌳','🌲','🌴','🌿'];
+    const flowers = ['🌸','🌼','🌺','🌻','🌷'];
+    const corals = ['🪸','🐚','🦀','🐠','🐟','🦑'];
+
+    function makeDecorations(type, count, areaWidth) {
+        let html = '';
+        const items = type === 'land' ? [...trees,...flowers] : corals;
+        for (let i = 0; i < count; i++) {
+            const x = 10 + (Math.sin(i * 7.3) * 0.5 + 0.5) * (areaWidth - 60);
+            const y = 20 + (Math.cos(i * 5.1) * 0.5 + 0.5) * 80;
+            const cls = type === 'land' ? (i < trees.length ? 'map-tree' : 'map-flower') : 'map-coral';
+            html += `<span class="${cls}" style="left:${x}px;top:${y}px">${items[i % items.length]}</span>`;
+        }
+        return html;
+    }
+
+    function renderNode(lv, idx, isSea) {
+        const unlocked = lvProgress[idx];
+        const stars = parseInt(localStorage.getItem('mp_stars_'+idx) || '0');
+        const isCurrent = idx === currentIdx;
+
+        let sparkles = '';
+        if (unlocked && stars > 0) {
+            for (let s = 0; s < 3; s++) {
+                const angle = s * 120;
+                const r = 45;
+                const sx = 50 + Math.cos(angle * Math.PI / 180) * r;
+                const sy = 50 + Math.sin(angle * Math.PI / 180) * r;
+                sparkles += `<span class="node-sparkle" style="left:${sx}px;top:${sy}px;animation-delay:${s*0.6}s"></span>`;
+            }
+        }
+
+        return `<div class="level-node ${unlocked?'':'locked'} ${isSea?'sea-node':''} ${isCurrent?'current':''}"
+            onclick="${unlocked?`startLevel(${idx})`:''}" style="position:relative">
+            ${isCurrent ? '<div class="current-pig">🐷</div>' : ''}
+            <span class="node-emoji">${lv.emoji}</span>
+            <span class="node-id">${lv.id}</span>
+            ${unlocked && stars > 0 ? `<div class="node-stars">${'⭐'.repeat(stars)}</div>` : ''}
+            ${!unlocked ? '<div class="node-lock">🔒</div>' : ''}
+            ${sparkles}
+        </div>`;
+    }
+
+    function renderPath(isSea) {
+        return `<div class="path-segment ${isSea ? 'sea-path' : ''}"></div>`;
+    }
+
+    // Build World 1
+    let landNodes = '';
+    w1.forEach((lv, i) => {
+        if (i > 0) landNodes += renderPath(false);
+        landNodes += renderNode(lv, i, false);
+    });
+
+    // Build World 2
+    let seaNodes = '';
+    w2.forEach((lv, i) => {
+        if (i > 0) seaNodes += renderPath(true);
+        seaNodes += renderNode(lv, w1.length + i, true);
+    });
+
+    // Clouds for land
+    let cloudsHtml = '';
+    for (let i = 0; i < 4; i++) {
+        const w = 60 + (i * 23 % 40);
+        const h = 20 + (i * 11 % 15);
+        const top = 10 + (i * 37 % 60);
+        const dur = 25 + i * 10;
+        const delay = -(i * 8);
+        cloudsHtml += `<div class="map-cloud" style="width:${w}px;height:${h}px;top:${top}px;animation-duration:${dur}s;animation-delay:${delay}s"></div>`;
+    }
+
+    // Bubbles for sea
+    let bubblesHtml = '';
+    for (let i = 0; i < 12; i++) {
+        const left = 5 + (i * 67 % 85);
+        const size = 4 + (i % 4) * 3;
+        const dur = 4 + (i % 3) * 2;
+        const delay = -(i * 1.3);
+        bubblesHtml += `<div class="sea-bubble" style="left:${left}%;width:${size}px;height:${size}px;bottom:0;animation-duration:${dur}s;animation-delay:${delay}s"></div>`;
+    }
+
+    // Fish for sea
+    let fishHtml = '';
+    const fishTypes = ['🐠','🐟','🐡','🦈'];
+    for (let i = 0; i < 3; i++) {
+        const top = 30 + (i * 29 % 50);
+        const dur = 15 + i * 5;
+        const delay = -(i * 4);
+        fishHtml += `<div class="sea-fish" style="top:${top}%;animation-duration:${dur}s;animation-delay:${delay}s">${fishTypes[i]}</div>`;
+    }
+
+    // Reverse node order: bottom-to-top (1-1 at bottom, 2-5 at top)
+    let landNodesReversed = '';
+    for (let i = w1.length - 1; i >= 0; i--) {
+        if (i < w1.length - 1) landNodesReversed += renderPath(false);
+        landNodesReversed += renderNode(w1[i], i, false);
+    }
+    let seaNodesReversed = '';
+    for (let i = w2.length - 1; i >= 0; i--) {
+        if (i < w2.length - 1) seaNodesReversed += renderPath(true);
+        seaNodesReversed += renderNode(w2[i], w1.length + i, true);
+    }
+
+    grid.innerHTML = `
+        <!-- WORLD 2: Sea (top = harder levels) -->
+        <div class="world-section-sea">
+            <div class="sea-bubbles">${bubblesHtml}${fishHtml}</div>
+            ${makeDecorations('sea', 6, 600)}
+            <div class="world-sign sea-sign">🌊 월드 2: 바다의 모험</div>
+            <div class="map-path">${seaNodesReversed}</div>
+        </div>
+
+        <!-- Transition Zone -->
+        <div class="world-transition"></div>
+
+        <!-- WORLD 1: Land (bottom = start) -->
+        <div class="world-section-land">
+            <div class="map-clouds">${cloudsHtml}</div>
+            ${makeDecorations('land', 8, 600)}
+            <div class="world-sign">🌍 월드 1: 땅의 모험</div>
+            <div class="map-path">${landNodesReversed}</div>
+        </div>
+    `;
+
+    // Scroll to current level (start from bottom)
+    setTimeout(() => {
+        const scroll = grid.closest('.map-scroll') || grid.parentElement;
+        const currentNode = grid.querySelector('.level-node.current');
+        if (currentNode) {
+            currentNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            // Default: scroll to bottom (level 1-1)
+            scroll.scrollTop = scroll.scrollHeight;
+        }
+    }, 200);
+}
+
+function startLevel(idx) {
+    currentLevelIdx = idx;
+    const lv = LEVELS[idx];
+
+    // Update header
+    document.querySelector('.header-level').textContent = `Level ${lv.id}: ${lv.name}`;
+
+    // Update PARTS_DEF and FORMULAS
+    FORMULAS = {...lv.formulas};
+
+    // Update parts panel
+    const panel = document.querySelector('.parts-panel');
+    panel.innerHTML = '<h3>부품 파츠</h3>' + lv.partsHTML.map(p =>
+        `<div class="part-item" data-part="${p.id}" ${p.type!=='body'?`data-type="${p.type}"`:''}  draggable="false">
+            <span class="part-emoji">${p.emoji}</span><span>${p.name}</span>
+        </div>`
+    ).join('');
+
+    // Update formula panel
+    const fPanel = document.querySelector('.formula-panel');
+    fPanel.innerHTML = '<h3>공식 블록</h3>' + Object.entries(lv.formulas).map(([k,f]) =>
+        `<div class="formula-block" data-formula="${k}" draggable="false">
+            <div class="formula-text">${f.formula}</div>
+            <div class="formula-name">${f.name}</div>
+        </div>`
+    ).join('');
+
+    // Update predict phase
+    document.querySelector('.predict-question').textContent = lv.predict.q;
+    document.querySelector('.info-value').textContent = lv.predict.dist;
+    document.querySelector('.predict-input-group .unit').textContent = lv.predict.unit;
+    const hintEl = document.querySelector('#predictPhase .predict-card div[style]');
+    if(hintEl) hintEl.textContent = lv.predict.hint;
+
+    // Show game, hide selector
+    document.getElementById('levelSelect').style.display = 'none';
+    document.getElementById('game').style.display = '';
+
+    // Reset game
+    placedParts = [];
+    engineFormula = null;
+    phase = 'build';
+    firstTry = true;
+    predictedTime = null;
+    grid = Array.from({length: GRID_H}, () => Array(GRID_W).fill(null));
+
+    document.getElementById('buildPhase').style.display = 'flex';
+    document.getElementById('buildControls').style.display = 'flex';
+    document.getElementById('predictPhase').style.display = 'none';
+    document.getElementById('testPhase').style.display = 'none';
+    document.getElementById('resultOverlay').style.display = 'none';
+
+    initGrid();
+    setupDrag();
+    renderPlacedParts();
+    // Character intro for World 2
+    if (lv.intro) {
+        setTimeout(() => showSpeech(`🛁 ${lv.intro.char}: ${lv.intro.msg}`, 5000), 300);
+        setTimeout(() => showSpeech(`Level ${lv.id}! ${lv.name} — 본체부터 놓아봐! 🐷`, 4000), 5500);
+    } else {
+        setTimeout(() => showSpeech(`Level ${lv.id}! ${lv.name} — 본체부터 놓아봐! 🐷`, 4000), 500);
+    }
+}
+
+// ──── GAME STATE ────
+const GRID_W = 5, GRID_H = 5, CELL_SIZE = 60;
+let grid = Array.from({length: GRID_H}, () => Array(GRID_W).fill(null));
+let placedParts = [];
+let engineFormula = null;
+let phase = 'build';
+let firstTry = true;
+let predictedTime = null;
+
+const PARTS_DEF = {
+    body:  { name: '본체', emoji: '🔧', w: 3, h: 2, color: '#8B6914', borderColor: '#6B4F12' },
+    wheel: { name: '바퀴', emoji: '⚙️', w: 1, h: 1, color: '#444', borderColor: '#222' },
+};
+
+let FORMULAS = {
+    vdt:  { formula: 'v = d/t', name: '속도 공식', correct: true, desc: '속도 = 거리 ÷ 시간' },
+    fma:  { formula: 'F = ma', name: '힘 공식', correct: false, desc: '힘 = 질량 × 가속도' },
+    pyth: { formula: 'a²+b²=c²', name: '피타고라스', correct: false, desc: '직각삼각형의 세 변의 관계' },
+};
+
+// ──── SPINNER ────
+let spinVal = 0;
+function spinPredict(delta) {
+    spinVal = Math.max(0, Math.min(999999, spinVal + delta));
+    document.getElementById('spinnerDisplay').textContent = spinVal.toLocaleString();
+    document.getElementById('predictTime').value = spinVal;
+    playSound('click');
+    // Bounce animation
+    const d = document.getElementById('spinnerDisplay');
+    d.style.transform = 'scale(1.08)';
+    setTimeout(() => d.style.transform = '', 100);
+}
+
+// ──── INIT GRID ────
+function initGrid() {
+    const gridEl = document.getElementById('buildGrid');
+    gridEl.innerHTML = '';
+    // Remove old placed part visuals
+    gridEl.querySelectorAll('.placed-part').forEach(e => e.remove());
+
+    for (let r = 0; r < GRID_H; r++) {
+        for (let c = 0; c < GRID_W; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            cell.dataset.row = r;
+            cell.dataset.col = c;
+            gridEl.appendChild(cell);
+        }
+    }
+}
+
+// ──── DRAW PLACED PARTS ON GRID ────
+function renderPlacedParts() {
+    const gridEl = document.getElementById('buildGrid');
+    // Remove old visuals
+    gridEl.querySelectorAll('.placed-part').forEach(e => e.remove());
+
+    // Clear grid data
+    grid = Array.from({length: GRID_H}, () => Array(GRID_W).fill(null));
+
+    placedParts.forEach((p, idx) => {
+        const def = PARTS_DEF[p.type];
+        // Mark grid cells
+        for (let r = p.gridY; r < p.gridY + p.h; r++) {
+            for (let c = p.gridX; c < p.gridX + p.w; c++) {
+                if (r < GRID_H && c < GRID_W) grid[r][c] = p.id;
+            }
+        }
+
+        const el = document.createElement('div');
+        el.className = 'placed-part';
+        el.style.width = (p.w * CELL_SIZE + (p.w - 1) * 2) + 'px';
+        el.style.height = (p.h * CELL_SIZE + (p.h - 1) * 2) + 'px';
+        el.style.left = (p.gridX * (CELL_SIZE + 2)) + 'px';
+        el.style.top = (p.gridY * (CELL_SIZE + 2)) + 'px';
+        el.style.background = def.color;
+        el.style.borderColor = def.borderColor;
+
+        // If body, show engine slot indicator in center
+        if (p.type === 'body') {
+            el.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <span style="font-size:24px;">${def.emoji}</span>
+                    <span style="font-size:11px;color:rgba(255,255,255,0.8);">${def.name}</span>
+                    ${engineFormula ? `<span style="font-family:var(--font-mono);font-size:11px;color:#ffd700;background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:6px;">${FORMULAS[engineFormula].formula}</span>` : '<span style="font-size:10px;color:#ffd700;border:1px dashed #ffd700;padding:2px 6px;border-radius:6px;">⚡엔진 슬롯</span>'}
+                </div>
+            `;
+        } else {
+            el.innerHTML = `<span style="font-size:28px;">${def.emoji}</span>`;
+        }
+
+        // Remove button
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'remove-hint';
+        removeBtn.textContent = '✕';
+        removeBtn.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
+            removePart(idx);
+        });
+        el.appendChild(removeBtn);
+
+        gridEl.appendChild(el);
+    });
+
+    // Update part panel items (mark used)
+    document.querySelectorAll('.part-item').forEach(item => {
+        const partId = item.dataset.part;
+        const isUsed = placedParts.some(p => p.id === partId);
+        item.classList.toggle('used', isUsed);
+    });
+
+    // Update formula blocks (mark used)
+    document.querySelectorAll('.formula-block').forEach(block => {
+        block.classList.toggle('used', engineFormula === block.dataset.formula);
+    });
+
+    // Highlight cells
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        const r = +cell.dataset.row, c = +cell.dataset.col;
+        cell.classList.toggle('occupied', grid[r][c] !== null);
+    });
+
+    updateGoButton();
+}
+
+function removePart(idx) {
+    const p = placedParts[idx];
+    if (p.type === 'body') {
+        // Also remove engine formula
+        engineFormula = null;
+    }
+    placedParts.splice(idx, 1);
+    playSound('click');
+    renderPlacedParts();
+}
+
+function removeFormula() {
+    engineFormula = null;
+    renderPlacedParts();
+}
+
+// ──── VALIDATION ────
+function validateVehicle() {
+    const body = placedParts.find(p => p.type === 'body');
+    const wheels = placedParts.filter(p => p.type === 'wheel');
+
+    if (!body) return { valid: false, msg: '본체가 필요해요! 🔧' };
+    if (wheels.length < 2) return { valid: false, msg: '바퀴가 2개 필요해요! ⚙️' };
+
+    // Check wheels are below body
+    const bodyBottom = body.gridY + body.h;
+    const wheelsBelow = wheels.filter(w => w.gridY >= bodyBottom - 1 && w.gridY <= bodyBottom);
+    if (wheelsBelow.length < 2) return { valid: false, msg: '바퀴를 본체 아래에 놓아주세요!' };
+
+    if (!engineFormula) return { valid: false, msg: '엔진에 공식을 넣어주세요! ⚡' };
+
+    return { valid: true, formula: engineFormula };
+}
+
+function updateGoButton() {
+    const btn = document.getElementById('btnGo');
+    const v = validateVehicle();
+    btn.disabled = !v.valid;
+}
+
+// ──── DRAG & DROP (Pointer Events) ────
+let dragData = null; // { source: 'part'|'formula', id, type, el, offsetX, offsetY }
+const ghostEl = document.getElementById('dragGhost');
+
+function setupDrag() {
+    // Parts
+    document.querySelectorAll('.part-item').forEach(item => {
+        item.addEventListener('pointerdown', onPartDown);
+    });
+    // Formulas
+    document.querySelectorAll('.formula-block').forEach(block => {
+        block.addEventListener('pointerdown', onFormulaDown);
+    });
+    // Global move/up
+    document.addEventListener('pointermove', onDragMove);
+    document.addEventListener('pointerup', onDragUp);
+}
+
+function onPartDown(e) {
+    if (e.target.closest('.used')) return;
+    const item = e.currentTarget;
+    const partId = item.dataset.part;
+    const partType = item.dataset.type || partId;
+    const def = PARTS_DEF[partType === 'wheel1' || partType === 'wheel2' ? 'wheel' : partType];
+
+    const rect = item.getBoundingClientRect();
+    dragData = {
+        source: 'part',
+        id: partId,
+        type: partType === 'wheel1' || partType === 'wheel2' ? 'wheel' : partType,
+        partId: partId,
+        w: def.w,
+        h: def.h,
+        def: def,
+    };
+
+    // Ghost
+    ghostEl.style.display = 'flex';
+    ghostEl.style.width = (def.w * CELL_SIZE) + 'px';
+    ghostEl.style.height = (def.h * CELL_SIZE) + 'px';
+    ghostEl.style.background = def.color;
+    ghostEl.style.borderRadius = '8px';
+    ghostEl.style.border = '3px solid ' + def.borderColor;
+    ghostEl.style.alignItems = 'center';
+    ghostEl.style.justifyContent = 'center';
+    ghostEl.style.fontSize = '28px';
+    ghostEl.innerHTML = def.emoji;
+    ghostEl.style.left = (e.clientX - def.w * CELL_SIZE / 2) + 'px';
+    ghostEl.style.top = (e.clientY - def.h * CELL_SIZE / 2) + 'px';
+
+    item.setPointerCapture(e.pointerId);
+    e.preventDefault();
+}
+
+function onFormulaDown(e) {
+    if (e.target.closest('.used')) return;
+    const block = e.currentTarget;
+    const formulaId = block.dataset.formula;
+    const f = FORMULAS[formulaId];
+
+    dragData = {
+        source: 'formula',
+        id: formulaId,
+        formula: f,
+    };
+
+    ghostEl.style.display = 'flex';
+    ghostEl.style.width = '120px';
+    ghostEl.style.height = '50px';
+    ghostEl.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    ghostEl.style.borderRadius = '12px';
+    ghostEl.style.border = '2px solid rgba(255,255,255,0.5)';
+    ghostEl.style.alignItems = 'center';
+    ghostEl.style.justifyContent = 'center';
+    ghostEl.style.fontSize = '14px';
+    ghostEl.style.fontFamily = 'var(--font-mono)';
+    ghostEl.style.color = 'white';
+    ghostEl.style.fontWeight = '700';
+    ghostEl.innerHTML = f.formula;
+    ghostEl.style.left = (e.clientX - 60) + 'px';
+    ghostEl.style.top = (e.clientY - 25) + 'px';
+
+    block.setPointerCapture(e.pointerId);
+    e.preventDefault();
+}
+
+function onDragMove(e) {
+    if (!dragData) return;
+    if (dragData.source === 'part') {
+        ghostEl.style.left = (e.clientX - dragData.w * CELL_SIZE / 2) + 'px';
+        ghostEl.style.top = (e.clientY - dragData.h * CELL_SIZE / 2) + 'px';
+    } else {
+        ghostEl.style.left = (e.clientX - 60) + 'px';
+        ghostEl.style.top = (e.clientY - 25) + 'px';
+    }
+
+    // Highlight grid cells
+    highlightCells(e);
+}
+
+function highlightCells(e) {
+    // Clear highlights
+    document.querySelectorAll('.grid-cell').forEach(c => {
+        c.classList.remove('highlight', 'invalid');
+    });
+
+    if (!dragData) return;
+    const gridEl = document.getElementById('buildGrid');
+    const gridRect = gridEl.getBoundingClientRect();
+
+    if (dragData.source === 'part') {
+        const cx = e.clientX - gridRect.left;
+        const cy = e.clientY - gridRect.top;
+        const col = Math.round((cx - dragData.w * CELL_SIZE / 2) / (CELL_SIZE + 2));
+        const row = Math.round((cy - dragData.h * CELL_SIZE / 2) / (CELL_SIZE + 2));
+
+        if (canPlace(row, col, dragData.w, dragData.h, dragData.partId)) {
+            for (let r = row; r < row + dragData.h; r++) {
+                for (let c = col; c < col + dragData.w; c++) {
+                    const cell = gridEl.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
+                    if (cell) cell.classList.add('highlight');
+                }
+            }
+        } else if (row >= 0 && col >= 0 && row + dragData.h <= GRID_H && col + dragData.w <= GRID_W) {
+            for (let r = row; r < row + dragData.h; r++) {
+                for (let c = col; c < col + dragData.w; c++) {
+                    const cell = gridEl.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
+                    if (cell) cell.classList.add('invalid');
+                }
+            }
+        }
+    } else if (dragData.source === 'formula') {
+        // Highlight the body's engine slot area if hovering on body
+        const body = placedParts.find(p => p.type === 'body');
+        if (body) {
+            // Engine is center of body
+            const er = body.gridY;
+            const ec = body.gridX + 1;
+            const cell = gridEl.querySelector(`.grid-cell[data-row="${er}"][data-col="${ec}"]`);
+            const cx = e.clientX - gridRect.left;
+            const cy = e.clientY - gridRect.top;
+            // Check if over body area
+            const bx1 = body.gridX * (CELL_SIZE + 2);
+            const by1 = body.gridY * (CELL_SIZE + 2);
+            const bx2 = bx1 + body.w * (CELL_SIZE + 2);
+            const by2 = by1 + body.h * (CELL_SIZE + 2);
+            if (cx >= bx1 && cx <= bx2 && cy >= by1 && cy <= by2) {
+                // Highlight body cells
+                for (let r = body.gridY; r < body.gridY + body.h; r++) {
+                    for (let c = body.gridX; c < body.gridX + body.w; c++) {
+                        const cl = gridEl.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
+                        if (cl) cl.classList.add('highlight');
+                    }
+                }
+            }
+        }
+    }
+}
+
+function canPlace(row, col, w, h, partId) {
+    if (row < 0 || col < 0 || row + h > GRID_H || col + w > GRID_W) return false;
+    for (let r = row; r < row + h; r++) {
+        for (let c = col; c < col + w; c++) {
+            if (grid[r][c] !== null) return false;
+        }
+    }
+    return true;
+}
+
+function onDragUp(e) {
+    if (!dragData) return;
+    ghostEl.style.display = 'none';
+
+    // Clear highlights
+    document.querySelectorAll('.grid-cell').forEach(c => {
+        c.classList.remove('highlight', 'invalid');
+    });
+
+    const gridEl = document.getElementById('buildGrid');
+    const gridRect = gridEl.getBoundingClientRect();
+
+    if (dragData.source === 'part') {
+        const cx = e.clientX - gridRect.left;
+        const cy = e.clientY - gridRect.top;
+        const col = Math.round((cx - dragData.w * CELL_SIZE / 2) / (CELL_SIZE + 2));
+        const row = Math.round((cy - dragData.h * CELL_SIZE / 2) / (CELL_SIZE + 2));
+
+        if (canPlace(row, col, dragData.w, dragData.h, dragData.partId)) {
+            placedParts.push({
+                id: dragData.partId,
+                type: dragData.type,
+                gridX: col,
+                gridY: row,
+                w: dragData.w,
+                h: dragData.h,
+            });
+            playSound('place');
+            renderPlacedParts();
+
+            // Tutorial hints
+            if (dragData.type === 'body' && !placedParts.some(p => p.type === 'wheel')) {
+                showSpeech('좋아요! 이제 바퀴를 본체 아래에 놓아보세요! ⚙️', 3000);
+            }
+        } else {
+            // Check if dropped outside grid entirely
+            if (cx < 0 || cy < 0 || cx > gridRect.width || cy > gridRect.height) {
+                // Dropped outside — no action
+            } else {
+                showSpeech('거기엔 놓을 수 없어요! 빈 칸에 놓아보세요.', 2000);
+            }
+        }
+    } else if (dragData.source === 'formula') {
+        // Check if dropped on body
+        const body = placedParts.find(p => p.type === 'body');
+        if (body) {
+            const cx = e.clientX - gridRect.left;
+            const cy = e.clientY - gridRect.top;
+            const bx1 = body.gridX * (CELL_SIZE + 2);
+            const by1 = body.gridY * (CELL_SIZE + 2);
+            const bx2 = bx1 + body.w * (CELL_SIZE + 2);
+            const by2 = by1 + body.h * (CELL_SIZE + 2);
+
+            if (cx >= bx1 && cx <= bx2 && cy >= by1 && cy <= by2) {
+                engineFormula = dragData.id;
+                playSound('engine');
+                renderPlacedParts();
+                showSpeech('공식 장착 완료! ⚡ 출발 버튼을 눌러보세요!', 3000);
+            } else {
+                showSpeech('공식은 본체의 엔진 슬롯에 넣어주세요!', 2000);
+            }
+        } else {
+            showSpeech('먼저 본체를 격자에 놓아주세요!', 2000);
+        }
+    }
+
+    dragData = null;
+}
+
+// ──── SPEECH BUBBLE ────
+let speechTimer = null;
+function showSpeech(msg, duration = 3000) {
+    const el = document.getElementById('pigSpeech');
+    el.textContent = '🐷 ' + msg;
+    el.classList.add('show');
+    clearTimeout(speechTimer);
+    speechTimer = setTimeout(() => el.classList.remove('show'), duration);
+}
+
+// ──── PHASE TRANSITIONS ────
+function goToPredict() {
+    const v = validateVehicle();
+    if (!v.valid) {
+        showSpeech(v.msg, 2500);
+        playSound('wrong');
+        return;
+    }
+
+    phase = 'predict';
+    playSound('click');
+
+    document.getElementById('buildPhase').style.display = 'none';
+    document.getElementById('buildControls').style.display = 'none';
+    document.getElementById('predictPhase').style.display = 'flex';
+
+    // Show formula info
+    const f = FORMULAS[engineFormula];
+    document.getElementById('predictFormulaDisplay').textContent = f.formula;
+    document.getElementById('predictHint').textContent = f.desc;
+
+    // Reset spinner
+    spinVal = 0;
+    document.getElementById('spinnerDisplay').textContent = '0';
+    document.getElementById('predictTime').value = '0';
+    document.getElementById('predictUnit').textContent = LEVELS[currentLevelIdx].predict.unit;
+    document.getElementById('predictHintText').textContent = LEVELS[currentLevelIdx].predict.hint;
+}
+
+function startTest() {
+    const timeInput = document.getElementById('predictTime');
+    predictedTime = parseFloat(timeInput.value) || null;
+
+    phase = 'test';
+    playSound('drive');
+
+    document.getElementById('predictPhase').style.display = 'none';
+    document.getElementById('testPhase').style.display = 'flex';
+
+    const lv = LEVELS[currentLevelIdx];
+    const isCorrect = FORMULAS[engineFormula]?.correct;
+    if (lv.buoyancy && isCorrect) {
+        runBuoyancyMiniGame();
+    } else if (lv.velocity && isCorrect) {
+        runVelocityMiniGame();
+    } else if (lv.force && isCorrect) {
+        runForceMiniGame();
+    } else if (lv.kineticE && isCorrect) {
+        runKineticEMiniGame();
+    } else if (lv.potentialE && isCorrect) {
+        runPotentialEMiniGame();
+    } else if (lv.pythag && isCorrect) {
+        runPythagorasMiniGame();
+    } else {
+        runTestAnimation();
+    }
+}
+
+function resetGrid() {
+    placedParts = [];
+    engineFormula = null;
+    grid = Array.from({length: GRID_H}, () => Array(GRID_W).fill(null));
+    firstTry = true;
+    renderPlacedParts();
+    playSound('click');
+    showSpeech('다시 조립해 볼까요? 본체부터 놓아보세요!', 2500);
+}
+
+function retryLevel() {
+    document.getElementById('resultOverlay').style.display = 'none';
+    document.getElementById('testPhase').style.display = 'none';
+    document.getElementById('buildPhase').style.display = 'flex';
+    document.getElementById('buildControls').style.display = 'flex';
+    phase = 'build';
+    placedParts = [];
+    engineFormula = null;
+    grid = Array.from({length: GRID_H}, () => Array(GRID_W).fill(null));
+    firstTry = true;
+    predictedTime = null;
+    renderPlacedParts();
+    showSpeech('다시 도전해 볼까요? 💪', 2500);
+}
+
+// ──── CANVAS TEST ANIMATION ────
+function runTestAnimation() {
+    const canvas = document.getElementById('trackCanvas');
+    const parent = document.getElementById('testPhase');
+    const W = Math.min(parent.clientWidth - 40, 900);
+    const H = Math.min(parent.clientHeight - 40, 400);
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    const formula = FORMULAS[engineFormula];
+    const isCorrect = formula.correct;
+
+    // Animation state
+    const ROAD_Y = H * 0.65;
+    const GROUND_Y = ROAD_Y + 30;
+    const HOME_X = 80;
+    const MARKET_X = W - 80;
+    const TOTAL_DIST = MARKET_X - HOME_X;
+
+    let vehicleX = HOME_X;
+    let vehicleY = ROAD_Y - 28;
+    let vehicleVX = 0;
+    let vehicleVY = 0;
+    let vehicleAngle = 0;
+    let time = 0;
+    let done = false;
+    let failed = false;
+    let failType = '';
+    let failMsg = '';
+    let showMsg = false;
+    let msgAlpha = 0;
+    let particles = [];
+    let pigExpression = 'happy'; // happy, worried, surprised, dizzy
+    let wheelAngle = 0;
+    let shakeX = 0, shakeY = 0;
+
+    // Speed for correct formula: 10 m/s → takes 10s, but animate in ~3 real seconds
+    const ANIM_SPEED = isCorrect ? TOTAL_DIST / 180 : TOTAL_DIST / 120; // px per frame
+
+    const isSea = LEVELS[currentLevelIdx].world === 'sea';
+    const animType = LEVELS[currentLevelIdx].anim.type || 'land';
+    const WATER_Y = ROAD_Y - 20;
+
+    function drawBackground() {
+        if (animType === 'rappel') {
+            drawRappelBg();
+            return;
+        }
+        if (isSea) {
+            drawSeaBg();
+            return;
+        }
+        // ── LAND BACKGROUND ──
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, ROAD_Y);
+        skyGrad.addColorStop(0, '#4A90D9');
+        skyGrad.addColorStop(1, '#87CEEB');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, W, ROAD_Y);
+
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        drawCloud(ctx, (100 + time * 0.3) % (W + 100) - 50, 40, 50);
+        drawCloud(ctx, (300 + time * 0.2) % (W + 100) - 50, 70, 35);
+        drawCloud(ctx, (500 + time * 0.15) % (W + 100) - 50, 30, 45);
+
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath(); ctx.arc(W - 60, 50, 30, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#FFF9C4';
+        ctx.beginPath(); ctx.arc(W - 60, 50, 24, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = '#4CAF50';
+        ctx.fillRect(0, ROAD_Y + 30, W, H - ROAD_Y - 30);
+        ctx.fillStyle = '#888'; ctx.fillRect(0, ROAD_Y - 5, W, 40);
+        ctx.fillStyle = '#666'; ctx.fillRect(0, ROAD_Y - 5, W, 4); ctx.fillRect(0, ROAD_Y + 31, W, 4);
+        ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 2; ctx.setLineDash([20, 15]);
+        ctx.beginPath(); ctx.moveTo(0, ROAD_Y + 15); ctx.lineTo(W, ROAD_Y + 15); ctx.stroke(); ctx.setLineDash([]);
+
+        drawHouse(ctx, HOME_X - 30, ROAD_Y - 55);
+        drawMarket(ctx, MARKET_X - 20, ROAD_Y - 55);
+        drawDistLabel();
+        drawProgressDots();
+    }
+
+    // ── SEA BACKGROUND ──
+    function drawSeaBg() {
+        // Sky
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, WATER_Y);
+        skyGrad.addColorStop(0, '#1a365d');
+        skyGrad.addColorStop(1, '#2b6cb0');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, W, WATER_Y);
+
+        // Stars
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        for (let i = 0; i < 20; i++) {
+            const sx = (i * 47 + 13) % W;
+            const sy = (i * 31 + 7) % (WATER_Y - 20);
+            const twinkle = Math.sin(time * 0.05 + i) * 0.3 + 0.7;
+            ctx.globalAlpha = twinkle * 0.6;
+            ctx.beginPath(); ctx.arc(sx, sy, 1.5, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        // Moon
+        ctx.fillStyle = '#FFF9C4';
+        ctx.beginPath(); ctx.arc(W - 70, 40, 22, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#1a365d';
+        ctx.beginPath(); ctx.arc(W - 60, 35, 20, 0, Math.PI * 2); ctx.fill();
+
+        // Water
+        const waterGrad = ctx.createLinearGradient(0, WATER_Y, 0, H);
+        waterGrad.addColorStop(0, '#2b6cb0');
+        waterGrad.addColorStop(0.3, '#1a4d7a');
+        waterGrad.addColorStop(1, '#0a2a4a');
+        ctx.fillStyle = waterGrad;
+        ctx.fillRect(0, WATER_Y, W, H - WATER_Y);
+
+        // Animated waves at surface
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 2;
+        for (let w = 0; w < 3; w++) {
+            ctx.beginPath();
+            for (let x = 0; x < W; x += 4) {
+                const y = WATER_Y + Math.sin(x * 0.02 + time * 0.04 + w * 2) * 4 + w * 8;
+                x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+
+        // Bubbles
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        for (let i = 0; i < 8; i++) {
+            const bx = (i * 97 + time * 0.5) % W;
+            const by = WATER_Y + 30 + ((i * 53 + time * 0.3) % (H - WATER_Y - 40));
+            const br = 3 + (i % 3) * 2;
+            ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // Coral/seabed
+        const seabedY = H - 40;
+        ctx.fillStyle = '#0a1f35';
+        ctx.fillRect(0, seabedY, W, 40);
+        // Corals
+        const coralColors = ['#FF6B6B','#4ECDC4','#FFE66D','#A78BFA'];
+        for (let i = 0; i < 12; i++) {
+            const cx = i * (W/12) + 20;
+            const ch = 15 + (i * 7 % 20);
+            ctx.fillStyle = coralColors[i % coralColors.length];
+            ctx.beginPath();
+            ctx.ellipse(cx, seabedY, 8 + (i%3)*3, ch, 0, Math.PI, 0);
+            ctx.fill();
+        }
+
+        // Start/end labels
+        ctx.fillStyle = '#fff'; ctx.font = '12px Jua'; ctx.textAlign = 'center';
+        ctx.fillText(LEVELS[currentLevelIdx].anim.start, HOME_X, WATER_Y + 20);
+        ctx.fillText(LEVELS[currentLevelIdx].anim.end, MARKET_X, WATER_Y + 20);
+
+        drawDistLabel();
+        drawProgressDots();
+    }
+
+    // ── RAPPEL BACKGROUND (소방관 레펠) ──
+    let rappelProgress = 0;
+    function drawRappelBg() {
+        // Night sky
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+        skyGrad.addColorStop(0, '#1a1a2e');
+        skyGrad.addColorStop(0.5, '#16213e');
+        skyGrad.addColorStop(1, '#1a1a2e');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, W, H);
+
+        // Stars
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        for (let i = 0; i < 30; i++) {
+            const sx = (i * 31 + 17) % W, sy = (i * 23 + 5) % (H * 0.4);
+            ctx.beginPath(); ctx.arc(sx, sy, 1, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // Ground
+        ctx.fillStyle = '#2d3748';
+        ctx.fillRect(0, H - 50, W, 50);
+        ctx.fillStyle = '#4a5568';
+        ctx.fillRect(0, H - 52, W, 4);
+
+        // Building (right side)
+        const bldgX = W - 160, bldgW = 120, bldgH = H - 80;
+        ctx.fillStyle = '#4a5568';
+        ctx.fillRect(bldgX, 30, bldgW, bldgH);
+        // Windows
+        for (let wy = 50; wy < bldgH; wy += 40) {
+            for (let wx = bldgX + 15; wx < bldgX + bldgW - 15; wx += 30) {
+                ctx.fillStyle = Math.random() > 0.3 ? '#fbd38d' : '#2d3748';
+                ctx.fillRect(wx, wy, 18, 24);
+            }
+        }
+        // Roof
+        ctx.fillStyle = '#718096';
+        ctx.fillRect(bldgX - 5, 25, bldgW + 10, 12);
+        // "옥상" label
+        ctx.fillStyle = '#fbd38d'; ctx.font = 'bold 13px Jua'; ctx.textAlign = 'center';
+        ctx.fillText('🏢 옥상', bldgX + bldgW/2, 20);
+
+        // Fire truck (left side)
+        const truckX = 60, truckY = H - 80;
+        ctx.fillStyle = '#e53e3e';
+        roundRect(ctx, truckX, truckY, 80, 30, 4); ctx.fill();
+        ctx.fillStyle = '#fff';
+        roundRect(ctx, truckX + 5, truckY + 5, 25, 15, 3); ctx.fill();
+        ctx.fillStyle = '#333';
+        ctx.beginPath(); ctx.arc(truckX + 20, truckY + 32, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(truckX + 60, truckY + 32, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fbd38d'; ctx.font = '10px Jua';
+        ctx.fillText('🚒 소방차', truckX + 40, truckY - 5);
+
+        // Rappel rope (동적)
+        if (isCorrect && (phase_anim === 'drive' || phase_anim === 'start')) {
+            if (phase_anim === 'drive') rappelProgress = Math.min(rappelProgress + 0.012, 1);
+            const startX = truckX + 70, startY = truckY;
+            const endX = bldgX + 10, endY = 35;
+            const curX = startX + (endX - startX) * rappelProgress;
+            const curY = startY + (endY - startY) * rappelProgress;
+
+            // Rope line
+            ctx.strokeStyle = '#fbd38d'; ctx.lineWidth = 3;
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(curX, curY); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Pig on rope
+            drawPig(ctx, curX, curY - 15, rappelProgress > 0.9 ? 'happy' : 'surprised');
+
+            // Distance annotations
+            ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1;
+            ctx.setLineDash([4,4]);
+            // Vertical line
+            ctx.beginPath(); ctx.moveTo(bldgX + 10, startY); ctx.lineTo(bldgX + 10, endY); ctx.stroke();
+            // Horizontal line
+            ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(bldgX + 10, startY); ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#63b3ed'; ctx.font = 'bold 14px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.fillText('30m', bldgX + 25, (startY + endY) / 2);
+            ctx.fillText('40m', (startX + bldgX + 10) / 2, startY + 16);
+
+            // Hypotenuse label
+            const midRopeX = (startX + curX) / 2 - 20;
+            const midRopeY = (startY + curY) / 2 - 10;
+            ctx.fillStyle = '#fbd38d'; ctx.font = 'bold 16px JetBrains Mono';
+            ctx.fillText(`c = ${Math.round(50 * rappelProgress)}m`, midRopeX, midRopeY);
+        }
+
+        // Distance/info label
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        roundRect(ctx, W/2 - 80, H - 40, 160, 30, 8); ctx.fill();
+        ctx.fillStyle = '#a0aec0'; ctx.font = '13px Jua'; ctx.textAlign = 'center';
+        ctx.fillText(LEVELS[currentLevelIdx].anim.dist, W/2, H - 20);
+    }
+
+    function drawDistLabel() {
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.fillRect(W / 2 - 50, ROAD_Y + 40, 100, 26);
+        ctx.strokeStyle = '#aaa'; ctx.lineWidth = 1;
+        ctx.strokeRect(W / 2 - 50, ROAD_Y + 40, 100, 26);
+        ctx.fillStyle = '#666'; ctx.font = '14px Jua'; ctx.textAlign = 'center';
+        ctx.fillText(LEVELS[currentLevelIdx].anim.dist, W / 2, ROAD_Y + 58);
+    }
+
+    function drawProgressDots() {
+        const progress = Math.max(0, (vehicleX - HOME_X) / TOTAL_DIST);
+        const dotColor = isSea ? '#38B2AC' : '#4CAF50';
+        for (let i = 0; i <= 10; i++) {
+            const px = HOME_X + (TOTAL_DIST * i / 10);
+            ctx.fillStyle = (i / 10 <= progress) ? dotColor : (isSea ? 'rgba(255,255,255,0.2)' : '#ccc');
+            ctx.beginPath(); ctx.arc(px, ROAD_Y + 78, 4, 0, Math.PI * 2); ctx.fill();
+        }
+    }
+
+    function drawCloud(ctx, x, y, size) {
+        ctx.beginPath();
+        ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+        ctx.arc(x + size * 0.4, y - size * 0.2, size * 0.35, 0, Math.PI * 2);
+        ctx.arc(x + size * 0.7, y, size * 0.3, 0, Math.PI * 2);
+        ctx.arc(x + size * 0.35, y + size * 0.15, size * 0.25, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    function drawHouse(ctx, x, y) {
+        // Wall
+        ctx.fillStyle = '#FFCC80';
+        ctx.fillRect(x, y + 18, 40, 35);
+        // Roof
+        ctx.fillStyle = '#D32F2F';
+        ctx.beginPath();
+        ctx.moveTo(x - 5, y + 18);
+        ctx.lineTo(x + 20, y);
+        ctx.lineTo(x + 45, y + 18);
+        ctx.closePath();
+        ctx.fill();
+        // Door
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(x + 14, y + 33, 12, 20);
+        // Window
+        ctx.fillStyle = '#81D4FA';
+        ctx.fillRect(x + 5, y + 24, 8, 8);
+        // Label
+        ctx.fillStyle = '#666';
+        ctx.font = '12px Jua';
+        ctx.textAlign = 'center';
+        ctx.fillText(LEVELS[currentLevelIdx].anim.start, x + 20, y + 65);
+    }
+
+    function drawMarket(ctx, x, y) {
+        // Building
+        ctx.fillStyle = '#C8E6C9';
+        ctx.fillRect(x, y + 10, 45, 43);
+        // Roof/awning
+        ctx.fillStyle = '#FF7043';
+        ctx.fillRect(x - 3, y + 6, 51, 10);
+        // Stripes on awning
+        ctx.fillStyle = '#FFCCBC';
+        for (let i = 0; i < 5; i++) {
+            ctx.fillRect(x - 3 + i * 10 + 5, y + 6, 5, 10);
+        }
+        // Door
+        ctx.fillStyle = '#5D4037';
+        ctx.fillRect(x + 16, y + 33, 14, 20);
+        // Sign
+        ctx.fillStyle = '#FFF';
+        ctx.fillRect(x + 5, y + 16, 35, 12);
+        ctx.fillStyle = '#333';
+        ctx.font = '9px Jua';
+        ctx.textAlign = 'center';
+        const endName = LEVELS[currentLevelIdx].anim.end.replace(/[^\w\sㄱ-힣]/g,'').trim();
+        ctx.fillText(endName, x + 22, y + 26);
+        // Label
+        ctx.fillStyle = '#666';
+        ctx.font = '12px Jua';
+        ctx.fillText(LEVELS[currentLevelIdx].anim.end, x + 22, y + 65);
+    }
+
+    function drawVehicle(ctx, x, y, angle) {
+        if (animType === 'rappel') return; // rappel draws pig on rope instead
+        ctx.save();
+        ctx.translate(x + shakeX, y + shakeY);
+        ctx.rotate(angle);
+
+        if (isSea) {
+            // ── SUBMARINE / BOAT ──
+            // Shadow/glow in water
+            ctx.fillStyle = 'rgba(56,178,172,0.2)';
+            ctx.beginPath(); ctx.ellipse(0, 28, 40, 8, 0, 0, Math.PI * 2); ctx.fill();
+
+            // Hull
+            const hullGrad = ctx.createLinearGradient(0, -15, 0, 20);
+            hullGrad.addColorStop(0, '#38B2AC');
+            hullGrad.addColorStop(1, '#2C7A7B');
+            ctx.fillStyle = hullGrad;
+            ctx.beginPath();
+            ctx.ellipse(0, 6, 40, 18, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#234E52'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.ellipse(0, 6, 40, 18, 0, 0, Math.PI * 2); ctx.stroke();
+
+            // Porthole window
+            ctx.fillStyle = '#81E6D9';
+            ctx.beginPath(); ctx.arc(-12, 4, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#2C7A7B'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(-12, 4, 8, 0, Math.PI * 2); ctx.stroke();
+            // Glass shine
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.beginPath(); ctx.arc(-14, 2, 3, 0, Math.PI * 2); ctx.fill();
+
+            // Periscope/conning tower
+            ctx.fillStyle = '#2C7A7B';
+            roundRect(ctx, -6, -18, 12, 16, 3); ctx.fill();
+            ctx.fillStyle = '#234E52';
+            ctx.fillRect(-2, -24, 4, 8);
+            // Periscope lens
+            ctx.fillStyle = '#81E6D9';
+            ctx.beginPath(); ctx.arc(0, -26, 4, 0, Math.PI * 2); ctx.fill();
+
+            // Engine glow
+            const engineGlow = Math.sin(time * 0.1) * 0.3 + 0.7;
+            ctx.fillStyle = `rgba(129,230,217,${engineGlow})`;
+            ctx.beginPath(); ctx.arc(18, 6, 6, 0, Math.PI * 2); ctx.fill();
+
+            // Propeller
+            ctx.save();
+            ctx.translate(38, 6);
+            ctx.rotate(wheelAngle * 2);
+            ctx.fillStyle = '#718096';
+            for (let b = 0; b < 3; b++) {
+                ctx.save();
+                ctx.rotate(b * Math.PI * 2 / 3);
+                ctx.fillRect(-2, -12, 4, 12);
+                ctx.restore();
+            }
+            ctx.fillStyle = '#4A5568';
+            ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+
+            // Formula on hull
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 9px JetBrains Mono';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(formula.formula, 8, 6);
+
+            // Bubbles trail
+            if (time % 6 === 0 && phase_anim === 'drive') {
+                for (let i = 0; i < 2; i++) {
+                    particles.push({type:'default', x:x-35+(Math.random()-0.5)*10, y:y+6,
+                        vx:(Math.random()-0.5)*0.5, vy:-Math.random()*2-1, size:2+Math.random()*3,
+                        life:30+Math.random()*20, maxLife:50, color:'rgba(129,230,217,0.5)'});
+                }
+            }
+        } else {
+            // ── LAND VEHICLE (original) ──
+            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+            ctx.beginPath(); ctx.ellipse(0, 25, 35, 6, 0, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = '#8B6914';
+            roundRect(ctx, -36, -12, 72, 28, 6); ctx.fill();
+            ctx.strokeStyle = '#6B4F12'; ctx.lineWidth = 2;
+            roundRect(ctx, -36, -12, 72, 28, 6); ctx.stroke();
+
+            ctx.strokeStyle = 'rgba(107,79,18,0.3)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(-36, -2); ctx.lineTo(36, -2);
+            ctx.moveTo(-36, 6); ctx.lineTo(36, 6); ctx.stroke();
+
+            const engineGlow = Math.sin(time * 0.1) * 0.3 + 0.7;
+            ctx.fillStyle = `rgba(245, 158, 11, ${engineGlow})`;
+            roundRect(ctx, -12, -8, 24, 16, 4); ctx.fill();
+            ctx.strokeStyle = '#d97706'; ctx.lineWidth = 1.5;
+            roundRect(ctx, -12, -8, 24, 16, 4); ctx.stroke();
+
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 9px JetBrains Mono, monospace';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(formula.formula, 0, 0);
+
+            // Wheels
+            for (const wx of [-22, 22]) {
+                ctx.save(); ctx.translate(wx, 18); ctx.rotate(wheelAngle);
+                ctx.fillStyle = '#333';
+                ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.strokeStyle = '#777'; ctx.lineWidth = 1;
+                for (let a = 0; a < 4; a++) {
+                    ctx.beginPath(); ctx.moveTo(0, 0);
+                    ctx.lineTo(Math.cos(a * Math.PI / 2) * 8, Math.sin(a * Math.PI / 2) * 8); ctx.stroke();
+                }
+                ctx.fillStyle = '#888'; ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Pig driver (both land and sea)
+        if (!isSea || animType !== 'rappel') {
+            drawPig(ctx, isSea ? -18 : 0, isSea ? -10 : -28, pigExpression);
+        }
+
+        ctx.restore();
+    }
+
+    function drawPig(ctx, x, y, expression) {
+        if (isSea) {
+            // Archimedes crown + toga
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.moveTo(x - 10, y - 6); ctx.lineTo(x - 8, y - 16);
+            ctx.lineTo(x - 4, y - 10); ctx.lineTo(x, y - 18);
+            ctx.lineTo(x + 4, y - 10); ctx.lineTo(x + 8, y - 16);
+            ctx.lineTo(x + 10, y - 6);
+            ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = '#D69E2E'; ctx.lineWidth = 1; ctx.stroke();
+        } else {
+            // Triangle hat (피타's hat)
+            ctx.fillStyle = '#4A90D9';
+            ctx.beginPath();
+            ctx.moveTo(x, y - 18);
+            ctx.lineTo(x - 10, y - 2);
+            ctx.lineTo(x + 10, y - 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#3672B0';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        // Head
+        ctx.fillStyle = '#FFB6C1';
+        ctx.beginPath();
+        ctx.arc(x, y, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#FF8FA0';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Ears
+        ctx.fillStyle = '#FFB6C1';
+        ctx.beginPath();
+        ctx.ellipse(x - 10, y - 8, 5, 4, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(x + 10, y - 8, 5, 4, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FF8FA0';
+        ctx.beginPath();
+        ctx.ellipse(x - 10, y - 8, 3, 2.5, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(x + 10, y - 8, 3, 2.5, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = '#333';
+        if (expression === 'happy') {
+            ctx.beginPath();
+            ctx.arc(x - 4, y - 3, 2.5, 0, Math.PI * 2);
+            ctx.arc(x + 4, y - 3, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            // Shine
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(x - 3, y - 4, 1, 0, Math.PI * 2);
+            ctx.arc(x + 5, y - 4, 1, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (expression === 'worried') {
+            ctx.beginPath();
+            ctx.arc(x - 4, y - 2, 2.5, 0, Math.PI * 2);
+            ctx.arc(x + 4, y - 2, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            // Eyebrows
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(x - 7, y - 7); ctx.lineTo(x - 2, y - 6);
+            ctx.moveTo(x + 2, y - 6); ctx.lineTo(x + 7, y - 7);
+            ctx.stroke();
+        } else if (expression === 'surprised') {
+            ctx.beginPath();
+            ctx.arc(x - 4, y - 3, 3, 0, Math.PI * 2);
+            ctx.arc(x + 4, y - 3, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(x - 3.5, y - 3.5, 1.5, 0, Math.PI * 2);
+            ctx.arc(x + 4.5, y - 3.5, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (expression === 'dizzy') {
+            // Spiral eyes
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1.5;
+            for (let side of [-1, 1]) {
+                ctx.beginPath();
+                for (let t = 0; t < 8; t += 0.2) {
+                    const sx = x + side * 4 + Math.cos(t + time * 0.1) * t * 0.4;
+                    const sy = y - 3 + Math.sin(t + time * 0.1) * t * 0.4;
+                    t === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+                }
+                ctx.stroke();
+            }
+        }
+
+        // Snout
+        ctx.fillStyle = '#FF9999';
+        ctx.beginPath();
+        ctx.ellipse(x, y + 4, 6, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#E88888';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        // Nostrils
+        ctx.fillStyle = '#E88888';
+        ctx.beginPath();
+        ctx.ellipse(x - 2, y + 4, 1.5, 1, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(x + 2, y + 4, 1.5, 1, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Mouth
+        if (expression === 'happy') {
+            ctx.strokeStyle = '#E88888';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(x, y + 6, 4, 0.1, Math.PI - 0.1);
+            ctx.stroke();
+        } else if (expression === 'surprised') {
+            ctx.fillStyle = '#E88888';
+            ctx.beginPath();
+            ctx.ellipse(x, y + 9, 3, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    }
+
+    function drawParticles() {
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.15;
+            p.life--;
+            if (p.life <= 0) { particles.splice(i, 1); continue; }
+            const alpha = p.life / p.maxLife;
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = p.color;
+            if (p.type === 'confetti') {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle + time * p.spin);
+                ctx.fillRect(-4, -2, 8, 4);
+                ctx.restore();
+            } else if (p.type === 'smoke') {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * (1 + (1 - alpha) * 2), 0, Math.PI * 2);
+                ctx.fill();
+            } else if (p.type === 'star') {
+                ctx.font = `${p.size}px serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText('⭐', p.x, p.y);
+            } else {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    function spawnSmoke(x, y) {
+        for (let i = 0; i < 3; i++) {
+            particles.push({
+                type: 'smoke',
+                x: x + (Math.random() - 0.5) * 20,
+                y: y,
+                vx: (Math.random() - 0.5) * 1,
+                vy: -Math.random() * 2 - 0.5,
+                size: 5 + Math.random() * 5,
+                life: 30 + Math.random() * 20,
+                maxLife: 50,
+                color: 'rgba(100,100,100,0.5)',
+            });
+        }
+    }
+
+    function spawnExplosion(x, y) {
+        const colors = ['#FF5252', '#FF9800', '#FFD700', '#FF6D00'];
+        for (let i = 0; i < 20; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 2 + Math.random() * 4;
+            particles.push({
+                type: 'default',
+                x: x, y: y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 2,
+                size: 3 + Math.random() * 4,
+                life: 30 + Math.random() * 20,
+                maxLife: 50,
+                color: colors[Math.floor(Math.random() * colors.length)],
+            });
+        }
+        // Smoke
+        for (let i = 0; i < 8; i++) {
+            particles.push({
+                type: 'smoke',
+                x: x + (Math.random() - 0.5) * 30,
+                y: y + (Math.random() - 0.5) * 20,
+                vx: (Math.random() - 0.5) * 2,
+                vy: -Math.random() * 3,
+                size: 8 + Math.random() * 8,
+                life: 40 + Math.random() * 30,
+                maxLife: 70,
+                color: '#666',
+            });
+        }
+    }
+
+    function spawnConfetti(x, y) {
+        const colors = ['#FF5252', '#4CAF50', '#FFD700', '#2196F3', '#FF9800', '#E040FB'];
+        for (let i = 0; i < 30; i++) {
+            particles.push({
+                type: 'confetti',
+                x: x + (Math.random() - 0.5) * 60,
+                y: y,
+                vx: (Math.random() - 0.5) * 6,
+                vy: -Math.random() * 8 - 2,
+                size: 4,
+                life: 80 + Math.random() * 40,
+                maxLife: 120,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                angle: Math.random() * Math.PI * 2,
+                spin: (Math.random() - 0.5) * 0.3,
+            });
+        }
+        for (let i = 0; i < 5; i++) {
+            particles.push({
+                type: 'star',
+                x: x + (Math.random() - 0.5) * 80,
+                y: y - Math.random() * 30,
+                vx: (Math.random() - 0.5) * 3,
+                vy: -Math.random() * 5 - 1,
+                size: 16 + Math.random() * 10,
+                life: 60 + Math.random() * 30,
+                maxLife: 90,
+                color: '#FFD700',
+            });
+        }
+    }
+
+    function drawMessage(msg) {
+        if (!showMsg) return;
+        ctx.save();
+        ctx.globalAlpha = Math.min(msgAlpha, 1);
+
+        const lines = msg.split('\n');
+        const lineH = 28;
+        const totalH = lines.length * lineH + 24;
+        const maxW = Math.max(...lines.map(l => ctx.measureText(l).width)) + 60;
+
+        // Bubble
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        roundRect(ctx, W / 2 - maxW / 2 - 10, 20, maxW + 20, totalH, 16);
+        ctx.fill();
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 2;
+        roundRect(ctx, W / 2 - maxW / 2 - 10, 20, maxW + 20, totalH, 16);
+        ctx.stroke();
+
+        ctx.fillStyle = '#555';
+        ctx.font = '18px Jua';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        lines.forEach((line, i) => {
+            ctx.fillText(line, W / 2, 32 + i * lineH);
+        });
+
+        ctx.restore();
+    }
+
+    // ── Animation loop ──
+    let animFrame;
+    let phase_anim = 'start'; // start, drive, fail, arrive, done
+    let startDelay = 60;
+    let driveAccel = 0;
+    let failTimer = 0;
+    let arriveTimer = 0;
+
+    function animate() {
+        time++;
+        ctx.clearRect(0, 0, W, H);
+        drawBackground();
+
+        if (phase_anim === 'start') {
+            // Brief pause before moving
+            pigExpression = 'happy';
+            drawVehicle(ctx, vehicleX, vehicleY, 0);
+            startDelay--;
+            if (startDelay <= 30) {
+                // Engine rev shake
+                shakeX = (Math.random() - 0.5) * 2;
+                shakeY = (Math.random() - 0.5) * 1;
+                spawnSmoke(vehicleX - 30, vehicleY + 10);
+            }
+            if (startDelay <= 0) {
+                shakeX = 0; shakeY = 0;
+                phase_anim = 'drive';
+            }
+        } else if (phase_anim === 'drive') {
+            if (isCorrect) {
+                if (animType === 'rappel') {
+                    // Rappel animation — rope extends over time
+                    driveAccel = Math.min(driveAccel + 0.005, 1);
+                    vehicleX = HOME_X + TOTAL_DIST * driveAccel;
+                    pigExpression = driveAccel > 0.8 ? 'happy' : 'surprised';
+                    if (driveAccel >= 1) {
+                        phase_anim = 'arrive';
+                        playSound('success');
+                        spawnConfetti(W - 100, 60);
+                    }
+                } else {
+                    // Smooth drive to market (land + sea)
+                    driveAccel = Math.min(driveAccel + 0.05, 1);
+                    vehicleX += ANIM_SPEED * driveAccel;
+                    wheelAngle += 0.15 * driveAccel;
+                    pigExpression = 'happy';
+
+                    if (isSea && time % 8 === 0) {
+                        // Bubble trail for sea
+                        particles.push({type:'default', x:vehicleX-35, y:vehicleY+10,
+                            vx:(Math.random()-0.5)*0.5, vy:-Math.random()*2-1, size:2+Math.random()*3,
+                            life:25, maxLife:25, color:'rgba(129,230,217,0.4)'});
+                    } else if (!isSea && time % 8 === 0) {
+                        spawnSmoke(vehicleX - 35, vehicleY + 15);
+                    }
+
+                    if (vehicleX >= MARKET_X) {
+                        vehicleX = MARKET_X;
+                        phase_anim = 'arrive';
+                        playSound('success');
+                        spawnConfetti(MARKET_X, ROAD_Y - 60);
+                    }
+                }
+            } else {
+                // Wrong formula — generic failure animations by type
+                const fId = engineFormula;
+                if (fId === 'fma' || fId === 'ke') {
+                    // Accelerates wildly
+                    driveAccel += 0.08;
+                    vehicleX += ANIM_SPEED * driveAccel;
+                    wheelAngle += 0.2 * driveAccel;
+                    shakeX = (Math.random() - 0.5) * driveAccel * 3;
+                    shakeY = (Math.random() - 0.5) * driveAccel * 2;
+                    if (driveAccel > 1.5) pigExpression = 'worried';
+                    if (driveAccel > 3) pigExpression = 'surprised';
+                    if (time % 4 === 0 && driveAccel > 1) spawnSmoke(vehicleX - 35, vehicleY + 15);
+                    if (driveAccel > 4) {
+                        phase_anim = 'fail'; failType = fId;
+                        const lv = LEVELS[currentLevelIdx];
+                        const wrongFormulas = Object.entries(lv.formulas).filter(([k,f])=>!f.correct);
+                        const wf = wrongFormulas.find(([k])=>k===fId);
+                        failMsg = `🐷 앗! ${wf?wf[1].name:'이 공식'}은\n여기서 쓸 수 없어요!`;
+                        playSound('crash'); spawnExplosion(vehicleX, vehicleY);
+                        pigExpression = 'dizzy'; shakeX = 0; shakeY = 0;
+                    }
+                } else if (fId === 'pyth' || fId === 'mgh') {
+                    // Goes diagonally up
+                    driveAccel += 0.03;
+                    vehicleX += ANIM_SPEED * 0.5;
+                    vehicleVY -= 0.12;
+                    vehicleY += vehicleVY;
+                    vehicleAngle -= 0.008;
+                    wheelAngle += 0.1;
+                    if (time % 6 === 0) spawnSmoke(vehicleX - 35, vehicleY + 15);
+                    if (vehicleAngle < -0.3) pigExpression = 'worried';
+                    if (vehicleAngle < -0.5) pigExpression = 'surprised';
+                    if (vehicleY < ROAD_Y - 150) {
+                        phase_anim = 'fail'; failType = fId;
+                        const lv = LEVELS[currentLevelIdx];
+                        const wf = Object.entries(lv.formulas).find(([k])=>k===fId);
+                        failMsg = `🐷 ${wf?wf[1].name:'이 공식'}은\n여기서 쓸 수 없어요!`;
+                        vehicleVY = 0;
+                    }
+                } else {
+                    // Generic: wobble and stop (emc, vdt when wrong, etc)
+                    driveAccel += 0.02;
+                    vehicleX += ANIM_SPEED * Math.max(0, 1 - driveAccel * 0.3);
+                    wheelAngle += 0.05;
+                    shakeX = Math.sin(time * 0.3) * driveAccel * 2;
+                    if (driveAccel > 1.5) pigExpression = 'worried';
+                    if (time % 5 === 0) spawnSmoke(vehicleX - 20, vehicleY + 10);
+                    if (driveAccel > 5) {
+                        phase_anim = 'fail'; failType = fId;
+                        const lv = LEVELS[currentLevelIdx];
+                        const wf = Object.entries(lv.formulas).find(([k])=>k===fId);
+                        failMsg = `🐷 ${wf?wf[1].name:'이 공식'}은\n이 문제에 맞지 않아요!`;
+                        playSound('crash'); spawnExplosion(vehicleX, vehicleY);
+                        pigExpression = 'dizzy'; shakeX = 0;
+                    }
+                }
+            }
+
+            drawVehicle(ctx, vehicleX, vehicleY, vehicleAngle);
+        } else if (phase_anim === 'fail') {
+            failTimer++;
+            if (failType === 'pyth' && failTimer < 60) {
+                // Falling back down
+                vehicleVY += 0.2;
+                vehicleY += vehicleVY;
+                vehicleAngle += 0.02;
+                if (vehicleY >= ROAD_Y - 28) {
+                    vehicleY = ROAD_Y - 28;
+                    vehicleVY = 0;
+                    playSound('crash');
+                    spawnExplosion(vehicleX, vehicleY);
+                    pigExpression = 'dizzy';
+                }
+            }
+
+            shakeX = failTimer < 10 ? (Math.random() - 0.5) * 6 : 0;
+            shakeY = failTimer < 10 ? (Math.random() - 0.5) * 4 : 0;
+
+            drawVehicle(ctx, vehicleX, vehicleY, vehicleAngle);
+
+            if (failTimer > 20) {
+                showMsg = true;
+                msgAlpha = Math.min(msgAlpha + 0.05, 1);
+            }
+            drawMessage(failMsg);
+
+            if (failTimer > 160) {
+                phase_anim = 'done';
+                failed = true;
+                showResult(false);
+            }
+        } else if (phase_anim === 'arrive') {
+            arriveTimer++;
+            pigExpression = 'happy';
+            drawVehicle(ctx, vehicleX, vehicleY, 0);
+
+            if (arriveTimer % 20 === 0 && arriveTimer < 80) {
+                spawnConfetti(MARKET_X + (Math.random() - 0.5) * 60, ROAD_Y - 40);
+            }
+
+            showMsg = true;
+            msgAlpha = Math.min(msgAlpha + 0.05, 1);
+            drawMessage(LEVELS[currentLevelIdx].anim.arrive);
+
+            if (arriveTimer > 120) {
+                phase_anim = 'done';
+                showResult(true);
+            }
+        }
+
+        drawParticles();
+
+        if (phase_anim !== 'done') {
+            animFrame = requestAnimationFrame(animate);
+        }
+    }
+
+    // Start animation
+    animate();
+}
+
+// ──── BUOYANCY MINI-GAME ────
+function runBuoyancyMiniGame() {
+    const canvas = document.getElementById('trackCanvas');
+    const parent = document.getElementById('testPhase');
+    const W = Math.min(parent.clientWidth - 40, 900);
+    const H = Math.min(parent.clientHeight - 40, 400);
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    const lv = LEVELS[currentLevelIdx];
+    const cfg = lv.buoyancy;
+
+    // Layout constants
+    const surfaceY = 80;
+    const bottomY = H - 70;
+    const vehicleStartY = bottomY - 40;
+
+    // State
+    let time = 0;
+    let phase_buoy = 'intro'; // intro, interactive, rising, success, sinkfail, done
+    let introTimer = 0;
+    let endTimer = 0;
+    let currentV = cfg.vMin;
+    let vehicleY = vehicleStartY;
+    let vehicleVY = 0;
+    let pigExpression = 'happy';
+    let particles = [];
+    let animFrame;
+    let sliderDragging = false;
+    let hoveringButton = false;
+    let propAngle = 0;
+    let sinkTimer = 0;
+    let shakeX = 0, shakeY = 0;
+
+    // Bubble ambient particles
+    let bubbles = [];
+
+    // Slider geometry
+    const sliderX = W / 2 - 150, sliderTrackY = H - 42, sliderW = 300;
+    // Button geometry
+    const btnW = 120, btnH = 32;
+    const btnX = W / 2 - btnW / 2, btnY = H - 18;
+
+    function getCanvasPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+    }
+
+    // ── Event handlers ──
+    function onPointerDown(e) {
+        if (phase_buoy !== 'interactive') return;
+        const pos = getCanvasPos(e);
+        // Check slider handle
+        const handleX = sliderX + ((currentV - cfg.vMin) / (cfg.vMax - cfg.vMin)) * sliderW;
+        const dx = pos.x - handleX, dy = pos.y - sliderTrackY;
+        if (dx * dx + dy * dy < 20 * 20) {
+            sliderDragging = true;
+            e.preventDefault();
+            return;
+        }
+        // Check slider track click
+        if (pos.x >= sliderX && pos.x <= sliderX + sliderW && Math.abs(pos.y - sliderTrackY) < 15) {
+            const ratio = (pos.x - sliderX) / sliderW;
+            currentV = cfg.vMin + ratio * (cfg.vMax - cfg.vMin);
+            currentV = Math.max(cfg.vMin, Math.min(cfg.vMax, currentV));
+            currentV = Math.round(currentV * 10) / 10;
+            sliderDragging = true;
+            e.preventDefault();
+            return;
+        }
+        // Check launch button
+        if (pos.x >= btnX && pos.x <= btnX + btnW && pos.y >= btnY && pos.y <= btnY + btnH) {
+            phase_buoy = 'rising';
+            sinkTimer = 0;
+            playSound('drive');
+            e.preventDefault();
+        }
+    }
+    function onPointerMove(e) {
+        if (phase_buoy !== 'interactive') return;
+        const pos = getCanvasPos(e);
+        // Hover check for button
+        hoveringButton = (pos.x >= btnX && pos.x <= btnX + btnW && pos.y >= btnY && pos.y <= btnY + btnH);
+        if (sliderDragging) {
+            const ratio = Math.max(0, Math.min(1, (pos.x - sliderX) / sliderW));
+            currentV = cfg.vMin + ratio * (cfg.vMax - cfg.vMin);
+            currentV = Math.round(currentV * 10) / 10;
+            e.preventDefault();
+        }
+    }
+    function onPointerUp(e) {
+        sliderDragging = false;
+    }
+
+    canvas.addEventListener('mousedown', onPointerDown);
+    canvas.addEventListener('mousemove', onPointerMove);
+    canvas.addEventListener('mouseup', onPointerUp);
+    canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+    canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+    canvas.addEventListener('touchend', onPointerUp);
+
+    function cleanup() {
+        canvas.removeEventListener('mousedown', onPointerDown);
+        canvas.removeEventListener('mousemove', onPointerMove);
+        canvas.removeEventListener('mouseup', onPointerUp);
+        canvas.removeEventListener('touchstart', onPointerDown);
+        canvas.removeEventListener('touchmove', onPointerMove);
+        canvas.removeEventListener('touchend', onPointerUp);
+    }
+
+    // ── Drawing helpers ──
+    function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    }
+
+    // ── Background ──
+    function drawBuoyancyBg() {
+        // Deep ocean gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, '#1a4d7a');
+        grad.addColorStop(0.15, '#153d6a');
+        grad.addColorStop(1, '#0a1628');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        // Surface line
+        ctx.strokeStyle = 'rgba(56,189,248,0.5)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 4) {
+            const sy = surfaceY + Math.sin(x * 0.03 + time * 0.04) * 3;
+            x === 0 ? ctx.moveTo(x, sy) : ctx.lineTo(x, sy);
+        }
+        ctx.stroke();
+
+        // Surface glow
+        const surfGrad = ctx.createLinearGradient(0, surfaceY - 10, 0, surfaceY + 20);
+        surfGrad.addColorStop(0, 'rgba(56,189,248,0.15)');
+        surfGrad.addColorStop(1, 'rgba(56,189,248,0)');
+        ctx.fillStyle = surfGrad;
+        ctx.fillRect(0, surfaceY - 10, W, 30);
+
+        // Light rays from top
+        ctx.save();
+        ctx.globalAlpha = 0.04;
+        for (let i = 0; i < 5; i++) {
+            const rx = (i * 180 + 60) % W;
+            const sway = Math.sin(time * 0.015 + i * 1.2) * 30;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.moveTo(rx + sway - 15, 0);
+            ctx.lineTo(rx + sway + 15, 0);
+            ctx.lineTo(rx + sway + 60, H);
+            ctx.lineTo(rx + sway - 60, H);
+            ctx.closePath();
+            ctx.fill();
+        }
+        ctx.restore();
+
+        // Depth grid lines
+        ctx.strokeStyle = 'rgba(56,189,248,0.08)';
+        ctx.lineWidth = 1;
+        for (let gy = surfaceY + 50; gy < bottomY; gy += 50) {
+            ctx.beginPath();
+            ctx.moveTo(30, gy);
+            ctx.lineTo(W - 50, gy);
+            ctx.stroke();
+        }
+
+        // Coral reef at bottom
+        const coralColors = ['#e06060', '#e08040', '#d04080', '#50b060', '#c07030'];
+        for (let i = 0; i < 12; i++) {
+            const cx = (i * 73 + 20) % (W - 60) + 10;
+            const cw = 12 + (i * 7) % 18;
+            const ch = 10 + (i * 11) % 20;
+            ctx.fillStyle = coralColors[i % coralColors.length];
+            ctx.globalAlpha = 0.5;
+            ctx.beginPath();
+            ctx.ellipse(cx, bottomY + 15, cw, ch, 0, Math.PI, 0);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        // Sea floor
+        ctx.fillStyle = '#1a2a40';
+        ctx.fillRect(0, bottomY + 15, W, H - bottomY - 15);
+
+        // Ambient bubbles
+        if (time % 8 === 0) {
+            bubbles.push({
+                x: Math.random() * W,
+                y: bottomY + 10,
+                r: 1 + Math.random() * 3,
+                speed: 0.3 + Math.random() * 0.8,
+                wobble: Math.random() * Math.PI * 2,
+            });
+        }
+        for (let i = bubbles.length - 1; i >= 0; i--) {
+            const b = bubbles[i];
+            b.y -= b.speed;
+            b.x += Math.sin(time * 0.05 + b.wobble) * 0.3;
+            if (b.y < surfaceY - 10) { bubbles.splice(i, 1); continue; }
+            ctx.strokeStyle = 'rgba(56,189,248,0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            ctx.stroke();
+            // Shine
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.beginPath();
+            ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.3, b.r * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // ── Formula HUD ──
+    function drawFormulaHUD(rho, V, g, F) {
+        const pw = 340, ph = 72;
+        const px = W / 2 - pw / 2, py = 6;
+        // Panel bg
+        ctx.fillStyle = 'rgba(13,33,55,0.92)';
+        roundRect(ctx, px, py, pw, ph, 10);
+        ctx.fill();
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1.5;
+        roundRect(ctx, px, py, pw, ph, 10);
+        ctx.stroke();
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        // Line 1: formula
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px JetBrains Mono, monospace';
+        ctx.fillText('F = \u03C1 \u00D7 V \u00D7 g', W / 2, py + 8);
+        // Line 2: values
+        ctx.font = '13px JetBrains Mono, monospace';
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillText('= ' + rho + ' \u00D7 ' + V.toFixed(1) + ' \u00D7 ' + g, W / 2, py + 28);
+        // Line 3: result
+        ctx.font = 'bold 18px JetBrains Mono, monospace';
+        ctx.fillStyle = '#FFD700';
+        ctx.fillText('= ' + F.toLocaleString() + ' N', W / 2, py + 48);
+    }
+
+    // ── Volume slider ──
+    function drawVolumeSlider(V, vMin, vMax) {
+        const ratio = (V - vMin) / (vMax - vMin);
+        const handleX = sliderX + ratio * sliderW;
+
+        // Label
+        ctx.fillStyle = '#fff';
+        ctx.font = '14px Jua, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText('V = ' + V.toFixed(1) + ' m\u00B3', W / 2, sliderTrackY - 12);
+
+        // Track background
+        ctx.fillStyle = '#1a2d45';
+        roundRect(ctx, sliderX, sliderTrackY - 3, sliderW, 6, 3);
+        ctx.fill();
+        ctx.strokeStyle = '#2a5080';
+        ctx.lineWidth = 1;
+        roundRect(ctx, sliderX, sliderTrackY - 3, sliderW, 6, 3);
+        ctx.stroke();
+
+        // Fill
+        if (ratio > 0) {
+            const fillGrad = ctx.createLinearGradient(sliderX, 0, handleX, 0);
+            fillGrad.addColorStop(0, '#0ea5e9');
+            fillGrad.addColorStop(1, '#38bdf8');
+            ctx.fillStyle = fillGrad;
+            roundRect(ctx, sliderX, sliderTrackY - 3, handleX - sliderX, 6, 3);
+            ctx.fill();
+        }
+
+        // Min/max labels
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.font = '10px JetBrains Mono, monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(vMin.toString(), sliderX, sliderTrackY + 6);
+        ctx.textAlign = 'right';
+        ctx.fillText(vMax.toString(), sliderX + sliderW, sliderTrackY + 6);
+
+        // Handle
+        ctx.fillStyle = '#fff';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(handleX, sliderTrackY, 11, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        // Value inside handle
+        ctx.fillStyle = '#0d2137';
+        ctx.font = 'bold 9px JetBrains Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(V.toFixed(1), handleX, sliderTrackY);
+    }
+
+    // ── Launch button ──
+    function drawLaunchButton() {
+        const active = phase_buoy === 'interactive' && currentV > cfg.vMin;
+        ctx.fillStyle = active ? (hoveringButton ? '#22d3ee' : '#0ea5e9') : '#555';
+        roundRect(ctx, btnX, btnY, btnW, btnH, 8);
+        ctx.fill();
+        if (active && hoveringButton) {
+            ctx.shadowColor = '#38bdf8';
+            ctx.shadowBlur = 12;
+            roundRect(ctx, btnX, btnY, btnW, btnH, 8);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+        ctx.strokeStyle = active ? '#38bdf8' : '#666';
+        ctx.lineWidth = 1.5;
+        roundRect(ctx, btnX, btnY, btnW, btnH, 8);
+        ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 15px Jua, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('\uBC1C\uC0AC!', btnX + btnW / 2, btnY + btnH / 2);
+    }
+
+    // ── Depth meter ──
+    function drawDepthMeter(vY) {
+        const mx = W - 32, my = surfaceY, mh = bottomY - surfaceY;
+        const mw = 18;
+        // Background
+        ctx.fillStyle = 'rgba(13,33,55,0.8)';
+        roundRect(ctx, mx - mw / 2 - 4, my - 4, mw + 8, mh + 8, 6);
+        ctx.fill();
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1;
+        roundRect(ctx, mx - mw / 2 - 4, my - 4, mw + 8, mh + 8, 6);
+        ctx.stroke();
+
+        // Water fill
+        const depthRatio = Math.max(0, Math.min(1, (vY - surfaceY) / (bottomY - surfaceY)));
+        const fillH = depthRatio * mh;
+        const waterGrad = ctx.createLinearGradient(0, my, 0, my + mh);
+        waterGrad.addColorStop(0, '#38bdf8');
+        waterGrad.addColorStop(1, '#0a1628');
+        ctx.fillStyle = waterGrad;
+        ctx.fillRect(mx - mw / 2, my + (mh - fillH), mw, fillH);
+
+        // Vehicle marker triangle
+        const markerY = my + depthRatio * mh;
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.moveTo(mx - mw / 2 - 8, markerY);
+        ctx.lineTo(mx - mw / 2 - 2, markerY - 4);
+        ctx.lineTo(mx - mw / 2 - 2, markerY + 4);
+        ctx.closePath();
+        ctx.fill();
+
+        // Labels
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.font = '9px Jua, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText('\uC218\uBA74', mx, my - 6);
+        ctx.textBaseline = 'top';
+        ctx.fillText('\uD574\uC800', mx, my + mh + 6);
+    }
+
+    // ── Weight bar ──
+    function drawWeightBar(F, weight) {
+        const bx = W / 2 + 195, by = 18, bh = 58, bw = 24;
+        const maxVal = Math.max(F, weight) * 1.2 || 1;
+
+        // Buoyancy bar
+        const fH = Math.min(bh, (F / maxVal) * bh);
+        ctx.fillStyle = F > weight ? '#22d3ee' : '#2a5080';
+        ctx.fillRect(bx, by + bh - fH, bw, fH);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx, by, bw, bh);
+
+        // Weight bar
+        const wH = Math.min(bh, (weight / maxVal) * bh);
+        ctx.fillStyle = '#e05050';
+        ctx.fillRect(bx + bw + 8, by + bh - wH, bw, wH);
+        ctx.strokeStyle = '#ff6b6b';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx + bw + 8, by, bw, bh);
+
+        // Labels
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = '9px Jua, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText('\uBD80\uB825', bx + bw / 2, by + bh + 3);
+        ctx.fillText('\uBB34\uAC8C', bx + bw + 8 + bw / 2, by + bh + 3);
+
+        // Arrow between bars
+        const arrowX = bx + bw + 4;
+        const arrowY = by + bh / 2;
+        ctx.fillStyle = F > weight ? '#22d3ee' : '#e05050';
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(F > weight ? '\u2191' : '\u2193', arrowX, arrowY);
+    }
+
+    // ── Pig drawing (Archimedes crown) ──
+    function drawPig(ctx, x, y, expression) {
+        // Archimedes crown
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.moveTo(x - 10, y - 6); ctx.lineTo(x - 8, y - 16);
+        ctx.lineTo(x - 4, y - 10); ctx.lineTo(x, y - 18);
+        ctx.lineTo(x + 4, y - 10); ctx.lineTo(x + 8, y - 16);
+        ctx.lineTo(x + 10, y - 6);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#D69E2E'; ctx.lineWidth = 1; ctx.stroke();
+        // Head
+        ctx.fillStyle = '#FFB6C1';
+        ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#FF8FA0'; ctx.lineWidth = 1.5; ctx.stroke();
+        // Ears
+        ctx.fillStyle = '#FFB6C1';
+        ctx.beginPath(); ctx.ellipse(x - 10, y - 8, 5, 4, -0.3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(x + 10, y - 8, 5, 4, 0.3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#FF8FA0';
+        ctx.beginPath(); ctx.ellipse(x - 10, y - 8, 3, 2.5, -0.3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(x + 10, y - 8, 3, 2.5, 0.3, 0, Math.PI * 2); ctx.fill();
+        // Eyes
+        ctx.fillStyle = '#333';
+        if (expression === 'happy') {
+            ctx.beginPath(); ctx.arc(x - 4, y - 3, 2.5, 0, Math.PI * 2); ctx.arc(x + 4, y - 3, 2.5, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(x - 3, y - 4, 1, 0, Math.PI * 2); ctx.arc(x + 5, y - 4, 1, 0, Math.PI * 2); ctx.fill();
+        } else if (expression === 'worried') {
+            ctx.beginPath(); ctx.arc(x - 4, y - 2, 2.5, 0, Math.PI * 2); ctx.arc(x + 4, y - 2, 2.5, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(x - 7, y - 7); ctx.lineTo(x - 2, y - 6); ctx.moveTo(x + 2, y - 6); ctx.lineTo(x + 7, y - 7); ctx.stroke();
+        } else if (expression === 'surprised') {
+            ctx.beginPath(); ctx.arc(x - 4, y - 3, 3, 0, Math.PI * 2); ctx.arc(x + 4, y - 3, 3, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(x - 3.5, y - 3.5, 1.5, 0, Math.PI * 2); ctx.arc(x + 4.5, y - 3.5, 1.5, 0, Math.PI * 2); ctx.fill();
+        } else if (expression === 'dizzy') {
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 1.5;
+            for (let side of [-1, 1]) {
+                ctx.beginPath();
+                for (let t = 0; t < 8; t += 0.2) {
+                    const sx = x + side * 4 + Math.cos(t + time * 0.1) * t * 0.4;
+                    const sy = y - 3 + Math.sin(t + time * 0.1) * t * 0.4;
+                    t === 0 ? ctx.moveTo(sx, sy) : ctx.lineTo(sx, sy);
+                }
+                ctx.stroke();
+            }
+        }
+        // Snout
+        ctx.fillStyle = '#FF9999';
+        ctx.beginPath(); ctx.ellipse(x, y + 4, 6, 4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#E88888'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = '#E88888';
+        ctx.beginPath(); ctx.ellipse(x - 2, y + 4, 1.5, 1, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(x + 2, y + 4, 1.5, 1, 0, 0, Math.PI * 2); ctx.fill();
+        // Mouth
+        if (expression === 'happy') {
+            ctx.strokeStyle = '#E88888'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(x, y + 6, 4, 0.1, Math.PI - 0.1); ctx.stroke();
+        } else if (expression === 'surprised') {
+            ctx.fillStyle = '#E88888';
+            ctx.beginPath(); ctx.ellipse(x, y + 9, 3, 4, 0, 0, Math.PI * 2); ctx.fill();
+        }
+    }
+
+    // ── Vehicle drawing ──
+    function drawBuoyancyVehicle(x, y, vehicleType) {
+        ctx.save();
+        ctx.translate(shakeX, shakeY);
+
+        if (vehicleType === 'submarine') {
+            // Hull
+            ctx.fillStyle = '#1a8a7a';
+            ctx.beginPath();
+            ctx.ellipse(x, y, 42, 18, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#0d6b5e';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Hull highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            ctx.beginPath();
+            ctx.ellipse(x, y - 6, 35, 8, 0, Math.PI, 0);
+            ctx.fill();
+
+            // Conning tower
+            ctx.fillStyle = '#15756a';
+            roundRect(ctx, x - 8, y - 30, 16, 16, 4);
+            ctx.fill();
+            ctx.strokeStyle = '#0d6b5e';
+            ctx.lineWidth = 1.5;
+            roundRect(ctx, x - 8, y - 30, 16, 16, 4);
+            ctx.stroke();
+            // Periscope
+            ctx.strokeStyle = '#999';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, y - 30);
+            ctx.lineTo(x, y - 38);
+            ctx.lineTo(x + 6, y - 38);
+            ctx.stroke();
+
+            // Porthole
+            ctx.fillStyle = '#81D4FA';
+            ctx.beginPath();
+            ctx.arc(x - 12, y, 7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#B0BEC5';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // Pig inside porthole
+            drawPig(ctx, x - 12, y, pigExpression);
+
+            // Propeller at rear
+            propAngle += 0.15;
+            ctx.save();
+            ctx.translate(x + 42, y);
+            ctx.rotate(propAngle);
+            ctx.fillStyle = '#999';
+            for (let i = 0; i < 3; i++) {
+                ctx.save();
+                ctx.rotate(i * Math.PI * 2 / 3);
+                ctx.beginPath();
+                ctx.ellipse(0, -8, 3, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            ctx.restore();
+
+            // Engine glow
+            if (phase_buoy === 'rising') {
+                ctx.fillStyle = 'rgba(34,211,238,0.3)';
+                ctx.beginPath();
+                ctx.arc(x + 46, y, 6 + Math.sin(time * 0.3) * 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+        } else if (vehicleType === 'raft') {
+            // Logs
+            ctx.fillStyle = '#8B6914';
+            for (let i = 0; i < 5; i++) {
+                const lx = x - 35 + i * 15;
+                roundRect(ctx, lx, y - 5, 12, 22, 3);
+                ctx.fill();
+                // Log texture lines
+                ctx.strokeStyle = '#6B4E0A';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(lx + 3, y - 3);
+                ctx.lineTo(lx + 3, y + 15);
+                ctx.moveTo(lx + 8, y - 2);
+                ctx.lineTo(lx + 8, y + 14);
+                ctx.stroke();
+            }
+            // Cross beams
+            ctx.fillStyle = '#A0522D';
+            ctx.fillRect(x - 33, y + 2, 66, 4);
+            ctx.fillRect(x - 33, y + 10, 66, 4);
+
+            // Sail mast
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x + 5, y - 5);
+            ctx.lineTo(x + 5, y - 45);
+            ctx.stroke();
+            // Sail triangle
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            ctx.beginPath();
+            ctx.moveTo(x + 5, y - 42);
+            ctx.lineTo(x + 5, y - 12);
+            ctx.lineTo(x + 30, y - 15);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Pig on raft
+            drawPig(ctx, x - 15, y - 18, pigExpression);
+
+        } else if (vehicleType === 'treasure') {
+            // Treasure chest
+            ctx.fillStyle = '#8B4513';
+            roundRect(ctx, x - 25, y - 10, 50, 30, 4);
+            ctx.fill();
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 2;
+            roundRect(ctx, x - 25, y - 10, 50, 30, 4);
+            ctx.stroke();
+            // Chest lid (arched)
+            ctx.fillStyle = '#A0522D';
+            ctx.beginPath();
+            ctx.moveTo(x - 25, y - 10);
+            ctx.quadraticCurveTo(x, y - 28, x + 25, y - 10);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#654321';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            // Gold trim bands
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(x - 25, y - 12, 50, 4);
+            ctx.fillRect(x - 25, y + 8, 50, 4);
+            // Lock
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(x, y - 2, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#333';
+            ctx.fillRect(x - 2, y - 2, 4, 5);
+
+            // Balloons above
+            const balloonColors = ['#FF5252', '#4CAF50', '#2196F3', '#FF9800'];
+            for (let i = 0; i < 4; i++) {
+                const bx = x - 20 + i * 14;
+                const by = y - 45 - Math.sin(time * 0.06 + i) * 3;
+                // String
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(bx, by + 10);
+                ctx.lineTo(x - 10 + i * 8, y - 15);
+                ctx.stroke();
+                // Balloon
+                ctx.fillStyle = balloonColors[i];
+                ctx.beginPath();
+                ctx.ellipse(bx, by, 9, 11, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Shine
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.beginPath();
+                ctx.ellipse(bx - 3, by - 4, 3, 4, -0.3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            // Pig next to chest
+            drawPig(ctx, x + 35, y + 5, pigExpression);
+        }
+        ctx.restore();
+    }
+
+    // ── Particles ──
+    function drawParticles() {
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.type !== 'bubble') p.vy += 0.15;
+            else p.vy -= 0.02;
+            p.life--;
+            if (p.life <= 0) { particles.splice(i, 1); continue; }
+            const alpha = p.life / p.maxLife;
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = p.color;
+            if (p.type === 'confetti') {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle + time * p.spin);
+                ctx.fillRect(-4, -2, 8, 4);
+                ctx.restore();
+            } else if (p.type === 'smoke') {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * (1 + (1 - alpha) * 2), 0, Math.PI * 2);
+                ctx.fill();
+            } else if (p.type === 'star') {
+                ctx.font = p.size + 'px serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('\u2B50', p.x, p.y);
+            } else if (p.type === 'bubble') {
+                ctx.strokeStyle = p.color;
+                ctx.globalAlpha = alpha * 0.6;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.stroke();
+            } else {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    function spawnConfetti(x, y) {
+        const colors = ['#FF5252', '#4CAF50', '#FFD700', '#2196F3', '#FF9800', '#E040FB'];
+        for (let i = 0; i < 30; i++) {
+            particles.push({
+                type: 'confetti', x: x + (Math.random() - 0.5) * 60, y: y,
+                vx: (Math.random() - 0.5) * 6, vy: -Math.random() * 8 - 2,
+                size: 4, life: 80 + Math.random() * 40, maxLife: 120,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                angle: Math.random() * Math.PI * 2, spin: (Math.random() - 0.5) * 0.3,
+            });
+        }
+        for (let i = 0; i < 5; i++) {
+            particles.push({
+                type: 'star', x: x + (Math.random() - 0.5) * 80, y: y - Math.random() * 30,
+                vx: (Math.random() - 0.5) * 3, vy: -Math.random() * 5 - 1,
+                size: 16 + Math.random() * 10, life: 60 + Math.random() * 30, maxLife: 90, color: '#FFD700',
+            });
+        }
+    }
+
+    function spawnExplosion(x, y) {
+        const colors = ['#FF5252', '#FF9800', '#FFD700', '#FF6D00'];
+        for (let i = 0; i < 20; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 2 + Math.random() * 4;
+            particles.push({
+                type: 'default', x: x, y: y,
+                vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 2,
+                size: 3 + Math.random() * 4, life: 30 + Math.random() * 20, maxLife: 50,
+                color: colors[Math.floor(Math.random() * colors.length)],
+            });
+        }
+    }
+
+    function spawnBubbleTrail(x, y) {
+        for (let i = 0; i < 4; i++) {
+            particles.push({
+                type: 'bubble',
+                x: x + (Math.random() - 0.5) * 30,
+                y: y + (Math.random() - 0.5) * 10,
+                vx: (Math.random() - 0.5) * 1,
+                vy: -Math.random() * 1.5 - 0.5,
+                size: 2 + Math.random() * 4,
+                life: 40 + Math.random() * 30,
+                maxLife: 70,
+                color: 'rgba(56,189,248,0.5)',
+            });
+        }
+    }
+
+    // ── Message bubble ──
+    function drawBuoyancyMessage(msg) {
+        ctx.save();
+        const lines = msg.split('\n');
+        ctx.font = '18px Jua, sans-serif';
+        const lineH = 28;
+        const totalH = lines.length * lineH + 24;
+        const maxW = Math.max(...lines.map(l => ctx.measureText(l).width)) + 60;
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        roundRect(ctx, W / 2 - maxW / 2 - 10, surfaceY + 30, maxW + 20, totalH, 16);
+        ctx.fill();
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 2;
+        roundRect(ctx, W / 2 - maxW / 2 - 10, surfaceY + 30, maxW + 20, totalH, 16);
+        ctx.stroke();
+        ctx.fillStyle = '#555';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        lines.forEach(function(line, i) {
+            ctx.fillText(line, W / 2, surfaceY + 42 + i * lineH);
+        });
+        ctx.restore();
+    }
+
+    // ── Main animation loop ──
+    function animate() {
+        time++;
+        ctx.clearRect(0, 0, W, H);
+        drawBuoyancyBg();
+
+        const F = cfg.rho * currentV * cfg.g;
+        const vehicleX = W / 2 - 30;
+
+        switch (phase_buoy) {
+            case 'intro':
+                introTimer++;
+                // Fade in: vehicle settles at bottom with bounce
+                if (introTimer < 30) {
+                    vehicleY = vehicleStartY + 20 - (20 * introTimer / 30);
+                } else if (introTimer < 50) {
+                    vehicleY = vehicleStartY + Math.sin((introTimer - 30) * 0.3) * 5 * (1 - (introTimer - 30) / 20);
+                } else {
+                    vehicleY = vehicleStartY;
+                }
+                pigExpression = 'happy';
+                drawBuoyancyVehicle(vehicleX, vehicleY, cfg.vehicleType);
+
+                // Instruction text
+                if (introTimer > 30) {
+                    ctx.globalAlpha = Math.min(1, (introTimer - 30) / 20);
+                    drawBuoyancyMessage('\uC2AC\uB77C\uC774\uB354\uB85C \uBD80\uD53C(V)\uB97C \uC870\uC808\uD558\uACE0\n\uBC1C\uC0AC \uBC84\uD2BC\uC744 \uB204\uB974\uC138\uC694!');
+                    ctx.globalAlpha = 1;
+                }
+
+                if (introTimer >= 90) {
+                    phase_buoy = 'interactive';
+                }
+                break;
+
+            case 'interactive':
+                // Vehicle bobs gently
+                vehicleY = vehicleStartY + Math.sin(time * 0.05) * 3;
+                pigExpression = 'happy';
+                shakeX = 0; shakeY = 0;
+                drawBuoyancyVehicle(vehicleX, vehicleY, cfg.vehicleType);
+                drawLaunchButton();
+                break;
+
+            case 'rising': {
+                const netForce = F - cfg.weight;
+                if (netForce > 0) {
+                    // Rising
+                    const accel = netForce / cfg.weight * 0.08;
+                    vehicleVY -= accel;
+                    vehicleVY *= 0.98; // damping
+                    vehicleY += vehicleVY;
+                    pigExpression = 'happy';
+                    shakeX = 0; shakeY = 0;
+
+                    // Bubble trail
+                    if (time % 3 === 0) spawnBubbleTrail(vehicleX, vehicleY + 15);
+
+                    // Reached surface
+                    if (vehicleY <= surfaceY + 5) {
+                        vehicleY = surfaceY + 5;
+                        phase_buoy = 'success';
+                        endTimer = 0;
+                        playSound('ding');
+                        spawnConfetti(vehicleX, surfaceY);
+                    }
+                } else {
+                    // Sinking / insufficient buoyancy
+                    sinkTimer++;
+                    vehicleY = Math.min(vehicleStartY + 10, vehicleY + 0.3);
+                    shakeX = (Math.random() - 0.5) * 4;
+                    shakeY = (Math.random() - 0.5) * 3;
+                    pigExpression = 'worried';
+                    if (sinkTimer > 60) {
+                        phase_buoy = 'sinkfail';
+                        endTimer = 0;
+                        playSound('crash');
+                        spawnExplosion(vehicleX, vehicleY);
+                        pigExpression = 'dizzy';
+                        shakeX = 0; shakeY = 0;
+                    }
+                }
+                drawBuoyancyVehicle(vehicleX, vehicleY, cfg.vehicleType);
+                break;
+            }
+
+            case 'success':
+                endTimer++;
+                vehicleY = surfaceY + 5 + Math.sin(time * 0.08) * 2;
+                pigExpression = 'happy';
+                shakeX = 0; shakeY = 0;
+                drawBuoyancyVehicle(vehicleX, vehicleY, cfg.vehicleType);
+
+                if (endTimer % 20 === 0 && endTimer < 80) {
+                    spawnConfetti(vehicleX + (Math.random() - 0.5) * 80, surfaceY);
+                }
+
+                drawBuoyancyMessage('\uD83C\uDF89 \uC218\uBA74\uC5D0 \uB3C4\uCC29\uD588\uC5B4\uC694!');
+
+                if (endTimer > 120) {
+                    phase_buoy = 'done';
+                    cleanup();
+                    showResult(true);
+                }
+                break;
+
+            case 'sinkfail':
+                endTimer++;
+                shakeX = endTimer < 10 ? (Math.random() - 0.5) * 6 : 0;
+                shakeY = endTimer < 10 ? (Math.random() - 0.5) * 4 : 0;
+                pigExpression = 'dizzy';
+                drawBuoyancyVehicle(vehicleX, vehicleY, cfg.vehicleType);
+
+                if (endTimer > 20) {
+                    drawBuoyancyMessage('\uBD80\uB825\uC774 \uBD80\uC871\uD574\uC694!\n\uBD80\uD53C\uB97C \uB354 \uB298\uB824\uBCF4\uC138\uC694!');
+                }
+
+                if (endTimer > 120) {
+                    phase_buoy = 'done';
+                    cleanup();
+                    showResult(false);
+                }
+                break;
+        }
+
+        // Draw UI overlays
+        drawFormulaHUD(cfg.rho, currentV, cfg.g, F);
+        if (phase_buoy === 'interactive' || phase_buoy === 'intro') {
+            drawVolumeSlider(currentV, cfg.vMin, cfg.vMax);
+        }
+        drawDepthMeter(vehicleY);
+        drawWeightBar(F, cfg.weight);
+
+        drawParticles();
+
+        if (phase_buoy !== 'done') {
+            animFrame = requestAnimationFrame(animate);
+        }
+    }
+
+    // Start
+    animate();
+}
+
+// ──── VELOCITY MINI-GAME (v = d/t) ────
+function runVelocityMiniGame() {
+    const canvas = document.getElementById('trackCanvas');
+    const parent = document.getElementById('testPhase');
+    const W = Math.min(parent.clientWidth - 40, 900);
+    const H = Math.min(parent.clientHeight - 40, 400);
+    canvas.width = W; canvas.height = H;
+    canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+    const lv = LEVELS[currentLevelIdx];
+    const cfg = lv.velocity;
+    let userSpeed = 5, launched = false, carX = 50, success = false, done = false;
+    let elapsed = 0;
+
+    canvas.onclick = (e) => {
+        if (done) { showResult(success); return; }
+        if (!launched) { launched = true; playSound('drive'); }
+    };
+    canvas.onmousemove = (e) => {
+        if (launched) return;
+        const rect = canvas.getBoundingClientRect();
+        userSpeed = Math.max(1, Math.min(20, ((e.clientY - rect.top) / H) * 20));
+    };
+
+    function animate() {
+        if (done && elapsed > 3) return;
+        ctx.clearRect(0, 0, W, H);
+        // Sky + ground
+        ctx.fillStyle = '#87CEEB'; ctx.fillRect(0, 0, W, H * 0.6);
+        ctx.fillStyle = '#8B7355'; ctx.fillRect(0, H * 0.6, W, H * 0.4);
+        // Road
+        ctx.fillStyle = '#555'; ctx.fillRect(0, H * 0.6 - 10, W, 20);
+        // Formula HUD
+        ctx.font = 'bold 18px "Jua"'; ctx.fillStyle = '#fff';
+        ctx.fillText(`v = d / t = ${cfg.dist}m / t`, 20, 30);
+        ctx.fillText(`설정 속도: ${userSpeed.toFixed(1)} m/s`, 20, 55);
+        if (launched) {
+            elapsed += 0.033;
+            carX += userSpeed * 0.033 * (W - 100) / (cfg.dist / cfg.speed);
+            ctx.fillText(`경과: ${elapsed.toFixed(1)}s`, 20, 80);
+        }
+        // Car
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(carX, H * 0.6 - 30, 40, 20);
+        ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(carX + 8, H * 0.6 - 8, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(carX + 32, H * 0.6 - 8, 6, 0, Math.PI * 2); ctx.fill();
+        // Goal
+        ctx.fillStyle = '#22c55e'; ctx.fillRect(W - 60, H * 0.6 - 40, 10, 40);
+        ctx.font = '24px sans-serif'; ctx.fillText('🏪', W - 65, H * 0.6 - 45);
+        // Check arrival
+        if (carX >= W - 70) {
+            done = true;
+            const expectedTime = cfg.dist / userSpeed;
+            success = Math.abs(expectedTime - cfg.dist / cfg.speed) < 3;
+            ctx.font = 'bold 28px "Jua"';
+            ctx.fillStyle = success ? '#22c55e' : '#ef4444';
+            ctx.fillText(success ? '🎉 도착!' : '❌ 실패', W / 2 - 50, H / 2);
+        }
+        if (!launched) {
+            ctx.font = '16px "Jua"'; ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.fillText('마우스 위아래로 속도 조절 → 클릭하여 출발!', W / 2 - 160, H - 20);
+        }
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+// ──── FORCE MINI-GAME (F = ma) ────
+function runForceMiniGame() {
+    const canvas = document.getElementById('trackCanvas');
+    const parent = document.getElementById('testPhase');
+    const W = Math.min(parent.clientWidth - 40, 900);
+    const H = Math.min(parent.clientHeight - 40, 400);
+    canvas.width = W; canvas.height = H;
+    canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+    const lv = LEVELS[currentLevelIdx];
+    const cfg = lv.force;
+    let userForce = 50, pushing = false, boxX = 100, boxV = 0, done = false, success = false;
+
+    canvas.onclick = () => {
+        if (done) { showResult(success); return; }
+        pushing = !pushing;
+        if (pushing) playSound('drive');
+    };
+    canvas.onmousemove = (e) => {
+        if (pushing) return;
+        const rect = canvas.getBoundingClientRect();
+        userForce = Math.max(10, Math.min(200, (1 - (e.clientY - rect.top) / H) * 200));
+    };
+
+    function animate() {
+        if (done) return;
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = '#f5f5dc'; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#ddd'; ctx.fillRect(0, H * 0.7, W, H * 0.3);
+        // Formula
+        const accel = userForce / cfg.mass;
+        ctx.font = 'bold 18px "Jua"'; ctx.fillStyle = '#333';
+        ctx.fillText(`F = ma → ${userForce.toFixed(0)}N = ${cfg.mass}kg × ${accel.toFixed(1)}m/s²`, 20, 30);
+        // Push
+        if (pushing) {
+            boxV += accel * 0.01;
+            boxX += boxV;
+        }
+        // Box
+        ctx.fillStyle = '#8B4513'; ctx.fillRect(boxX, H * 0.7 - 50, 50, 50);
+        ctx.font = '24px sans-serif'; ctx.fillText('📦', boxX + 8, H * 0.7 - 15);
+        // Force arrow
+        if (pushing) {
+            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(boxX - 5, H * 0.7 - 25);
+            ctx.lineTo(boxX - 5 - userForce * 0.3, H * 0.7 - 25); ctx.stroke();
+            ctx.fillStyle = '#ef4444'; ctx.font = '14px "Jua"';
+            ctx.fillText(`${userForce.toFixed(0)}N →`, boxX - 5 - userForce * 0.3, H * 0.7 - 35);
+        }
+        // Goal
+        ctx.fillStyle = '#22c55e'; ctx.fillRect(W - 80, H * 0.7 - 60, 60, 60);
+        ctx.font = '16px "Jua"'; ctx.fillStyle = '#fff'; ctx.fillText('🏠 목표', W - 78, H * 0.7 - 25);
+        // Check
+        if (boxX >= W - 90) {
+            done = true; success = true;
+            ctx.font = 'bold 28px "Jua"'; ctx.fillStyle = '#22c55e';
+            ctx.fillText('🎉 성공! F = ma 확인!', W / 2 - 130, H / 2);
+            setTimeout(() => showResult(true), 2000);
+            return;
+        }
+        if (!pushing) {
+            ctx.font = '14px "Jua"'; ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillText('마우스로 힘 조절 → 클릭하여 밀기!', W / 2 - 120, H - 15);
+        }
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+// ──── KINETIC ENERGY MINI-GAME (E = ½mv²) ────
+function runKineticEMiniGame() {
+    const canvas = document.getElementById('trackCanvas');
+    const parent = document.getElementById('testPhase');
+    const W = Math.min(parent.clientWidth - 40, 900);
+    const H = Math.min(parent.clientHeight - 40, 400);
+    canvas.width = W; canvas.height = H;
+    canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+    const lv = LEVELS[currentLevelIdx];
+    const cfg = lv.kineticE;
+    let userV = 10, launched = false, rocketY = H - 80, done = false, success = false;
+
+    canvas.onclick = () => {
+        if (done) { showResult(success); return; }
+        if (!launched) { launched = true; playSound('drive'); }
+    };
+    canvas.onmousemove = (e) => {
+        if (launched) return;
+        const rect = canvas.getBoundingClientRect();
+        userV = Math.max(1, Math.min(cfg.vMax, (1 - (e.clientY - rect.top) / H) * cfg.vMax));
+    };
+
+    function animate() {
+        if (done) return;
+        ctx.clearRect(0, 0, W, H);
+        // Sky gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, '#0a0a2e'); grad.addColorStop(1, '#1a1a4e');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+        // Stars
+        ctx.fillStyle = '#fff';
+        for (let i = 0; i < 30; i++) { ctx.fillRect((i*97)%W, (i*53)%H, 2, 2); }
+        // Ground
+        ctx.fillStyle = '#4a4a4a'; ctx.fillRect(0, H - 30, W, 30);
+        // Formula HUD
+        const E = 0.5 * cfg.mass * userV * userV;
+        ctx.font = 'bold 18px "Jua"'; ctx.fillStyle = '#fff';
+        ctx.fillText(`E = ½mv² = ½ × ${cfg.mass} × ${userV.toFixed(1)}² = ${E.toFixed(0)}J`, 20, 30);
+        // Energy bar
+        const maxE = 0.5 * cfg.mass * cfg.vMax * cfg.vMax;
+        const barW = (E / maxE) * 200;
+        ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(20, 40, 200, 12);
+        ctx.fillStyle = E >= 800 ? '#22c55e' : '#f59e0b'; ctx.fillRect(20, 40, barW, 12);
+        // Launch
+        if (launched) {
+            rocketY -= userV * 0.15;
+            // Flame
+            ctx.fillStyle = '#ff6600';
+            ctx.beginPath(); ctx.moveTo(W/2-8, rocketY+30); ctx.lineTo(W/2, rocketY+50+Math.random()*10);
+            ctx.lineTo(W/2+8, rocketY+30); ctx.fill();
+        }
+        // Rocket
+        ctx.font = '36px sans-serif'; ctx.fillText('🚀', W/2-18, rocketY);
+        // Target line
+        ctx.strokeStyle = 'rgba(34,197,94,0.5)'; ctx.setLineDash([5,5]);
+        ctx.beginPath(); ctx.moveTo(0, 60); ctx.lineTo(W, 60); ctx.stroke();
+        ctx.setLineDash([]); ctx.font = '12px "Jua"'; ctx.fillStyle = '#22c55e'; ctx.fillText('🌟 목표 고도', W-100, 55);
+        // Check
+        if (rocketY <= 60) {
+            done = true; success = true;
+            ctx.font = 'bold 28px "Jua"'; ctx.fillStyle = '#22c55e';
+            ctx.fillText('🎉 발사 성공!', W/2-80, H/2);
+            setTimeout(() => showResult(true), 2000); return;
+        }
+        if (launched && rocketY >= H - 30) {
+            done = true; success = false;
+            ctx.font = 'bold 28px "Jua"'; ctx.fillStyle = '#ef4444';
+            ctx.fillText('❌ 에너지 부족!', W/2-80, H/2);
+            setTimeout(() => showResult(false), 2000); return;
+        }
+        if (!launched) {
+            ctx.font = '14px "Jua"'; ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.fillText('마우스로 속도 조절 → 클릭하여 발사!', W/2-130, H-40);
+        }
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+// ──── POTENTIAL ENERGY MINI-GAME (E = mgh) ────
+function runPotentialEMiniGame() {
+    const canvas = document.getElementById('trackCanvas');
+    const parent = document.getElementById('testPhase');
+    const W = Math.min(parent.clientWidth - 40, 900);
+    const H = Math.min(parent.clientHeight - 40, 400);
+    canvas.width = W; canvas.height = H;
+    canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+    const lv = LEVELS[currentLevelIdx];
+    const cfg = lv.potentialE;
+    let userH = 3, launched = false, carX = 80, carY = H - 80, done = false, success = false;
+    const targetH = cfg.height;
+    const slopeLen = W * 0.6;
+
+    canvas.onclick = () => {
+        if (done) { showResult(success); return; }
+        if (!launched) { launched = true; playSound('drive'); }
+    };
+    canvas.onmousemove = (e) => {
+        if (launched) return;
+        const rect = canvas.getBoundingClientRect();
+        userH = Math.max(1, Math.min(10, (1 - (e.clientY - rect.top) / H) * 10));
+    };
+
+    function animate() {
+        if (done) return;
+        ctx.clearRect(0, 0, W, H);
+        // Sky
+        ctx.fillStyle = '#87CEEB'; ctx.fillRect(0, 0, W, H);
+        // Hill
+        const hillTop = H - 80 - (userH / 10) * (H - 120);
+        ctx.fillStyle = '#4CAF50';
+        ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(0, H - 80);
+        ctx.lineTo(W * 0.6, hillTop); ctx.lineTo(W, hillTop); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+        // Formula
+        const E = cfg.mass * cfg.g * userH;
+        ctx.font = 'bold 18px "Jua"'; ctx.fillStyle = '#333';
+        ctx.fillText(`E = mgh = ${cfg.mass} × ${cfg.g} × ${userH.toFixed(1)} = ${E.toFixed(0)}J`, 20, 30);
+        // Target
+        const needE = cfg.mass * cfg.g * targetH;
+        ctx.fillText(`필요 에너지: ${needE}J (높이 ${targetH}m)`, 20, 55);
+        // Energy bar
+        ctx.fillStyle = 'rgba(0,0,0,0.1)'; ctx.fillRect(20, 65, 200, 10);
+        ctx.fillStyle = E >= needE ? '#22c55e' : '#f59e0b'; ctx.fillRect(20, 65, Math.min(E/needE,1)*200, 10);
+        // Car on slope
+        if (launched) {
+            const progress = Math.min(1, (Date.now() % 5000) / 3000);
+            carX = 80 + progress * (W * 0.6 - 80);
+            carY = (H - 80) + progress * (hillTop - (H - 80));
+        }
+        ctx.font = '28px sans-serif'; ctx.fillText('🚗', carX, carY - 5);
+        // Flag at top
+        ctx.fillText('⛰️', W * 0.8, hillTop - 10);
+        // Check
+        if (launched && carX >= W * 0.55) {
+            done = true; success = E >= needE;
+            ctx.font = 'bold 28px "Jua"';
+            ctx.fillStyle = success ? '#22c55e' : '#ef4444';
+            ctx.fillText(success ? '🎉 정상 도달!' : '❌ 에너지 부족!', W/2-80, H/2-50);
+            setTimeout(() => showResult(success), 2000); return;
+        }
+        if (!launched) {
+            ctx.font = '14px "Jua"'; ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillText('마우스로 높이 조절 → 클릭하여 출발!', W/2-130, H-15);
+        }
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+// ──── PYTHAGOREAN MINI-GAME (a²+b²=c²) ────
+function runPythagorasMiniGame() {
+    const canvas = document.getElementById('trackCanvas');
+    const parent = document.getElementById('testPhase');
+    const W = Math.min(parent.clientWidth - 40, 900);
+    const H = Math.min(parent.clientHeight - 40, 400);
+    canvas.width = W; canvas.height = H;
+    canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+    const lv = LEVELS[currentLevelIdx];
+    const cfg = lv.pythag;
+    let userC = 30, confirmed = false, done = false, success = false;
+
+    canvas.onclick = () => {
+        if (done) { showResult(success); return; }
+        if (!confirmed) {
+            confirmed = true;
+            success = Math.abs(userC - cfg.c) < 2;
+            done = true;
+            playSound(success ? 'success' : 'fail');
+            setTimeout(() => showResult(success), 2500);
+        }
+    };
+    canvas.onmousemove = (e) => {
+        if (confirmed) return;
+        const rect = canvas.getBoundingClientRect();
+        userC = Math.max(10, Math.min(80, ((e.clientX - rect.left) / W) * 80));
+    };
+
+    function animate() {
+        ctx.clearRect(0, 0, W, H);
+        // Water background
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, '#87CEEB'); grad.addColorStop(0.6, '#4A90D9'); grad.addColorStop(1, '#2E5090');
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+        // Banks
+        ctx.fillStyle = '#5D8C5A'; ctx.fillRect(0, H*0.35, W*0.15, H*0.65);
+        ctx.fillRect(W*0.85, H*0.35, W*0.15, H*0.65);
+        // Triangle
+        const x1 = W * 0.15, y1 = H * 0.7; // bottom-left
+        const x2 = W * 0.85, y2 = H * 0.7; // bottom-right
+        const x3 = W * 0.15, y3 = H * 0.3; // top-left
+        // a (vertical)
+        ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x3, y3); ctx.stroke();
+        ctx.font = 'bold 16px "Jua"'; ctx.fillStyle = '#FFD700';
+        ctx.fillText(`a = ${cfg.a}m`, x1 - 80, (y1+y3)/2);
+        // b (horizontal)
+        ctx.strokeStyle = '#4ECDC4';
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        ctx.fillStyle = '#4ECDC4';
+        ctx.fillText(`b = ${cfg.b}m`, (x1+x2)/2 - 30, y1 + 25);
+        // c (hypotenuse) — user adjusts
+        ctx.strokeStyle = confirmed ? (success ? '#22c55e' : '#ef4444') : '#fff';
+        ctx.setLineDash([5,5]);
+        ctx.beginPath(); ctx.moveTo(x3, y3); ctx.lineTo(x2, y2); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 18px "Jua"';
+        ctx.fillText(`c = ${userC.toFixed(0)}m ?`, (x3+x2)/2, (y3+y2)/2 - 10);
+        // Formula
+        ctx.font = 'bold 16px "Jua"'; ctx.fillStyle = '#fff';
+        ctx.fillText(`a² + b² = c²`, 20, 25);
+        ctx.fillText(`${cfg.a}² + ${cfg.b}² = ${cfg.a*cfg.a + cfg.b*cfg.b}`, 20, 48);
+        ctx.fillText(`c = √${cfg.a*cfg.a + cfg.b*cfg.b} = ${cfg.c}`, 20, 71);
+        // Bridge emoji
+        ctx.font = '32px sans-serif'; ctx.fillText('🌉', (x3+x2)/2 - 16, (y3+y2)/2 + 25);
+        // Result
+        if (confirmed) {
+            ctx.font = 'bold 28px "Jua"';
+            ctx.fillStyle = success ? '#22c55e' : '#ef4444';
+            ctx.fillText(success ? `🎉 정답! c = ${cfg.c}m` : `❌ 오답! 정답: ${cfg.c}m`, W/2-120, 120);
+        } else {
+            ctx.font = '14px "Jua"'; ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.fillText('마우스로 c 값 조절 → 클릭하여 확인!', W/2-130, H-15);
+        }
+        if (!done) requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+// ──── RESULT ────
+function showResult(success) {
+    const overlay = document.getElementById('resultOverlay');
+    overlay.style.display = 'flex';
+
+    const formula = FORMULAS[engineFormula];
+    let stars = 0;
+    let title, message, formulaText;
+
+    const lv = LEVELS[currentLevelIdx];
+    const correctF = Object.entries(lv.formulas).find(([k,f])=>f.correct);
+    const resultCard = document.getElementById('resultCard');
+    const trophyEl = document.getElementById('resultTrophy');
+    const pigReaction = document.getElementById('resultPigReaction');
+
+    resultCard.classList.remove('fail-card');
+
+    if (success) {
+        stars = 1;
+        if (firstTry) stars = 2;
+        const actualAns = lv.predict.ans;
+        if (predictedTime && Math.abs(predictedTime - actualAns) / actualAns <= 0.15) stars = 3;
+
+        title = stars === 3 ? 'PERFECT!' : stars === 2 ? 'GREAT!' : 'CLEAR!';
+        message = lv.anim.result;
+        formulaText = lv.anim.formulaR;
+        trophyEl.textContent = stars === 3 ? '🏆' : stars === 2 ? '🎖️' : '🎯';
+        pigReaction.textContent = stars === 3 ? '🐷✨🎉' : stars === 2 ? '🐷👏' : '🐷👍';
+
+        // Save progress
+        localStorage.setItem('mp_stars_'+currentLevelIdx, Math.max(stars, parseInt(localStorage.getItem('mp_stars_'+currentLevelIdx)||'0')));
+        if (currentLevelIdx + 1 < LEVELS.length) {
+            lvProgress[currentLevelIdx + 1] = true;
+            localStorage.setItem('mp_progress', JSON.stringify(lvProgress));
+        }
+
+        // Spawn CSS confetti
+        spawnCSSConfetti();
+    } else {
+        stars = 0;
+        title = 'OOPS!';
+        resultCard.classList.add('fail-card');
+        const wrongF = lv.formulas[engineFormula];
+        const correctName = correctF ? correctF[1].name : '';
+        message = `${wrongF?.name || '이 공식'}은 여기에 맞지 않아요.\n${correctName}를 사용해보세요!`;
+        formulaText = `${wrongF?.formula}  →  이 문제에 맞지 않아요!`;
+        trophyEl.textContent = '💥';
+        pigReaction.textContent = '🐷😅💦';
+        firstTry = false;
+    }
+
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultMessage').textContent = message;
+    document.getElementById('resultFormula').textContent = formulaText;
+
+    // Animate stars
+    for (let i = 1; i <= 3; i++) {
+        const starEl = document.getElementById('star' + i);
+        starEl.classList.remove('earned');
+        if (i <= stars) {
+            setTimeout(() => {
+                starEl.classList.add('earned');
+                playSound('success');
+            }, 400 * i);
+        }
+    }
+}
+
+function spawnCSSConfetti() {
+    const container = document.getElementById('resultConfetti');
+    container.innerHTML = '';
+    const colors = ['#FFD700','#FF5252','#4CAF50','#2196F3','#FF9800','#E040FB','#00BCD4','#FF1493'];
+    for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'result-confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.width = (6 + Math.random() * 8) + 'px';
+        piece.style.height = (6 + Math.random() * 8) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.animationDuration = (2 + Math.random() * 3) + 's';
+        piece.style.animationDelay = (Math.random() * 1.5) + 's';
+        container.appendChild(piece);
+    }
+}
+
+// ──── NEXT LEVEL ────
+function nextLevel() {
+    if (currentLevelIdx + 1 < LEVELS.length) {
+        document.getElementById('resultOverlay').style.display = 'none';
+        startLevel(currentLevelIdx + 1);
+    } else {
+        // All levels done — back to selector
+        document.getElementById('resultOverlay').style.display = 'none';
+        document.getElementById('game').style.display = 'none';
+        document.getElementById('levelSelect').style.display = '';
+        renderLevelSelect();
+    }
+}
+
+function backToLevelSelect() {
+    document.getElementById('game').style.display = 'none';
+    document.getElementById('levelSelect').style.display = '';
+    renderLevelSelect();
+}
+
+// ──── INITIALIZATION ────
+function init() {
+    renderLevelSelect();
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luna - Reference Viewer</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background: #0a0c14;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .glass-header {
+            background: rgba(10, 12, 20, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .ref-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            border-radius: 24px;
+        }
+
+        .ref-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .ref-card img {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ref-card:hover img {
+            transform: scale(1.1);
+        }
+
+        /* Lightbox */
+        #lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+        }
+
+        #lightbox.open {
+            display: flex;
+        }
+
+        #lightbox-img {
+            max-width: 90vw;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 16px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="dark bg-[#0a0c14]">
+    <!-- Navbar -->
+    <nav class="glass-header fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <button onclick="history.back()"
+                class="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 transition-all">
+                <span class="material-symbols-outlined font-bold">arrow_back</span>
+            </button>
+            <div>
+                <h1 id="lesson-title" class="text-lg font-black tracking-tight">Reference View</h1>
+                <p id="month-label" class="text-[10px] text-primary font-black uppercase tracking-[0.2em] opacity-80">-</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4 text-xs text-white/40 font-bold hidden md:block">
+            Print mode available (Cmd+P)
+        </div>
+    </nav>
+
+    <!-- Content -->
+    <main class="max-w-7xl mx-auto px-6 pt-32 pb-24">
+        <div class="mb-12 text-center">
+            <h2 class="text-4xl md:text-5xl font-black mb-4 tracking-tight">Artist References</h2>
+            <p class="text-slate-400 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
+                Explore a curated collection of reference images to inspire your creativity. Click any image to view in full size or download for your session.
+            </p>
+        </div>
+
+        <div id="ref-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Loading state -->
+            <div class="col-span-full py-20 flex flex-col items-center justify-center gap-4 opacity-50">
+                <span class="material-symbols-outlined text-4xl animate-spin">cyclone</span>
+                <p class="font-bold tracking-widest text-xs uppercase">Loading Reference Images...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Lightbox -->
+    <div id="lightbox" onclick="if(event.target===this)closeLightbox()">
+        <img id="lightbox-img" src="" alt="">
+        <div class="flex gap-4 mt-8">
+            <a id="download-btn" href="" download
+                class="px-8 py-3 rounded-2xl bg-primary text-white font-black hover:bg-primary/90 transition-all flex items-center gap-3 shadow-xl shadow-primary/20">
+                Download <span class="material-symbols-outlined">download</span>
+            </a>
+            <button onclick="closeLightbox()"
+                class="px-8 py-3 rounded-2xl bg-white/10 text-white font-black hover:bg-white/20 transition-all backdrop-blur-md">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Get params
+        const urlParams = new URLSearchParams(window.location.search);
+        const month = urlParams.get('month');
+        const lessonId = urlParams.get('lessonId');
+        const title = urlParams.get('title');
+
+        if (!month || !lessonId) {
+            document.getElementById('ref-grid').innerHTML = `
+                <div class="col-span-full py-20 text-center opacity-50">
+                    <span class="material-symbols-outlined text-5xl mb-4">error</span>
+                    <p class="font-black text-xl mb-2">Oops! Missing Parameters</p>
+                    <p class="text-sm">Please select a lesson from the catalog.</p>
+                </div>
+            `;
+        } else {
+            document.getElementById('lesson-title').innerText = title || 'Reference Viewer';
+            document.getElementById('month-label').innerText = month;
+            loadReferences();
+        }
+
+        async function loadReferences() {
+            const grid = document.getElementById('ref-grid');
+            grid.innerHTML = '';
+            
+            // Extract the numerical lesson part (e.g., from '2026-03-01' to '01')
+            const parts = lessonId.split('-');
+            const lessonNumPart = parts[parts.length - 1]; // e.g., '01'
+            const shortId = 'l' + lessonNumPart; // e.g., 'l01'
+
+            // Month part for image path
+            const monthPath = month; // '2026-03'
+
+            // Attempt to load up to 12 images
+            const images = [];
+            for (let i = 1; i <= 10; i++) {
+                const num = i.toString().padStart(2, '0');
+                const src = `../../images/lessons/${monthPath}/refs/${shortId}-ref${num}.jpg`;
+                images.push(src);
+            }
+
+            let foundCount = 0;
+            
+            for (const src of images) {
+                // We use a simple image load trial
+                await new Promise(resolve => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const card = document.createElement('div');
+                        card.className = 'ref-card aspect-square cursor-pointer flex items-center justify-center';
+                        card.onclick = () => openLightbox(src);
+                        card.innerHTML = `<img src="${src}" class="w-full h-full object-cover">`;
+                        grid.appendChild(card);
+                        foundCount++;
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        resolve(); // Skip missing ones
+                    };
+                    img.src = src;
+                });
+            }
+
+            if (foundCount === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-20 text-center opacity-50">
+                        <span class="material-symbols-outlined text-5xl mb-4">folder_off</span>
+                        <p class="font-black text-xl mb-2">No references found</p>
+                        <p class="text-sm">Reference images are not yet available for this lesson.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('download-btn').href = src;
+            document.getElementById('lightbox').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

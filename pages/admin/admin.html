@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Luna Whale Art Lab - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="../../assets/data/i18n.js?v=0312-2330"></script>
+    <script src="../../assets/js/app.js?v=0312-2330"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
+    <script src="../../assets/js/firebase-auth.js?v=0312-2330"></script>
+    <script src="../../assets/js/storage-utils.js?v=0312-2330"></script>
+    <script src="../../assets/data/classes-data.js?v=0312-2330"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { "primary": "#1337ec", "background-light": "#f6f6f8", "background-dark": "#101322" },
+                    fontFamily: { "display": ["Lexend", "sans-serif"] },
+                }
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+
+        @media (min-width: 1024px) {
+            .app-sidebar {
+                display: flex !important;
+            }
+
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+
+
+        /* Sidebar Submenu */
+        .submenu-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .submenu-container.open {
+            max-height: 400px;
+        }
+
+        .submenu-item {
+            display: block;
+            padding: 0.5rem 1rem 0.5rem 3.2rem;
+            font-size: 0.75rem;
+            color: #64748b;
+            transition: all 0.2s;
+            border-radius: 0.75rem;
+            margin: 0.1rem 0;
+            font-weight: 500;
+        }
+
+        .submenu-item:hover {
+            color: #1337ec;
+            background: rgba(19, 55, 236, 0.05);
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+    <script>
+        // Role-based Access Control: Admin only
+        if (!LunaApp.isAdmin) {
+            alert("Access Denied: Admin only.");
+            window.location.href = "index.html";
+        }
+    </script>
+
+    <!-- Desktop Sidebar -->
+    <aside
+        class="app-sidebar hidden fixed left-0 top-0 h-full w-60 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-col z-40 p-4">
+        <!-- Logo -->
+        <a href="admin.html" class="flex items-center gap-3 px-2 py-4 mb-6 hover:opacity-80 transition-opacity">
+            <img src="../../logo.png" alt="Luna Whale" class="w-10 h-10 object-contain rounded-xl" />
+            <div>
+                <div class="text-sm font-black text-primary leading-none">Luna Whale</div>
+                <div class="text-xs text-red-500 font-bold">Admin Panel</div>
+            </div>
+        </a>
+
+        <!-- User Quick Info -->
+        <div class="flex items-center gap-3 px-2 py-3 rounded-xl bg-primary/5 mb-6">
+            <div
+                class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+                <span class="material-symbols-outlined text-white text-sm">person</span>
+            </div>
+            <div>
+                <div class="text-xs font-bold">관리자</div>
+                <div class="text-[10px] text-slate-500">Luna Whale</div>
+            </div>
+        </div>
+
+        <!-- Nav Items -->
+        <nav class="flex-1 min-h-0 space-y-1 overflow-y-auto pr-2 custom-scrollbar">
+            <a href="admin.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary/10 text-primary font-semibold text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">dashboard</span>
+                <span data-i18n="page_admin">Admin Dashboard</span>
+            </a>
+            <a href="../main/classes.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">school</span>
+                <span data-i18n="nav_classes">Classes</span>
+            </a>
+            <a href="../main/gallery.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">gallery_thumbnail</span>
+                <span data-i18n="nav_gallery">Gallery</span>
+            </a>
+            <a href="#"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">payments</span>
+                <span data-i18n="adm_revenue">Revenue (mtd)</span>
+            </a>
+            <a href="../main/curriculum.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">map</span> <span
+                    data-i18n="nav_curriculum">Curriculum</span>
+            </a>
+            <a href="../main/pricing.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">card_membership</span> <span
+                    data-i18n="nav_membership">Membership</span>
+            </a>
+            <a href="../main/support.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">help</span> <span data-i18n="nav_support">Support</span>
+            </a>
+            <a href="../main/notices.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">campaign</span> <span
+                    data-i18n="nav_notice">Notice</span>
+            </a>
+            <a href="../main/settings.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition-colors">
+                <span class="material-symbols-outlined text-xl">settings</span>
+                <span data-i18n="nav_settings">Settings</span>
+            </a>
+            <!-- Exit Admin & Language Link -->
+            <div class="border-t border-slate-200 pt-4 mt-4 space-y-2">
+                <a href="../auth/login.html"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-100 font-medium text-sm transition-colors">
+                    <span class="material-symbols-outlined text-xl">exit_to_app</span>
+                    <span data-i18n="adm_exit_admin">Exit Admin</span>
+                </a>
+
+            </div>
+        </nav>
+    </aside>
+
+    <div class="main-content lg:ml-60 min-h-screen">
+        <!-- Top Bar -->
+        <header
+            class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-20 border-b border-slate-200 px-6 py-4 flex items-center gap-3">
+            <div class="lg:hidden flex items-center gap-2">
+                <img src="../../logo.png" alt="Luna Whale" class="w-8 h-8 object-contain rounded-lg" />
+            </div>
+            <h1 class="flex-1 font-black text-xl" data-i18n="page_admin">Admin Dashboard</h1>
+            <div class="flex items-center gap-2">
+                <!-- Language switcher -->
+                <div class="relative" id="lang-container-admin">
+                    <button onclick="toggleLangAdmin()"
+                        class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+                        title="Language">
+                        <span class="material-symbols-outlined text-slate-600 text-lg">language</span>
+                    </button>
+                    <div id="lang-menu-admin"
+                        class="absolute right-0 top-11 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-44 py-1.5 z-50"
+                        style="display:none">
+                    </div>
+                </div>
+                <button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 relative">
+                    <span class="material-symbols-outlined text-slate-600">notifications</span>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+                <button onclick="window.location.href='create-class.html'"
+                    class="flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors">
+                    <span class="material-symbols-outlined text-lg">add</span>
+                    <span class="hidden sm:inline" data-i18n="adm_new_class">New Class</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 py-5 space-y-5 pb-20">
+            <!-- Stats Row -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-primary text-lg">group</span>
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium">전체 회원</div>
+                    </div>
+                    <div class="text-2xl font-black" id="stat-total-students">---</div>
+                    <div class="text-xs text-slate-400 font-semibold mt-1">가입된 사용자 수</div>
+                </div>
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-amber-600 text-lg">workspace_premium</span>
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium">프리미엄 회원</div>
+                    </div>
+                    <div class="text-2xl font-black" id="stat-premium-users">---</div>
+                    <div class="text-xs text-amber-500 font-semibold mt-1">전체 콘텐츠 이용 중</div>
+                </div>
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-purple-600 text-lg">school</span>
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium">등록된 수업</div>
+                    </div>
+                    <div class="text-2xl font-black" id="stat-active-classes">--</div>
+                    <div class="text-xs text-slate-400 font-semibold mt-1">전체 수업 수</div>
+                </div>
+                <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-green-600 text-lg">visibility</span>
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium">오늘 방문자</div>
+                    </div>
+                    <div class="text-2xl font-black" id="stat-today-visits">---</div>
+                    <div class="text-xs text-green-500 font-semibold mt-1 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs">monitoring</span>실시간 추적 중
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classes Management (Collapsible) -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 overflow-hidden">
+                <button onclick="toggleClassesSection()" class="w-full flex items-center justify-between px-5 pt-5 pb-3 border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                    <div class="flex items-center gap-2">
+                        <h3 class="font-bold text-sm">수업 목록</h3>
+                        <span id="classes-count-badge" class="text-[10px] font-bold bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">0개</span>
+                    </div>
+                    <span id="classes-toggle-icon" class="material-symbols-outlined text-slate-400 text-lg transition-transform duration-300">expand_more</span>
+                </button>
+                <div id="admin-classes-list" class="divide-y divide-slate-100 hidden">
+                </div>
+            </div>
+
+            <!-- Media Management (New) -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-800">미디어 관리</h3>
+                        <p class="text-[10px] text-slate-500 font-medium mt-0.5">썸네일, 백과사전 이미지, 영상을 Firebase Storage에 업로드</p>
+                    </div>
+                    <span class="material-symbols-outlined text-slate-400">cloud_upload</span>
+                </div>
+
+                <div class="p-5 space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Folder Selection -->
+                        <div class="space-y-1.5">
+                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">업로드 폴더</label>
+                            <select id="upload-folder"
+                                class="w-full h-11 px-4 rounded-xl border-slate-200 text-sm focus:ring-primary focus:border-primary transition-all">
+                                <option value="class_thumbnails">수업 썸네일 (class_thumbnails/)</option>
+                                <option value="encyclopedia_images">백과사전 이미지 (encyclopedia_images/)</option>
+                                <option value="artists_eye_videos">작가의 눈 영상 (artists_eye_videos/)</option>
+                                <option value="student_gallery">학생 갤러리 (student_gallery/)</option>
+                            </select>
+                        </div>
+
+                        <!-- File Input -->
+                        <div class="space-y-1.5">
+                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">파일 선택</label>
+                            <div class="relative">
+                                <input type="file" id="media-file-input" class="hidden"
+                                    onchange="handleFileSelect(this)">
+                                <button onclick="document.getElementById('media-file-input').click()"
+                                    class="w-full h-11 px-4 flex items-center justify-between rounded-xl border border-dashed border-slate-300 hover:border-primary hover:bg-primary/5 transition-all text-sm text-slate-600">
+                                    <span id="file-name-display">파일을 선택하세요</span>
+                                    <span class="material-symbols-outlined text-lg">attach_file</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div id="upload-progress-container" class="hidden space-y-2 pt-2">
+                        <div class="flex items-center justify-between text-[11px] font-bold">
+                            <span id="upload-status-text" class="text-primary animate-pulse">업로드 중...</span>
+                            <span id="upload-percent" class="text-slate-500">0%</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                            <div id="upload-progress-bar" class="h-full bg-primary rounded-full transition-all duration-300" style="width:0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Result -->
+                    <div id="upload-result" class="hidden space-y-2 pt-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">업로드 URL</label>
+                        <div class="flex gap-2">
+                            <input id="result-url" type="text" readonly class="flex-1 h-10 px-3 rounded-xl border-slate-200 text-xs bg-slate-50">
+                            <button onclick="copyResultUrl()" class="h-10 px-3 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold transition-colors">복사</button>
+                        </div>
+                    </div>
+
+                    <!-- Upload Button -->
+                    <button id="upload-btn" onclick="startMediaUpload()" disabled
+                        class="w-full h-12 flex items-center justify-center gap-2 bg-slate-200 text-slate-500 font-bold rounded-xl transition-all cursor-not-allowed">
+                        <span class="material-symbols-outlined text-xl">cloud_upload</span>
+                        업로드
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Art Feedback -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-purple-50/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-purple-600 text-xl">auto_awesome</span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm text-slate-800">AI 작품 분석</h3>
+                            <p class="text-[10px] text-slate-500 font-medium mt-0.5">이미지 업로드 후 Gemini가 색감·비율·붓터치를 분석합니다</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div class="space-y-1.5">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">AI 시스템 프롬프트</label>
+                        <div class="p-3 bg-slate-50 rounded-xl text-[10px] text-slate-600 leading-relaxed border border-slate-100 italic">
+                            "너는 다정하고 전문적인 아동 미술 교사야. 그림의 색감과 형태를 분석해서 학부모에게 전송할 세련된 칭찬 멘트를 3줄로 작성해 줘."
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">분석 결과</label>
+                        <textarea id="ai-feedback-text" rows="4"
+                            class="w-full p-4 rounded-xl border-slate-200 text-sm focus:ring-purple-500 focus:border-purple-500 transition-all placeholder:text-slate-300"
+                            placeholder="AI 피드백이 여기에 표시됩니다..."></textarea>
+                    </div>
+
+                    <div id="ai-loading" class="hidden flex flex-col items-center justify-center py-4 gap-3">
+                        <div class="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+                        <p class="text-[11px] font-bold text-purple-600 animate-pulse">AI가 그림을 분석 중입니다...</p>
+                    </div>
+
+                    <button id="ai-btn" onclick="generateAIFeedback()" disabled
+                        class="w-full h-12 flex items-center justify-center gap-2 bg-slate-200 text-slate-500 font-bold rounded-xl transition-all cursor-not-allowed">
+                        <span class="material-symbols-outlined text-xl">psychology</span>
+                        Gemini로 작품 분석
+                    </button>
+                </div>
+            </div>
+
+    <!-- ═══════════ Premium Access Management ═══════════ -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-amber-50 to-orange-50">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-amber-600 text-lg">workspace_premium</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm text-slate-800">프리미엄 권한 관리</h3>
+                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">이메일 입력으로 모든 콘텐츠 접근 권한 부여</p>
+                </div>
+            </div>
+            <span id="premium-count-badge" class="text-xs font-bold bg-amber-500 text-white px-2.5 py-1 rounded-full">0명</span>
+        </div>
+
+        <div class="p-5 space-y-4">
+            <!-- Add New Premium User -->
+            <div class="flex gap-2">
+                <div class="flex-1 relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">mail</span>
+                    <input type="email" id="premium-email-input" placeholder="이메일 주소 입력 (예: friend@gmail.com)"
+                        class="w-full h-11 pl-10 pr-4 rounded-xl border-slate-200 text-sm focus:ring-amber-500 focus:border-amber-500 transition-all"
+                        onkeydown="if(event.key==='Enter') addPremiumAccess()">
+                </div>
+                <select id="premium-duration-input" class="w-28 h-11 px-2 rounded-xl border-slate-200 text-sm focus:ring-amber-500 focus:border-amber-500">
+                    <option value="0">무제한</option>
+                    <option value="1" selected>1개월</option>
+                    <option value="3">3개월</option>
+                    <option value="6">6개월</option>
+                    <option value="12">1년</option>
+                </select>
+                <input type="text" id="premium-memo-input" placeholder="메모"
+                    class="w-24 h-11 px-3 rounded-xl border-slate-200 text-sm focus:ring-amber-500 focus:border-amber-500"
+                    onkeydown="if(event.key==='Enter') addPremiumAccess()">
+                <button onclick="addPremiumAccess()"
+                    class="h-11 px-5 flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-sm transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-lg">person_add</span>
+                    추가
+                </button>
+            </div>
+
+            <!-- Premium Users List -->
+            <div id="premium-users-list" class="divide-y divide-slate-100 rounded-xl border border-slate-100 overflow-hidden">
+                <div class="px-5 py-8 text-center text-xs text-slate-400">
+                    <span class="material-symbols-outlined text-3xl text-slate-300 mb-2 block">group_off</span>
+                    등록된 프리미엄 사용자가 없습니다
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ 학부모 기본 권한 관리 ═══════════ -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-blue-600 text-lg">family_restroom</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm text-slate-800">학부모 기본 권한</h3>
+                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">월간 수업 제외, 나머지 모든 콘텐츠 이용 가능</p>
+                </div>
+            </div>
+            <span id="parent-count-badge" class="text-xs font-bold bg-blue-500 text-white px-2.5 py-1 rounded-full">0명</span>
+        </div>
+
+        <div class="p-5 space-y-4">
+            <div class="flex gap-2">
+                <div class="flex-1 relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">mail</span>
+                    <input type="email" id="parent-email-input" placeholder="학부모 이메일 주소 입력"
+                        class="w-full h-11 pl-10 pr-4 rounded-xl border-slate-200 text-sm focus:ring-blue-500 focus:border-blue-500 transition-all"
+                        onkeydown="if(event.key==='Enter') addParentAccess()">
+                </div>
+                <select id="parent-duration-input" class="w-28 h-11 px-2 rounded-xl border-slate-200 text-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="0">무제한</option>
+                    <option value="1" selected>1개월</option>
+                    <option value="3">3개월</option>
+                    <option value="6">6개월</option>
+                    <option value="12">1년</option>
+                </select>
+                <input type="text" id="parent-memo-input" placeholder="메모"
+                    class="w-24 h-11 px-3 rounded-xl border-slate-200 text-sm focus:ring-blue-500 focus:border-blue-500"
+                    onkeydown="if(event.key==='Enter') addParentAccess()">
+                <button onclick="addParentAccess()"
+                    class="h-11 px-5 flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl text-sm transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-lg">person_add</span>
+                    추가
+                </button>
+            </div>
+            <div id="parent-users-list" class="divide-y divide-slate-100 rounded-xl border border-slate-100 overflow-hidden">
+                <div class="px-5 py-6 text-center text-xs text-slate-400">
+                    <span class="material-symbols-outlined text-2xl text-slate-300 mb-1 block">group_off</span>
+                    등록된 학부모가 없습니다
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용자 접속 현황 (전체 폭) -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="px-5 pt-5 pb-3 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <h3 class="font-bold text-sm">사용자 접속 현황</h3>
+                <span id="login-count-badge" class="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">0명</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleLoginExpand()" class="text-[10px] font-bold text-primary hover:underline" id="login-expand-btn">전체 보기</button>
+                <span class="material-symbols-outlined text-slate-400 text-sm">group</span>
+            </div>
+        </div>
+        <div class="divide-y divide-slate-100" id="recent-logins-list">
+            <div class="px-5 py-8 text-center text-xs text-slate-400">불러오는 중...</div>
+        </div>
+    </div>
+
+    <!-- 사용자 활동 상세 모달 -->
+    <div id="user-activity-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden" onclick="if(event.target===this)closeActivityModal()">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div>
+                    <h3 class="font-bold text-sm" id="modal-user-name">사용자</h3>
+                    <p class="text-[10px] text-slate-500" id="modal-user-email">email</p>
+                </div>
+                <button onclick="closeActivityModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 transition-colors">
+                    <span class="material-symbols-outlined text-slate-400">close</span>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4" id="modal-activity-list">
+                <div class="text-center text-xs text-slate-400 py-8">불러오는 중...</div>
+            </div>
+            <div class="px-5 py-3 border-t border-slate-100 bg-slate-50">
+                <div class="flex items-center gap-4 text-[10px] text-slate-500">
+                    <span id="modal-stat-pages" class="font-bold">-</span>
+                    <span id="modal-stat-lessons" class="font-bold">-</span>
+                    <span id="modal-stat-first" class="font-bold">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 최근 활동 (전체 시스템) -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 overflow-hidden">
+        <div class="px-5 pt-5 pb-3 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="font-bold text-sm">최근 시스템 활동</h3>
+            <span class="material-symbols-outlined text-slate-400 text-sm">history</span>
+        </div>
+        <div class="divide-y divide-slate-100" id="recent-activity-list">
+            <div class="px-5 py-8 text-center text-xs text-slate-400">불러오는 중...</div>
+        </div>
+    </div>
+    </main>
+    </div>
+
+    <script>
+        function toggleLangAdmin() {
+            var m = document.getElementById('lang-menu-admin');
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+        }
+
+        document.addEventListener('click', function (e) {
+            const c = document.getElementById('lang-container-admin');
+            if (c && !c.contains(e.target)) {
+                var m = document.getElementById('lang-menu-admin');
+                if (m) m.style.display = 'none';
+            }
+        });
+
+        let selectedFile = null;
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                selectedFile = input.files[0];
+                
+                // Update UI for selected file
+                document.getElementById('file-name-display').textContent = selectedFile.name;
+                document.getElementById('file-info').classList.remove('hidden');
+                document.getElementById('upload-placeholder').classList.add('hidden');
+                
+                // Show Preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('upload-preview').src = e.target.result;
+                    document.getElementById('upload-preview-container').classList.remove('hidden');
+                };
+                reader.readAsDataURL(selectedFile);
+
+                const btn = document.getElementById('upload-btn');
+                btn.disabled = false;
+                btn.classList.remove('bg-slate-200', 'text-slate-500', 'cursor-not-allowed');
+                btn.classList.add('bg-primary', 'text-white', 'hover:bg-blue-700', 'shadow-lg', 'shadow-primary/20');
+            }
+        }
+
+        function resetUpload() {
+            selectedFile = null;
+            document.getElementById('file-input').value = '';
+            document.getElementById('file-info').classList.add('hidden');
+            document.getElementById('upload-placeholder').classList.remove('hidden');
+            document.getElementById('upload-preview-container').classList.add('hidden');
+            document.getElementById('upload-progress-container').classList.add('hidden');
+            document.getElementById('upload-result').classList.add('hidden');
+            
+            const btn = document.getElementById('upload-btn');
+            btn.disabled = true;
+            btn.classList.add('bg-slate-200', 'text-slate-500', 'cursor-not-allowed');
+            btn.classList.remove('bg-primary', 'text-white', 'hover:bg-blue-700', 'shadow-lg', 'shadow-primary/20');
+
+            const aiBtn = document.getElementById('ai-btn');
+            aiBtn.disabled = true;
+            aiBtn.classList.add('bg-slate-200', 'text-slate-500', 'cursor-not-allowed');
+            aiBtn.classList.remove('bg-purple-600', 'text-white', 'hover:bg-purple-700', 'shadow-lg', 'shadow-purple-200');
+        }
+
+        async function startMediaUpload() {
+            if (!selectedFile) return;
+
+            const folder = document.getElementById('upload-folder').value;
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const percentText = document.getElementById('upload-percent');
+            const statusText = document.getElementById('upload-status-text');
+            const resultArea = document.getElementById('upload-result');
+            const uploadBtn = document.getElementById('upload-btn');
+
+            // Reset and show progress
+            progressContainer.classList.remove('hidden');
+            resultArea.classList.add('hidden');
+            uploadBtn.disabled = true;
+            uploadBtn.classList.add('opacity-50');
+
+            try {
+                const downloadURL = await LunaStorage.uploadFile(selectedFile, folder, (progress) => {
+                    const p = Math.round(progress);
+                    progressBar.style.width = p + '%';
+                    if (percentText) percentText.textContent = p + '%';
+                });
+
+                // Show success
+                statusText.textContent = '완료!';
+                statusText.classList.remove('animate-pulse', 'text-primary');
+                statusText.classList.add('text-emerald-600');
+
+                resultArea.classList.remove('hidden');
+                document.getElementById('result-url').value = downloadURL;
+
+                // Enable AI Feedback button after successful upload
+                const aiBtn = document.getElementById('ai-btn');
+                aiBtn.disabled = false;
+                aiBtn.classList.remove('bg-slate-200', 'text-slate-500', 'cursor-not-allowed');
+                aiBtn.classList.add('bg-purple-600', 'text-white', 'hover:bg-purple-700', 'shadow-lg', 'shadow-purple-200');
+
+                LunaApp.toast('✅ 업로드 완료!');
+            } catch (err) {
+                console.error('Upload failed:', err);
+                statusText.textContent = '실패';
+                statusText.classList.remove('animate-pulse');
+                statusText.classList.add('text-red-500');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.classList.remove('opacity-50');
+            }
+        }
+
+        async function generateAIFeedback() {
+            const imageUrl = document.getElementById('result-url').value;
+            if (!imageUrl) return;
+
+            const aiBtn = document.getElementById('ai-btn');
+            const loader = document.getElementById('ai-loading');
+            const textarea = document.getElementById('ai-feedback-text');
+
+            // Show loading
+            aiBtn.classList.add('hidden');
+            loader.classList.remove('hidden');
+            textarea.value = '';
+
+            try {
+                const generateArtFeedback = LunaAuth.getFunctions().httpsCallable('generateArtFeedback');
+                const result = await generateArtFeedback({ imageUrl: imageUrl });
+
+                if (result.data && result.data.success) {
+                    textarea.value = result.data.feedback;
+                    LunaApp.toast('✨ AI 분석 완료!');
+                } else {
+                    throw new Error('Invalid response from AI');
+                }
+            } catch (err) {
+                console.error('AI Error:', err);
+                LunaApp.toast('❌ AI 분석 실패: ' + err.message);
+                textarea.value = '피드백 생성 오류. 다시 시도해 주세요.';
+            } finally {
+                // Hide loading
+                loader.classList.add('hidden');
+                aiBtn.classList.remove('hidden');
+            }
+        }
+
+        function copyResultUrl() {
+            const copyText = document.getElementById("result-url");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+            LunaApp.toast('📋 URL copied to clipboard');
+        }
+
+        // ═══════════ Premium Access Functions ═══════════
+        async function addPremiumAccess() {
+            const emailInput = document.getElementById('premium-email-input');
+            const memoInput = document.getElementById('premium-memo-input');
+            const durationInput = document.getElementById('premium-duration-input');
+            const email = emailInput.value.trim();
+            const memo = memoInput.value.trim();
+            const duration = parseInt(durationInput.value) || 0;
+
+            if (!email) {
+                LunaApp.toast('⚠️ 이메일 주소를 입력해 주세요.');
+                emailInput.focus();
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                LunaApp.toast('⚠️ 올바른 이메일 형식을 입력해 주세요.');
+                emailInput.focus();
+                return;
+            }
+
+            try {
+                await LunaAuth.addPremiumUser(email, memo, duration);
+                const durationText = duration > 0 ? ` (${duration}개월)` : ' (무제한)';
+                LunaApp.toast('✅ 프리미엄 권한 부여' + durationText + ': ' + email);
+                emailInput.value = '';
+                memoInput.value = '';
+                renderPremiumUsers();
+            } catch (err) {
+                console.error('Add premium error:', err);
+                LunaApp.toast('❌ 권한 부여 실패: ' + err.message);
+            }
+        }
+
+        async function removePremiumAccess(email) {
+            if (!confirm(`정말로 "${email}"의 프리미엄 권한을 삭제하시겠습니까?`)) return;
+            try {
+                await LunaAuth.removePremiumUser(email);
+                LunaApp.toast('🗑️ 프리미엄 권한이 삭제되었습니다: ' + email);
+                renderPremiumUsers();
+            } catch (err) {
+                LunaApp.toast('❌ 삭제 실패: ' + err.message);
+            }
+        }
+
+        async function togglePremiumAccess(email, currentActive) {
+            try {
+                await LunaAuth.togglePremiumUser(email, !currentActive);
+                LunaApp.toast(currentActive ? '⏸️ 일시정지: ' + email : '▶️ 활성화: ' + email);
+                renderPremiumUsers();
+            } catch (err) {
+                LunaApp.toast('❌ 변경 실패: ' + err.message);
+            }
+        }
+
+        async function renderPremiumUsers() {
+            const list = document.getElementById('premium-users-list');
+            const badge = document.getElementById('premium-count-badge');
+            if (!list) return;
+
+            try {
+                const users = await LunaAuth.listPremiumUsers();
+                const activeCount = users.filter(u => u.active !== false).length;
+                if (badge) badge.textContent = activeCount + '명';
+
+                if (users.length === 0) {
+                    list.innerHTML = `
+                        <div class="px-5 py-8 text-center text-xs text-slate-400">
+                            <span class="material-symbols-outlined text-3xl text-slate-300 mb-2 block">group_off</span>
+                            등록된 프리미엄 사용자가 없습니다
+                        </div>`;
+                    return;
+                }
+
+                // Check which premium emails have actually signed up
+                const allEmails = users.map(u => u.email);
+                let registeredEmails = new Set();
+                try {
+                    const usersSnap = await LunaAuth.getDb().collection('users')
+                        .where('email', 'in', allEmails.slice(0, 10)) // Firestore 'in' max 10
+                        .get();
+                    usersSnap.forEach(doc => registeredEmails.add(doc.data().email?.toLowerCase()));
+                } catch (e) { /* ignore */ }
+
+                list.innerHTML = users.map(u => {
+                    const isActive = u.active !== false;
+                    const isRegistered = registeredEmails.has(u.email);
+                    const grantedDate = u.grantedAt?.toDate ? u.grantedAt.toDate().toLocaleDateString('ko-KR') : '-';
+                    const expiryStr = u.expiresAt ? (u.expiresAt.toDate ? u.expiresAt.toDate().toLocaleDateString('ko-KR') : new Date(u.expiresAt).toLocaleDateString('ko-KR')) : '무제한';
+                    return `
+                        <div class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/50 transition-colors ${!isActive ? 'opacity-50' : ''}">
+                            <div class="w-8 h-8 rounded-full ${isActive ? 'bg-amber-100' : 'bg-slate-100'} flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined ${isActive ? 'text-amber-600' : 'text-slate-400'} text-sm">
+                                    ${isActive ? 'workspace_premium' : 'pause_circle'}
+                                </span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs font-bold text-slate-800 truncate">${u.email}</span>
+                                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full ${isRegistered ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}">${isRegistered ? '가입됨' : '미가입'}</span>
+                                </div>
+                                <div class="text-[10px] text-slate-500">${u.memo ? u.memo + ' · ' : ''}${grantedDate} 등록 · 만료: ${expiryStr}</div>
+                            </div>
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                                <button onclick="togglePremiumAccess('${u.email}', ${isActive})"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors"
+                                    title="${isActive ? '일시정지' : '활성화'}">
+                                    <span class="material-symbols-outlined text-sm ${isActive ? 'text-amber-500' : 'text-green-500'}">
+                                        ${isActive ? 'pause' : 'play_arrow'}
+                                    </span>
+                                </button>
+                                <button onclick="removePremiumAccess('${u.email}')"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 transition-colors"
+                                    title="삭제">
+                                    <span class="material-symbols-outlined text-sm text-red-400">delete</span>
+                                </button>
+                            </div>
+                        </div>`;
+                }).join('');
+            } catch (err) {
+                console.error('renderPremiumUsers error:', err);
+                list.innerHTML = '<div class="px-5 py-4 text-center text-xs text-red-500">불러오기 실패</div>';
+            }
+        }
+
+        // ═══════════ Parent Access Functions ═══════════
+        async function addParentAccess() {
+            const emailInput = document.getElementById('parent-email-input');
+            const memoInput = document.getElementById('parent-memo-input');
+            const durationInput = document.getElementById('parent-duration-input');
+            const email = emailInput.value.trim();
+            const memo = memoInput.value.trim();
+            const duration = parseInt(durationInput.value) || 0;
+
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                LunaApp.toast('⚠️ 올바른 이메일 주소를 입력해 주세요.');
+                emailInput.focus();
+                return;
+            }
+            try {
+                await LunaAuth.addParentUser(email, memo, duration);
+                const durationText = duration > 0 ? ` (${duration}개월)` : ' (무제한)';
+                LunaApp.toast('✅ 학부모 권한 부여' + durationText + ': ' + email);
+                emailInput.value = '';
+                memoInput.value = '';
+                renderParentUsers();
+            } catch (err) {
+                LunaApp.toast('❌ 권한 부여 실패: ' + err.message);
+            }
+        }
+
+        async function removeParentAccess(email) {
+            if (!confirm(`정말로 "${email}"의 학부모 권한을 삭제하시겠습니까?`)) return;
+            try {
+                await LunaAuth.removeParentUser(email);
+                LunaApp.toast('🗑️ 학부모 권한 삭제: ' + email);
+                renderParentUsers();
+            } catch (err) { LunaApp.toast('❌ 삭제 실패: ' + err.message); }
+        }
+
+        async function toggleParentAccess(email, currentActive) {
+            try {
+                await LunaAuth.toggleParentUser(email, !currentActive);
+                LunaApp.toast(currentActive ? '⏸️ 일시정지: ' + email : '▶️ 활성화: ' + email);
+                renderParentUsers();
+            } catch (err) { LunaApp.toast('❌ 변경 실패: ' + err.message); }
+        }
+
+        async function renderParentUsers() {
+            const list = document.getElementById('parent-users-list');
+            const badge = document.getElementById('parent-count-badge');
+            if (!list) return;
+            try {
+                const users = await LunaAuth.listParentUsers();
+                const activeCount = users.filter(u => u.active !== false).length;
+                if (badge) badge.textContent = activeCount + '명';
+
+                if (users.length === 0) {
+                    list.innerHTML = '<div class="px-5 py-6 text-center text-xs text-slate-400"><span class="material-symbols-outlined text-2xl text-slate-300 mb-1 block">group_off</span>등록된 학부모가 없습니다</div>';
+                    return;
+                }
+
+                list.innerHTML = users.map(u => {
+                    const isActive = u.active !== false;
+                    const grantedDate = u.grantedAt?.toDate ? u.grantedAt.toDate().toLocaleDateString('ko-KR') : '-';
+                    const expiryStr = u.expiresAt ? (u.expiresAt.toDate ? u.expiresAt.toDate().toLocaleDateString('ko-KR') : new Date(u.expiresAt).toLocaleDateString('ko-KR')) : '무제한';
+                    return `
+                        <div class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/50 transition-colors ${!isActive ? 'opacity-50' : ''}">
+                            <div class="w-8 h-8 rounded-full ${isActive ? 'bg-blue-100' : 'bg-slate-100'} flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined ${isActive ? 'text-blue-600' : 'text-slate-400'} text-sm">${isActive ? 'family_restroom' : 'pause_circle'}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-xs font-bold text-slate-800 truncate">${u.email}</div>
+                                <div class="text-[10px] text-slate-500">${u.memo ? u.memo + ' · ' : ''}${grantedDate} 등록 · 만료: ${expiryStr}</div>
+                            </div>
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                                <button onclick="toggleParentAccess('${u.email}', ${isActive})"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors"
+                                    title="${isActive ? '일시정지' : '활성화'}">
+                                    <span class="material-symbols-outlined text-sm ${isActive ? 'text-blue-500' : 'text-green-500'}">${isActive ? 'pause' : 'play_arrow'}</span>
+                                </button>
+                                <button onclick="removeParentAccess('${u.email}')"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 transition-colors" title="삭제">
+                                    <span class="material-symbols-outlined text-sm text-red-400">delete</span>
+                                </button>
+                            </div>
+                        </div>`;
+                }).join('');
+            } catch (err) {
+                list.innerHTML = '<div class="px-5 py-4 text-center text-xs text-red-500">불러오기 실패</div>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            lwRenderLangPicker('lang-menu-admin');
+            lwApplyLang();
+
+            // Initialization for Admin Dashboard
+            renderAdminStats();
+            renderRecentActivity();
+            renderRecentLogins();
+            renderAdminClasses();
+            renderPremiumUsers();
+            renderParentUsers();
+
+            // Re-run i18n for the new media section
+            if (window.lwUpdateTranslations) {
+                window.lwUpdateTranslations(document.querySelector('.main-content'));
+            }
+        });
+
+        async function renderAdminStats() {
+            if (typeof LunaAuth === 'undefined' || !LunaAuth.getAdminStats) return;
+
+            const stats = await LunaAuth.getAdminStats();
+            document.getElementById('stat-total-students').textContent = stats.totalUsers.toLocaleString();
+            const premEl = document.getElementById('stat-premium-users');
+            if (premEl) premEl.textContent = stats.premiumUsers.toLocaleString();
+            document.getElementById('stat-active-classes').textContent = stats.activeClasses;
+            document.getElementById('stat-today-visits').textContent = stats.todayVisits.toLocaleString();
+        }
+
+        let _allLogins = [];
+        let _loginsExpanded = false;
+
+        function toggleLoginExpand() {
+            _loginsExpanded = !_loginsExpanded;
+            const btn = document.getElementById('login-expand-btn');
+            if (btn) btn.textContent = _loginsExpanded ? '접기' : '전체 보기';
+            displayLogins();
+        }
+
+        function displayLogins() {
+            const list = document.getElementById('recent-logins-list');
+            if (!list) return;
+            const shown = _loginsExpanded ? _allLogins : _allLogins.slice(0, 5);
+            const roleLabel = { admin: '관리자', teacher: '강사', student: '학생', parent: '학부모' };
+            const roleColors = { admin: 'text-amber-600 bg-amber-50', teacher: 'text-emerald-600 bg-emerald-50', student: 'text-purple-600 bg-purple-50', parent: 'text-blue-600 bg-blue-50' };
+
+            list.innerHTML = shown.map(item => `
+                <div class="flex items-center gap-3 px-5 py-3 hover:bg-primary/5 transition-colors cursor-pointer"
+                     onclick="openActivityModal('${item.uid}', '${(item.displayName||'사용자').replace(/'/g,"\\'")}', '${item.email}')">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-slate-500 text-sm">person</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs font-bold text-slate-800 truncate">${item.displayName || '사용자'}</div>
+                        <div class="text-[10px] text-slate-500 truncate">${item.email}</div>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <div class="text-[10px] font-bold text-primary">${item.lastLogin}</div>
+                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full ${roleColors[item.role] || roleColors.parent}">${roleLabel[item.role] || '학부모'}</span>
+                    </div>
+                    <span class="material-symbols-outlined text-slate-300 text-sm flex-shrink-0">chevron_right</span>
+                </div>
+            `).join('');
+
+            if (!_loginsExpanded && _allLogins.length > 5) {
+                list.innerHTML += `<div class="px-5 py-2 text-center text-[10px] text-slate-400">+ ${_allLogins.length - 5}명 더 있음</div>`;
+            }
+        }
+
+        async function renderRecentLogins() {
+            const list = document.getElementById('recent-logins-list');
+            const badge = document.getElementById('login-count-badge');
+            if (!list || typeof LunaAuth === 'undefined' || !LunaAuth.getRecentLogins) return;
+
+            _allLogins = await LunaAuth.getRecentLogins();
+            if (badge) badge.textContent = _allLogins.length + '명';
+
+            if (_allLogins.length === 0) {
+                list.innerHTML = '<div class="px-5 py-8 text-center text-xs text-slate-400">최근 접속 기록이 없습니다</div>';
+                return;
+            }
+            displayLogins();
+        }
+
+        async function openActivityModal(uid, name, email) {
+            const modal = document.getElementById('user-activity-modal');
+            const nameEl = document.getElementById('modal-user-name');
+            const emailEl = document.getElementById('modal-user-email');
+            const listEl = document.getElementById('modal-activity-list');
+            const statPages = document.getElementById('modal-stat-pages');
+            const statLessons = document.getElementById('modal-stat-lessons');
+            const statFirst = document.getElementById('modal-stat-first');
+
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            nameEl.textContent = name;
+            emailEl.textContent = email;
+            listEl.innerHTML = '<div class="text-center text-xs text-slate-400 py-8"><div class="inline-block w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-2"></div><br>활동 로그 불러오는 중...</div>';
+
+            const actionIcons = {
+                '페이지 방문': 'visibility',
+                '로그인': 'login',
+            };
+            const actionColors = {
+                '페이지 방문': 'bg-blue-100 text-blue-600',
+                '로그인': 'bg-green-100 text-green-600',
+            };
+
+            try {
+                const logs = await LunaAuth.getUserActivityLogs(uid, 100);
+
+                if (logs.length === 0) {
+                    listEl.innerHTML = '<div class="text-center text-xs text-slate-400 py-8">아직 활동 기록이 없습니다</div>';
+                } else {
+                    // Group by date
+                    const grouped = {};
+                    logs.forEach(log => {
+                        const dateKey = log.timeStr.split(' ')[0] || '기타';
+                        if (!grouped[dateKey]) grouped[dateKey] = [];
+                        grouped[dateKey].push(log);
+                    });
+
+                    let html = '';
+                    Object.entries(grouped).forEach(([date, items]) => {
+                        html += `<div class="mb-3"><div class="text-[10px] font-bold text-slate-400 uppercase mb-1.5 sticky top-0 bg-white py-1">${date}</div>`;
+                        items.forEach(log => {
+                            const icon = actionIcons[log.action] || 'info';
+                            const color = actionColors[log.action] || 'bg-slate-100 text-slate-600';
+                            html += `
+                                <div class="flex items-center gap-2.5 py-1.5">
+                                    <div class="w-6 h-6 rounded-md ${color} flex items-center justify-center flex-shrink-0">
+                                        <span class="material-symbols-outlined text-xs">${icon}</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <span class="text-xs text-slate-700">${log.detail || log.action}</span>
+                                    </div>
+                                    <span class="text-[10px] text-slate-400 flex-shrink-0">${log.timeStr.split(' ')[1] || ''}</span>
+                                </div>`;
+                        });
+                        html += '</div>';
+                    });
+                    listEl.innerHTML = html;
+                }
+
+                // Stats
+                const totalPages = logs.filter(l => l.action === '페이지 방문').length;
+                const lessonPages = logs.filter(l => l.detail?.startsWith('수업:')).length;
+                const firstLog = logs[logs.length - 1];
+                statPages.textContent = `총 ${totalPages}회 방문`;
+                statLessons.textContent = `수업 ${lessonPages}회 열람`;
+                statFirst.textContent = firstLog ? `첫 기록: ${firstLog.timeStr}` : '';
+
+            } catch (e) {
+                console.error('openActivityModal error:', e);
+                listEl.innerHTML = '<div class="text-center text-xs text-red-500 py-8">활동 로그를 불러올 수 없습니다</div>';
+            }
+        }
+
+        function closeActivityModal() {
+            document.getElementById('user-activity-modal')?.classList.add('hidden');
+        }
+
+        async function renderRecentActivity() {
+            const list = document.getElementById('recent-activity-list');
+            if (!list || typeof LunaAuth === 'undefined' || !LunaAuth.getRecentActivity) return;
+
+            const activities = await LunaAuth.getRecentActivity();
+            if (activities.length === 0) {
+                list.innerHTML = '<div class="px-5 py-8 text-center text-xs text-slate-400">최근 활동이 없습니다</div>';
+                return;
+            }
+
+            list.innerHTML = activities.map(item => `
+                <div class="flex items-start gap-3 px-5 py-3 hover:bg-slate-50/50 transition-colors">
+                    <div class="w-8 h-8 rounded-full bg-${item.color}-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span class="material-symbols-outlined text-${item.color}-600 text-sm">${item.icon}</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-xs font-bold text-slate-800">${item.title}</div>
+                        <div class="text-[10px] text-slate-500">${item.subtitle}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleClassesSection() {
+            const list = document.getElementById('admin-classes-list');
+            const icon = document.getElementById('classes-toggle-icon');
+            if (!list) return;
+            const isHidden = list.classList.toggle('hidden');
+            if (icon) icon.style.transform = isHidden ? '' : 'rotate(180deg)';
+        }
+
+        async function renderAdminClasses() {
+            const list = document.getElementById('admin-classes-list');
+            const badge = document.getElementById('classes-count-badge');
+            if (!list || typeof CLASSES_DATA === 'undefined') return;
+
+            if (badge) badge.textContent = CLASSES_DATA.length + '개';
+
+            // Fetch real view counts from Firestore
+            let viewCounts = {};
+            try {
+                const snap = await LunaAuth.getDb().collection('stats').doc('classViews').get();
+                if (snap.exists) viewCounts = snap.data() || {};
+            } catch (e) { console.warn('classViews fetch failed:', e); }
+
+            // Sort by views (descending)
+            const sorted = [...CLASSES_DATA].sort((a, b) => (viewCounts[b.id] || 0) - (viewCounts[a.id] || 0));
+
+            list.innerHTML = sorted.map((item, i) => {
+                const title = item.titleKey ? (window.lwT ? lwT(item.titleKey) : item.id) : item.title;
+                const views = viewCounts[item.id] || 0;
+                const rank = i + 1;
+                const isTop3 = rank <= 3;
+                const rankColors = ['text-amber-500', 'text-slate-400', 'text-amber-700'];
+
+                return `
+                    <div class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-colors">
+                        <div class="w-7 text-center flex-shrink-0">
+                            <span class="text-sm font-black ${isTop3 ? rankColors[rank-1] : 'text-slate-300'}">${rank}</span>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-primary text-lg">palette</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-bold truncate">${title}</div>
+                            <div class="text-xs text-slate-500">${item.courseCode || item.id}</div>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <div class="text-sm font-bold ${views > 0 ? 'text-primary' : 'text-slate-300'}">
+                                <span class="material-symbols-outlined text-sm align-middle">visibility</span>
+                                ${views.toLocaleString()}
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-medium">조회수</div>
+                        </div>
+                        <button class="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-primary hover:text-white transition-all"
+                                onclick="window.location.href='../main/lesson-viewer.html?id=${item.id}'">
+                            <span class="material-symbols-outlined text-base">open_in_new</span>
+                        </button>
+                    </div>`;
+            }).join('');
+        }
+    </script>
+</body>
+
+</html>

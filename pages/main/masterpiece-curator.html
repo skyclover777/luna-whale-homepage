@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html class="dark" lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <title>1-Minute Curation - Luna Whale</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f2b90d",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#221e10",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #221e10;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(242, 185, 13, 0.3);
+            border-radius: 10px;
+        }
+
+        .parchment-gradient {
+            background: linear-gradient(to bottom, #f8f8f5, #f1f1e6);
+        }
+
+        .glass-icon {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Audio visualizer effect on stamp */
+        @keyframes stamp-pop {
+            0% {
+                transform: scale(3) rotate(-20deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(0.8) rotate(-5deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1) rotate(-10deg);
+                opacity: 1;
+            }
+        }
+
+        .animate-stamp {
+            animation: stamp-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+    </style>
+
+    <!-- React & Dependencies -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="../../assets/js/firebase-auth.js"></script>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="font-display text-slate-100 antialiased h-[100dvh] w-screen overflow-hidden">
+    <div id="root" class="w-full h-full"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+        const { motion, AnimatePresence } = window.Motion;
+
+        // Sounds setup
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        const playTone = (freq, type, duration, vol = 0.1) => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        };
+
+        const playAppearSound = () => {
+            playTone(440, 'sine', 0.5, 0.05);
+            setTimeout(() => playTone(660, 'sine', 0.8, 0.05), 100);
+        };
+        const playClickSound = () => playTone(880, 'triangle', 0.1, 0.05);
+        const playStampSound = () => {
+            playTone(220, 'square', 0.2, 0.1);
+            setTimeout(() => playTone(110, 'sawtooth', 0.4, 0.15), 150);
+        };
+
+        // 큐레이터 페이지 네비게이션
+        const NAVIGATOR = {
+            prev: { url: "curator-renoir-boating.html", title: "뱃놀이 점심" },
+            next: { url: "curator-monet-impression.html", title: "인상, 해돋이" }
+        };
+
+        // Standard dummy data in case DB fails
+        const DUMMY_DATA = {
+            en: {
+                title: "The Starry Night",
+                artist: "Vincent van Gogh, 1889",
+                dialogue_script: [
+                    { title: "Color Hunt", text: "\"What colors do you see the most? Do they feel warm or cold?\"" },
+                    { title: "The Sky's Mood", text: "\"Do the swirls look like they are dancing or sleeping?\"" },
+                    { title: "Hidden Secrets", text: "\"Can you find the tiny village? Do you think they are awake?\"" }
+                ],
+                qa_pairs: [
+                    { q: "Why are the stars so large?", a: "Van Gogh exaggerated the stars to express the overwhelming power and vastness of nature he felt that night." },
+                    { q: "What does the Cypress tree signify?", a: "The dark, flame-like cypress tree acts as a visual link between the earth and the swirling heavens." },
+                    { q: "Was this painted from memory?", a: "Yes, it was painted from memory during the day, based on his view from the asylum window before sunrise." }
+                ],
+                ui: { curator: "1-Min Curator", guide: "Conversation Guide", qa: "Curiosity Q&A", save: "Save to My Collection", saved: "Saved" }
+            },
+            ko: {
+                title: "별이 빛나는 밤",
+                artist: "빈센트 반 고흐, 1889",
+                dialogue_script: [
+                    { title: "색깔 찾기", text: "\"어떤 색깔이 가장 많이 보이나요? 따뜻한 느낌인가요, 차가운 느낌인가요?\"" },
+                    { title: "하늘의 기분", text: "\"하늘의 소용돌이가 춤을 추고 있는 것 같나요, 아니면 잠들어 있는 것 같나요?\"" },
+                    { title: "숨겨진 비밀", text: "\"아주 작은 마을을 찾았나요? 불이 켜진 집이 보이나요?\"" }
+                ],
+                qa_pairs: [
+                    { q: "왜 별들이 이렇게 크게 그려졌나요?", a: "반 고흐는 그날 밤 자신이 느꼈던 자연의 압도적인 힘과 광활함을 표현하기 위해 별을 과장해서 그렸습니다." },
+                    { q: "사이프러스 나무는 무엇을 의미하나요?", a: "불꽃처럼 타오르는 듯한 검은 사이프러스 나무는 땅과 소용돌이치는 하늘을 이어주는 역할을 합니다." },
+                    { q: "기억에 의존해서 그린 건가요?", a: "네, 해가 뜨기 전 정신병원 창밖으로 본 풍경을 바탕으로 낮에 기억을 떠올리며 그렸습니다." }
+                ],
+                ui: { curator: "1분 큐레이터", guide: "대화 가이드", qa: "호기심 Q&A", save: "내 컬렉션에 저장", saved: "저장 완료" }
+            },
+            // medium 이미지(1200x950, 388KB)를 사용 - large는 696MB로 웹에서 로드 불가
+            image_url: "../../images/masterpiece/medium/impr_025.jpg",
+            thumbnail_url: "../../images/masterpiece/medium/impr_025.jpg",
+            collection_id: "m_starry_night_1",
+            zoom_points: [
+                { x: "50%", y: "25%" },
+                { x: "33%", y: "75%" },
+                { x: "80%", y: "15%" }
+            ]
+        };
+
+        const ProgressiveImage = ({ src, placeholderSrc, alt, isZoomed, zoomPos }) => {
+            const [imgSrc, setImgSrc] = useState(placeholderSrc || src);
+            const [isLoaded, setIsLoaded] = useState(false);
+
+            useEffect(() => {
+                const img = new Image();
+                img.onload = () => {
+                    setImgSrc(src);
+                    setIsLoaded(true);
+                };
+                img.onerror = () => {
+                    console.error("High-res image load failed, reverting to placeholder without blur.");
+                    setIsLoaded(true); // Remove blur even if high-res failed
+                };
+                img.src = src;
+            }, [src]);
+
+            return (
+                <div className="absolute inset-0 bg-background-dark overflow-hidden">
+                    <motion.img
+                        src={imgSrc}
+                        alt={alt}
+                        className={`w-full h-full object-contain transition-all duration-700 ${isLoaded ? 'blur-0 scale-100' : 'blur-xl scale-105'}`}
+                        animate={{
+                            scale: isZoomed ? 2.5 : 1,
+                            transformOrigin: isZoomed ? `${zoomPos.x} ${zoomPos.y}` : "center center"
+                        }}
+                        transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent opacity-60 pointer-events-none"></div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [user, setUser] = useState(null);
+            const [isZoomed, setIsZoomed] = useState(false);
+            const [zoomPos, setZoomPos] = useState({ x: "50%", y: "50%" });
+            const [openQA, setOpenQA] = useState(null);
+            const [isSaved, setIsSaved] = useState(false);
+            const [showStamp, setShowStamp] = useState(false);
+            const [lang, setLang] = useState('ko');
+
+            // Fetch Data
+            useEffect(() => {
+                const unsubscribe = firebase.auth().onAuthStateChanged(usr => {
+                    setUser(usr);
+                });
+
+                const fetchData = async () => {
+                    try {
+                        // For now we lock to Starry Night DUMMY_DATA as requested by user to perfect it.
+                        setData(DUMMY_DATA);
+                    } catch (err) {
+                        console.error("Error fetching masterpiece:", err);
+                        setData(DUMMY_DATA);
+                    } finally {
+                        setLoading(false);
+                        playAppearSound();
+                    }
+                };
+
+                fetchData();
+                return () => unsubscribe();
+            }, []);
+
+            const handleZoom = (x, y) => {
+                if (isZoomed && zoomPos.x === x && zoomPos.y === y) {
+                    setIsZoomed(false);
+                } else {
+                    setZoomPos({ x, y });
+                    setIsZoomed(true);
+                }
+                playClickSound();
+            };
+
+            const toggleQA = (idx) => {
+                setOpenQA(openQA === idx ? null : idx);
+                if (openQA !== idx) playClickSound();
+            };
+
+            const handleSave = async () => {
+                if (!user) {
+                    alert(lang === 'ko' ? "로그인이 필요합니다." : "Login required.");
+                    return;
+                }
+                try {
+                    playClickSound();
+                    await firebase.firestore().collection('users').doc(user.uid).collection('cards').doc(data.collection_id || 'masterpiece_daily').set({
+                        cardId: data.collection_id || 'masterpiece_daily',
+                        acquiredAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        type: 'masterpiece'
+                    });
+
+                    setShowStamp(true);
+                    playStampSound();
+                    setIsSaved(true);
+                    setTimeout(() => setShowStamp(false), 2000);
+                } catch (e) {
+                    console.error("Save error:", e);
+                    alert(lang === 'ko' ? "저장에 실패했습니다." : "Failed to save.");
+                }
+            };
+
+            if (loading || !data) {
+                return <div className="flex h-full w-full items-center justify-center bg-background-dark"><div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div></div>;
+            }
+
+            const langData = data[lang];
+
+            return (
+                <div className="flex flex-col lg:flex-row h-[100dvh] w-full bg-background-dark relative overflow-hidden">
+                    {/* LEFT HALF: Artwork Area (75% on lg+) */}
+                    <div className="relative h-[45%] lg:h-full w-full lg:w-3/4 flex-shrink-0 bg-black z-10 shadow-[5px_0_25px_rgba(0,0,0,0.5)]">
+                        <ProgressiveImage src={data.image_url} placeholderSrc={data.thumbnail_url} alt={langData.title} isZoomed={isZoomed} zoomPos={zoomPos} />
+
+                        {/* Header Controls */}
+                        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
+                            <button onClick={() => window.location.href = '../../index.html'} className="bg-black/50 backdrop-blur-md p-3 rounded-full text-white border border-white/20 hover:bg-black/70 transition flex items-center">
+                                <span className="material-symbols-outlined text-[30px]">home</span>
+                            </button>
+                            <div className="flex items-center gap-2">
+                                {/* 이전/다음 큐레이터 화살표 */}
+                                <button
+                                    onClick={() => window.location.href = NAVIGATOR.prev.url}
+                                    title={NAVIGATOR.prev.title}
+                                    className="bg-black/50 backdrop-blur-md p-1.5 rounded-full text-white border border-white/20 hover:bg-white/20 transition flex items-center group relative"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                                    <span className="absolute right-full mr-2 bg-black/80 text-white text-[10px] font-bold py-1 px-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                        {NAVIGATOR.prev.title}
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => window.location.href = NAVIGATOR.next.url}
+                                    title={NAVIGATOR.next.title}
+                                    className="bg-black/50 backdrop-blur-md p-1.5 rounded-full text-white border border-white/20 hover:bg-white/20 transition flex items-center group relative"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                                    <span className="absolute right-full mr-2 bg-black/80 text-white text-[10px] font-bold py-1 px-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                        {NAVIGATOR.next.title}
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')}
+                                    className="bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-white border border-white/20 hover:bg-black/70 transition text-sm font-bold uppercase"
+                                >
+                                    {lang === 'ko' ? 'EN' : 'KR'}
+                                </button>
+                                <div className="bg-primary/90 backdrop-blur px-3 py-1 rounded-full text-background-dark text-xs flex items-center justify-center font-bold uppercase tracking-wider shadow-lg">
+                                    {langData.ui.curator}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Interactive Zoom Points */}
+                        {data.zoom_points && data.zoom_points.map((pt, i) => (
+                            <button
+                                key={i}
+                                onClick={() => handleZoom(pt.x, pt.y)}
+                                className="absolute z-20 glass-icon text-white rounded-full p-2 hover:scale-110 transition-transform hover:bg-white/30 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                                style={{ top: pt.y, left: pt.x, transform: 'translate(-50%, -50%)' }}
+                            >
+                                <span className="material-symbols-outlined">{isZoomed && zoomPos.x === pt.x ? 'zoom_out' : 'search'}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* RIGHT HALF: Information Sidebar (25% on lg+) */}
+                    <div className="relative flex-1 lg:w-1/4 h-[55%] lg:h-full flex flex-col parchment-gradient text-slate-900 lg:rounded-l-3xl rounded-t-3xl lg:rounded-tr-none -mt-4 lg:mt-0 z-30 shadow-[-10px_0_30px_rgba(0,0,0,0.4)] min-h-0">
+                        <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar pb-60 min-h-0">
+                            {/* Title & Artist */}
+                            <div className="mb-8">
+                                <h1 className="text-2xl md:text-3xl font-extrabold leading-tight text-slate-900">{langData.title}</h1>
+                                <p className="text-base text-slate-600 font-medium mt-1">{langData.artist}</p>
+                                <div className="w-12 h-1 bg-primary mt-4 rounded-full"></div>
+                            </div>
+
+                            {/* Dialogue Guides */}
+                            <div className="mb-8">
+                                <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-slate-400 mb-4 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary text-sm">forum</span>
+                                    {langData.ui.guide}
+                                </h3>
+                                <div className="grid grid-cols-1 gap-3">
+                                    {langData.dialogue_script && langData.dialogue_script.map((dlg, i) => (
+                                        <div key={i} className="bg-white/60 p-4 rounded-xl border border-background-dark/5 shadow-sm relative">
+                                            <span className="material-symbols-outlined absolute -top-2 -right-2 text-primary bg-background-dark rounded-full p-1 text-[10px]">format_quote</span>
+                                            <h4 className="font-bold text-sm mb-1 text-slate-800">{dlg.title}</h4>
+                                            <p className="text-xs text-slate-600 italic leading-relaxed">{dlg.text}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Curiosity Q&A */}
+                            <div className="mb-4">
+                                <h3 className="text-xs uppercase tracking-[0.2em] font-bold text-slate-400 mb-4 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary text-sm">lightbulb</span>
+                                    {langData.ui.qa}
+                                </h3>
+                                <div className="grid gap-3">
+                                    {langData.qa_pairs && langData.qa_pairs.map((qa, i) => (
+                                        <div key={i} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                            <button
+                                                onClick={() => toggleQA(i)}
+                                                className="flex items-center justify-between w-full p-4 text-left hover:bg-slate-50 transition-colors"
+                                            >
+                                                <span className="text-sm font-semibold text-slate-800 pr-4">{qa.q}</span>
+                                                <span className={`material-symbols-outlined text-primary transition-transform duration-300 ${openQA === i ? 'rotate-90' : ''}`}>
+                                                    chevron_right
+                                                </span>
+                                            </button>
+                                            <AnimatePresence>
+                                                {openQA === i && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        className="px-4 pb-4 overflow-hidden"
+                                                    >
+                                                        <div className="pt-2 border-t border-slate-100 text-sm text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-lg mt-1">
+                                                            {qa.a}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Floating Action Button at Bottom Right of Sidebar */}
+                        <div className="absolute bottom-5 right-5 z-40">
+                            <button
+                                onClick={handleSave}
+                                disabled={isSaved}
+                                className={`group flex items-center justify-center ${isSaved ? 'w-12 h-12 bg-green-500 rounded-full cursor-default' : 'w-14 h-14 bg-primary hover:bg-yellow-400 hover:scale-110 active:scale-95 rounded-full'} text-background-dark shadow-[0_8px_25px_rgba(0,0,0,0.3)] transition-all duration-300 border border-white/20`}
+                                title={isSaved ? langData.ui.saved : langData.ui.save}
+                            >
+                                <span className={`material-symbols-outlined ${isSaved ? 'text-white text-2xl' : 'text-3xl'}`}>
+                                    {isSaved ? 'check' : 'star'}
+                                </span>
+
+                                {/* Hover Label for better UX */}
+                                {!isSaved && (
+                                    <span className="absolute right-16 bg-background-dark text-white text-xs font-bold py-2 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl border border-white/10">
+                                        {langData.ui.save}
+                                    </span>
+                                )}
+                            </button>
+
+                            {/* Stamp Animation Alert inside Sidebar */}
+                            {showStamp && (
+                                <div className="absolute bottom-20 right-0 pointer-events-none z-50 animate-stamp">
+                                    <div className="border-4 border-red-500 rounded-lg p-2 flex flex-col items-center justify-center w-28 h-28 text-red-500 bg-white/90 backdrop-blur shadow-2xl rotate-[-12deg]">
+                                        <span className="font-extrabold text-lg uppercase tracking-widest border-b-2 border-red-500 mb-1">{langData.ui.collected}</span>
+                                        <span className="material-symbols-outlined text-3xl">verified</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+<!-- Art Cosmos Widget -->
+<script src="../../assets/data/art-archive.js?v=0319"></script>
+<script src="../../assets/js/voice-engine.js?v=0319"></script>
+<script src="../../assets/js/art-cosmos-widget.js?v=0320b"></script>
+</body>
+
+</html>

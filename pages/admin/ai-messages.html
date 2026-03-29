@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수업 결과 메시지 - Luna Whale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .msg-row {
+            transition: all 0.2s ease;
+        }
+
+        .msg-row:hover {
+            background: rgba(99, 102, 241, 0.04);
+        }
+
+        .copy-btn {
+            transition: all 0.15s ease;
+        }
+
+        .copy-btn:active {
+            transform: scale(0.92);
+        }
+
+        .copy-btn.copied {
+            background: #10b981;
+            color: white;
+        }
+    </style>
+<script src="../../assets/js/luna-nav.js"></script>
+</head>
+
+<body class="bg-[#F8FAFC] h-screen flex flex-col overflow-hidden">
+    <div class="max-w-3xl w-full mx-auto px-5 py-5 flex flex-col h-full">
+        <!-- Compact Header -->
+        <header class="flex items-center justify-between mb-4 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-lg">chat</span>
+                </div>
+                <div>
+                    <h1 class="text-lg font-extrabold text-slate-900 leading-tight">수업 결과 메시지</h1>
+                    <p class="text-[11px] text-slate-400 font-medium">학부모용 · 탭하여 복사</p>
+                </div>
+            </div>
+            <button onclick="location.href='../main/classes.html'"
+                class="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+        </header>
+
+        <!-- Messages List -->
+        <div class="flex-1 flex flex-col gap-2 min-h-0">
+
+            <!-- 1 – 집중력 -->
+            <div class="msg-row flex items-start gap-3 p-3 rounded-2xl cursor-pointer group" onclick="copyMsg(this)">
+                <div
+                    class="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-lg">psychology</span>
+                </div>
+                <p class="text-[13px] text-slate-700 leading-relaxed flex-1 msg-text">오늘 수업에서 정말 집중을 잘 해줬어요 😊 선생님이 알려준
+                    부분을 금방 이해하고 자기만의 방식으로 표현하는 모습이 인상적이었습니다. 완성된 작품도 아이가 직접 뿌듯해하더라고요!</p>
+                <button
+                    class="copy-btn px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-400 flex items-center gap-1 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100">
+                    <span class="material-symbols-outlined text-sm copy-icon">content_copy</span>
+                    <span class="copy-label">복사</span>
+                </button>
+            </div>
+
+            <!-- 2 – 창의력 -->
+            <div class="msg-row flex items-start gap-3 p-3 rounded-2xl cursor-pointer group" onclick="copyMsg(this)">
+                <div
+                    class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-lg">lightbulb</span>
+                </div>
+                <p class="text-[13px] text-slate-700 leading-relaxed flex-1 msg-text">아이가 오늘 재미있는 아이디어를 많이 냈어요! 다른 친구들이랑
+                    다른 독특한 구도를 시도하더니, 결과물이 정말 개성 있게 나왔습니다. 창의적인 시도를 많이 칭찬해 주세요 💡</p>
+                <button
+                    class="copy-btn px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-400 flex items-center gap-1 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100">
+                    <span class="material-symbols-outlined text-sm copy-icon">content_copy</span>
+                    <span class="copy-label">복사</span>
+                </button>
+            </div>
+
+            <!-- 3 – 색감 표현 -->
+            <div class="msg-row flex items-start gap-3 p-3 rounded-2xl cursor-pointer group" onclick="copyMsg(this)">
+                <div
+                    class="w-8 h-8 rounded-lg bg-fuchsia-50 text-fuchsia-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-lg">palette</span>
+                </div>
+                <p class="text-[13px] text-slate-700 leading-relaxed flex-1 msg-text">색 조합을 참 잘 골라요! 오늘 수업에서 색을 섞어보며 자기가
+                    원하는 톤을 직접 찾아가더라고요. 색감에 대한 감각이 좋아서 앞으로가 더 기대됩니다 🎨</p>
+                <button
+                    class="copy-btn px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-400 flex items-center gap-1 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100">
+                    <span class="material-symbols-outlined text-sm copy-icon">content_copy</span>
+                    <span class="copy-label">복사</span>
+                </button>
+            </div>
+
+            <!-- 4 – 끈기 -->
+            <div class="msg-row flex items-start gap-3 p-3 rounded-2xl cursor-pointer group" onclick="copyMsg(this)">
+                <div
+                    class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-lg">auto_awesome</span>
+                </div>
+                <p class="text-[13px] text-slate-700 leading-relaxed flex-1 msg-text">오늘 처음 해보는 기법이었는데, 중간에 잘 안 돼도 다시
+                    도전하는 모습이 멋졌어요. 끝까지 포기하지 않고 완성해서 선생님도 뿌듯했습니다 👏</p>
+                <button
+                    class="copy-btn px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-400 flex items-center gap-1 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100">
+                    <span class="material-symbols-outlined text-sm copy-icon">content_copy</span>
+                    <span class="copy-label">복사</span>
+                </button>
+            </div>
+
+            <!-- 5 – 협동 -->
+            <div class="msg-row flex items-start gap-3 p-3 rounded-2xl cursor-pointer group" onclick="copyMsg(this)">
+                <div
+                    class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-lg">group</span>
+                </div>
+                <p class="text-[13px] text-slate-700 leading-relaxed flex-1 msg-text">친구들이랑 재료도 나누고, 서로 작품 봐주면서 즐겁게
+                    수업했어요. 분위기 메이커 역할도 해주고, 배려심이 정말 느껴지는 시간이었습니다 🤝</p>
+                <button
+                    class="copy-btn px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-400 flex items-center gap-1 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100">
+                    <span class="material-symbols-outlined text-sm copy-icon">content_copy</span>
+                    <span class="copy-label">복사</span>
+                </button>
+            </div>
+
+            <!-- 6 – 디테일 -->
+            <div class="msg-row flex items-start gap-3 p-3 rounded-2xl cursor-pointer group" onclick="copyMsg(this)">
+                <div
+                    class="w-8 h-8 rounded-lg bg-sky-50 text-sky-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-lg">search</span>
+                </div>
+                <p class="text-[13px] text-slate-700 leading-relaxed flex-1 msg-text">작은 부분도 꼼꼼하게 신경 쓰는 스타일이에요. 오늘도 디테일에
+                    시간을 들여서 완성도가 확 올라갔어요. 집에서 작품 보시면 섬세한 부분 꼭 같이 봐주세요 ✨</p>
+                <button
+                    class="copy-btn px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-400 flex items-center gap-1 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100">
+                    <span class="material-symbols-outlined text-sm copy-icon">content_copy</span>
+                    <span class="copy-label">복사</span>
+                </button>
+            </div>
+
+            <!-- 7 – 작가 소개 -->
+            <div class="msg-row flex items-start gap-3 p-3 rounded-2xl cursor-pointer group" onclick="copyMsg(this)">
+                <div
+                    class="w-8 h-8 rounded-lg bg-violet-50 text-violet-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-lg">brush</span>
+                </div>
+                <p class="text-[13px] text-slate-700 leading-relaxed flex-1 msg-text">오늘은 유명 작가의 작품을 감상하고 따라 그려보는
+                    시간이었어요. 원작의 느낌을 잘 살리면서도 자기 색깔을 넣는 모습이 대견했습니다. 집에서 어떤 작가였는지 이야기 나눠보셔도 좋을 것 같아요 🖼️</p>
+                <button
+                    class="copy-btn px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-400 flex items-center gap-1 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100">
+                    <span class="material-symbols-outlined text-sm copy-icon">content_copy</span>
+                    <span class="copy-label">복사</span>
+                </button>
+            </div>
+
+            <!-- 8 – 성장 -->
+            <div class="msg-row flex items-start gap-3 p-3 rounded-2xl cursor-pointer group" onclick="copyMsg(this)">
+                <div
+                    class="w-8 h-8 rounded-lg bg-teal-50 text-teal-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-lg">trending_up</span>
+                </div>
+                <p class="text-[13px] text-slate-700 leading-relaxed flex-1 msg-text">지난번보다 확실히 실력이 늘었어요! 붓 다루는 게 훨씬
+                    자연스러워졌고, 본인도 "선생님 저 잘했죠?" 하면서 좋아하더라고요 😄 꾸준히 오는 게 확실히 도움이 되는 것 같습니다.</p>
+                <button
+                    class="copy-btn px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-bold text-slate-400 flex items-center gap-1 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100">
+                    <span class="material-symbols-outlined text-sm copy-icon">content_copy</span>
+                    <span class="copy-label">복사</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur text-white px-5 py-2.5 rounded-xl font-bold text-xs tracking-wide opacity-0 pointer-events-none transition-all duration-400 shadow-2xl flex items-center gap-2">
+        <span class="material-symbols-outlined text-emerald-400 text-base">check_circle</span>
+        클립보드에 복사됨
+    </div>
+
+    <script>
+        function copyMsg(row) {
+            const text = row.querySelector('.msg-text').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast();
+
+                const btn = row.querySelector('.copy-btn');
+                const icon = btn.querySelector('.copy-icon');
+                const label = btn.querySelector('.copy-label');
+
+                btn.classList.add('copied');
+                btn.style.opacity = '1';
+                icon.textContent = 'done';
+                label.textContent = '완료';
+
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.style.opacity = '';
+                    icon.textContent = 'content_copy';
+                    label.textContent = '복사';
+                }, 1500);
+            });
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.style.opacity = '1';
+            toast.style.transform = 'translate(-50%, -8px)';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, 0)';
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>
