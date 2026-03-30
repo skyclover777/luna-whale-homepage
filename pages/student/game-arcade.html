@@ -4,433 +4,398 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Luna Arcade - 게임 오락실</title>
-<link href="https://fonts.googleapis.com/css2?family=Jua&family=Press+Start+2P&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Orbitron:wght@400;700;900&family=Press+Start+2P&display=swap" rel="stylesheet"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --neon-pink:#ff2d95;
-  --neon-cyan:#00f0ff;
-  --neon-yellow:#ffe600;
-  --neon-green:#39ff14;
-  --neon-orange:#ff6b2b;
-  --neon-purple:#c471ed;
-  --dark:#0a0a1a;
-  --dark2:#12122a;
-  --card-bg:rgba(18,18,42,0.85);
+  --bg:hsl(240,67%,5%);
+  --card:hsl(240,33%,12%);
+  --border:hsl(240,20%,20%);
+  --muted:hsl(240,10%,60%);
+  --neon-pink:hsl(330,100%,60%);
+  --neon-cyan:hsl(187,100%,50%);
+  --neon-yellow:hsl(54,100%,50%);
+  --neon-green:hsl(110,100%,55%);
+  --neon-orange:hsl(20,100%,56%);
+  --neon-purple:hsl(280,70%,70%);
 }
 
-/* === SCROLLBAR === */
 ::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:var(--dark)}
+::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--neon-purple);border-radius:3px}
 
 body{
   font-family:'Jua',sans-serif;
-  background:var(--dark);
+  background:var(--bg);
   color:#fff;
   min-height:100vh;
   overflow-x:hidden;
 }
 
-/* === ANIMATED BG === */
+/* === FIXED BACKGROUND === */
 .arcade-bg{
-  position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse 600px 400px at 20% 50%, rgba(255,45,149,0.08), transparent),
-    radial-gradient(ellipse 500px 500px at 80% 30%, rgba(0,240,255,0.06), transparent),
-    radial-gradient(ellipse 400px 300px at 50% 90%, rgba(196,113,237,0.06), transparent);
+  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
 }
-
-/* Scanlines */
-.arcade-bg::after{
-  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
-  background:repeating-linear-gradient(
-    0deg, transparent, transparent 2px,
-    rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
-  );
-}
-
-/* Grid floor */
-.grid-floor{
-  position:fixed;bottom:0;left:0;right:0;height:40vh;
-  z-index:0;pointer-events:none;
+.arcade-bg .blobs{
+  position:absolute;inset:0;
   background:
-    linear-gradient(to bottom, transparent 0%, rgba(196,113,237,0.05) 100%),
-    repeating-linear-gradient(90deg, rgba(196,113,237,0.08) 0px, transparent 1px, transparent 60px),
-    repeating-linear-gradient(0deg, rgba(196,113,237,0.05) 0px, transparent 1px, transparent 60px);
+    radial-gradient(ellipse 600px 400px at 20% 50%, hsl(330 100% 60% / 0.07), transparent),
+    radial-gradient(ellipse 500px 500px at 80% 30%, hsl(187 100% 50% / 0.05), transparent),
+    radial-gradient(ellipse 400px 300px at 50% 90%, hsl(280 70% 70% / 0.05), transparent);
+}
+.arcade-bg .scanlines{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);
+}
+.arcade-bg .grid-floor{
+  position:absolute;bottom:0;left:0;right:0;height:40vh;
+  background:
+    linear-gradient(to bottom,transparent 0%,hsl(280 70% 70% / 0.04) 100%),
+    repeating-linear-gradient(90deg,hsl(280 70% 70% / 0.06) 0px,transparent 1px,transparent 60px),
+    repeating-linear-gradient(0deg,hsl(280 70% 70% / 0.04) 0px,transparent 1px,transparent 60px);
   transform:perspective(500px) rotateX(45deg);
   transform-origin:bottom;
 }
 
-/* === HEADER === */
-.arcade-header{
-  position:relative;z-index:10;
-  text-align:center;
-  padding:2.5rem 1rem 1rem;
-}
-
-.arcade-logo{
-  font-family:'Orbitron',sans-serif;
-  font-size:clamp(2rem,6vw,3.5rem);
-  font-weight:900;
-  letter-spacing:4px;
-  text-transform:uppercase;
-  background:linear-gradient(180deg, #fff 0%, var(--neon-cyan) 50%, var(--neon-pink) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  text-shadow:none;
-  filter:drop-shadow(0 0 20px rgba(0,240,255,0.4)) drop-shadow(0 0 40px rgba(255,45,149,0.3));
-  animation:logoGlow 3s ease-in-out infinite alternate;
-}
-@keyframes logoGlow{
-  0%{filter:drop-shadow(0 0 15px rgba(0,240,255,0.3)) drop-shadow(0 0 30px rgba(255,45,149,0.2))}
-  100%{filter:drop-shadow(0 0 25px rgba(0,240,255,0.6)) drop-shadow(0 0 50px rgba(255,45,149,0.4))}
-}
-
-.arcade-subtitle{
-  font-size:0.9rem;color:rgba(255,255,255,0.5);
-  margin-top:4px;letter-spacing:2px;
-}
-
-/* Back button */
-.back-btn{
-  position:fixed;top:16px;left:16px;z-index:100;
-  width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);
-  background:rgba(0,0,0,0.5);backdrop-filter:blur(10px);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all 0.3s;color:#fff;font-size:24px;
-  text-decoration:none;
-}
-.back-btn:hover{border-color:var(--neon-cyan);box-shadow:0 0 20px rgba(0,240,255,0.3)}
-
-/* === MASCOT IMAGES === */
+/* === MASCOTS === */
 .mascot-left{
   position:fixed;top:40px;left:0;z-index:5;
-  width:clamp(120px,22vw,280px);
+  width:clamp(100px,20vw,260px);
   opacity:0.9;pointer-events:none;
-  filter:drop-shadow(0 0 30px rgba(255,45,149,0.3));
-  animation:mascotFloat 4s ease-in-out infinite;
+  filter:drop-shadow(0 0 30px hsl(330 100% 60% / 0.3));
+  animation:float 4s ease-in-out infinite;
 }
 .mascot-right{
   position:fixed;bottom:0;right:0;z-index:5;
-  width:clamp(120px,22vw,280px);
+  width:clamp(100px,20vw,260px);
   opacity:0.85;pointer-events:none;
-  filter:drop-shadow(0 0 30px rgba(0,240,255,0.3));
-  animation:mascotFloat 4s ease-in-out infinite 2s;
+  filter:drop-shadow(0 0 30px hsl(187 100% 50% / 0.3));
+  animation:float 4s ease-in-out infinite 2s;
 }
-@keyframes mascotFloat{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-12px)}
-}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 
-/* === CATEGORIES CONTAINER === */
+/* === BACK BTN === */
+.back-btn{
+  position:fixed;top:16px;left:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.15);
+  background:rgba(0,0,0,0.4);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:#fff;font-size:22px;
+  text-decoration:none;transition:all 0.3s;
+}
+.back-btn:hover{border-color:var(--neon-cyan);box-shadow:0 0 20px hsl(187 100% 50% / 0.3)}
+
+/* === HEADER === */
+.arcade-header{
+  position:relative;z-index:10;
+  text-align:center;padding:2.5rem 1rem 1.5rem;
+}
+.arcade-logo{
+  font-family:'Orbitron',sans-serif;font-weight:900;
+  font-size:clamp(2rem,6vw,3.5rem);
+  letter-spacing:4px;text-transform:uppercase;
+  background:linear-gradient(180deg,#fff 0%,hsl(187,100%,50%) 50%,hsl(330,100%,60%) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 20px hsl(187 100% 50% / 0.4)) drop-shadow(0 0 40px hsl(330 100% 60% / 0.3));
+  animation:logoGlow 3s ease-in-out infinite alternate;
+}
+@keyframes logoGlow{
+  0%{filter:drop-shadow(0 0 15px hsl(187 100% 50%/0.3)) drop-shadow(0 0 30px hsl(330 100% 60%/0.2))}
+  100%{filter:drop-shadow(0 0 25px hsl(187 100% 50%/0.6)) drop-shadow(0 0 50px hsl(330 100% 60%/0.4))}
+}
+.arcade-subtitle{
+  font-family:'Press Start 2P',cursive;
+  font-size:0.55rem;color:var(--muted);
+  margin-top:6px;letter-spacing:4px;
+}
+.header-stats{
+  display:inline-flex;align-items:center;gap:8px;
+  margin-top:1rem;padding:8px 18px;
+  border-radius:30px;
+  background:hsl(240 33% 12% / 0.6);
+  border:1px solid var(--border);
+  backdrop-filter:blur(8px);
+  font-size:0.85rem;
+}
+.header-stats .s-cyan{font-family:'Orbitron',sans-serif;color:var(--neon-cyan);font-size:0.8rem;font-weight:700}
+.header-stats .s-pink{font-family:'Orbitron',sans-serif;color:var(--neon-pink);font-size:0.8rem;font-weight:700}
+.header-stats .dot{color:var(--muted);font-size:0.7rem}
+
+/* === CATEGORIES === */
 .categories{
   position:relative;z-index:10;
   max-width:1100px;margin:0 auto;
-  padding:1rem 1rem 4rem;
-  display:flex;flex-direction:column;gap:2rem;
+  padding:0.5rem 1rem 5rem;
+  display:flex;flex-direction:column;gap:1.5rem;
 }
 
-/* === CATEGORY BOX === */
-.cat-box{
-  background:var(--card-bg);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:20px;
-  padding:1.5rem;
-  backdrop-filter:blur(12px);
+/* === CATEGORY SECTION (scroll fade-in) === */
+.cat-section{
   position:relative;
+  background:hsl(240 33% 12% / 0.8);
+  border:1px solid hsl(240 20% 20%);
+  border-radius:16px;padding:1.5rem;
+  backdrop-filter:blur(12px);
   overflow:hidden;
-  transition:border-color 0.3s;
+  opacity:0;transform:translateY(30px);
+  transition:opacity 0.5s ease, transform 0.5s ease;
 }
-.cat-box:hover{border-color:rgba(255,255,255,0.15)}
+.cat-section.visible{opacity:1;transform:translateY(0)}
 
-/* Neon glow line at top */
-.cat-box::before{
-  content:'';position:absolute;top:0;left:10%;right:10%;height:2px;
-  border-radius:0 0 4px 4px;
+/* Top neon line per category */
+.cat-section::before{
+  content:'';position:absolute;top:0;left:10%;right:10%;height:2px;border-radius:0 0 4px 4px;
 }
-.cat-box[data-cat="korean"]::before{background:var(--neon-pink);box-shadow:0 0 15px var(--neon-pink)}
-.cat-box[data-cat="math"]::before{background:var(--neon-cyan);box-shadow:0 0 15px var(--neon-cyan)}
-.cat-box[data-cat="english"]::before{background:var(--neon-green);box-shadow:0 0 15px var(--neon-green)}
-.cat-box[data-cat="science"]::before{background:var(--neon-orange);box-shadow:0 0 15px var(--neon-orange)}
-.cat-box[data-cat="art"]::before{background:var(--neon-purple);box-shadow:0 0 15px var(--neon-purple)}
-.cat-box[data-cat="bonus"]::before{background:var(--neon-yellow);box-shadow:0 0 15px var(--neon-yellow)}
+.cat-section[data-cat="korean"]::before{background:var(--neon-pink);box-shadow:0 0 15px var(--neon-pink)}
+.cat-section[data-cat="math"]::before{background:var(--neon-cyan);box-shadow:0 0 15px var(--neon-cyan)}
+.cat-section[data-cat="english"]::before{background:var(--neon-green);box-shadow:0 0 15px var(--neon-green)}
+.cat-section[data-cat="science"]::before{background:var(--neon-orange);box-shadow:0 0 15px var(--neon-orange)}
+.cat-section[data-cat="art"]::before{background:var(--neon-purple);box-shadow:0 0 15px var(--neon-purple)}
+.cat-section[data-cat="bonus"]::before{background:var(--neon-yellow);box-shadow:0 0 15px var(--neon-yellow)}
 
 .cat-title{
+  display:flex;align-items:center;gap:10px;margin-bottom:1rem;
+}
+.cat-title .emoji{font-size:1.4rem}
+.cat-title .name{
   font-family:'Orbitron',sans-serif;
-  font-size:1.1rem;font-weight:700;
-  margin-bottom:1rem;
-  display:flex;align-items:center;gap:10px;
-  letter-spacing:1px;
+  font-size:clamp(0.85rem,2vw,1.1rem);
+  font-weight:700;letter-spacing:1px;
 }
-.cat-title .cat-emoji{font-size:1.4rem}
-.cat-title .cat-count{
-  font-size:0.65rem;
-  padding:2px 10px;border-radius:20px;
-  background:rgba(255,255,255,0.1);
-  color:rgba(255,255,255,0.5);
-  font-family:'Jua',sans-serif;
+.cat-section[data-cat="korean"] .cat-title .name{color:var(--neon-pink)}
+.cat-section[data-cat="math"] .cat-title .name{color:var(--neon-cyan)}
+.cat-section[data-cat="english"] .cat-title .name{color:var(--neon-green)}
+.cat-section[data-cat="science"] .cat-title .name{color:var(--neon-orange)}
+.cat-section[data-cat="art"] .cat-title .name{color:var(--neon-purple)}
+.cat-section[data-cat="bonus"] .cat-title .name{color:var(--neon-yellow)}
+.cat-title .count{
+  font-size:0.65rem;padding:2px 10px;border-radius:20px;
+  background:rgba(255,255,255,0.08);color:var(--muted);
 }
-
-/* Neon colored titles */
-.cat-box[data-cat="korean"] .cat-title{color:var(--neon-pink)}
-.cat-box[data-cat="math"] .cat-title{color:var(--neon-cyan)}
-.cat-box[data-cat="english"] .cat-title{color:var(--neon-green)}
-.cat-box[data-cat="science"] .cat-title{color:var(--neon-orange)}
-.cat-box[data-cat="art"] .cat-title{color:var(--neon-purple)}
-.cat-box[data-cat="bonus"] .cat-title{color:var(--neon-yellow)}
 
 /* === GAME GRID === */
 .game-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(110px, 1fr));
-  gap:12px;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
 }
-@media(min-width:768px){.game-grid{grid-template-columns:repeat(auto-fill, minmax(130px, 1fr))}}
+@media(min-width:480px){.game-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:640px){.game-grid{grid-template-columns:repeat(5,1fr);gap:10px}}
+@media(min-width:900px){.game-grid{grid-template-columns:repeat(6,1fr);gap:12px}}
 
-/* === GAME ITEM === */
-.game-item{
+/* === GAME CARD === */
+.game-card{
   display:flex;flex-direction:column;align-items:center;
-  gap:8px;padding:14px 8px;
-  border-radius:14px;
+  gap:6px;padding:12px 8px;
+  border-radius:12px;
   background:rgba(255,255,255,0.03);
   border:1px solid rgba(255,255,255,0.05);
-  cursor:pointer;transition:all 0.3s;
   text-decoration:none;color:#fff;
   position:relative;
+  transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  opacity:0;transform:translateY(20px);
 }
-.game-item:hover{
-  background:rgba(255,255,255,0.08);
-  border-color:rgba(255,255,255,0.15);
-  transform:translateY(-4px);
-  box-shadow:0 8px 30px rgba(0,0,0,0.3);
+.game-card.visible{opacity:1;transform:translateY(0)}
+.game-card:hover{
+  background:rgba(255,255,255,0.07);
+  transform:translateY(-6px) !important;
 }
-.game-item:active{transform:scale(0.95)}
+.game-card:active{transform:scale(0.95) !important}
 
-.game-item .icon-wrap{
-  width:72px;height:72px;
-  border-radius:16px;
-  display:flex;align-items:center;justify-content:center;
-  overflow:hidden;
-  background:rgba(255,255,255,0.05);
-  transition:all 0.3s;
-}
-.game-item:hover .icon-wrap{
-  box-shadow:0 0 20px rgba(255,255,255,0.1);
-  transform:scale(1.08) rotate(-3deg);
-}
-.game-item .icon-wrap img{
-  width:100%;height:100%;object-fit:contain;
-}
+/* Glow per cat */
+.cat-section[data-cat="korean"] .game-card:hover{box-shadow:0 8px 30px hsl(330 100% 60%/0.15);border-color:hsl(330 100% 60%/0.25)}
+.cat-section[data-cat="math"] .game-card:hover{box-shadow:0 8px 30px hsl(187 100% 50%/0.15);border-color:hsl(187 100% 50%/0.25)}
+.cat-section[data-cat="english"] .game-card:hover{box-shadow:0 8px 30px hsl(110 100% 55%/0.15);border-color:hsl(110 100% 55%/0.25)}
+.cat-section[data-cat="science"] .game-card:hover{box-shadow:0 8px 30px hsl(20 100% 56%/0.15);border-color:hsl(20 100% 56%/0.25)}
+.cat-section[data-cat="art"] .game-card:hover{box-shadow:0 8px 30px hsl(280 70% 70%/0.15);border-color:hsl(280 70% 70%/0.25)}
+.cat-section[data-cat="bonus"] .game-card:hover{box-shadow:0 8px 30px hsl(54 100% 50%/0.15);border-color:hsl(54 100% 50%/0.25)}
 
-.game-item .game-name{
-  font-size:0.75rem;text-align:center;
-  line-height:1.3;
-  opacity:0.85;
+.game-card .icon-wrap{
+  width:64px;height:64px;border-radius:14px;overflow:hidden;
+  background:rgba(255,255,255,0.04);flex-shrink:0;
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
 }
-.game-item .game-age-tag{
+@media(min-width:640px){.game-card .icon-wrap{width:72px;height:72px}}
+.game-card:hover .icon-wrap{transform:scale(1.1) rotate(-3deg)}
+.game-card .icon-wrap img{width:100%;height:100%;object-fit:cover}
+.game-card .game-name{
+  font-size:0.7rem;text-align:center;line-height:1.3;
+  opacity:0.85;transition:opacity 0.2s;
+}
+@media(min-width:640px){.game-card .game-name{font-size:0.75rem}}
+.game-card:hover .game-name{opacity:1}
+.game-card .age-badge{
   position:absolute;top:4px;right:4px;
-  font-size:0.55rem;padding:1px 6px;
-  border-radius:8px;
-  background:rgba(255,255,255,0.1);
-  color:rgba(255,255,255,0.4);
-}
-
-/* Coming soon items */
-.game-item.coming-soon{
-  opacity:0.35;pointer-events:none;
-}
-.game-item.coming-soon::after{
-  content:'SOON';position:absolute;
-  bottom:8px;font-size:0.5rem;
   font-family:'Orbitron',sans-serif;
-  letter-spacing:2px;
-  color:rgba(255,255,255,0.3);
+  font-size:0.5rem;padding:1px 5px;border-radius:6px;
+  background:rgba(255,255,255,0.08);color:var(--muted);
 }
 
-/* Neon hover glow per category */
-.cat-box[data-cat="korean"] .game-item:hover{box-shadow:0 4px 25px rgba(255,45,149,0.15)}
-.cat-box[data-cat="math"] .game-item:hover{box-shadow:0 4px 25px rgba(0,240,255,0.15)}
-.cat-box[data-cat="english"] .game-item:hover{box-shadow:0 4px 25px rgba(57,255,20,0.15)}
-.cat-box[data-cat="science"] .game-item:hover{box-shadow:0 4px 25px rgba(255,107,43,0.15)}
-.cat-box[data-cat="art"] .game-item:hover{box-shadow:0 4px 25px rgba(196,113,237,0.15)}
-.cat-box[data-cat="bonus"] .game-item:hover{box-shadow:0 4px 25px rgba(255,230,0,0.15)}
-
-/* === NEON STARS (floating) === */
+/* === NEON STARS === */
 .neon-star{
   position:fixed;z-index:2;pointer-events:none;
-  width:4px;height:4px;border-radius:50%;
-  animation:starPulse 2s ease-in-out infinite;
+  border-radius:50%;
+  animation:pulse-glow 2s ease-in-out infinite;
 }
-@keyframes starPulse{
-  0%,100%{opacity:0.3;transform:scale(1)}
-  50%{opacity:1;transform:scale(1.5)}
+@keyframes pulse-glow{0%,100%{opacity:0.3}50%{opacity:1}}
+
+/* === FOOTER === */
+.arcade-footer{
+  position:relative;z-index:10;
+  text-align:center;padding:2rem;
+  font-family:'Press Start 2P',cursive;
+  font-size:0.5rem;color:var(--muted);letter-spacing:3px;
 }
 
 /* === RESPONSIVE === */
-@media(max-width:600px){
-  .mascot-left{width:100px;top:10px}
-  .mascot-right{width:100px}
-  .arcade-header{padding-top:4rem}
-  .cat-box{padding:1rem}
-  .game-grid{grid-template-columns:repeat(3, 1fr);gap:8px}
-  .game-item .icon-wrap{width:56px;height:56px;border-radius:12px}
-  .game-item{padding:10px 6px}
-}
-@media(min-width:1200px){
-  .game-grid{grid-template-columns:repeat(6, 1fr)}
+@media(max-width:480px){
+  .mascot-left,.mascot-right{width:80px}
+  .arcade-header{padding-top:3.5rem}
+  .cat-section{padding:1rem}
 }
 </style>
 </head>
 <body>
 
-<!-- BG Effects -->
-<div class="arcade-bg"></div>
-<div class="grid-floor"></div>
+<div class="arcade-bg">
+  <div class="blobs"></div>
+  <div class="scanlines"></div>
+  <div class="grid-floor"></div>
+</div>
 
-<!-- Back Button -->
-<a class="back-btn" href="playground.html" title="놀이터로 돌아가기">&larr;</a>
-
-<!-- Mascots -->
+<a class="back-btn" href="playground.html" title="돌아가기">&#8592;</a>
 <img class="mascot-left" src="../../assets/arcade/ras01-lg.png" alt="Retro Anime"/>
 <img class="mascot-right" src="../../assets/arcade/vdf01-lg.png" alt="Vintage Desktop"/>
 
-<!-- Header -->
 <header class="arcade-header">
   <div class="arcade-logo">LUNA ARCADE</div>
   <div class="arcade-subtitle">INSERT COIN TO PLAY</div>
+  <div class="header-stats">
+    <span>🪙</span>
+    <span class="s-cyan">6 카테고리</span>
+    <span class="dot">•</span>
+    <span class="s-pink">45 게임</span>
+  </div>
 </header>
 
-<!-- Categories -->
 <main class="categories" id="categories"></main>
 
-<!-- Neon Stars -->
+<footer class="arcade-footer">© LUNA ARCADE 2026</footer>
+
 <script>
+// Neon stars
 (function(){
-  const colors = ['#ff2d95','#00f0ff','#ffe600','#39ff14','#c471ed','#ff6b2b'];
-  for(let i=0;i<30;i++){
-    const s = document.createElement('div');
-    s.className = 'neon-star';
-    s.style.left = Math.random()*100+'%';
-    s.style.top = Math.random()*100+'%';
-    s.style.background = colors[Math.floor(Math.random()*colors.length)];
-    s.style.boxShadow = `0 0 6px ${s.style.background}`;
-    s.style.animationDelay = (Math.random()*3)+'s';
-    s.style.animationDuration = (1.5+Math.random()*2)+'s';
+  const colors = ['hsl(330,100%,60%)','hsl(187,100%,50%)','hsl(54,100%,50%)','hsl(110,100%,55%)','hsl(280,70%,70%)','hsl(20,100%,56%)'];
+  for(let i=0;i<40;i++){
+    const s=document.createElement('div');
+    s.className='neon-star';
+    const sz=Math.random()*3+2;
+    const c=colors[Math.floor(Math.random()*colors.length)];
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;background:${c};box-shadow:0 0 ${sz*3}px ${c};animation-delay:${Math.random()*3}s;animation-duration:${1.5+Math.random()*2}s`;
     document.body.appendChild(s);
   }
 })();
-</script>
 
-<script>
-// ═══ ICON PATH HELPERS ═══
+// Game data
 const IC = '../../assets/arcade/';
-const CG = '../../shared-assets/unity-ui/gui-pro-casual-game/GUI Pro-CasualGame/ResourcesData/Sprites/Components/Icon_ItemIcons/128/';
-
-// ═══ GAME DATA — organized by category ═══
 const CATEGORIES = [
-  {
-    id:'korean', emoji:'🇰🇷', label:'게이미 국어',
-    games:[
-      {name:'고사성어 런',age:'8+',icon:IC+'rg05.jpg',url:'../games/korean-run.html'},
-      {name:'이야기 빌더',age:'7+',icon:IC+'rg06.jpg',url:'../games/story-builder.html'},
-      {name:'문장 퍼즐',age:'7+',icon:IC+'rg12.jpg',url:'../games/story-puzzle.html'},
-      {name:'AI 동화책',age:'6+',icon:IC+'rg14.jpg',url:'../games/storybook-maker.html'},
-      {name:'조선왕 퀴즈',age:'8+',icon:IC+'rg04.jpg',url:'../games/joseon-king.html'},
-      {name:'고사성어 500',age:'10+',icon:IC+'rg08.jpg',url:'../luna-korean/idiom-500.html'},
-      {name:'어원 사전',age:'9+',icon:IC+'rg13.jpg',url:'../luna-korean/literacy-700.html'},
-      {name:'한자 어원',age:'9+',icon:IC+'rg24.jpg',url:'../luna-korean/hanja-lesson.html'},
-    ]
-  },
-  {
-    id:'math', emoji:'🧮', label:'게이미 수학',
-    games:[
-      {name:'Math Pigs',age:'8+',icon:IC+'stream04.jpg',url:'../luna-math/math-pigs.html'},
-      {name:'피타고라스',age:'9+',icon:IC+'stream01.jpg',url:'../luna-math/pythagorean.html'},
-      {name:'갈릴레이 투석기',age:'9+',icon:IC+'stream05.jpg',url:'../luna-math/galileo.html'},
-      {name:'뉴턴 로켓',age:'9+',icon:IC+'stream02.jpg',url:'../luna-math/newton.html'},
-      {name:'오일러 다리',age:'9+',icon:IC+'stream03.jpg',url:'../luna-math/euler.html'},
-      {name:'가우스 번개',age:'7+',icon:IC+'stream07.jpg',url:'../luna-math/gauss.html'},
-      {name:'알콰리즈미 보물',age:'8+',icon:IC+'stream09.jpg',url:'../luna-math/alkhwarizmi.html'},
-      {name:'튜링 암호',age:'10+',icon:IC+'stream06.jpg',url:'../luna-math/turing.html'},
-      {name:'번개 암산',age:'7+',icon:IC+'stream08.jpg',url:'../luna-math/mental-math.html'},
-      {name:'공식 뽑기',age:'8+',icon:IC+'stream10.jpg',url:'../luna-math/formula-gacha.html'},
-      {name:'공식 도감',age:'8+',icon:IC+'stream11.jpg',url:'../luna-math/formula-collection.html'},
-      {name:'수학 그림판',age:'7+',icon:IC+'stream14.jpg',url:'../luna-math/math-canvas.html'},
-    ]
-  },
-  {
-    id:'english', emoji:'🌍', label:'게이미 영어',
-    games:[
-      {name:'English Run',age:'7+',icon:IC+'rg01.jpg',url:'../games/english-run.html'},
-      {name:'Idiom Run',age:'9+',icon:IC+'rg02.jpg',url:'../games/english-idiom-run.html'},
-      {name:'Talk Rhythm',age:'8+',icon:IC+'rg03.jpg',url:'../games/english-talk.html'},
-      {name:'Scene Talk',age:'8+',icon:IC+'rg07.jpg',url:'../games/english-scene.html'},
-      {name:'Listen Up',age:'7+',icon:IC+'rg09.jpg',url:'../games/english-listen.html'},
-      {name:'단어장',age:'7+',icon:IC+'rg11.jpg',url:'../games/english-vocab-note.html'},
-    ]
-  },
-  {
-    id:'science', emoji:'🔬', label:'게이미 과학',
-    games:[
-      {name:'지층 빌더',age:'7+',icon:IC+'rg15.jpg',url:'../luna-tech/strata-builder.html'},
-      {name:'분자 빌더',age:'8+',icon:IC+'rg16.jpg',url:'../luna-tech/atomic-builder.html'},
-      {name:'세포 빌더',age:'8+',icon:IC+'rg17.jpg',url:'../luna-tech/cell-builder.html'},
-      {name:'태양계 탐험',age:'6+',icon:IC+'rg18.jpg',url:'../luna-tech/luna-science.html'},
-      {name:'인체 탐험',age:'8+',icon:IC+'rg19.jpg',url:'../luna-tech/anatomy-builder.html'},
-      {name:'광석 감별사',age:'7+',icon:IC+'rg20.jpg',url:'../luna-tech/mineral-detective.html'},
-      {name:'화학 몬스터',age:'8+',icon:IC+'rg21.jpg',url:'../luna-science/chem-monster.html'},
-    ]
-  },
-  {
-    id:'art', emoji:'🎨', label:'게이미 미술',
-    games:[
-      {name:'색칠교실',age:'4+',icon:IC+'stream15.jpg',url:'../main/coloring.html'},
-      {name:'물감 섞기',age:'5+',icon:IC+'stream16.jpg',url:'../main/color-mix.html'},
-      {name:'오늘의 색',age:'5+',icon:IC+'stream17.jpg',url:'../main/daily-color.html'},
-      {name:'수채화 도구',age:'6+',icon:IC+'stream18.jpg',url:'../main/watercolor.html'},
-      {name:'원근법 관찰',age:'8+',icon:IC+'stream19.jpg',url:'../main/perspective-observer.html'},
-      {name:'3D 드로잉',age:'7+',icon:IC+'stream12.jpg',url:'../main/drawing-3d.html'},
-      {name:'포토 도구',age:'8+',icon:IC+'stream13.jpg',url:'../main/photo-builder.html'},
-    ]
-  },
-  {
-    id:'bonus', emoji:'🎰', label:'게이미 보너스',
-    games:[
-      {name:'용사 타자기',age:'8+',icon:IC+'rg10.jpg',url:'../typewriter/hero-typewriter.html'},
-      {name:'명화 가챠',age:'6+',icon:IC+'rg22.jpg',url:'../main/gacha.html'},
-      {name:'종이접기',age:'5+',icon:IC+'rg23.jpg',url:'../main/paper-craft.html'},
-      {name:'비주얼 타이머',age:'4+',icon:IC+'rg25.jpg',url:'../main/visual-timer.html'},
-      {name:'슬롯머신',age:'6+',icon:IC+'stream10.jpg',url:'../main/slot-machine.html'},
-    ]
-  }
+  {id:'korean',emoji:'🇰🇷',label:'게이미 국어',games:[
+    {name:'고사성어 런',age:'8+',icon:IC+'rg05.jpg',url:'../games/korean-run.html'},
+    {name:'이야기 빌더',age:'7+',icon:IC+'rg06.jpg',url:'../games/story-builder.html'},
+    {name:'문장 퍼즐',age:'7+',icon:IC+'rg12.jpg',url:'../games/story-puzzle.html'},
+    {name:'AI 동화책',age:'6+',icon:IC+'rg14.jpg',url:'../games/storybook-maker.html'},
+    {name:'조선왕 퀴즈',age:'8+',icon:IC+'rg04.jpg',url:'../games/joseon-king.html'},
+    {name:'고사성어 500',age:'10+',icon:IC+'rg08.jpg',url:'../luna-korean/idiom-500.html'},
+    {name:'어원 사전',age:'9+',icon:IC+'rg13.jpg',url:'../luna-korean/literacy-700.html'},
+    {name:'한자 어원',age:'9+',icon:IC+'rg24.jpg',url:'../luna-korean/hanja-lesson.html'},
+  ]},
+  {id:'math',emoji:'🧮',label:'게이미 수학',games:[
+    {name:'Math Pigs',age:'8+',icon:IC+'stream04.jpg',url:'../luna-math/math-pigs.html'},
+    {name:'피타고라스',age:'9+',icon:IC+'stream01.jpg',url:'../luna-math/pythagorean.html'},
+    {name:'갈릴레이 투석기',age:'9+',icon:IC+'stream05.jpg',url:'../luna-math/galileo.html'},
+    {name:'뉴턴 로켓',age:'9+',icon:IC+'stream02.jpg',url:'../luna-math/newton.html'},
+    {name:'오일러 다리',age:'9+',icon:IC+'stream03.jpg',url:'../luna-math/euler.html'},
+    {name:'가우스 번개',age:'7+',icon:IC+'stream07.jpg',url:'../luna-math/gauss.html'},
+    {name:'알콰리즈미 보물',age:'8+',icon:IC+'stream09.jpg',url:'../luna-math/alkhwarizmi.html'},
+    {name:'튜링 암호',age:'10+',icon:IC+'stream06.jpg',url:'../luna-math/turing.html'},
+    {name:'번개 암산',age:'7+',icon:IC+'stream08.jpg',url:'../luna-math/mental-math.html'},
+    {name:'공식 뽑기',age:'8+',icon:IC+'stream10.jpg',url:'../luna-math/formula-gacha.html'},
+    {name:'공식 도감',age:'8+',icon:IC+'stream11.jpg',url:'../luna-math/formula-collection.html'},
+    {name:'수학 그림판',age:'7+',icon:IC+'stream14.jpg',url:'../luna-math/math-canvas.html'},
+  ]},
+  {id:'english',emoji:'🌍',label:'게이미 영어',games:[
+    {name:'English Run',age:'7+',icon:IC+'rg01.jpg',url:'../games/english-run.html'},
+    {name:'Idiom Run',age:'9+',icon:IC+'rg02.jpg',url:'../games/english-idiom-run.html'},
+    {name:'Talk Rhythm',age:'8+',icon:IC+'rg03.jpg',url:'../games/english-talk.html'},
+    {name:'Scene Talk',age:'8+',icon:IC+'rg07.jpg',url:'../games/english-scene.html'},
+    {name:'Listen Up',age:'7+',icon:IC+'rg09.jpg',url:'../games/english-listen.html'},
+    {name:'단어장',age:'7+',icon:IC+'rg11.jpg',url:'../games/english-vocab-note.html'},
+  ]},
+  {id:'science',emoji:'🔬',label:'게이미 과학',games:[
+    {name:'지층 빌더',age:'7+',icon:IC+'rg15.jpg',url:'../luna-tech/strata-builder.html'},
+    {name:'분자 빌더',age:'8+',icon:IC+'rg16.jpg',url:'../luna-tech/atomic-builder.html'},
+    {name:'세포 빌더',age:'8+',icon:IC+'rg17.jpg',url:'../luna-tech/cell-builder.html'},
+    {name:'태양계 탐험',age:'6+',icon:IC+'rg18.jpg',url:'../luna-tech/luna-science.html'},
+    {name:'인체 탐험',age:'8+',icon:IC+'rg19.jpg',url:'../luna-tech/anatomy-builder.html'},
+    {name:'광석 감별사',age:'7+',icon:IC+'rg20.jpg',url:'../luna-tech/mineral-detective.html'},
+    {name:'화학 몬스터',age:'8+',icon:IC+'rg21.jpg',url:'../luna-science/chem-monster.html'},
+  ]},
+  {id:'art',emoji:'🎨',label:'게이미 미술',games:[
+    {name:'색칠교실',age:'4+',icon:IC+'stream15.jpg',url:'../main/coloring.html'},
+    {name:'물감 섞기',age:'5+',icon:IC+'stream16.jpg',url:'../main/color-mix.html'},
+    {name:'오늘의 색',age:'5+',icon:IC+'stream17.jpg',url:'../main/daily-color.html'},
+    {name:'수채화 도구',age:'6+',icon:IC+'stream18.jpg',url:'../main/watercolor.html'},
+    {name:'원근법 관찰',age:'8+',icon:IC+'stream19.jpg',url:'../main/perspective-observer.html'},
+    {name:'3D 드로잉',age:'7+',icon:IC+'stream12.jpg',url:'../main/drawing-3d.html'},
+    {name:'포토 도구',age:'8+',icon:IC+'stream13.jpg',url:'../main/photo-builder.html'},
+  ]},
+  {id:'bonus',emoji:'🎰',label:'게이미 보너스',games:[
+    {name:'용사 타자기',age:'8+',icon:IC+'rg10.jpg',url:'../typewriter/hero-typewriter.html'},
+    {name:'명화 가챠',age:'6+',icon:IC+'rg22.jpg',url:'../main/gacha.html'},
+    {name:'종이접기',age:'5+',icon:IC+'rg23.jpg',url:'../main/paper-craft.html'},
+    {name:'비주얼 타이머',age:'4+',icon:IC+'rg25.jpg',url:'../main/visual-timer.html'},
+    {name:'슬롯머신',age:'6+',icon:IC+'stream10.jpg',url:'../main/slot-machine.html'},
+  ]},
 ];
 
-// ═══ RENDER ═══
-function render(){
-  const container = document.getElementById('categories');
-  container.innerHTML = CATEGORIES.map(cat => `
-    <section class="cat-box" data-cat="${cat.id}">
-      <div class="cat-title">
-        <span class="cat-emoji">${cat.emoji}</span>
-        ${cat.label}
-        <span class="cat-count">${cat.games.length}개</span>
-      </div>
-      <div class="game-grid">
-        ${cat.games.map(g => `
-          <a class="game-item" href="${g.url}">
-            <div class="icon-wrap">
-              <img src="${g.icon}" alt="${g.name}" loading="lazy"/>
-            </div>
-            <div class="game-name">${g.name}</div>
-            <span class="game-age-tag">${g.age}</span>
-          </a>
-        `).join('')}
-      </div>
-    </section>
-  `).join('');
-}
-render();
-</script>
+// Render
+document.getElementById('categories').innerHTML = CATEGORIES.map((cat,ci) =>
+  `<section class="cat-section" data-cat="${cat.id}" style="transition-delay:${ci*0.08}s">
+    <div class="cat-title">
+      <span class="emoji">${cat.emoji}</span>
+      <span class="name">${cat.label}</span>
+      <span class="count">${cat.games.length}개</span>
+    </div>
+    <div class="game-grid">
+      ${cat.games.map((g,i) =>
+        `<a class="game-card" href="${g.url}" style="transition-delay:${i*0.04}s">
+          <div class="icon-wrap"><img src="${g.icon}" alt="${g.name}" loading="lazy"/></div>
+          <div class="game-name">${g.name}</div>
+          <span class="age-badge">${g.age}</span>
+        </a>`
+      ).join('')}
+    </div>
+  </section>`
+).join('');
 
+// Intersection Observer for scroll animations
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      // animate child cards with stagger
+      if(e.target.classList.contains('cat-section')){
+        e.target.querySelectorAll('.game-card').forEach((c,i) => {
+          setTimeout(() => c.classList.add('visible'), i * 40);
+        });
+      }
+      io.unobserve(e.target);
+    }
+  });
+}, {threshold:0.05, rootMargin:'-30px'});
+
+document.querySelectorAll('.cat-section').forEach(el => io.observe(el));
+</script>
 </body>
 </html>
